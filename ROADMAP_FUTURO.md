@@ -191,7 +191,8 @@ flowchart TB
 | FE | F6: articles optional | (BC–BF) | **Feito** |
 | BG–BJ | Unificar reforço UI · histórico open · catálogo · radar docs | `ciclo_bg_*`…`ciclo_bj_*` | **Feito** |
 | BK–BN | Essay timeline · library search · Hoje Z3 · cards/export/sim | `ciclo_bk_*`…`ciclo_bn_*` | **Feito** |
-| BO–BR | Plan export · sim checkpoint · ficha/cards · Domínio Z3/Sobre | `ciclo_bo_*`…`ciclo_br_*` | Rodada atual |
+| BO–BR | Plan export · sim checkpoint · ficha/cards · Domínio Z3/Sobre | `ciclo_bo_*`…`ciclo_br_*` | **Feito** |
+| BS–BV | Sim teclado · export semana · calendário 28d · tutor/banca/a11y | `ciclo_bs_*`…`ciclo_bv_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -199,8 +200,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós BO–BR)
+## Estado (atualizado pós BS–BV)
 
-- Fios AQ…BN fechados; rodada BO–BR: export plano, retomar sim, polish ficha/cards, Domínio Z3 + Sobre.
+- Fios AQ…BR fechados; rodada BS–BV: teclado sim, relatório semanal, calendário acionável, ponte tutor/banca/a11y.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

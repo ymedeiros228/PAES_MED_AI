@@ -366,21 +366,25 @@ class QuietEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SurfacePanel(
-      child: Row(
-        children: [
-          Icon(Icons.horizontal_rule_rounded, color: cs.onSurface.withOpacity(0.3)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurface.withOpacity(0.6),
-                  ),
+    return Semantics(
+      label: message,
+      button: action != null,
+      child: SurfacePanel(
+        child: Row(
+          children: [
+            Icon(Icons.horizontal_rule_rounded, color: cs.onSurface.withOpacity(0.3)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurface.withOpacity(0.6),
+                    ),
+              ),
             ),
-          ),
-          if (action != null) action!,
-        ],
+            if (action != null) action!,
+          ],
+        ),
       ),
     );
   }

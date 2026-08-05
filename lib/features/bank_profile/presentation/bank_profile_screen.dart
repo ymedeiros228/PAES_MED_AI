@@ -165,6 +165,16 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                             title: '${(raw as Map)['a']} ↔ ${raw['b']}',
                             subtitle: '${raw['count']} ocorrência(s)',
                             leadingIcon: Icons.link_rounded,
+                            onPlay: () {
+                              final a = raw['a']?.toString() ?? '';
+                              final parts = a.split('::');
+                              final sub = parts.isNotEmpty ? parts[0] : '';
+                              final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
+                              context.go(
+                                '/adaptativo?subject=${Uri.encodeComponent(sub)}'
+                                '&topic=${Uri.encodeComponent(top)}',
+                              );
+                            },
                           ),
                       ],
                       ExpansionTile(

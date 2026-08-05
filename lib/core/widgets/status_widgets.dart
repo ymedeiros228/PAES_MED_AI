@@ -87,25 +87,31 @@ class EmptyState extends StatelessWidget {
         (actionLabel != null && onAction != null
             ? FilledButton(onPressed: onAction, child: Text(actionLabel!))
             : null);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inbox_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.28)),
-            const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
-                  ),
-            ),
-            if (cta != null) ...[const SizedBox(height: 16), cta],
-          ],
+    final labelParts = <String>[title, subtitle];
+    if (actionLabel != null) labelParts.add(actionLabel!);
+    return Semantics(
+      label: labelParts.join('. '),
+      button: cta != null,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inbox_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.28)),
+              const SizedBox(height: 12),
+              Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                    ),
+              ),
+              if (cta != null) ...[const SizedBox(height: 16), cta],
+            ],
+          ),
         ),
       ),
     );

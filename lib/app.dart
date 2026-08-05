@@ -109,7 +109,17 @@ final appRouter = GoRouter(
         GoRoute(path: '/aulas', builder: (_, __) => const LessonsScreen()),
         GoRoute(path: '/redacao', builder: (_, __) => const EssayScreen()),
         GoRoute(path: '/aprovacao', builder: (_, __) => const ApprovalScreen()),
-        GoRoute(path: '/tutor', builder: (_, __) => const AiTutorScreen()),
+        GoRoute(
+          path: '/tutor',
+          builder: (_, state) {
+            final q = state.uri.queryParameters;
+            return AiTutorScreen(
+              seedSubject: q['subject'],
+              seedTopic: q['topic'],
+              seedQuery: q['q'],
+            );
+          },
+        ),
         GoRoute(path: '/configuracoes', builder: (_, __) => const SettingsScreen()),
       ],
     ),

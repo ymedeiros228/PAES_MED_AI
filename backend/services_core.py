@@ -995,6 +995,63 @@ def export_study_day_markdown(markdown: str, filename: str | None = None) -> dic
     }
 
 
+def export_study_week_markdown() -> dict[str, Any]:
+    """Relatório semanal honesto em DATA_DIR/exports (Ciclo BT)."""
+    dash = dashboard_stats()
+    wk = study_week_close_status()
+    week_key = str(wk.get("weekKey") or iso_week_key())
+    week_close = dash.get("weekClose") or {}
+    week_progress = dash.get("weekProgress") or {}
+    readiness = dash.get("readiness") or {}
+    minutes = dash.get("studyMinutesWeek")
+    if minutes is None:
+        minutes = week_close.get("studyMinutesWeek")
+    streak = dash.get("streakDays")
+    due = week_close.get("due")
+    gaps = week_close.get("gaps") or []
+    closed = bool(wk.get("closedThisWeek") or week_close.get("closedThisWeek"))
+    lines = [
+        "# Relatório semanal — PAES MED AI",
+        "",
+        f"**weekKey:** {week_key}",
+        f"**Período:** {wk.get('weekStart')} → {wk.get('weekEnd')}",
+        f"**Semana encerrada no app:** {'sim' if closed else 'não'}",
+        "",
+        "## Métricas (treino local)",
+        f"- Minutos na semana: {minutes}",
+        f"- Streak (dias seguidos): {streak}",
+        f"- Cards due (ao fechar o snapshot): {due}",
+        f"- Progresso: met={week_progress.get('met')} · "
+        f"{week_progress.get('label') or week_progress.get('line') or '—'}",
+        f"- Readiness score local: {readiness.get('score')} — pulso de treino, não % UEMA",
+        "",
+        "## Lacunas quentes",
+    ]
+    if gaps:
+        for g in gaps[:12]:
+            if not isinstance(g, dict):
+                continue
+            key = g.get("key") or f"{g.get('subject')}::{g.get('topic')}"
+            lines.append(f"- {key} · misses={g.get('misses')} · tipo={g.get('dominantErrorType')}")
+    else:
+        lines.append("- (nenhuma lacuna quente no snapshot)")
+    lines.extend(
+        [
+            "",
+            "## Disclaimer",
+            "Treino local · estimativa ≠ garantia. Não inventa probabilidade de aprovação UEMA.",
+            f"Gerado em {datetime.now().isoformat(timespec='seconds')}.",
+        ]
+    )
+    safe_key = week_key.replace("-", "_").replace("/", "_")
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"semana_{safe_key}_{stamp}.md"
+    out = export_study_day_markdown("\n".join(lines), filename)
+    out["weekKey"] = week_key
+    out["reportKind"] = "week"
+    return out
+
+
 def iso_week_key(d: datetime | None = None) -> str:
     dt = d or datetime.now()
     y, w, _ = dt.isocalendar()

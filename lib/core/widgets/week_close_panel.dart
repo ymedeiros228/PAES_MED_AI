@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/api_client.dart';
 import 'ui_kit.dart';
 
 /// Fecho da semana — payload `weekClose` de dashboard/today (Ciclo AM).
-class WeekClosePanel extends StatelessWidget {
+/// Exportar semana → `POST /api/study/export-week` (Ciclo BT).
+class WeekClosePanel extends StatefulWidget {
   const WeekClosePanel({
     super.key,
     required this.weekClose,
@@ -15,7 +17,56 @@ class WeekClosePanel extends StatelessWidget {
   final VoidCallback? onCloseWeek;
 
   @override
+  State<WeekClosePanel> createState() => _WeekClosePanelState();
+}
+
+class _WeekClosePanelState extends State<WeekClosePanel> {
+  String? exportMsg;
+  bool exportBusy = false;
+
+  Future<void> _exportWeek() async {
+    setState(() {
+      exportBusy = true;
+      exportMsg = null;
+    });
+    try {
+      final data = await apiClient.post('/api/study/export-week', {});
+      final map = Map<String, dynamic>.from(data as Map);
+      final path = map['path']?.toString() ?? '';
+      final dir = map['dir']?.toString() ?? '';
+      if (dir.isNotEmpty) {
+        try {
+          await apiClient.post('/api/library/open-path', {'path': dir});
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      setState(() {
+        exportMsg = path.isNotEmpty
+            ? path
+            : (map['filename']?.toString() ?? 'exportado');
+        exportBusy = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            path.isNotEmpty
+                ? 'Semana exportada: $path'
+                : (map['message']?.toString() ?? 'Exportado'),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        exportMsg = e.toString();
+        exportBusy = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final weekClose = widget.weekClose;
     if (weekClose.isEmpty) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
     final closed = weekClose['closedThisWeek'] == true;
@@ -77,9 +128,9 @@ class WeekClosePanel extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (canClose && onCloseWeek != null)
+                  if (canClose && widget.onCloseWeek != null)
                     FilledButton(
-                      onPressed: onCloseWeek,
+                      onPressed: widget.onCloseWeek,
                       child: const Text('Encerrar semana'),
                     )
                   else if (closed)
@@ -92,6 +143,10 @@ class WeekClosePanel extends StatelessWidget {
                       onPressed: () => context.go(nat),
                       child: const Text('Sessão Natureza'),
                     ),
+                  FilledButton.tonal(
+                    onPressed: exportBusy ? null : _exportWeek,
+                    child: Text(exportBusy ? 'Exportando…' : 'Exportar semana'),
+                  ),
                   FilledButton.tonal(
                     onPressed: () => context.go(sim),
                     child: const Text('Simulado'),
@@ -107,6 +162,15 @@ class WeekClosePanel extends StatelessWidget {
                     ),
                 ],
               ),
+              if (exportMsg != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  exportMsg!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: cs.onSurface.withOpacity(0.65),
+                      ),
+                ),
+              ],
             ],
           ),
         ),

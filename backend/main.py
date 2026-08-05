@@ -26,6 +26,7 @@ from services_core import (
     curation_health,
     dashboard_stats,
     export_study_day_markdown,
+    export_study_week_markdown,
     get_exam_date,
     get_question,
     get_study_plan,
@@ -1998,6 +1999,12 @@ class ExportDayPayload(BaseModel):
 def api_study_export_day(payload: ExportDayPayload) -> dict[str, Any]:
     """Salva pacote do dia em data/exports (Ciclo BN)."""
     return export_study_day_markdown(payload.markdown, payload.filename)
+
+
+@app.post("/api/study/export-week")
+def api_study_export_week() -> dict[str, Any]:
+    """Relatório semanal real em data/exports (Ciclo BT)."""
+    return export_study_week_markdown()
 
 
 class OpenUrlRequest(BaseModel):

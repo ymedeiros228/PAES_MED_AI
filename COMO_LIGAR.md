@@ -446,6 +446,30 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Rail com Tooltip/Semantics.
 3. Smoke `ciclo_br_*` + suite + pack + push.
 
+## Teclado no simulado (Ciclo BS)
+
+1. Simulados em sessão: teclado `1–5` / numpad escolhe opção; Enter avança/finaliza; Space avança foco.
+2. Preflight e relatório sem teclas conflitantes; Dia de prova sem gabarito antecipado.
+3. Smoke: `ciclo_bs_*` + push.
+
+## Relatório semanal (Ciclo BT)
+
+1. `POST /api/study/export-week` grava MD em `data/exports` com weekKey e disclaimer local.
+2. Hoje → Fecho da semana → **Exportar semana** (abre pasta).
+3. Smoke: `ciclo_bt_*` + push.
+
+## Calendário 28d (Ciclo BU)
+
+1. Dashboard → 28 dias: Tooltip + tap (sheet) com data e estudou/encerrou.
+2. Dia sem estudo: “sem estudo registrado” (não inventa atividade).
+3. Smoke: `ciclo_bu_*` + push.
+
+## Tutor ficha + banca + a11y (Ciclo BV)
+
+1. Ficha → **Perguntar ao tutor** com subject/topic/q; Tutor preenche seed se vazio.
+2. Banca co-ocorrência com play → adaptativo; EmptyState/QuietEmpty com Semantics.
+3. Smoke `ciclo_bv_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

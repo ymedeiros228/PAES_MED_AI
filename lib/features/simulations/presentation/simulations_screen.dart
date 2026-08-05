@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,6 +39,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   bool preflightDone = false;
   bool running = false;
   Map<String, dynamic>? pendingSimCheckpoint;
+  /// Ciclo BS: teclado 1–5 / Enter na sessão em andamento.
+  final FocusNode sessionFocus = FocusNode();
+  int keyboardQi = 0;
 
   static const _modes = <(String, String, String, IconData)>[
     ('dia_prova', 'Dia de prova', 'Cronômetro e sem gabarito até terminar', Icons.timer_outlined),
@@ -65,7 +69,72 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   @override
   void dispose() {
     ticker?.cancel();
+    sessionFocus.dispose();
     super.dispose();
+  }
+
+  void _requestSessionFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && running && report == null) sessionFocus.requestFocus();
+    });
+  }
+
+  KeyEventResult _onSessionKey(FocusNode node, KeyEvent event) {
+    // Só durante o sim em andamento — preflight e relatório sem teclas conflitantes.
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (!running || report != null || questions.isEmpty) return KeyEventResult.ignored;
+
+    final keys = <LogicalKeyboardKey, int>{
+      LogicalKeyboardKey.digit1: 0,
+      LogicalKeyboardKey.digit2: 1,
+      LogicalKeyboardKey.digit3: 2,
+      LogicalKeyboardKey.digit4: 3,
+      LogicalKeyboardKey.digit5: 4,
+      LogicalKeyboardKey.numpad1: 0,
+      LogicalKeyboardKey.numpad2: 1,
+      LogicalKeyboardKey.numpad3: 2,
+      LogicalKeyboardKey.numpad4: 3,
+      LogicalKeyboardKey.numpad5: 4,
+    };
+    final opt = keys[event.logicalKey];
+    if (opt != null) {
+      final qi = keyboardQi.clamp(0, questions.length - 1);
+      final q = Map<String, dynamic>.from(questions[qi] as Map);
+      final id = q['id']?.toString() ?? '';
+      final opts = (q['options'] as List? ?? []);
+      if (id.isEmpty || opt >= opts.length) return KeyEventResult.handled;
+      setState(() {
+        answers[id] = opt;
+        if (!examLocked) errorTypes.putIfAbsent(id, () => defaultErrorType);
+      });
+      unawaited(_saveSimCheckpoint());
+      return KeyEventResult.handled;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      final qi = keyboardQi.clamp(0, questions.length - 1);
+      final q = Map<String, dynamic>.from(questions[qi] as Map);
+      final id = q['id']?.toString() ?? '';
+      if (id.isNotEmpty && answers.containsKey(id)) {
+        if (qi < questions.length - 1) {
+          setState(() => keyboardQi = qi + 1);
+        } else if (answers.length >= questions.length) {
+          unawaited(_grade());
+        }
+      }
+      return KeyEventResult.handled;
+    }
+
+    // Space: avança o foco do teclado sem revelar gabarito (dia de prova intacto).
+    if (event.logicalKey == LogicalKeyboardKey.space) {
+      if (keyboardQi < questions.length - 1) {
+        setState(() => keyboardQi = keyboardQi + 1);
+      }
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
   }
 
   Future<void> _loadSimCheckpoint() async {
@@ -101,7 +170,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         'errorTypes': errorTypes,
         'questionIds': ids,
         'questions': qs,
-        'currentIndex': 0,
+        'currentIndex': keyboardQi,
         'elapsedSec': sw.elapsed.inSeconds,
         'examLocked': examLocked,
         'preflightDone': preflightDone,
@@ -153,6 +222,8 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       };
       report = null;
       running = true;
+      keyboardQi = (cp['currentIndex'] as num?)?.toInt() ?? 0;
+      if (keyboardQi < 0 || keyboardQi >= qs.length) keyboardQi = 0;
       examLocked = cp['examLocked'] == true || mode == 'dia_prova';
       preflightDone = cp['preflightDone'] == true || mode == 'dia_prova';
       pendingSimCheckpoint = null;
@@ -175,6 +246,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       setState(() {});
       unawaited(_saveSimCheckpoint());
     });
+    _requestSessionFocus();
   }
 
   Future<bool> _preflightDiaProva() async {
@@ -226,6 +298,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       debriefLoading.clear();
       report = null;
       running = true;
+      keyboardQi = 0;
       examLocked = mode == 'dia_prova';
       preflightDone = mode == 'dia_prova';
       sw
@@ -245,6 +318,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       }
     });
     unawaited(_saveSimCheckpoint());
+    _requestSessionFocus();
   }
 
   Future<void> _grade() async {
@@ -385,7 +459,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .where((r) => r['correct'] != true)
         .toList();
 
-    return ListView(
+    final body = ListView(
       children: [
         PageBody(
           child: Column(
@@ -395,7 +469,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 eyebrow: 'Treino',
                 title: 'Simulados',
                 subtitle: inSession
-                    ? (report != null ? 'Resultado deste bloco' : 'Responda e finalize quando quiser')
+                    ? (report != null
+                        ? 'Resultado deste bloco'
+                        : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
                     : 'Escolha um modo e faça um bloco como no dia da prova',
                 trailing: inSession && report == null
                     ? SurfacePanel(
@@ -573,14 +649,17 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     final id = q['id'] as String;
                     final opts = (q['options'] as List).map((e) => e.toString()).toList();
                     final year = q['year'];
+                    final kbActive = running && report == null && qi == keyboardQi;
                     return SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 10),
+                      color: kbActive ? cs.primaryContainer.withOpacity(0.28) : null,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Questão ${qi + 1} de ${questions.length}'
-                            '${year != null ? ' · $year' : ''}',
+                            '${year != null ? ' · $year' : ''}'
+                            '${kbActive ? ' · teclado' : ''}',
                             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                   color: cs.primary,
                                   fontWeight: FontWeight.w700,
@@ -603,7 +682,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                               onChanged: report != null
                                   ? null
                                   : (v) {
-                                      setState(() => answers[id] = v!);
+                                      setState(() {
+                                        answers[id] = v!;
+                                        keyboardQi = qi;
+                                      });
                                       unawaited(_saveSimCheckpoint());
                                     },
                               title: Text('${'ABCDE'[i]}) ${opts[i]}'),
@@ -825,6 +907,16 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         ),
       ],
     );
+
+    if (running && report == null && questions.isNotEmpty) {
+      return Focus(
+        focusNode: sessionFocus,
+        autofocus: true,
+        onKeyEvent: _onSessionKey,
+        child: body,
+      );
+    }
+    return body;
   }
 }
 

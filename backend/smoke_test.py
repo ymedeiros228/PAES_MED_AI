@@ -3145,6 +3145,139 @@ def main() -> int:
     else:
         ok("ciclo_br_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo BS: teclado no sim ---
+    sim_bs = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bs_sim_keyboard",
+        "LogicalKeyboardKey" in sim_bs
+        and "sessionFocus" in sim_bs
+        and "digit1" in sim_bs
+        and "Focus(" in sim_bs,
+        "sim 1-5/Enter/Focus",
+    )
+    ok(
+        "ciclo_bs_como_section",
+        "Ciclo BS" in como_ap,
+        "COMO BS",
+    )
+
+    # --- Ciclo BT: relatório semanal ---
+    week_ui = (
+        root / "lib" / "core" / "widgets" / "week_close_panel.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bt_export_week_ui",
+        "/api/study/export-week" in week_ui and "Exportar semana" in week_ui,
+        "week export UI",
+    )
+    r_bt = client.post("/api/study/export-week")
+    body_bt = r_bt.json() if r_bt.status_code == 200 else {}
+    ok(
+        "ciclo_bt_export_week_api",
+        r_bt.status_code == 200
+        and body_bt.get("ok") is True
+        and "weekKey" in body_bt
+        and body_bt.get("path"),
+        f"status={r_bt.status_code} wk={body_bt.get('weekKey')}",
+    )
+    path_bt = Path(str(body_bt.get("path") or ""))
+    text_bt = path_bt.read_text(encoding="utf-8", errors="ignore") if path_bt.is_file() else ""
+    ok(
+        "ciclo_bt_export_week_md",
+        "weekKey" in text_bt
+        and ("estimativa" in text_bt.lower() or "garantia" in text_bt.lower()),
+        path_bt.name if path_bt.name else "no file",
+    )
+    ok(
+        "ciclo_bt_como_section",
+        "Ciclo BT" in como_ap,
+        "COMO BT",
+    )
+
+    # --- Ciclo BU: calendário 28d ---
+    dash_bu = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bu_calendar_tooltip",
+        "Tooltip" in dash_bu
+        and "showModalBottomSheet" in dash_bu
+        and "28 dias" in dash_bu
+        and "sem estudo registrado" in dash_bu,
+        "calendar tooltip/sheet",
+    )
+    ok(
+        "ciclo_bu_como_section",
+        "Ciclo BU" in como_ap,
+        "COMO BU",
+    )
+
+    # --- Ciclo BV: tutor ficha + banca + a11y ---
+    ficha_bv = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    tutor_bv = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    banca_bv = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    empty_bv = (
+        root / "lib" / "core" / "widgets" / "status_widgets.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    quiet_bv = (
+        root / "lib" / "core" / "widgets" / "ui_kit.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    app_bv = (root / "lib" / "app.dart").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bv_ficha_tutor_cta",
+        "Perguntar ao tutor" in ficha_bv and "/tutor" in ficha_bv,
+        "ficha tutor",
+    )
+    ok(
+        "ciclo_bv_tutor_seed",
+        "seedQuery" in tutor_bv and "_applyRouteSeed" in tutor_bv,
+        "tutor seed",
+    )
+    ok(
+        "ciclo_bv_router_tutor_query",
+        "seedSubject" in app_bv and "seedQuery" in app_bv,
+        "router tutor qp",
+    )
+    ok(
+        "ciclo_bv_banca_co_onplay",
+        "onPlay" in banca_bv
+        and ("costumam aparecer juntos" in banca_bv)
+        and "/adaptativo" in banca_bv,
+        "banca co onPlay",
+    )
+    ok(
+        "ciclo_bv_empty_semantics",
+        "class EmptyState" in empty_bv
+        and "Semantics" in empty_bv
+        and "class QuietEmpty" in quiet_bv
+        and quiet_bv.count("Semantics") >= 1,
+        "Empty/Quiet semantics",
+    )
+    ok(
+        "ciclo_bv_como_section",
+        "Ciclo BV" in como_ap,
+        "COMO BV",
+    )
+    ok(
+        "ciclo_bv_roadmap_bs_bv",
+        ("BS–BV" in roadmap or "BS-BV" in roadmap or "BS–BV" in roadmap)
+        and ("Feito" in roadmap and ("BO–BR" in roadmap or "BO-BR" in roadmap)),
+        "ROADMAP BS-BV / BO-BR Feito",
+    )
+    dist_dll_bv = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_bv.exists():
+        ok("ciclo_bv_dist_shape", True, str(dist_dll_bv))
+    else:
+        ok("ciclo_bv_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

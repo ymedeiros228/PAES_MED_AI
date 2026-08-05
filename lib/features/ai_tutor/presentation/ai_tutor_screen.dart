@@ -7,7 +7,16 @@ import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AiTutorScreen extends ConsumerStatefulWidget {
-  const AiTutorScreen({super.key});
+  const AiTutorScreen({
+    super.key,
+    this.seedSubject,
+    this.seedTopic,
+    this.seedQuery,
+  });
+
+  final String? seedSubject;
+  final String? seedTopic;
+  final String? seedQuery;
 
   @override
   ConsumerState<AiTutorScreen> createState() => _AiTutorScreenState();
@@ -16,6 +25,7 @@ class AiTutorScreen extends ConsumerStatefulWidget {
 class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  bool _seedApplied = false;
 
   static const _styles = <(String, String)>[
     ('professor', 'Professor'),
@@ -27,6 +37,41 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     ('medico', 'Médico'),
     ('crianca', 'Simples'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
+  }
+
+  void _applyRouteSeed() {
+    if (_seedApplied || !mounted) return;
+    if (_controller.text.trim().isNotEmpty) {
+      _seedApplied = true;
+      return;
+    }
+    final sub = widget.seedSubject?.trim() ?? '';
+    final top = widget.seedTopic?.trim() ?? '';
+    final q = widget.seedQuery?.trim() ?? '';
+    if (sub.isEmpty && top.isEmpty && q.isEmpty) {
+      _seedApplied = true;
+      return;
+    }
+    final buf = StringBuffer();
+    if (sub.isNotEmpty || top.isNotEmpty) {
+      buf.write('Sobre ${sub.isEmpty ? '—' : sub}');
+      if (top.isNotEmpty) buf.write(' · $top');
+      buf.writeln('.');
+    }
+    if (q.isNotEmpty) {
+      buf.writeln('Questão (trecho): $q');
+    }
+    buf.write('Explique com base local, sem inventar incidência UEMA.');
+    setState(() {
+      _controller.text = buf.toString().trim();
+      _seedApplied = true;
+    });
+  }
 
   @override
   void dispose() {

@@ -377,6 +377,22 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   ),
                   child: const Text('Treinar este tópico'),
                 ),
+                TextButton(
+                  onPressed: () {
+                    final stmt = q.statement;
+                    final seed = stmt.length > 240 ? '${stmt.substring(0, 240)}…' : stmt;
+                    final qp = <String, String>{
+                      if (q.subject.isNotEmpty) 'subject': q.subject,
+                      if (q.topic.isNotEmpty) 'topic': q.topic,
+                      if (seed.isNotEmpty) 'q': seed,
+                    };
+                    final qs = qp.entries
+                        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+                        .join('&');
+                    context.go(qs.isEmpty ? '/tutor' : '/tutor?$qs');
+                  },
+                  child: const Text('Perguntar ao tutor'),
+                ),
                 TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar card')),
               ],
             ),

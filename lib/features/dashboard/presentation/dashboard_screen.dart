@@ -517,11 +517,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     children: [
                                       for (final raw in calItems)
                                         Builder(
-                                          builder: (_) {
+                                          builder: (cellCtx) {
                                             final it = Map<String, dynamic>.from(raw as Map);
                                             final active = it['active'] == true;
                                             final closed = it['closed'] == true;
                                             final isToday = it['isToday'] == true;
+                                            final date = it['date']?.toString() ?? '';
                                             final cs = Theme.of(context).colorScheme;
                                             Color bg;
                                             if (closed) {
@@ -531,15 +532,87 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                             } else {
                                               bg = cs.onSurface.withOpacity(0.08);
                                             }
-                                            return Container(
-                                              width: 12,
-                                              height: 12,
-                                              decoration: BoxDecoration(
-                                                color: bg,
-                                                borderRadius: BorderRadius.circular(2),
-                                                border: isToday
-                                                    ? Border.all(color: cs.primary, width: 1.5)
-                                                    : null,
+                                            String statusLine;
+                                            if (closed && active) {
+                                              statusLine = 'estudou e encerrou o dia';
+                                            } else if (closed) {
+                                              statusLine = 'encerrou o dia (sem resposta registrada)';
+                                            } else if (active) {
+                                              statusLine = 'estudou (resposta registrada)';
+                                            } else {
+                                              statusLine = 'sem estudo registrado';
+                                            }
+                                            final tip = date.isEmpty
+                                                ? statusLine
+                                                : '$date · $statusLine';
+                                            return Tooltip(
+                                              message: tip,
+                                              child: Semantics(
+                                                label: tip,
+                                                button: true,
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    showModalBottomSheet<void>(
+                                                      context: cellCtx,
+                                                      showDragHandle: true,
+                                                      builder: (sheetCtx) {
+                                                        return Padding(
+                                                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                                                          child: Column(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                date.isEmpty ? 'Dia' : date,
+                                                                style: Theme.of(sheetCtx)
+                                                                    .textTheme
+                                                                    .titleMedium
+                                                                    ?.copyWith(fontWeight: FontWeight.w800),
+                                                              ),
+                                                              const SizedBox(height: 8),
+                                                              Text(statusLine),
+                                                              const SizedBox(height: 6),
+                                                              Text(
+                                                                'Só histórico local — dia sem estudo não inventa atividade.',
+                                                                style: Theme.of(sheetCtx)
+                                                                    .textTheme
+                                                                    .bodySmall
+                                                                    ?.copyWith(
+                                                                      color: Theme.of(sheetCtx)
+                                                                          .colorScheme
+                                                                          .onSurface
+                                                                          .withOpacity(0.6),
+                                                                    ),
+                                                              ),
+                                                              if (isToday) ...[
+                                                                const SizedBox(height: 8),
+                                                                Text(
+                                                                  'Hoje',
+                                                                  style: TextStyle(
+                                                                    color: Theme.of(sheetCtx).colorScheme.primary,
+                                                                    fontWeight: FontWeight.w700,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  borderRadius: BorderRadius.circular(2),
+                                                  child: Container(
+                                                    width: 12,
+                                                    height: 12,
+                                                    decoration: BoxDecoration(
+                                                      color: bg,
+                                                      borderRadius: BorderRadius.circular(2),
+                                                      border: isToday
+                                                          ? Border.all(color: cs.primary, width: 1.5)
+                                                          : null,
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             );
                                           },
