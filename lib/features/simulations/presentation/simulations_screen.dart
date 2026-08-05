@@ -188,6 +188,68 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     if (mounted) setState(() => pendingSimCheckpoint = null);
   }
 
+  Future<void> _exportReport() async {
+    final r = report;
+    if (r == null) return;
+    final buf = StringBuffer('# Relatório de simulado — PAES MED AI\n\n');
+    buf.writeln('**Modo:** ${lastSimMeta?['mode'] ?? mode}');
+    buf.writeln('**Cronômetro:** $_clock');
+    buf.writeln('');
+    buf.writeln('## Resultado (treino local)');
+    final acc = ((r['accuracy'] as num?) ?? 0) * 100;
+    buf.writeln('- Acerto: ${acc.toStringAsFixed(0)}% (${r['correct']}/${r['total']})');
+    if (r['avgTimeMs'] != null) {
+      buf.writeln(
+        '- Média por item: ${((r['avgTimeMs'] as num) / 1000).toStringAsFixed(1)}s',
+      );
+    }
+    if (r['warning'] != null) buf.writeln('- Aviso: ${r['warning']}');
+    buf.writeln('');
+    buf.writeln('## Por disciplina');
+    for (final s in (r['subjectBreakdown'] as List? ?? []).take(12)) {
+      if (s is! Map) continue;
+      final a = ((s['accuracy'] as num?) ?? 0) * 100;
+      buf.writeln('- ${s['subject']}: ${s['correct']}/${s['total']} · ${a.toStringAsFixed(0)}%');
+    }
+    buf.writeln('');
+    buf.writeln('## Lacunas');
+    final gaps = r['gaps'] as List? ?? [];
+    if (gaps.isEmpty) {
+      buf.writeln('- (nenhuma lacuna no relatório)');
+    } else {
+      for (final g in gaps.take(12)) {
+        if (g is! Map) continue;
+        buf.writeln('- ${g['subject']} · ${g['topic']} · erros=${g['wrong']}');
+      }
+    }
+    buf.writeln('');
+    buf.writeln('## Disclaimer');
+    buf.writeln(
+      'Treino local · estimativa ≠ garantia. Não inventa probabilidade de aprovação UEMA.',
+    );
+    try {
+      final data = await apiClient.post('/api/study/export-day', {
+        'markdown': buf.toString(),
+        'filename': 'sim_${mode}_${DateTime.now().millisecondsSinceEpoch}.md',
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final path = map['path']?.toString() ?? '';
+      final dir = map['dir']?.toString() ?? '';
+      if (dir.isNotEmpty) {
+        try {
+          await apiClient.post('/api/library/open-path', {'path': dir});
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(path.isNotEmpty ? 'Exportado: $path' : 'Exportado')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   void _restoreSimCheckpoint() {
     final cp = pendingSimCheckpoint;
     if (cp == null) return;
@@ -825,6 +887,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    FilledButton.tonal(
+                      onPressed: _exportReport,
+                      child: const Text('Exportar'),
+                    ),
                     if ((report!['gaps'] as List? ?? []).isNotEmpty)
                       FilledButton(
                         onPressed: _remediateGaps,

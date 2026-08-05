@@ -470,6 +470,28 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Banca co-ocorrência com play → adaptativo; EmptyState/QuietEmpty com Semantics.
 3. Smoke `ciclo_bv_*` + suite + pack + push.
 
+## Sessão numpad (Ciclo BW)
+
+1. Sessão: `numpad1–5` e `numpadEnter` na fase de questões; Escape sem fingir ação.
+2. Smoke: `ciclo_bw_*` + push.
+
+## Export relatório sim (Ciclo BX)
+
+1. Sim pós-grade → **Exportar** MD via `export-day` (acerto/tempo/lacunas + disclaimer local).
+2. Smoke: `ciclo_bx_*` + push.
+
+## Calendário + lacunas (Ciclo BY)
+
+1. Sheet 28d (hoje): CTAs Sessão e Encerrar dia (se ainda aberto).
+2. Fecho: lacunas quentes → adaptativo.
+3. Smoke: `ciclo_by_*` + push.
+
+## Empties + rótulos (Ciclo BZ)
+
+1. Domínio vazio → Sessão; erro com Tentar; redação histórico → Escrever agora.
+2. Plano: **Exportar plano (semana/mês)** ≠ export semana do fecho.
+3. Smoke `ciclo_bz_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

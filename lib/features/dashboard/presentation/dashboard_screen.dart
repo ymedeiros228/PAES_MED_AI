@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -585,13 +587,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                                     ),
                                                               ),
                                                               if (isToday) ...[
-                                                                const SizedBox(height: 8),
+                                                                const SizedBox(height: 12),
                                                                 Text(
                                                                   'Hoje',
                                                                   style: TextStyle(
                                                                     color: Theme.of(sheetCtx).colorScheme.primary,
                                                                     fontWeight: FontWeight.w700,
                                                                   ),
+                                                                ),
+                                                                const SizedBox(height: 8),
+                                                                Wrap(
+                                                                  spacing: 8,
+                                                                  runSpacing: 8,
+                                                                  children: [
+                                                                    FilledButton(
+                                                                      onPressed: () {
+                                                                        Navigator.pop(sheetCtx);
+                                                                        context.go(sessionPath);
+                                                                      },
+                                                                      child: const Text('Sessão'),
+                                                                    ),
+                                                                    if (!closed && !dayClosed)
+                                                                      OutlinedButton(
+                                                                        onPressed: () {
+                                                                          Navigator.pop(sheetCtx);
+                                                                          unawaited(_closeDay());
+                                                                        },
+                                                                        child: const Text('Encerrar dia'),
+                                                                      ),
+                                                                  ],
                                                                 ),
                                                               ],
                                                             ],

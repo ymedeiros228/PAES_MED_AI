@@ -212,11 +212,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   ),
                   OutlinedButton(
                     onPressed: plan.isEmpty ? null : _exportWeek,
-                    child: const Text('Exportar semana'),
+                    child: const Text('Exportar plano (semana)'),
                   ),
                   OutlinedButton(
                     onPressed: plan.isEmpty ? null : _exportMonth,
-                    child: const Text('Exportar mês'),
+                    child: const Text('Exportar plano (mês)'),
                   ),
                 ],
               ),

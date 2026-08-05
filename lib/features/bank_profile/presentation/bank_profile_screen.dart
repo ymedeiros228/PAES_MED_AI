@@ -21,7 +21,17 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
     try {
       final data = await apiClient.post('/api/stats/bank-profile/export', {});
       final map = Map<String, dynamic>.from(data as Map);
-      setState(() => exportMsg = 'Arquivo salvo${map['path'] != null ? ': ${map['path']}' : ''}');
+      final path = map['path']?.toString() ?? '';
+      if (path.isNotEmpty) {
+        final sep = path.contains('\\') ? '\\' : '/';
+        final i = path.lastIndexOf(sep);
+        if (i > 0) {
+          try {
+            await apiClient.post('/api/library/open-path', {'path': path.substring(0, i)});
+          } catch (_) {}
+        }
+      }
+      setState(() => exportMsg = 'Arquivo salvo${path.isNotEmpty ? ': $path' : ''}');
     } catch (e) {
       setState(() => exportMsg = e.toString());
     }

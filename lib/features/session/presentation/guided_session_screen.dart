@@ -591,7 +591,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if ((phase['phase']?.toString() ?? '') != 'questions') return KeyEventResult.ignored;
     if (pendingErrorPick) return KeyEventResult.ignored;
     if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN || event.logicalKey == LogicalKeyboardKey.enter) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN ||
+          event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         _nextQuestion();
         return KeyEventResult.handled;
       }
@@ -603,18 +605,23 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       LogicalKeyboardKey.digit3: 2,
       LogicalKeyboardKey.digit4: 3,
       LogicalKeyboardKey.digit5: 4,
+      LogicalKeyboardKey.numpad1: 0,
+      LogicalKeyboardKey.numpad2: 1,
+      LogicalKeyboardKey.numpad3: 2,
+      LogicalKeyboardKey.numpad4: 3,
+      LogicalKeyboardKey.numpad5: 4,
     };
     if (keys.containsKey(event.logicalKey)) {
       setState(() => selected = keys[event.logicalKey]);
       return KeyEventResult.handled;
     }
-      if (event.logicalKey == LogicalKeyboardKey.enter && selected != null) {
+    if ((event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
+        selected != null) {
       _submitAnswer();
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.escape) {
-      return KeyEventResult.handled;
-    }
+    // Escape: não fingir ação (Ciclo BW)
     return KeyEventResult.ignored;
   }
 

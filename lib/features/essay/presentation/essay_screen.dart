@@ -544,7 +544,20 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 error: (_, __) => const QuietEmpty(message: 'Histórico indisponível.'),
                 data: (items) {
                   if (items.isEmpty) {
-                    return const QuietEmpty(message: 'Ainda sem redações corrigidas.');
+                    return QuietEmpty(
+                      message: 'Ainda sem redações corrigidas.',
+                      action: TextButton(
+                        onPressed: () {
+                          final c = PrimaryScrollController.maybeOf(context);
+                          c?.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOut,
+                          );
+                        },
+                        child: const Text('Escrever agora'),
+                      ),
+                    );
                   }
                   final scores = items
                       .map((raw) => ((raw as Map)['score'] as num?)?.toDouble())

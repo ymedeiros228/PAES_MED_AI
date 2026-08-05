@@ -17,9 +17,11 @@ class MedicineScreen extends ConsumerWidget {
     final tick = ref.watch(refreshTickProvider);
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => const EmptyState(
+      error: (e, _) => EmptyState(
         title: 'Domínio indisponível',
         subtitle: 'Tente de novo em instantes.',
+        actionLabel: 'Tentar',
+        onAction: () => ref.read(refreshTickProvider.notifier).state++,
       ),
       data: (payload) {
         final items = (payload['items'] as List? ?? []);
@@ -80,7 +82,13 @@ class MedicineScreen extends ConsumerWidget {
                         : 'Score local com base de treino — não é incidência UEMA',
                   ),
                   if (items.isEmpty)
-                    const QuietEmpty(message: 'Nada ranqueado ainda — faça uma sessão primeiro.')
+                    QuietEmpty(
+                      message: 'Nada ranqueado ainda — faça uma sessão primeiro.',
+                      action: TextButton(
+                        onPressed: () => context.go('/sessao'),
+                        child: const Text('Sessão'),
+                      ),
+                    )
                   else
                     for (final raw in items.take(24))
                       Builder(

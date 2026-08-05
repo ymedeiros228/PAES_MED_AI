@@ -110,16 +110,38 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 ),
                 for (final raw in gaps)
                   Builder(
-                    builder: (_) {
+                    builder: (gapCtx) {
                       final g = Map<String, dynamic>.from(raw as Map);
                       final key = g['key']?.toString() ?? '';
                       final parts = key.split('::');
-                      final label = parts.length >= 2
-                          ? '${parts[0]} · ${parts[1]}'
-                          : (g['subject'] != null
-                              ? '${g['subject']} · ${g['topic'] ?? ''}'
-                              : key);
-                      return Text('· $label', style: Theme.of(context).textTheme.bodySmall);
+                      final subject = parts.isNotEmpty && parts[0].isNotEmpty
+                          ? parts[0]
+                          : (g['subject']?.toString() ?? '');
+                      final topic = parts.length >= 2
+                          ? parts.sublist(1).join('::')
+                          : (g['topic']?.toString() ?? '');
+                      final label = subject.isNotEmpty
+                          ? (topic.isNotEmpty ? '$subject · $topic' : subject)
+                          : (key.isNotEmpty ? key : 'Lacuna');
+                      if (subject.isEmpty) {
+                        return Text('· $label', style: Theme.of(context).textTheme.bodySmall);
+                      }
+                      return InkWell(
+                        onTap: () => context.go(
+                          '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+                          '&topic=${Uri.encodeComponent(topic)}',
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text(
+                            '· $label → treinar',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                      );
                     },
                   ),
               ],

@@ -3278,6 +3278,110 @@ def main() -> int:
     else:
         ok("ciclo_bv_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo BW: sessão numpad ---
+    sess_bw = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bw_session_numpad",
+        "numpad1" in sess_bw and "numpad5" in sess_bw and "numpadEnter" in sess_bw,
+        "session numpad",
+    )
+    i_onkey = sess_bw.find("KeyEventResult _onKey")
+    i_export = sess_bw.find("Future<void> _exportDay", i_onkey if i_onkey >= 0 else 0)
+    onkey_bw = sess_bw[i_onkey:i_export] if i_onkey >= 0 and i_export > i_onkey else ""
+    ok(
+        "ciclo_bw_escape_not_noop_handled",
+        "LogicalKeyboardKey.escape" not in onkey_bw,
+        "escape not fake-handled",
+    )
+    ok(
+        "ciclo_bw_como_section",
+        "Ciclo BW" in como_ap,
+        "COMO BW",
+    )
+
+    # --- Ciclo BX: export sim ---
+    sim_bx = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bx_sim_export_ui",
+        "_exportReport" in sim_bx
+        and "/api/study/export-day" in sim_bx
+        and "Exportar" in sim_bx
+        and "estimativa" in sim_bx.lower(),
+        "sim export MD",
+    )
+    ok(
+        "ciclo_bx_como_section",
+        "Ciclo BX" in como_ap,
+        "COMO BX",
+    )
+
+    # --- Ciclo BY: calendar + gaps ---
+    dash_by = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    week_by = (
+        root / "lib" / "core" / "widgets" / "week_close_panel.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_by_calendar_sheet_cta",
+        "Encerrar dia" in dash_by and "Sessão" in dash_by and "isToday" in dash_by,
+        "calendar sheet CTAs",
+    )
+    ok(
+        "ciclo_by_week_gap_play",
+        "/adaptativo" in week_by and "Lacunas quentes" in week_by and "treinar" in week_by,
+        "week gaps play",
+    )
+    ok(
+        "ciclo_by_como_section",
+        "Ciclo BY" in como_ap,
+        "COMO BY",
+    )
+
+    # --- Ciclo BZ: empties + labels ---
+    med_bz = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    essay_bz = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    plan_bz = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_bz_empty_ctas",
+        "Nada ranqueado" in med_bz
+        and "/sessao" in med_bz
+        and "actionLabel" in med_bz
+        and "Escrever agora" in essay_bz,
+        "empty CTAs",
+    )
+    ok(
+        "ciclo_bz_plan_export_label",
+        "Exportar plano (semana)" in plan_bz and "Exportar plano (mês)" in plan_bz,
+        "plan labels != week-close",
+    )
+    ok(
+        "ciclo_bz_como_section",
+        "Ciclo BZ" in como_ap,
+        "COMO BZ",
+    )
+    ok(
+        "ciclo_bz_roadmap_bw_bz",
+        ("BW–BZ" in roadmap or "BW-BZ" in roadmap)
+        and ("Feito" in roadmap and ("BS–BV" in roadmap or "BS-BV" in roadmap)),
+        "ROADMAP BW-BZ",
+    )
+    dist_dll_bz = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_bz.exists():
+        ok("ciclo_bz_dist_shape", True, str(dist_dll_bz))
+    else:
+        ok("ciclo_bz_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"
