@@ -39,6 +39,8 @@ data/aulas/*
 !data/aulas/.gitkeep
 data/logs/*
 !data/logs/.gitkeep
+data/exports/*
+!data/exports/.gitkeep
 
 # Pack e artefatos Windows enormes
 dist/
