@@ -56,3 +56,10 @@ x86/
 # Opcional: descomente se quiser repo só de código (sem PDFs de prova)
 # data/provas/*.pdf
 # data/gabaritos/*.pdf
+
+# junk / debug
+*.log
+pack_last*.txt
+backend/smoke_*.txt
+backend/data/logs/
+

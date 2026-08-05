@@ -1,9 +1,0 @@
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "manual", "due_now": false}, "timestamp": 1785898936166}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941315}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941318}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941320}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941322}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941416}
-{"sessionId": "819024", "runId": "api", "hypothesisId": "H5", "location": "services_advanced.create_flashcard", "message": "create card", "data": {"source": "axis:paes-2024-036", "due_now": true}, "timestamp": 1785898941419}
-{"sessionId":"819024","runId":"pack","hypothesisId":"H1","location":"empacotar_windows.bat:start","message":"pack start","data":{"out":"dist\\PAES_MED_AI_Windows"},"timestamp":1785898950473}
-{"sessionId":"819024","runId":"pack","hypothesisId":"H2","location":"empacotar_windows.bat:ok","message":"pack success","data":{"dll":true,"exe":true},"timestamp":1785898981051}
