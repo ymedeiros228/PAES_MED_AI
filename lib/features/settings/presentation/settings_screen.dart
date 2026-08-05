@@ -390,6 +390,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               }
                             },
                           ),
+                          FutureBuilder(
+                            future: apiClient.get('/api/media/opens', {'limit': '8'}),
+                            builder: (context, openSnap) {
+                              if (!openSnap.hasData || openSnap.data is! Map) {
+                                return const SizedBox.shrink();
+                              }
+                              final om = Map<String, dynamic>.from(openSnap.data as Map);
+                              final items =
+                                  (om['items'] as List? ?? []).whereType<Map>().toList();
+                              if (items.isEmpty) return const SizedBox.shrink();
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text('Últimas aberturas de mídia'),
+                                    subtitle: Text('local · não é progresso de banca'),
+                                  ),
+                                  for (final raw in items.take(6))
+                                    ListTile(
+                                      dense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        raw['title']?.toString() ??
+                                            raw['url']?.toString() ??
+                                            'item',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      subtitle: Text(
+                                        [
+                                          raw['kind']?.toString() ?? '',
+                                          raw['at']?.toString() ?? '',
+                                        ].where((s) => s.isNotEmpty).join(' · '),
+                                      ),
+                                      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                                      onTap: () async {
+                                        final u = raw['url']?.toString() ?? '';
+                                        if (u.isEmpty) return;
+                                        try {
+                                          await apiClient.post('/api/media/open', {
+                                            'url': u,
+                                            'kind': raw['kind']?.toString(),
+                                            'title': raw['title']?.toString(),
+                                            'subject': raw['subject']?.toString(),
+                                            'topic': raw['topic']?.toString(),
+                                          });
+                                        } catch (e) {
+                                          setState(() => msg = e.toString());
+                                        }
+                                      },
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
                         ],
                       );
                     },

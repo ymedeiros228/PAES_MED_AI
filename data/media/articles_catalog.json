@@ -128,6 +128,62 @@
         "url": "https://pt.wikipedia.org/wiki/Lei_de_Ohm",
         "snippet": "Tensão, corrente e resistência."
       }
+    ],
+    "Biologia::Evolução": [
+      {
+        "title": "Evolução",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Evolu%C3%A7%C3%A3o",
+        "snippet": "Mudança das linhagens ao longo do tempo."
+      },
+      {
+        "title": "Seleção natural",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Sele%C3%A7%C3%A3o_natural",
+        "snippet": "Mecanismo de adaptação populacional."
+      }
+    ],
+    "Biologia::Bioenergética": [
+      {
+        "title": "Respiração celular",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Respira%C3%A7%C3%A3o_celular",
+        "snippet": "Glicólise, ciclo de Krebs e cadeia respiratória."
+      },
+      {
+        "title": "Fotossíntese",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Fotoss%C3%ADntese",
+        "snippet": "Conversão de luz em energia química."
+      }
+    ],
+    "Química::Termoquímica": [
+      {
+        "title": "Termoquímica",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Termoqu%C3%ADmica",
+        "snippet": "Calor e energia em reações químicas."
+      },
+      {
+        "title": "Entalpia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Entalpia",
+        "snippet": "ΔH e processos endo/exotérmicos."
+      }
+    ],
+    "Física::Ondulatória": [
+      {
+        "title": "Onda",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Onda",
+        "snippet": "Comprimento de onda, frequência e propagação."
+      },
+      {
+        "title": "Som",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Som",
+        "snippet": "Ondas mecânicas audíveis."
+      }
     ]
   }
 }

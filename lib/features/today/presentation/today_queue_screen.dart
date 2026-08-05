@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
@@ -173,12 +174,49 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                             contentPadding: EdgeInsets.zero,
                             title: Text((raw as Map)['title']?.toString() ?? 'Leitura'),
                             subtitle: Text(raw['source']?.toString() ?? raw['channel']?.toString() ?? ''),
-                            trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: 'Marquei como lido',
+                                  icon: const Icon(Icons.check_circle_outline, size: 20),
+                                  onPressed: () async {
+                                    final u = raw['url']?.toString() ?? '';
+                                    if (u.isEmpty) return;
+                                    try {
+                                      await apiClient.post('/api/media/mark-read', {
+                                        'url': u,
+                                        'subject': subject,
+                                        'topic': topic,
+                                        'title': raw['title']?.toString(),
+                                      });
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Marcado como lido (local).')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(content: Text('$e')));
+                                      }
+                                    }
+                                  },
+                                ),
+                                const Icon(Icons.open_in_new_rounded, size: 18),
+                              ],
+                            ),
                             onTap: () async {
                               final u = raw['url']?.toString() ?? '';
                               if (u.isEmpty) return;
                               try {
-                                await apiClient.post('/api/media/open', {'url': u, 'kind': 'article'});
+                                await apiClient.post('/api/media/open', {
+                                  'url': u,
+                                  'kind': 'article',
+                                  'subject': subject,
+                                  'topic': topic,
+                                  'title': raw['title']?.toString(),
+                                });
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -490,191 +528,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     if (s == null || t == null || s.isEmpty || t.isEmpty) {
                       return const SizedBox.shrink();
                     }
-                    return FutureBuilder(
-                      future: apiClient.get(
-                        '/api/media/videos',
-                        {'subject': s, 'topic': t},
-                      ),
-                      builder: (context, snap) {
-                        if (!snap.hasData || snap.data is! Map) {
-                          return const SizedBox.shrink();
-                        }
-                        final map = Map<String, dynamic>.from(snap.data as Map);
-                        final items = (map['items'] as List? ?? []).whereType<Map>().toList();
-                        if (items.isEmpty) return const SizedBox.shrink();
-                        final first = Map<String, dynamic>.from(items.first);
-                        final title = first['title']?.toString() ?? 'Vídeo';
-                        final url = first['url']?.toString() ?? '';
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SectionLabel(
-                              'Reforço em vídeo',
-                              hint: map['disclaimer']?.toString() ?? 'não é edital UEMA',
-                            ),
-                            PlaylistTile(
-                              title: title,
-                              subtitle:
-                                  '${first['channel'] ?? ''} · ${map['basis'] ?? 'local'} · não é banca',
-                              badge: 'vídeo',
-                              leadingIcon: Icons.ondemand_video_outlined,
-                              onPlay: url.isEmpty
-                                  ? null
-                                  : () async {
-                                      try {
-                                        await apiClient.post('/api/media/open', {'url': url});
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('$e')),
-                                        );
-                                      }
-                                    },
-                              secondary: items.length > 1
-                                  ? TextButton(
-                                      onPressed: () async {
-                                        final rest = items.skip(1).take(3).toList();
-                                        if (!context.mounted) return;
-                                        await showModalBottomSheet<void>(
-                                          context: context,
-                                          showDragHandle: true,
-                                          builder: (ctx) => ListView(
-                                            padding: const EdgeInsets.all(16),
-                                            children: [
-                                              Text(
-                                                'Mais vídeos · $s · $t',
-                                                style: Theme.of(ctx).textTheme.titleSmall,
-                                              ),
-                                              Text(
-                                                map['disclaimer']?.toString() ?? '',
-                                                style: Theme.of(ctx).textTheme.bodySmall,
-                                              ),
-                                              for (final raw in [first, ...rest])
-                                                ListTile(
-                                                  title: Text((raw as Map)['title']?.toString() ?? 'Vídeo'),
-                                                  subtitle: Text(raw['channel']?.toString() ?? ''),
-                                                  trailing: const Icon(Icons.open_in_new_rounded),
-                                                  onTap: () async {
-                                                    final u = raw['url']?.toString() ?? '';
-                                                    if (u.isEmpty) return;
-                                                    await apiClient.post('/api/media/open', {'url': u});
-                                                    if (ctx.mounted) Navigator.pop(ctx);
-                                                  },
-                                                ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      child: const Text('Mais'),
-                                    )
-                                  : null,
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
-
-                Builder(
-                  builder: (_) {
-                    final s = study?['subject']?.toString() ??
-                        coachSubject ??
-                        routine['subject']?.toString();
-                    final t = study?['topic']?.toString() ??
-                        coachTopic ??
-                        routine['topic']?.toString();
-                    if (s == null || t == null || s.isEmpty || t.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return FutureBuilder(
-                      future: apiClient.get(
-                        '/api/media/articles',
-                        {'subject': s, 'topic': t},
-                      ),
-                      builder: (context, snap) {
-                        if (!snap.hasData || snap.data is! Map) {
-                          return const SizedBox.shrink();
-                        }
-                        final map = Map<String, dynamic>.from(snap.data as Map);
-                        final items = (map['items'] as List? ?? []).whereType<Map>().toList();
-                        if (items.isEmpty) return const SizedBox.shrink();
-                        final first = Map<String, dynamic>.from(items.first);
-                        final title = first['title']?.toString() ?? 'Leitura';
-                        final url = first['url']?.toString() ?? '';
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SectionLabel(
-                              'Leitura de reforço',
-                              hint: map['disclaimer']?.toString() ?? 'não é edital UEMA',
-                            ),
-                            PlaylistTile(
-                              title: title,
-                              subtitle:
-                                  '${first['source'] ?? first['channel'] ?? ''} · ${map['basis'] ?? 'local'} · não é banca',
-                              badge: 'leitura',
-                              leadingIcon: Icons.article_outlined,
-                              onPlay: url.isEmpty
-                                  ? null
-                                  : () async {
-                                      try {
-                                        await apiClient.post(
-                                          '/api/media/open',
-                                          {'url': url, 'kind': 'article'},
-                                        );
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('$e')),
-                                        );
-                                      }
-                                    },
-                              secondary: items.length > 1
-                                  ? TextButton(
-                                      onPressed: () async {
-                                        if (!context.mounted) return;
-                                        await showModalBottomSheet<void>(
-                                          context: context,
-                                          showDragHandle: true,
-                                          builder: (ctx) => ListView(
-                                            padding: const EdgeInsets.all(16),
-                                            children: [
-                                              Text(
-                                                'Mais leituras · $s · $t',
-                                                style: Theme.of(ctx).textTheme.titleSmall,
-                                              ),
-                                              Text(
-                                                map['disclaimer']?.toString() ?? '',
-                                                style: Theme.of(ctx).textTheme.bodySmall,
-                                              ),
-                                              for (final raw in items.take(5))
-                                                ListTile(
-                                                  title: Text((raw as Map)['title']?.toString() ?? 'Leitura'),
-                                                  subtitle: Text(raw['source']?.toString() ?? ''),
-                                                  trailing: const Icon(Icons.open_in_new_rounded),
-                                                  onTap: () async {
-                                                    final u = raw['url']?.toString() ?? '';
-                                                    if (u.isEmpty) return;
-                                                    await apiClient.post(
-                                                      '/api/media/open',
-                                                      {'url': u, 'kind': 'article'},
-                                                    );
-                                                    if (ctx.mounted) Navigator.pop(ctx);
-                                                  },
-                                                ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      child: const Text('Mais'),
-                                    )
-                                  : null,
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    return MediaReinforcement(subject: s, topic: t);
                   },
                 ),
 

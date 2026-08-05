@@ -197,6 +197,59 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 12),
+                      SizedBox(
+                        height: 220,
+                        child: RadarChart(
+                          RadarChartData(
+                            dataSets: [
+                              RadarDataSet(
+                                dataEntries: [
+                                  for (final key in axes)
+                                    RadarEntry(
+                                      value: () {
+                                        final raw = avg[key];
+                                        final v = raw is num ? raw.toDouble() : 0.0;
+                                        return v.clamp(0.0, 10.0);
+                                      }(),
+                                    ),
+                                ],
+                                fillColor: cs.primary.withOpacity(0.18),
+                                borderColor: cs.primary,
+                                entryRadius: 2.5,
+                                borderWidth: 2,
+                              ),
+                            ],
+                            radarBackgroundColor: Colors.transparent,
+                            borderData: FlBorderData(show: false),
+                            radarBorderData: BorderSide(color: cs.outlineVariant),
+                            tickBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.5)),
+                            gridBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.6)),
+                            ticksTextStyle: Theme.of(context).textTheme.labelSmall,
+                            tickCount: 5,
+                            titleTextStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ) ??
+                                const TextStyle(fontSize: 11),
+                            getTitle: (index, angle) {
+                              if (index < 0 || index >= axes.length) {
+                                return const RadarChartTitle(text: '');
+                              }
+                              final key = axes[index];
+                              final short = labels[key]?.toString() ?? key;
+                              return RadarChartTitle(
+                                text: short.length > 12 ? '${short.substring(0, 10)}…' : short,
+                              );
+                            },
+                            titlePositionPercentageOffset: 0.18,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Radar dos eixos (0–10) · treino local',
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      const SizedBox(height: 12),
                       for (final key in axes)
                         Builder(
                           builder: (_) {

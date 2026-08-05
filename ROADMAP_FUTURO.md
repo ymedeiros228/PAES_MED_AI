@@ -182,13 +182,14 @@ flowchart TB
 
 ## Ciclos de implementação (quando for a hora)
 
-| Ciclo (sugerido) | Escopo | Smoke prefix |
-|------------------|--------|--------------|
-| FA | F1+F2: PDF open + busca acervo + materials list | `ciclo_fa_*` |
-| FB | F3: tutor citations schema + UI | `ciclo_fb_*` |
-| FC | F4: videos API + Fila card | `ciclo_fc_*` |
-| FD | F5: essay progress + missions + personas | `ciclo_fd_*` |
-| FE | F6: articles optional | `ciclo_fe_*` |
+| Ciclo (sugerido) | Escopo | Smoke prefix | Estado produto |
+|------------------|--------|--------------|----------------|
+| FA | F1+F2: PDF open + busca acervo + materials list | (AQ–AW) | **Feito** em ciclos AQ–AW |
+| FB | F3: tutor citations schema + UI | (AS) | **Feito** |
+| FC | F4: videos API + Fila card | (AY–AZ) | **Feito** |
+| FD | F5: essay progress + missions + personas | (AT–BB) | **Feito** (radar em BJ) |
+| FE | F6: articles optional | (BC–BF) | **Feito** |
+| BG–BJ | Unificar reforço UI · histórico open · catálogo · radar docs | `ciclo_bg_*`…`ciclo_bj_*` | Rodada pós FE |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -196,7 +197,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado ao criar este documento
-- Fio de retenção / fecho (AE–AH e AI–AL): ver `COMO_LIGAR.md`.  
-- Pedidos F1–F5: **pendentes de implementação**, priorizados conforme ordem acima.  
-- Implementar **um ciclo FA…FE por vez**, com aceite e smoke; não misturar com release de pack se dist estiver locked.
+## Estado (atualizado pós BC–BF / BG–BJ)
+
+- Fios AQ…BF: acervo/PDF/busca, materiais+teoria, tutor com fonte, vídeos, redação-game lite, artigos — ver `COMO_LIGAR.md`.
+- **F1–F6 do pedido original: implementados** sob letras AQ…BF (não FA…FE de rótulo).
+- Residuais de produto pós FE: unificar UI de mídia, histórico/lido de open, catálogo Natureza mais fundo, radar de redação e docs honestos (**BG–BJ**).
+- Não inventa oficial nem % de aprovação; push no GitHub após cada ciclo verde.

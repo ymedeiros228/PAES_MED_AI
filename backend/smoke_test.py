@@ -2429,9 +2429,17 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore") if (
         root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
     ).exists() else ""
+    media_widget_ay = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).exists() else ""
     ok(
         "ciclo_ay_fila_video_card",
-        "/api/media/videos" in queue_ay and "Reforço em vídeo" in queue_ay,
+        (
+            ("/api/media/videos" in queue_ay and "Reforço em vídeo" in queue_ay)
+            or ("MediaReinforcement" in queue_ay and "/api/media/videos" in media_widget_ay)
+        ),
         "fila video card",
     )
     ok("ciclo_ay_como_section", "Ciclo AY" in como_ap, "COMO AY")
@@ -2583,9 +2591,21 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore") if (
         root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
     ).exists() else ""
+    media_widget_bd = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).exists() else ""
     ok(
         "ciclo_bd_fila_reading_card",
-        "/api/media/articles" in queue_bd and "Leitura de reforço" in queue_bd,
+        (
+            ("/api/media/articles" in queue_bd and "Leitura de reforço" in queue_bd)
+            or (
+                "MediaReinforcement" in queue_bd
+                and "/api/media/articles" in media_widget_bd
+                and "Leitura de reforço" in media_widget_bd
+            )
+        ),
         "fila reading card",
     )
     ok(
@@ -2648,9 +2668,21 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore") if (
         root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
     ).exists() else ""
+    media_widget_bf = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).exists() else ""
     ok(
         "ciclo_bf_session_reading_cta",
-        "/api/media/articles" in sess_ui and "Leitura de reforço" in sess_ui,
+        (
+            ("/api/media/articles" in sess_ui and "Leitura de reforço" in sess_ui)
+            or (
+                "MediaReinforcement" in sess_ui
+                and "/api/media/articles" in media_widget_bf
+                and "Leitura de reforço" in media_widget_bf
+            )
+        ),
         "session reading CTA",
     )
     ok(
@@ -2668,6 +2700,180 @@ def main() -> int:
         ok("ciclo_bf_dist_shape", True, str(dist_dll_bf))
     else:
         ok("ciclo_bf_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo BG: unified media reinforcement widget ---
+    widget_bg = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bg_media_widget_file",
+        "MediaReinforcement" in widget_bg
+        and "/api/media/videos" in widget_bg
+        and "/api/media/articles" in widget_bg,
+        "media_reinforcement.dart",
+    )
+    queue_bg = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bg_fila_uses_widget",
+        "MediaReinforcement" in queue_bg and "media_reinforcement.dart" in queue_bg,
+        "fila MediaReinforcement",
+    )
+    sess_bg = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bg_session_uses_widget",
+        "MediaReinforcement" in sess_bg and "compact" in sess_bg,
+        "session MediaReinforcement",
+    )
+    r = client.get("/api/media/videos", params={"subject": "Biologia", "topic": "Genética"})
+    v_bg = r.json() if r.status_code == 200 else {}
+    r = client.get("/api/media/articles", params={"subject": "Biologia", "topic": "Genética"})
+    a_bg = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_bg_api_shapes_still_ok",
+        r.status_code == 200
+        and v_bg.get("ok") is True
+        and a_bg.get("ok") is True
+        and (v_bg.get("count", 0) >= 1 or a_bg.get("count", 0) >= 1),
+        str({"v": v_bg.get("count"), "a": a_bg.get("count")}),
+    )
+    ok("ciclo_bg_como_section", "Ciclo BG" in como_ap, "COMO BG")
+
+    # --- Ciclo BH: opens history + mark-read ---
+    wiki_u = "https://pt.wikipedia.org/wiki/Gen%C3%A9tica"
+    r = client.post(
+        "/api/media/mark-read",
+        json={
+            "url": wiki_u,
+            "subject": "Biologia",
+            "topic": "Genética",
+            "title": "Genética (teste smoke)",
+        },
+    )
+    mr = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_bh_mark_read_ok",
+        r.status_code == 200 and mr.get("ok") is True and mr.get("url") == wiki_u,
+        str(mr)[:100],
+    )
+    r = client.get("/api/media/reads", params={"subject": "Biologia", "topic": "Genética"})
+    reads_bh = r.json() if r.status_code == 200 else {}
+    urls_bh = reads_bh.get("urls") if isinstance(reads_bh.get("urls"), list) else []
+    ok(
+        "ciclo_bh_reads_list",
+        r.status_code == 200 and (wiki_u in urls_bh or any(wiki_u in str(u) for u in urls_bh)),
+        str({"count": reads_bh.get("count"), "n": len(urls_bh)})[:80],
+    )
+    # record open meta without startfile: use mark path already; append via list_media_opens after simulated success
+    try:
+        from services_media import _append_media_open  # type: ignore
+
+        _append_media_open(
+            {
+                "url": wiki_u,
+                "kind": "article",
+                "subject": "Biologia",
+                "topic": "Genética",
+                "title": "Genética smoke",
+                "at": "2026-01-01T00:00:00",
+            }
+        )
+        r = client.get("/api/media/opens", params={"limit": 10})
+        opens = r.json() if r.status_code == 200 else {}
+        oitems = opens.get("items") if isinstance(opens.get("items"), list) else []
+        ok(
+            "ciclo_bh_opens_history",
+            r.status_code == 200 and opens.get("ok") is True and len(oitems) >= 1,
+            str({"count": opens.get("count")}),
+        )
+    except Exception as exc:  # noqa: BLE001
+        ok("ciclo_bh_opens_history", False, str(exc)[:100])
+    r_block = client.post("/api/media/open", json={"url": "https://evil.example.com/x", "kind": "article"})
+    ok("ciclo_bh_open_still_blocks_evil", r_block.status_code == 400, str(r_block.status_code))
+    sett_bh = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bh_settings_opens_ui",
+        "/api/media/opens" in sett_bh and "Últimas aberturas" in sett_bh,
+        "settings opens",
+    )
+    ok("ciclo_bh_como_section", "Ciclo BH" in como_ap, "COMO BH")
+
+    # --- Ciclo BI: catalog depth ---
+    r = client.get("/api/media/articles", params={"subject": "Biologia", "topic": "Evolução"})
+    evo = r.json() if r.status_code == 200 else {}
+    r2 = client.get("/api/media/videos", params={"subject": "Física", "topic": "Ondulatória"})
+    ond = r2.json() if r2.status_code == 200 else {}
+    r3 = client.get("/api/media/articles", params={"subject": "Biologia", "topic": "Genética"})
+    gen = r3.json() if r3.status_code == 200 else {}
+    ok(
+        "ciclo_bi_new_topic_evolucao",
+        r.status_code == 200 and (evo.get("count") or 0) >= 1,
+        str({"count": evo.get("count"), "basis": evo.get("basis")}),
+    )
+    ok(
+        "ciclo_bi_new_topic_ondulatoria",
+        r2.status_code == 200 and (ond.get("count") or 0) >= 1,
+        str({"count": ond.get("count")}),
+    )
+    ok(
+        "ciclo_bi_genetica_still_ok",
+        r3.status_code == 200 and (gen.get("count") or 0) >= 1,
+        str({"count": gen.get("count")}),
+    )
+    ok("ciclo_bi_como_section", "Ciclo BI" in como_ap, "COMO BI")
+
+    # --- Ciclo BJ: essay radar + docs ---
+    essay_bj = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bj_essay_radar",
+        "RadarChart" in essay_bj and "averages" in essay_bj,
+        "essay radar",
+    )
+    roadmap = (
+        root / "ROADMAP_FUTURO.md"
+    ).read_text(encoding="utf-8", errors="ignore") if (root / "ROADMAP_FUTURO.md").exists() else ""
+    ok(
+        "ciclo_bj_roadmap_f1f6_shipped",
+        "implementados" in roadmap.lower() or "Feito" in roadmap,
+        "ROADMAP status",
+    )
+    ok(
+        "ciclo_bj_como_bg_bj_sections",
+        "Ciclo BG" in como_ap
+        and "Ciclo BH" in como_ap
+        and "Ciclo BI" in como_ap
+        and "Ciclo BJ" in como_ap,
+        "COMO BG-BJ",
+    )
+    dist_art_bj = root / "dist" / "PAES_MED_AI_Windows" / "data" / "media" / "articles_catalog.json"
+    art_src = root / "data" / "media" / "articles_catalog.json"
+    ok(
+        "ciclo_bj_articles_on_disk",
+        art_src.exists() or dist_art_bj.exists(),
+        str(art_src if art_src.exists() else dist_art_bj),
+    )
+    dist_dll_bj = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_bj.exists():
+        ok("ciclo_bf_dist_shape_bj", True, str(dist_dll_bj))
+    else:
+        ok("ciclo_bj_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

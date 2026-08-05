@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/training_basis_banner.dart';
@@ -904,46 +905,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
               if (study != null)
-                FutureBuilder(
-                  future: apiClient.get(
-                    '/api/media/articles',
-                    {
-                      'subject': study['subject']?.toString() ?? '',
-                      'topic': study['topic']?.toString() ?? '',
-                    },
-                  ),
-                  builder: (context, snap) {
-                    if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                    final map = Map<String, dynamic>.from(snap.data as Map);
-                    final items = (map['items'] as List? ?? []).whereType<Map>().toList();
-                    if (items.isEmpty) return const SizedBox.shrink();
-                    final first = Map<String, dynamic>.from(items.first);
-                    final url = first['url']?.toString() ?? '';
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: OutlinedButton.icon(
-                        onPressed: url.isEmpty
-                            ? null
-                            : () async {
-                                try {
-                                  await apiClient.post(
-                                    '/api/media/open',
-                                    {'url': url, 'kind': 'article'},
-                                  );
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('$e')),
-                                  );
-                                }
-                              },
-                        icon: const Icon(Icons.article_outlined),
-                        label: Text(
-                          'Leitura de reforço · ${first['title'] ?? 'abrir'} (não é banca)',
-                        ),
-                      ),
-                    );
-                  },
+                MediaReinforcement(
+                  subject: study['subject']?.toString() ?? '',
+                  topic: study['topic']?.toString() ?? '',
+                  compact: true,
                 ),
             ],
             if ((isQuestions || (isRevisions && revisionUsingQuestions)) && sessionQuestions.isNotEmpty) ...[

@@ -1,0 +1,262 @@
+import 'package:flutter/material.dart';
+
+import '../data/api_client.dart';
+import 'ui_kit.dart';
+
+/// Reforço unificado vídeo + leitura (BG) — não é edital/banca UEMA.
+class MediaReinforcement extends StatelessWidget {
+  const MediaReinforcement({
+    required this.subject,
+    required this.topic,
+    this.compact = false,
+    this.heading = 'Reforço (vídeo · leitura)',
+    super.key,
+  });
+
+  final String subject;
+  final String topic;
+  final bool compact;
+  final String heading;
+
+  Future<Map<String, dynamic>> _loadBoth() async {
+    final results = await Future.wait([
+      apiClient.get('/api/media/videos', {'subject': subject, 'topic': topic}),
+      apiClient.get('/api/media/articles', {'subject': subject, 'topic': topic}),
+      apiClient.get('/api/media/reads', {'subject': subject, 'topic': topic}),
+    ]);
+    return {
+      'videos': results[0] is Map ? Map<String, dynamic>.from(results[0] as Map) : <String, dynamic>{},
+      'articles': results[1] is Map ? Map<String, dynamic>.from(results[1] as Map) : <String, dynamic>{},
+      'reads': results[2] is Map ? Map<String, dynamic>.from(results[2] as Map) : <String, dynamic>{},
+    };
+  }
+
+  Future<void> _open(
+    BuildContext context, {
+    required String url,
+    required String kind,
+    String? title,
+  }) async {
+    if (url.isEmpty) return;
+    try {
+      await apiClient.post('/api/media/open', {
+        'url': url,
+        'kind': kind,
+        'subject': subject,
+        'topic': topic,
+        if (title != null && title.isNotEmpty) 'title': title,
+      });
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  Future<void> _markRead(
+    BuildContext context, {
+    required String url,
+    String? title,
+  }) async {
+    if (url.isEmpty) return;
+    try {
+      await apiClient.post('/api/media/mark-read', {
+        'url': url,
+        'subject': subject,
+        'topic': topic,
+        if (title != null && title.isNotEmpty) 'title': title,
+      });
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Marcado como lido (local · não banca).')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  Set<String> _readUrls(Map<String, dynamic> readsMap) {
+    final items = (readsMap['items'] as List? ?? []).whereType<Map>();
+    return {
+      for (final e in items)
+        if ((e['url']?.toString() ?? '').isNotEmpty) e['url'].toString(),
+    };
+  }
+
+  Future<void> _showMore(
+    BuildContext context, {
+    required String kind,
+    required List<Map> items,
+    required String? disclaimer,
+    required Set<String> readUrls,
+  }) async {
+    final isVideo = kind == 'video';
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            isVideo ? 'Mais vídeos · $subject · $topic' : 'Mais leituras · $subject · $topic',
+            style: Theme.of(ctx).textTheme.titleSmall,
+          ),
+          if (disclaimer != null && disclaimer.isNotEmpty)
+            Text(disclaimer, style: Theme.of(ctx).textTheme.bodySmall),
+          for (final raw in items.take(5))
+            ListTile(
+              title: Text(raw['title']?.toString() ?? (isVideo ? 'Vídeo' : 'Leitura')),
+              subtitle: Text(
+                [
+                  raw['channel']?.toString() ?? raw['source']?.toString() ?? '',
+                  if (readUrls.contains(raw['url']?.toString() ?? '')) 'li',
+                ].where((s) => s.isNotEmpty).join(' · '),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isVideo)
+                    IconButton(
+                      tooltip: 'Marquei como lido',
+                      icon: Icon(
+                        readUrls.contains(raw['url']?.toString() ?? '')
+                            ? Icons.check_circle
+                            : Icons.check_circle_outline,
+                      ),
+                      onPressed: () async {
+                        await _markRead(
+                          context,
+                          url: raw['url']?.toString() ?? '',
+                          title: raw['title']?.toString(),
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                    ),
+                  const Icon(Icons.open_in_new_rounded),
+                ],
+              ),
+              onTap: () async {
+                final u = raw['url']?.toString() ?? '';
+                if (u.isEmpty) return;
+                await _open(
+                  context,
+                  url: u,
+                  kind: kind,
+                  title: raw['title']?.toString(),
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _lane({
+    required BuildContext context,
+    required String kind,
+    required Map<String, dynamic> map,
+    required Set<String> readUrls,
+  }) {
+    final items = (map['items'] as List? ?? []).whereType<Map>().toList();
+    if (items.isEmpty) return const SizedBox.shrink();
+    final first = Map<String, dynamic>.from(items.first);
+    final title = first['title']?.toString() ?? (kind == 'video' ? 'Vídeo' : 'Leitura');
+    final url = first['url']?.toString() ?? '';
+    final isVideo = kind == 'video';
+    final isRead = readUrls.contains(url);
+    final source = first['channel']?.toString() ?? first['source']?.toString() ?? '';
+    final subtitle = [
+      source,
+      map['basis']?.toString() ?? 'local',
+      if (isRead) 'li',
+      'não é banca',
+    ].where((s) => s.isNotEmpty).join(' · ');
+
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: OutlinedButton.icon(
+          onPressed: url.isEmpty
+              ? null
+              : () => _open(context, url: url, kind: kind, title: title),
+          icon: Icon(isVideo ? Icons.ondemand_video_outlined : Icons.article_outlined),
+          label: Text(
+            isVideo
+                ? 'Vídeo de reforço · $title (não é banca)'
+                : 'Leitura de reforço · $title (não é banca)',
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionLabel(
+          isVideo ? 'Reforço em vídeo' : 'Leitura de reforço',
+          hint: map['disclaimer']?.toString() ?? 'não é edital UEMA',
+        ),
+        PlaylistTile(
+          title: isRead ? '✓ $title' : title,
+          subtitle: subtitle,
+          badge: isVideo ? 'vídeo' : 'leitura',
+          leadingIcon: isVideo ? Icons.ondemand_video_outlined : Icons.article_outlined,
+          onPlay: url.isEmpty
+              ? null
+              : () => _open(context, url: url, kind: kind, title: title),
+          secondary: items.length > 1
+              ? TextButton(
+                  onPressed: () => _showMore(
+                    context,
+                    kind: kind,
+                    items: items,
+                    disclaimer: map['disclaimer']?.toString(),
+                    readUrls: readUrls,
+                  ),
+                  child: const Text('Mais'),
+                )
+              : (!isVideo && url.isNotEmpty
+                  ? TextButton(
+                      onPressed: () => _markRead(context, url: url, title: title),
+                      child: Text(isRead ? 'Li' : 'Marquei como lido'),
+                    )
+                  : null),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (subject.isEmpty || topic.isEmpty) return const SizedBox.shrink();
+
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _loadBoth(),
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final data = snap.data!;
+        final videos = data['videos'] as Map<String, dynamic>? ?? {};
+        final articles = data['articles'] as Map<String, dynamic>? ?? {};
+        final reads = data['reads'] as Map<String, dynamic>? ?? {};
+        final vItems = (videos['items'] as List? ?? []);
+        final aItems = (articles['items'] as List? ?? []);
+        if (vItems.isEmpty && aItems.isEmpty) return const SizedBox.shrink();
+        final readUrls = _readUrls(reads);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (!compact)
+              SectionLabel(
+                heading,
+                hint: 'catálogo local · não é edital UEMA',
+              ),
+            _lane(context: context, kind: 'video', map: videos, readUrls: readUrls),
+            _lane(context: context, kind: 'article', map: articles, readUrls: readUrls),
+          ],
+        );
+      },
+    );
+  }
+}

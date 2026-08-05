@@ -97,8 +97,11 @@ from services_advanced import (
 from services_edital import edital_coverage, sync_syllabus_from_edital_file, theory_snippets_for
 from services_media import (
     essay_personas,
+    list_media_opens,
+    list_media_reads,
     list_topic_articles,
     list_topic_videos,
+    mark_media_read,
     media_prefs,
     open_media_url,
     persona_by_id,
@@ -1339,14 +1342,55 @@ def api_media_articles(subject: str | None = None, topic: str | None = None) -> 
 class MediaOpenPayload(BaseModel):
     url: str = Field(min_length=8, max_length=2000)
     kind: str | None = Field(default=None, description="video|article|auto")
+    subject: str | None = None
+    topic: str | None = None
+    title: str | None = None
 
 
 @app.post("/api/media/open")
 def api_media_open(payload: MediaOpenPayload) -> dict[str, Any]:
-    out = open_media_url(payload.url, kind=payload.kind)
+    out = open_media_url(
+        payload.url,
+        kind=payload.kind,
+        subject=payload.subject,
+        topic=payload.topic,
+        title=payload.title,
+    )
     if not out.get("ok"):
         raise HTTPException(400, out.get("message") or "Não foi possível abrir")
     return out
+
+
+@app.get("/api/media/opens")
+def api_media_opens(limit: int = 20) -> dict[str, Any]:
+    """Histórico local de aberturas de mídia (não é progresso de banca)."""
+    return list_media_opens(limit=limit)
+
+
+class MediaMarkReadPayload(BaseModel):
+    url: str = Field(min_length=8, max_length=2000)
+    subject: str | None = None
+    topic: str | None = None
+    title: str | None = None
+
+
+@app.post("/api/media/mark-read")
+def api_media_mark_read(payload: MediaMarkReadPayload) -> dict[str, Any]:
+    out = mark_media_read(
+        payload.url,
+        subject=payload.subject,
+        topic=payload.topic,
+        title=payload.title,
+    )
+    if not out.get("ok"):
+        raise HTTPException(400, out.get("message") or "Não foi possível marcar")
+    return out
+
+
+@app.get("/api/media/reads")
+def api_media_reads(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
+    """Leituras de reforço marcadas localmente (não é edital/oficial)."""
+    return list_media_reads(subject, topic)
 
 
 @app.get("/api/media/prefs")

@@ -376,6 +376,30 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Pack inclui `articles_catalog.json`.
 3. Smoke: `ciclo_bf_*` + suite. `COMO` BC–BF.
 
+## Reforço unificado (Ciclo BG)
+
+1. Widget `media_reinforcement.dart` (vídeo + leitura) na Fila e Sessão.
+2. Endpoints separados mantidos.
+3. Smoke: `ciclo_bg_*` + push GitHub.
+
+## Histórico e “li” mídia (Ciclo BH)
+
+1. `media_opens` no open; `GET /api/media/opens`.
+2. `POST /api/media/mark-read` + `GET /api/media/reads`.
+3. Sheet teoria e Ajustes → Avançado (últimas aberturas).
+4. Smoke: `ciclo_bh_*` + push.
+
+## Catálogo Natureza (Ciclo BI)
+
+1. Expansão `articles_catalog` / `videos_catalog` (Evolução, Bioenergética, Termoquímica, Ondulatória…).
+2. Smoke: `ciclo_bi_*` + push.
+
+## Redação radar + docs (Ciclo BJ)
+
+1. Radar de eixos em Redação (`averages`).
+2. `ROADMAP_FUTURO.md` alinhado (F1–F6 feitos via AQ…BF).
+3. Smoke `ciclo_bj_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

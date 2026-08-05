@@ -451,7 +451,113 @@ def _host_allowed_for_article(host: str) -> bool:
     return False
 
 
-def open_media_url(url: str, kind: str | None = None) -> dict[str, Any]:
+def _append_media_open(entry: dict[str, Any], limit: int = 30) -> None:
+    raw = _settings_get("media_opens", []) or []
+    if not isinstance(raw, list):
+        raw = []
+    cleaned = [e for e in raw if isinstance(e, dict)]
+    cleaned.insert(0, entry)
+    # drop older dupes for same URL
+    seen: set[str] = set()
+    uniq: list[dict[str, Any]] = []
+    for e in cleaned:
+        u = (e.get("url") or "").strip()
+        if not u or u in seen:
+            continue
+        seen.add(u)
+        uniq.append(e)
+        if len(uniq) >= limit:
+            break
+    _settings_set("media_opens", uniq)
+
+
+def list_media_opens(limit: int = 20) -> dict[str, Any]:
+    raw = _settings_get("media_opens", []) or []
+    if not isinstance(raw, list):
+        raw = []
+    items = [e for e in raw if isinstance(e, dict)][: max(1, min(int(limit or 20), 50))]
+    return {
+        "ok": True,
+        "items": items,
+        "count": len(items),
+        "disclaimer": "Histórico local de aberturas — não é progresso oficial UEMA.",
+    }
+
+
+def mark_media_read(
+    url: str,
+    *,
+    subject: str | None = None,
+    topic: str | None = None,
+    title: str | None = None,
+) -> dict[str, Any]:
+    raw_url = (url or "").strip()
+    if not raw_url.startswith("http"):
+        return {"ok": False, "message": "URL inválida"}
+    reads = _settings_get("media_reads", {}) or {}
+    if not isinstance(reads, dict):
+        reads = {}
+    at = datetime.now().isoformat(timespec="seconds")
+    entry = {
+        "url": raw_url,
+        "subject": (subject or "").strip() or None,
+        "topic": (topic or "").strip() or None,
+        "title": (title or "").strip() or None,
+        "at": at,
+        "read": True,
+    }
+    reads[raw_url] = entry
+    # cap ~80 keys
+    if len(reads) > 80:
+        ordered = sorted(
+            reads.values(),
+            key=lambda e: str((e or {}).get("at") or ""),
+            reverse=True,
+        )[:80]
+        reads = {str(e.get("url")): e for e in ordered if isinstance(e, dict) and e.get("url")}
+    _settings_set("media_reads", reads)
+    return {"ok": True, **entry, "disclaimer": "Lido local — não conta como edital/oficial."}
+
+
+def list_media_reads(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
+    reads = _settings_get("media_reads", {}) or {}
+    if not isinstance(reads, dict):
+        reads = {}
+    items: list[dict[str, Any]] = []
+    sub = (subject or "").strip()
+    top = (topic or "").strip()
+    for u, e in reads.items():
+        if not isinstance(e, dict):
+            continue
+        entry = dict(e)
+        entry.setdefault("url", u)
+        if sub and top:
+            es = (entry.get("subject") or "").strip()
+            et = (entry.get("topic") or "").strip()
+            # include global marks on same URL even without subject match
+            if es and et and (es != sub or et != top):
+                continue
+        items.append(entry)
+    items.sort(key=lambda e: str(e.get("at") or ""), reverse=True)
+    return {
+        "ok": True,
+        "subject": subject,
+        "topic": topic,
+        "items": items[:40],
+        "count": len(items),
+        "urls": [str(e.get("url")) for e in items if e.get("url")],
+        "disclaimer": "Leituras marcadas localmente — não é banca UEMA.",
+    }
+
+
+def open_media_url(
+    url: str,
+    kind: str | None = None,
+    *,
+    subject: str | None = None,
+    topic: str | None = None,
+    title: str | None = None,
+) -> dict[str, Any]:
     raw = (url or "").strip()
     parsed = urlparse(raw)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
@@ -497,7 +603,21 @@ def open_media_url(url: str, kind: str | None = None) -> dict[str, Any]:
             subprocess.Popen(["xdg-open", raw])
     except OSError as exc:
         return {"ok": False, "message": f"Não foi possível abrir: {exc}"}
-    return {"ok": True, "url": raw, "kind": k, "disclaimer": disclaimer}
+
+    at = datetime.now().isoformat(timespec="seconds")
+    entry = {
+        "url": raw,
+        "kind": k,
+        "subject": (subject or "").strip() or None,
+        "topic": (topic or "").strip() or None,
+        "title": (title or "").strip() or None,
+        "at": at,
+    }
+    try:
+        _append_media_open(entry)
+    except Exception:  # noqa: BLE001
+        pass
+    return {"ok": True, "url": raw, "kind": k, "disclaimer": disclaimer, "at": at}
 
 
 def essay_personas() -> list[dict[str, Any]]:

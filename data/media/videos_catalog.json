@@ -95,6 +95,44 @@
         "channel": "Khan Academy",
         "url": "https://www.youtube.com/watch?v=HXOok3oLuhE"
       }
+    ],
+    "Biologia::Evolução": [
+      {
+        "title": "Evolução e seleção natural (visão geral)",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=POTayCTy4Yc"
+      },
+      {
+        "title": "Evidências da evolução",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=cC8k2Sb1oQ8"
+      }
+    ],
+    "Biologia::Bioenergética": [
+      {
+        "title": "Respiração celular e ATP",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=00jbG_cfGuQ"
+      },
+      {
+        "title": "Fotossíntese (visão geral)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=sQK3Yr4Sc_k"
+      }
+    ],
+    "Química::Termoquímica": [
+      {
+        "title": "Entalpia e calor de reação",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=AdBYKwSHJRY"
+      }
+    ],
+    "Física::Ondulatória": [
+      {
+        "title": "Ondas: propriedades e tipos",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=s2Br74c2_qU"
+      }
     ]
   }
 }
