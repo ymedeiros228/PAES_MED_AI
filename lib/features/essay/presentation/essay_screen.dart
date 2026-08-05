@@ -1,0 +1,432 @@
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/data/api_client.dart';
+import '../../../core/data/providers.dart';
+import '../../../core/widgets/ui_kit.dart';
+
+class EssayScreen extends ConsumerStatefulWidget {
+  const EssayScreen({super.key});
+
+  @override
+  ConsumerState<EssayScreen> createState() => _EssayScreenState();
+}
+
+class _EssayScreenState extends ConsumerState<EssayScreen> {
+  final textCtrl = TextEditingController();
+  List<String> themes = [];
+  String? theme;
+  Map<String, dynamic>? last;
+  Map<String, dynamic>? progress;
+  List<Map<String, dynamic>> personas = [];
+  String? personaId;
+  bool busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemes();
+    _loadProgress();
+    _loadPersonas();
+  }
+
+  @override
+  void dispose() {
+    textCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadThemes() async {
+    try {
+      final data = await apiClient.get('/api/essay/themes');
+      setState(() {
+        themes = (data as List).map((e) => e.toString()).toList();
+        theme = themes.isNotEmpty ? themes.first : null;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _loadPersonas() async {
+    try {
+      final data = await apiClient.get('/api/essays/personas');
+      final map = Map<String, dynamic>.from(data as Map);
+      final items = (map['items'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      if (!mounted) return;
+      setState(() => personas = items);
+    } catch (_) {}
+  }
+
+  Future<void> _loadProgress() async {
+    try {
+      final data = await apiClient.get('/api/essays/progress');
+      if (!mounted) return;
+      final map = Map<String, dynamic>.from(data as Map);
+      final mission = map['nextMission'];
+      String? suggested;
+      if (mission is Map) {
+        suggested = mission['suggestedPersona']?.toString();
+      }
+      setState(() {
+        progress = map;
+        if (personaId == null && suggested != null && suggested.isNotEmpty) {
+          personaId = suggested;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => progress = null);
+    }
+  }
+
+  Future<void> _grade() async {
+    if (theme == null || textCtrl.text.trim().length < 50) return;
+    setState(() => busy = true);
+    try {
+      final body = <String, dynamic>{
+        'theme': theme,
+        'text': textCtrl.text.trim(),
+      };
+      if (personaId != null && personaId!.isNotEmpty) {
+        body['persona'] = personaId;
+        Map<String, dynamic>? p;
+        for (final e in personas) {
+          if (e['id']?.toString() == personaId) {
+            p = e;
+            break;
+          }
+        }
+        if (p != null && p['focusAxis'] != null) {
+          body['focusAxis'] = p['focusAxis'];
+        }
+      }
+      final mission = progress?['nextMission'];
+      if (mission is Map && body['focusAxis'] == null) {
+        body['focusAxis'] = mission['axis'];
+      }
+      final data = await apiClient.post('/api/essay/grade', body);
+      ref.read(refreshTickProvider.notifier).state++;
+      setState(() => last = Map<String, dynamic>.from(data as Map));
+      await _loadProgress();
+    } catch (e) {
+      setState(() => last = {'error': e.toString()});
+    } finally {
+      setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final history = ref.watch(essaysProvider);
+    final cs = Theme.of(context).colorScheme;
+    final avg = Map<String, dynamic>.from(progress?['averages'] as Map? ?? {});
+    final labels = Map<String, dynamic>.from(progress?['labels'] as Map? ?? {});
+    final axes = (progress?['axes'] as List? ?? const [
+      'grammar',
+      'cohesion',
+      'coherence',
+      'argumentation',
+      'intervention',
+    ])
+        .map((e) => e.toString())
+        .toList();
+    final count = progress?['count'] as int? ?? 0;
+    final streak = progress?['streakDays'] as int? ?? 0;
+
+    return ListView(
+      children: [
+        PageBody(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const PageHeader(
+                eyebrow: 'Conteúdo',
+                title: 'Redação',
+                subtitle: 'Escreva e veja feedback local por eixos — rascunho offline, não nota oficial de banca',
+              ),
+              if (progress != null && count > 0) ...[
+                SectionLabel(
+                  'Progresso local',
+                  hint: progress!['disclaimer']?.toString() ?? 'treino local · não banca',
+                ),
+                if (progress!['nextMission'] is Map) ...[
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    color: cs.tertiaryContainer.withOpacity(0.35),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Missão · ${(progress!['nextMission'] as Map)['label'] ?? 'eixo'}',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          (progress!['nextMission'] as Map)['prompt']?.toString() ??
+                              'Treine o eixo mais fraco.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'treino local · não banca',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'treino local · não banca',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
+                        '${streak > 0 ? ' · sequência $streak dia(s)' : ''}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      for (final key in axes)
+                        Builder(
+                          builder: (_) {
+                            final raw = avg[key];
+                            final value = raw is num ? raw.toDouble() : null;
+                            final label = labels[key]?.toString() ?? key;
+                            final t = value == null ? 0.0 : (value / 10.0).clamp(0.0, 1.0);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
+                                      Text(
+                                        value == null ? '—' : value.toStringAsFixed(1),
+                                        style: Theme.of(context).textTheme.labelLarge,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: t,
+                                      minHeight: 8,
+                                      backgroundColor: cs.surfaceContainerHighest,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ] else if (progress != null) ...[
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    progress!['disclaimer']?.toString() ??
+                        'Corrija ao menos 1 redação para ver o progresso por eixos (treino local · não banca).',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+              if (personas.isNotEmpty) ...[
+                SectionLabel('Persona de correção', hint: 'prompts locais · treino'),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilterChip(
+                      label: const Text('Geral'),
+                      selected: personaId == null,
+                      onSelected: (_) => setState(() => personaId = null),
+                    ),
+                    for (final p in personas)
+                      FilterChip(
+                        label: Text(p['label']?.toString() ?? p['id']?.toString() ?? 'persona'),
+                        selected: personaId == p['id']?.toString(),
+                        onSelected: (_) => setState(() => personaId = p['id']?.toString()),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (themes.isNotEmpty)
+                DropdownMenu<String>(
+                  initialSelection: theme,
+                  label: const Text('Tema'),
+                  width: double.infinity,
+                  onSelected: (v) => setState(() => theme = v),
+                  dropdownMenuEntries: [
+                    for (final t in themes) DropdownMenuEntry(value: t, label: t),
+                  ],
+                ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: textCtrl,
+                minLines: 12,
+                maxLines: 20,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Sua redação',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
+                icon: const Icon(Icons.rate_review_outlined),
+                label: Text(busy ? 'Corrigindo…' : 'Corrigir'),
+              ),
+              if (textCtrl.text.trim().isNotEmpty && textCtrl.text.trim().length < 50)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    'Escreva pelo menos ~50 caracteres para corrigir.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: cs.onSurface.withOpacity(0.55),
+                        ),
+                  ),
+                ),
+              if (last != null) ...[
+                SectionLabel('Resultado'),
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: cs.primaryContainer.withOpacity(0.35),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (last!['error'] != null)
+                        Text('${last!['error']}', style: TextStyle(color: cs.error))
+                      else ...[
+                        Text(
+                          'Nota ${last!['score'] ?? '—'}',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 10),
+                        Builder(
+                          builder: (_) {
+                            final fb = last!['feedback'];
+                            if (fb is! Map) return Text('$fb');
+                            final axisRows = [
+                              ('Gramática', fb['grammar']),
+                              ('Coesão', fb['cohesion']),
+                              ('Coerência', fb['coherence']),
+                              ('Argumentação', fb['argumentation']),
+                              ('Intervenção', fb['intervention']),
+                            ];
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (fb['personaLabel'] != null || fb['persona'] != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      'Persona: ${fb['personaLabel'] ?? fb['persona']}'
+                                      '${fb['focusAxis'] != null ? ' · eixo ${fb['focusAxis']}' : ''}',
+                                      style: Theme.of(context).textTheme.labelLarge,
+                                    ),
+                                  ),
+                                for (final a in axisRows)
+                                  if (a.$2 != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: Text('${a.$1}: ${a.$2}'),
+                                    ),
+                                if (fb['strengths'] != null) ...[
+                                  const SizedBox(height: 6),
+                                  Text('Fortes: ${fb['strengths']}'),
+                                ],
+                                if (fb['improvements'] != null) Text('Melhorar: ${fb['improvements']}'),
+                                if (fb['note'] != null)
+                                  Text(
+                                    '${fb['note']}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+              SectionLabel('Histórico'),
+              history.when(
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => const QuietEmpty(message: 'Histórico indisponível.'),
+                data: (items) {
+                  if (items.isEmpty) {
+                    return const QuietEmpty(message: 'Ainda sem redações corrigidas.');
+                  }
+                  final scores = items
+                      .map((raw) => ((raw as Map)['score'] as num?)?.toDouble())
+                      .whereType<double>()
+                      .toList()
+                      .reversed
+                      .toList();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (scores.length >= 2)
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: SizedBox(
+                            height: 120,
+                            child: LineChart(
+                              LineChartData(
+                                titlesData: const FlTitlesData(show: false),
+                                borderData: FlBorderData(show: false),
+                                gridData: const FlGridData(show: false),
+                                minY: 0,
+                                maxY: 10,
+                                lineBarsData: [
+                                  LineChartBarData(
+                                    spots: [
+                                      for (var i = 0; i < scores.length; i++)
+                                        FlSpot(i.toDouble(), scores[i]),
+                                    ],
+                                    isCurved: true,
+                                    color: cs.primary,
+                                    barWidth: 3,
+                                    dotData: const FlDotData(show: true),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      for (final raw in items)
+                        PlaylistTile(
+                          title: (raw as Map)['theme']?.toString() ?? 'Tema',
+                          subtitle: 'Nota ${raw['score']} · ${raw['createdAt'] ?? ''}',
+                          leadingIcon: Icons.edit_note_rounded,
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

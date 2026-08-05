@@ -1,0 +1,96 @@
+=== CICLO C0 DIAG ===
+imports: official_curation_inventory, promote_natureza_real_resolutions, TestClient(main:app) OK
+promote_natureza_real_resolutions callable=True
+
+=== INVENTORY BEFORE ===
+{
+  "officialCount": 87,
+  "naturezaCount": 42,
+  "naturezaBySubject": {
+    "Biologia": 7,
+    "Física": 26,
+    "Química": 9
+  },
+  "realCount": 30,
+  "realPercent": 34.5,
+  "crossDomainCount": 0,
+  "resolutionQuality": {
+    "template": 0,
+    "draft": 57,
+    "real": 30
+  },
+  "naturezaResolutionQuality": {
+    "template": 0,
+    "draft": 12,
+    "real": 30
+  }
+}
+
+=== POST /api/ingest/classify-pending ===
+status=200
+{
+  "ok": true,
+  "candidates": 81,
+  "updated": 0,
+  "subjectChanged": 0,
+  "crossDomainFixed": 0
+}
+
+=== POST /api/curation/promote-natureza-real limit=20 ===
+status=200
+{
+  "ok": true,
+  "promoted": 12,
+  "ids": [
+    "paes-2024-036",
+    "paes-2024-039",
+    "paes-2024-042",
+    "paes-2024-044",
+    "paes-2024-046",
+    "paes-2024-047",
+    "paes-2024-048",
+    "paes-2024-050",
+    "paes-2024-054",
+    "paes-2024-056",
+    "paes-2024-058",
+    "paes-2024-060"
+  ],
+  "note": "Resoluções estruturadas didáticas — NÃO texto oficial da banca; revisão humana recomendada."
+}
+
+=== INVENTORY AFTER ===
+{
+  "officialCount": 87,
+  "naturezaCount": 42,
+  "naturezaBySubject": {
+    "Biologia": 7,
+    "Física": 26,
+    "Química": 9
+  },
+  "realCount": 42,
+  "realPercent": 48.3,
+  "crossDomainCount": 0,
+  "resolutionQuality": {
+    "template": 0,
+    "draft": 45,
+    "real": 42
+  },
+  "naturezaResolutionQuality": {
+    "template": 0,
+    "draft": 0,
+    "real": 42
+  }
+}
+
+=== BEFORE vs AFTER ===
+officialCount: 87 -> 87
+naturezaCount: 42 -> 42
+realCount: 30 -> 42
+realPercent: 34.5 -> 48.3
+crossDomainCount: 0 -> 0
+naturezaBySubject BEFORE: {"Biologia": 7, "Física": 26, "Química": 9}
+naturezaBySubject AFTER:  {"Biologia": 7, "Física": 26, "Química": 9}
+resolutionQuality BEFORE: {"template": 0, "draft": 57, "real": 30}
+resolutionQuality AFTER:  {"template": 0, "draft": 45, "real": 42}
+naturezaResolutionQuality BEFORE: {"template": 0, "draft": 12, "real": 30}
+naturezaResolutionQuality AFTER:  {"template": 0, "draft": 0, "real": 42}

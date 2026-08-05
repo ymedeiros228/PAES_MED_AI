@@ -1,0 +1,133 @@
+{
+  "disclaimer": "Leituras de reforço — não oficiais da banca UEMA. URLs públicas curadas.",
+  "topics": {
+    "Biologia::Genética": [
+      {
+        "title": "Genética — visão geral",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Gen%C3%A9tica",
+        "snippet": "Hereditariedade, genes e variação genética."
+      },
+      {
+        "title": "Leis de Mendel",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Leis_de_Mendel",
+        "snippet": "Segregação e segregação independente."
+      },
+      {
+        "title": "Árvore genealógica (heráldica de pedigrees)",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Heredograma",
+        "snippet": "Símbolos e padrões de herança monogênica."
+      }
+    ],
+    "Biologia::Citologia": [
+      {
+        "title": "Célula",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/C%C3%A9lula",
+        "snippet": "Unidade básica da vida; organelas e membranas."
+      },
+      {
+        "title": "Membrana plasmática",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Membrana_plasm%C3%A1tica",
+        "snippet": "Bicamada lipídica e transporte."
+      }
+    ],
+    "Biologia::Ecologia": [
+      {
+        "title": "Ecologia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Ecologia",
+        "snippet": "Relações entre organismos e ambiente."
+      },
+      {
+        "title": "Ciclo do carbono",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Ciclo_do_carbono",
+        "snippet": "Fluxos e impactos antrópicos."
+      }
+    ],
+    "Biologia::Fisiologia": [
+      {
+        "title": "Fisiologia humana",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Fisiologia_humana",
+        "snippet": "Sistemas e integração homeostática."
+      },
+      {
+        "title": "Sistema imunitário",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Sistema_imunit%C3%A1rio",
+        "snippet": "Imunidade inata e adaptativa."
+      }
+    ],
+    "Química::Orgânica": [
+      {
+        "title": "Química orgânica",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Qu%C3%ADmica_org%C3%A2nica",
+        "snippet": "Compostos de carbono e funções."
+      },
+      {
+        "title": "Hidrocarbonetos",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Hidrocarboneto",
+        "snippet": "Alcanos, alcenos e aromáticos."
+      }
+    ],
+    "Química::Estequiometria": [
+      {
+        "title": "Estequiometria",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Estequiometria",
+        "snippet": "Relações quantitativas em reações."
+      },
+      {
+        "title": "Mol (unidade)",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Mol_(unidade)",
+        "snippet": "Quantidade de matéria e massa molar."
+      }
+    ],
+    "Química::Estrutura atômica": [
+      {
+        "title": "Átomo",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/%C3%81tomo",
+        "snippet": "Núcleo, elétrons e modelos atômicos."
+      }
+    ],
+    "Física::Cinemática": [
+      {
+        "title": "Cinemática",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Cinem%C3%A1tica",
+        "snippet": "Posição, velocidade e aceleração."
+      }
+    ],
+    "Física::Dinâmica": [
+      {
+        "title": "Leis de Newton",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Leis_de_Newton",
+        "snippet": "Inércia, F=ma e ação-reação."
+      }
+    ],
+    "Física::Eletrodinâmica": [
+      {
+        "title": "Corrente elétrica",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Corrente_el%C3%A9trica",
+        "snippet": "Carga em movimento e circuitos."
+      },
+      {
+        "title": "Lei de Ohm",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Lei_de_Ohm",
+        "snippet": "Tensão, corrente e resistência."
+      }
+    ]
+  }
+}

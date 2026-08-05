@@ -1,0 +1,100 @@
+{
+  "disclaimer": "Catálogo curado local — reforço, não edital UEMA. URLs públicas de canais educativos.",
+  "topics": {
+    "Biologia::Genética": [
+      {
+        "title": "Leis de Mendel e probabilidade (reforço ENEM)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=mevkYwU-6yE"
+      },
+      {
+        "title": "DNA, RNA e fluxo da informação genética",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=8kK2zwjRV0M"
+      },
+      {
+        "title": "Heredograma e herança monogênica",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=ZhG-tkQ_Q2w"
+      }
+    ],
+    "Biologia::Citologia": [
+      {
+        "title": "Célula: organelas e funções",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=8IlzKri08kk"
+      },
+      {
+        "title": "Membranas e transporte",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=dPKvHrD1eS4"
+      }
+    ],
+    "Biologia::Ecologia": [
+      {
+        "title": "Ecologia: cadeias e fluxos de energia",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=v6ubvEJ3KGM"
+      },
+      {
+        "title": "Ciclos biogeoquímicos (visão geral)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=NHqEthRCqQ4"
+      }
+    ],
+    "Biologia::Fisiologia": [
+      {
+        "title": "Sistema imunológico basico",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=GIJK3dwCWCw"
+      }
+    ],
+    "Química::Orgânica": [
+      {
+        "title": "Introdução à química orgânica",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=S9GHTK3_jOI"
+      },
+      {
+        "title": "Funções orgânicas (visão geral)",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=bSMx0NS0XfY"
+      }
+    ],
+    "Química::Estequiometria": [
+      {
+        "title": "Estequiometria e mol",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=UL1jmJaUkaQ"
+      }
+    ],
+    "Química::Estrutura atômica": [
+      {
+        "title": "Estrutura atômica e elétrons",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=thnDxFdkzZs"
+      }
+    ],
+    "Física::Cinemática": [
+      {
+        "title": "Cinemática: posição, velocidade, aceleração",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=ZM8ECpBuQYE"
+      }
+    ],
+    "Física::Dinâmica": [
+      {
+        "title": "Leis de Newton",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=kKKM8Y-u7ds"
+      }
+    ],
+    "Física::Eletrodinâmica": [
+      {
+        "title": "Corrente elétrica e circuitos",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=HXOok3oLuhE"
+      }
+    ]
+  }
+}

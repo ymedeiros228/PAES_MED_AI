@@ -1,0 +1,35 @@
+# PAES MED AI — Licença (uso controlado)
+
+Copyright (c) 2026 Yuri / ymedeiros228. Todos os direitos reservados.
+
+## O que isto significa
+
+Este software e a documentação associada são **obra proprietária**.
+
+- Você (o titular da conta GitHub / autor) detém os direitos autorais.
+- O uso pelo primo, familiares ou alunos designados por você só é autorizado se
+  você explicitamente liberar (ex.: acesso ao repositório privado, pack Windows, licença verbal/escrita).
+- **Não é freemium open source.** Não há permissão geral de copiar, revender,
+  republicar ou redistribuir o código, o pack ou o branding como se fosse seu.
+
+## Uso permitido (típico neste projeto)
+
+1. **Você**: desenvolver, modificar, empacotar, usar no seu PC, emprestar uma
+   cópia ao primo para preparação PAES/UEMA Medicina.
+2. **Primo / usuírio convidado**: usar o aplicativo localmente para estudo;
+   **não** republicar no GitHub, loja ou grupo em massa, nem vender o app.
+
+## Monetização
+
+Você pode, quando quiser:
+
+- cobrar do primo (ou de outros) uma **licença de uso pessoal**;
+- entregar só o **pack pronto** (`dist`) sem dar o código-fonte;
+- manter este repositório **privado** e convidar quem paga ou ajuda a testar.
+
+Isto não é aconselhamento jurídico formal. Para contrato pago com terceiros
+desconhecidos, use um modelo de contrato de software sob medida.
+
+## Contato
+
+Dúvidas de uso ou licença: dono da conta GitHub `ymedeiros228`.

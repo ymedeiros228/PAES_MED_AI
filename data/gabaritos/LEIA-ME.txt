@@ -1,0 +1,13 @@
+PAES MED AI — pasta de GABARITOS oficiais
+========================================
+
+Coloque aqui os PDFs dos gabaritos oficiais (mesmo ano da prova).
+
+Nomenclatura recomendada (use exatamente este padrão):
+  gabarito_2017.pdf
+  gabarito_2024.pdf
+
+O import por ano aplica A–E automaticamente quando o ano bate com a prova.
+Para cada paes_YYYY.pdf, guarde também o correspondente gabarito_YYYY.pdf.
+
+Revise sempre o preview antes de commitar.

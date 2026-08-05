@@ -1,0 +1,95 @@
+{
+  "version": 2,
+  "updated": "2026-08-02",
+  "sources": [
+    "https://www.paes.uema.br/",
+    "https://www.uema.br/",
+    "https://dados.uema.br/editais-do-paes-uema/"
+  ],
+  "notes": "Inventário de PDFs públicos PAES-UEMA. status=found quando há URL direta de PDF; needs_manual quando só há página portal. Baixar só oficiais públicos (*.uema.br). gabaritoPrefer=retificacao usa gabaritoRetificacao quando existir.",
+  "years": [
+    {
+      "year": 2017,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Sem PDF direto mapeado; baixar manualmente do arquivo histórico PAES/SUCONS."
+    },
+    {
+      "year": 2018,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Portal PAES → acesso rápido 2018."
+    },
+    {
+      "year": 2019,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Portal PAES → acesso rápido 2019."
+    },
+    {
+      "year": 2020,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Portal PAES → acesso rápido 2020."
+    },
+    {
+      "year": 2021,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Portal PAES → acesso rápido 2021."
+    },
+    {
+      "year": 2022,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/paes-2022/",
+      "urls": {},
+      "notes": "Página PAES 2022; PDFs em anexos/editais do portal."
+    },
+    {
+      "year": 2023,
+      "status": "needs_manual",
+      "portal": "https://www.uema.br/2022/11/caderno-deprovas-paes-2023/",
+      "urls": {},
+      "notes": "Caderno PAES 2023 no post UEMA; extrair PDF do anexo se disponível."
+    },
+    {
+      "year": 2024,
+      "status": "found",
+      "portal": "https://www.paes.uema.br/paes-2024/",
+      "gabaritoPrefer": "retificacao",
+      "urls": {
+        "prova": "https://www.uema.br/wp-content/uploads/2023/11/PROVA-PAES-2024-Edital-N.o-81_2023-GR_UEMA.pdf",
+        "gabarito": "https://www.uema.br/wp-content/uploads/2023/12/GAB_DEFINITIVO-EDITAL-N.o-81_2023_GR_UEMA-_-PAES-2024.pdf",
+        "gabaritoRetificacao": "https://www.uema.br/wp-content/uploads/2023/12/RETIFICACAO-GAB_DEFINITIVO-EDITAL-N.o-81_2023_GR_UEMA-_-PAES-2024.pdf"
+      },
+      "notes": "Edital 81/2023. Preferir gabarito retificado (12/12/2023)."
+    },
+    {
+      "year": 2025,
+      "status": "found",
+      "portal": "https://www.uema.br/2024/12/prova-objetiva-e-producao-textual-paes-2025/",
+      "gabaritoPrefer": "definitivo",
+      "urls": {
+        "prova": "https://www.uema.br/wp-content/uploads/2024/12/PROVA-PAES-2025-EDITAL-N.o-68_2024-GR-UEMA-1.pdf",
+        "gabarito": "https://www.uema.br/wp-content/uploads/2024/12/GABARITO-DEFINITIVO-PAES-2025-EDITAL-N.o-68_2024-GR-UEMA.pdf"
+      },
+      "notes": "Edital 68/2024. Prova + gabarito definitivo públicos."
+    },
+    {
+      "year": 2026,
+      "status": "found",
+      "portal": "https://www.uema.br/2025/12/gabarito-definitivo-paes-2026-edital-no-57-2025-gr-uema/",
+      "gabaritoPrefer": "definitivo",
+      "urls": {
+        "prova": "https://www.uema.br/wp-content/uploads/2025/11/PROVA-PAES-2026-Edital-N.o-57_2025-GR_UEMA.pdf",
+        "gabarito": "https://www.uema.br/wp-content/uploads/2025/12/PAES-2026-GAB_DEFINITIVO-EDITAL-N.o-57_2025_GR_UEMA.pdf"
+      },
+      "notes": "Edital 57/2025. Prova + gabarito definitivo públicos."
+    }
+  ]
+}

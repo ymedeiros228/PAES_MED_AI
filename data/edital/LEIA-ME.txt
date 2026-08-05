@@ -1,0 +1,27 @@
+PAES MED AI — pasta do EDITAL
+===============================
+
+Coloque aqui o edital oficial em PDF, preferencialmente com o nome:
+  edital_YYYY.pdf
+
+Também é possível manter resumos operacionais em Markdown (.md). Eles servem
+para organizar o plano de estudos e não substituem o texto oficial.
+
+Depois de adicionar ou atualizar arquivos, execute:
+  POST /api/edital/sync-syllabus
+
+Confira a relação entre edital e questões oficiais em:
+  GET /api/edital/coverage
+
+Use sempre o PDF oficial como referência quando houver divergência.
+PAES MED AI — pasta de EDITAL
+=============================
+
+Coloque o PDF do edital vigente:
+  edital_2026.pdf
+  (ou qualquer nome com o ano)
+
+Há também conteudo_programatico_resumo.md — árvore operacional para o app.
+Substitua/complemente com o edital oficial.
+
+No app: Ajustes/Biblioteca → sincronizar syllabus a partir do edital.

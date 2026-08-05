@@ -1,0 +1,58 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+**/ephemeral/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+backend/.venv/
+backend/venv/
+.venv/
+
+# Secrets e ambiente local (NUNCA commitar)
+backend/.env
+.env
+.env.*
+!.env.example
+!backend/.env.example
+
+# Banco e dados de estudo do usuário
+data/paes_med_ai.db
+data/paes_med_ai.db-*
+data/**/*.db
+data/backups/
+data/aulas/*
+!data/aulas/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+
+# Pack e artefatos Windows enormes
+dist/
+*.lnk
+
+# Caches OS / build nativo
+*.suo
+*.user
+*.userosscache
+Thumbs.db
+Desktop.ini
+x64/
+x86/
+
+# Opcional: descomente se quiser repo só de código (sem PDFs de prova)
+# data/provas/*.pdf
+# data/gabaritos/*.pdf
