@@ -904,6 +904,13 @@ def library_search(
             f"Nenhum resultado local para “{query or '—'}”. "
             "Importe oficiais 2024–26 ou coloque MD em data/edital — não inventamos hit."
         )
+    if query:
+        _record_library_search(
+            q=query,
+            source_kind=source_kind,
+            subject=subject,
+            topic=topic,
+        )
     return {
         "ok": True,
         "q": query,
@@ -914,6 +921,77 @@ def library_search(
         "count": len(hits),
         "note": note,
         "disclaimer": "Só o que está no SQLite/disco local.",
+    }
+
+
+def _record_library_search(
+    *,
+    q: str,
+    source_kind: str | None = None,
+    subject: str | None = None,
+    topic: str | None = None,
+    limit: int = 15,
+) -> None:
+    raw = _settings_get("library_search_history", []) or []
+    if not isinstance(raw, list):
+        raw = []
+    entry = {
+        "q": q.strip(),
+        "sourceKind": (source_kind or "").strip() or None,
+        "subject": (subject or "").strip() or None,
+        "topic": (topic or "").strip() or None,
+        "at": datetime.now().isoformat(timespec="seconds"),
+    }
+    cleaned = [e for e in raw if isinstance(e, dict)]
+    cleaned.insert(0, entry)
+    # dedupe by q + sourceKind
+    seen: set[str] = set()
+    uniq: list[dict[str, Any]] = []
+    for e in cleaned:
+        key = f"{(e.get('q') or '').strip().lower()}::{(e.get('sourceKind') or '')}"
+        if not e.get("q") or key in seen:
+            continue
+        seen.add(key)
+        uniq.append(e)
+        if len(uniq) >= limit:
+            break
+    _settings_set("library_search_history", uniq)
+
+
+def list_library_search_history(limit: int = 15) -> dict[str, Any]:
+    raw = _settings_get("library_search_history", []) or []
+    if not isinstance(raw, list):
+        raw = []
+    items = [e for e in raw if isinstance(e, dict)][: max(1, min(int(limit or 15), 30))]
+    return {
+        "ok": True,
+        "items": items,
+        "count": len(items),
+        "disclaimer": "Histórico local de buscas — não é ranking de banca.",
+    }
+
+
+def export_study_day_markdown(markdown: str, filename: str | None = None) -> dict[str, Any]:
+    """Grava pacote do dia em DATA_DIR/exports (Ciclo BN)."""
+    text = (markdown or "").strip()
+    if not text:
+        text = "# Pacote do dia — PAES MED AI\n\n(sem conteúdo)"
+    out_dir = DATA_DIR / "exports"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    name = (filename or f"pacote_dia_{stamp}.md").strip()
+    if not name.endswith(".md"):
+        name = f"{name}.md"
+    # sanitize basename only
+    name = Path(name).name
+    path = out_dir / name
+    path.write_text(text + ("\n" if not text.endswith("\n") else ""), encoding="utf-8")
+    return {
+        "ok": True,
+        "path": str(path),
+        "filename": name,
+        "dir": str(out_dir),
+        "disclaimer": "Export local · não é envio oficial UEMA.",
     }
 
 

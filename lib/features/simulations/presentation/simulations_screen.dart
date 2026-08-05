@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -534,6 +535,24 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         '&topic=${Uri.encodeComponent(g['topic']?.toString() ?? '')}',
                       ),
                     ),
+                  Builder(
+                    builder: (_) {
+                      final gaps = (report!['gaps'] as List).whereType<Map>().toList();
+                      if (gaps.isEmpty) return const SizedBox.shrink();
+                      final g0 = Map<String, dynamic>.from(gaps.first);
+                      final s = g0['subject']?.toString() ?? '';
+                      final t = g0['topic']?.toString() ?? '';
+                      if (s.isEmpty || t.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8, bottom: 8),
+                        child: MediaReinforcement(
+                          subject: s,
+                          topic: t,
+                          compact: true,
+                        ),
+                      );
+                    },
+                  ),
                 ],
 
                 if (wrongResults.isNotEmpty) ...[

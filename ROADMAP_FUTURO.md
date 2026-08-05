@@ -189,7 +189,8 @@ flowchart TB
 | FC | F4: videos API + Fila card | (AY–AZ) | **Feito** |
 | FD | F5: essay progress + missions + personas | (AT–BB) | **Feito** (radar em BJ) |
 | FE | F6: articles optional | (BC–BF) | **Feito** |
-| BG–BJ | Unificar reforço UI · histórico open · catálogo · radar docs | `ciclo_bg_*`…`ciclo_bj_*` | Rodada pós FE |
+| BG–BJ | Unificar reforço UI · histórico open · catálogo · radar docs | `ciclo_bg_*`…`ciclo_bj_*` | **Feito** |
+| BK–BN | Essay timeline · library search · Hoje Z3 · cards/export/sim | `ciclo_bk_*`…`ciclo_bn_*` | Rodada atual |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -197,9 +198,7 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós BC–BF / BG–BJ)
+## Estado (atualizado pós BK–BN)
 
-- Fios AQ…BF: acervo/PDF/busca, materiais+teoria, tutor com fonte, vídeos, redação-game lite, artigos — ver `COMO_LIGAR.md`.
-- **F1–F6 do pedido original: implementados** sob letras AQ…BF (não FA…FE de rótulo).
-- Residuais de produto pós FE: unificar UI de mídia, histórico/lido de open, catálogo Natureza mais fundo, radar de redação e docs honestos (**BG–BJ**).
-- Não inventa oficial nem % de aprovação; push no GitHub após cada ciclo verde.
+- Fios AQ…BJ fechados; residual de polish: BK–BN (timeline redação, busca, Hoje Z3, export/cards/sim).
+- Não inventa oficial nem % de aprovação; push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

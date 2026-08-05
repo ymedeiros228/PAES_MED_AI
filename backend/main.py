@@ -25,11 +25,13 @@ from services_core import (
     close_study_week,
     curation_health,
     dashboard_stats,
+    export_study_day_markdown,
     get_exam_date,
     get_question,
     get_study_plan,
     is_official_source,
     library_search,
+    list_library_search_history,
     list_questions,
     mark_topic_read,
     medicine_priority,
@@ -1976,6 +1978,23 @@ def api_library_search(
 ) -> dict[str, Any]:
     """Busca acervo local oficial/estudo (Ciclo AW)."""
     return library_search(q=q, subject=subject, topic=topic, source_kind=sourceKind, limit=limit)
+
+
+@app.get("/api/library/search-history")
+def api_library_search_history(limit: int = 15) -> dict[str, Any]:
+    """Histórico local de buscas na Biblioteca (Ciclo BL)."""
+    return list_library_search_history(limit=limit)
+
+
+class ExportDayPayload(BaseModel):
+    markdown: str = Field(default="", max_length=200_000)
+    filename: str | None = Field(default=None, max_length=120)
+
+
+@app.post("/api/study/export-day")
+def api_study_export_day(payload: ExportDayPayload) -> dict[str, Any]:
+    """Salva pacote do dia em data/exports (Ciclo BN)."""
+    return export_study_day_markdown(payload.markdown, payload.filename)
 
 
 class OpenUrlRequest(BaseModel):

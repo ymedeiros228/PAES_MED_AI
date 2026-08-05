@@ -400,6 +400,30 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. `ROADMAP_FUTURO.md` alinhado (F1–F6 feitos via AQ…BF).
 3. Smoke `ciclo_bj_*` + suite + pack + push.
 
+## Timeline de redação (Ciclo BK)
+
+1. Histórico abre texto + feedback; **Reescrever**.
+2. Missão: botão preenche editor com última redação.
+3. Smoke: `ciclo_bk_*` + push.
+
+## Busca Biblioteca (Ciclo BL)
+
+1. Histórico `library_search_history` + `GET /api/library/search-history`.
+2. Chips recentes + filtro oficial|estudo|todos.
+3. Smoke: `ciclo_bl_*` + push.
+
+## Hoje Z3 (Ciclo BM)
+
+1. Checklist + **Agora** na dobra; **Mais do dia** collapsible.
+2. Smoke: `ciclo_bm_*` + push.
+
+## Cards · export · sim (Ciclo BN)
+
+1. Cards: toggle **Só eixos** (`axesOnly`).
+2. `POST /api/study/export-day` → `data/exports`.
+3. Sim debrief: MediaReinforcement compact na 1ª lacuna.
+4. Smoke `ciclo_bn_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

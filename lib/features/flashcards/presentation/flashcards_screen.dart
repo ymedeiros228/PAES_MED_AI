@@ -24,6 +24,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   int? currentId;
   /// Ciclo G/AK: default due-only; CTA Fila usa `/flashcards?due=1`.
   late bool dueOnly = widget.dueOnlyInitial;
+  bool axesOnly = false;
 
   @override
   void dispose() {
@@ -54,7 +55,11 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = dueOnly ? ref.watch(flashcardsProvider) : ref.watch(flashcardsAllProvider);
+    final async = axesOnly
+        ? ref.watch(flashcardsAxesProvider)
+        : dueOnly
+            ? ref.watch(flashcardsProvider)
+            : ref.watch(flashcardsAllProvider);
     final cs = Theme.of(context).colorScheme;
 
     return ListView(
@@ -66,16 +71,33 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
               PageHeader(
                 eyebrow: 'Estudar',
                 title: 'Cards',
-                subtitle: dueOnly
-                    ? 'Só cards due hoje · toque para virar'
-                    : 'Todos os cards · próximo due no rodapé',
-                trailing: TextButton(
-                  onPressed: () => setState(() {
-                    dueOnly = !dueOnly;
-                    showBack = false;
-                    currentId = null;
-                  }),
-                  child: Text(dueOnly ? 'Ver todos' : 'Só due'),
+                subtitle: axesOnly
+                    ? 'Só cards de eixos (resolução) · treino local'
+                    : dueOnly
+                        ? 'Só cards due hoje · toque para virar'
+                        : 'Todos os cards · próximo due no rodapé',
+                trailing: Wrap(
+                  spacing: 4,
+                  children: [
+                    TextButton(
+                      onPressed: () => setState(() {
+                        axesOnly = !axesOnly;
+                        if (axesOnly) dueOnly = false;
+                        showBack = false;
+                        currentId = null;
+                      }),
+                      child: Text(axesOnly ? 'Todos tipos' : 'Só eixos'),
+                    ),
+                    if (!axesOnly)
+                      TextButton(
+                        onPressed: () => setState(() {
+                          dueOnly = !dueOnly;
+                          showBack = false;
+                          currentId = null;
+                        }),
+                        child: Text(dueOnly ? 'Ver todos' : 'Só due'),
+                      ),
+                  ],
                 ),
               ),
               async.when(

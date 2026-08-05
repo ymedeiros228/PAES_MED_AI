@@ -58,3 +58,8 @@ final flashcardsAllProvider = FutureProvider.autoDispose<List<dynamic>>((ref) as
   ref.watch(refreshTickProvider);
   return await apiClient.get('/api/flashcards') as List<dynamic>;
 });
+
+final flashcardsAxesProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.watch(refreshTickProvider);
+  return await apiClient.get('/api/flashcards', {'axesOnly': 'true'}) as List<dynamic>;
+});

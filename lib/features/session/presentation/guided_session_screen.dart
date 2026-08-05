@@ -637,10 +637,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     for (final id in answeredIds) {
       buf.writeln('- $id');
     }
-    final file = File(p.join(Directory.current.path, 'data', 'pacote_dia.md'));
-    await file.parent.create(recursive: true);
-    await file.writeAsString(buf.toString());
-    setState(() => exportMsg = file.path);
+    try {
+      final data = await apiClient.post('/api/study/export-day', {
+        'markdown': buf.toString(),
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final path = map['path']?.toString() ?? '';
+      setState(() => exportMsg = path.isNotEmpty ? path : map['dir']?.toString() ?? 'exportado');
+      if (path.isNotEmpty) {
+        try {
+          final parent = p.dirname(path);
+          await apiClient.post('/api/library/open-path', {'path': parent});
+        } catch (_) {}
+      }
+    } catch (e) {
+      setState(() => exportMsg = e.toString());
+    }
   }
 
   Map<String, dynamic>? get _professor {

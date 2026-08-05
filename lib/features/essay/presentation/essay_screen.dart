@@ -118,6 +118,117 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     }
   }
 
+  void _applyEssayToEditor(Map<String, dynamic> item) {
+    final t = item['theme']?.toString();
+    final text = item['text']?.toString() ?? '';
+    setState(() {
+      if (t != null && t.isNotEmpty) {
+        if (!themes.contains(t)) themes = [...themes, t];
+        theme = t;
+      }
+      textCtrl.text = text;
+      last = {
+        'score': item['score'],
+        'feedback': item['feedback'],
+        'theme': item['theme'],
+      };
+      final mission = progress?['nextMission'];
+      if (mission is Map) {
+        final suggested = mission['suggestedPersona']?.toString();
+        if (suggested != null && suggested.isNotEmpty) {
+          personaId = suggested;
+        }
+      }
+    });
+  }
+
+  void _openEssayDetail(Map<String, dynamic> item) {
+    final fb = item['feedback'];
+    final fbMap = fb is Map ? Map<String, dynamic>.from(fb) : <String, dynamic>{};
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.65,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          builder: (_, scroll) {
+            return ListView(
+              controller: scroll,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              children: [
+                Text(
+                  item['theme']?.toString() ?? 'Redação',
+                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Nota ${item['score'] ?? '—'} · ${item['createdAt'] ?? ''} · treino local · não banca',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                Text('Texto', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 6),
+                SelectableText(item['text']?.toString() ?? '(vazio)'),
+                if (fbMap.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text('Feedback', style: Theme.of(ctx).textTheme.titleSmall),
+                  const SizedBox(height: 6),
+                  for (final a in [
+                    ('Gramática', fbMap['grammar']),
+                    ('Coesão', fbMap['cohesion']),
+                    ('Coerência', fbMap['coherence']),
+                    ('Argumentação', fbMap['argumentation']),
+                    ('Intervenção', fbMap['intervention']),
+                  ])
+                    if (a.$2 != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text('${a.$1}: ${a.$2}'),
+                      ),
+                  if (fbMap['strengths'] != null) Text('Fortes: ${fbMap['strengths']}'),
+                  if (fbMap['improvements'] != null) Text('Melhorar: ${fbMap['improvements']}'),
+                ],
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _applyEssayToEditor(item);
+                  },
+                  icon: const Icon(Icons.edit_note_rounded),
+                  label: const Text('Reescrever este texto'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _startMissionRewrite(AsyncValue<List<dynamic>> history) {
+    final mission = progress?['nextMission'];
+    final suggested = mission is Map ? mission['suggestedPersona']?.toString() : null;
+    if (suggested != null && suggested.isNotEmpty) {
+      setState(() => personaId = suggested);
+    }
+    final items = history.asData?.value ?? const [];
+    if (items.isNotEmpty) {
+      final first = Map<String, dynamic>.from(items.first as Map);
+      _applyEssayToEditor(first);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Texto da última redação no editor · treino local · não banca')),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Corrija 1 redação antes e use a missão para reescrever.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(essaysProvider);
@@ -173,6 +284,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         Text(
                           'treino local · não banca',
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton.icon(
+                          onPressed: () => _startMissionRewrite(history),
+                          icon: const Icon(Icons.edit_note_rounded, size: 18),
+                          label: const Text('Reescrever missão'),
                         ),
                       ],
                     ),
@@ -469,8 +586,9 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       for (final raw in items)
                         PlaylistTile(
                           title: (raw as Map)['theme']?.toString() ?? 'Tema',
-                          subtitle: 'Nota ${raw['score']} · ${raw['createdAt'] ?? ''}',
+                          subtitle: 'Nota ${raw['score']} · ${raw['createdAt'] ?? ''} · toque para abrir',
                           leadingIcon: Icons.edit_note_rounded,
+                          onPlay: () => _openEssayDetail(Map<String, dynamic>.from(raw)),
                         ),
                     ],
                   );

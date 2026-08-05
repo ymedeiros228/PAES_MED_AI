@@ -286,7 +286,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           _CheckRow(
                             done: checklist['session'] == true,
                             label: 'Sessão (~15+ min)',
-                            actionLabel: 'Ir',
+                            actionLabel: 'Sessão',
                             onAction: () => context.go(sessionPath),
                           ),
                           FutureBuilder(
@@ -299,7 +299,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 done: done,
                                 label: n == 0 ? 'Cards em dia' : '$n card(s) para revisar',
                                 actionLabel: n == 0 ? null : 'Cards',
-                                onAction: n == 0 ? null : () => context.go('/flashcards'),
+                                onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
                               );
                             },
                           ),
@@ -318,176 +318,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             onAction: dayClosed ? null : _closeDay,
                           ),
 
-                          if (week.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            SectionLabel('Semana', hint: week['hint']?.toString()),
-                            SurfacePanel(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    week['label']?.toString() ?? 'Semana',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: ((week['minutesPercent'] as num?) ?? 0) / 100.0,
-                                    minHeight: 6,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    '${week['minutes'] ?? 0}/${week['goalMinutes'] ?? 300} min · '
-                                    '${week['daysActive'] ?? 0}/${week['goalDays'] ?? 5} dias · '
-                                    'streak ${week['streakDays'] ?? data['streakDays'] ?? 0}',
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          Builder(
-                            builder: (_) {
-                              final wc = Map<String, dynamic>.from(data['weekClose'] as Map? ?? const {});
-                              if (wc.isEmpty) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: WeekClosePanel(
-                                  weekClose: wc,
-                                  onCloseWeek: _closeWeek,
-                                ),
-                              );
-                            },
-                          ),
-
-                          FutureBuilder(
-                            future: apiClient.get('/api/backup/last'),
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                              final last = Map<String, dynamic>.from(snap.data as Map);
-                              final hasOk = last['ok'] == true;
-                              String? staleMsg;
-                              if (!hasOk) {
-                                staleMsg = 'Nenhum backup verificado — salve em Ajustes.';
-                              } else {
-                                final at = last['at']?.toString() ?? '';
-                                if (at.isNotEmpty) {
-                                  try {
-                                    final when = DateTime.parse(at);
-                                    if (DateTime.now().difference(when).inDays > 7) {
-                                      staleMsg = 'Último backup há mais de 7 dias ($at).';
-                                    }
-                                  } catch (_) {}
-                                }
-                              }
-                              if (staleMsg == null) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: QuietEmpty(
-                                  message: staleMsg,
-                                  action: TextButton(
-                                    onPressed: () => context.go('/configuracoes'),
-                                    child: const Text('Fazer backup'),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-
-                          if (readyScore != null) ...[
-                            const SizedBox(height: 12),
-                            SectionLabel('Pulso local', hint: 'Não é probabilidade de aprovação UEMA'),
-                            SurfacePanel(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    readiness['label']?.toString() ?? 'Pulso',
-                                    style: Theme.of(context).textTheme.titleSmall,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Indicador ${readyScore.toStringAsFixed(0)}/100',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
-                                        ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: (readyScore / 100).clamp(0.0, 1.0),
-                                    minHeight: 6,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  if (readiness['tip'] != null) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      readiness['tip'].toString(),
-                                      style: Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          if (calItems.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            SectionLabel('28 dias', hint: calendar['hint']?.toString()),
-                            SurfacePanel(
-                              child: Wrap(
-                                spacing: 4,
-                                runSpacing: 4,
-                                children: [
-                                  for (final raw in calItems)
-                                    Builder(
-                                      builder: (_) {
-                                        final it = Map<String, dynamic>.from(raw as Map);
-                                        final active = it['active'] == true;
-                                        final closed = it['closed'] == true;
-                                        final isToday = it['isToday'] == true;
-                                        final cs = Theme.of(context).colorScheme;
-                                        Color bg;
-                                        if (closed) {
-                                          bg = cs.primary.withOpacity(0.85);
-                                        } else if (active) {
-                                          bg = cs.primary.withOpacity(0.35);
-                                        } else {
-                                          bg = cs.onSurface.withOpacity(0.08);
-                                        }
-                                        return Container(
-                                          width: 12,
-                                          height: 12,
-                                          decoration: BoxDecoration(
-                                            color: bg,
-                                            borderRadius: BorderRadius.circular(2),
-                                            border: isToday
-                                                ? Border.all(color: cs.primary, width: 1.5)
-                                                : null,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          if (backupReminder != null) ...[
-                            const SizedBox(height: 8),
-                            QuietEmpty(
-                              message: backupReminder,
-                              action: TextButton(
-                                onPressed: () => context.go('/configuracoes'),
-                                child: const Text('Ajustes'),
-                              ),
-                            ),
-                          ],
-
                           const SizedBox(height: 8),
-                          SectionLabel('Agora'),
+                          SectionLabel('Agora', hint: 'próximo passo · espelha Fila'),
                           if (gapN > 0)
-                            for (final raw in gapItems.take(2))
+                            for (final raw in gapItems.take(1))
                               Builder(
                                 builder: (_) {
                                   final g = Map<String, dynamic>.from(raw as Map);
@@ -506,28 +340,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 },
                               )
                           else if (hot.isNotEmpty)
-                            for (final raw in hot)
-                              Builder(
-                                builder: (_) {
-                                  final item = Map<String, dynamic>.from(raw as Map);
-                                  final key = item['key']?.toString() ?? '';
-                                  final parts = key.split('::');
-                                  final s = parts.isNotEmpty ? parts[0] : '';
-                                  final t = parts.length > 1 ? parts[1] : '';
-                                  return PlaylistTile(
-                                    title: s.isEmpty ? key : s,
-                                    subtitle: t.isEmpty ? 'Reforçar' : t,
-                                    badge: 'reforçar',
-                                    leadingIcon: Icons.replay_rounded,
-                                    onPlay: s.isEmpty
-                                        ? null
-                                        : () => context.go(
-                                              '/adaptativo?subject=${Uri.encodeComponent(s)}'
-                                              '&topic=${Uri.encodeComponent(t)}',
-                                            ),
-                                  );
-                                },
-                              )
+                            Builder(
+                              builder: (_) {
+                                final item = Map<String, dynamic>.from(hot.first as Map);
+                                final key = item['key']?.toString() ?? '';
+                                final parts = key.split('::');
+                                final s = parts.isNotEmpty ? parts[0] : '';
+                                final t = parts.length > 1 ? parts[1] : '';
+                                return PlaylistTile(
+                                  title: s.isEmpty ? key : s,
+                                  subtitle: t.isEmpty ? 'Reforçar' : t,
+                                  badge: 'reforçar',
+                                  leadingIcon: Icons.replay_rounded,
+                                  onPlay: s.isEmpty
+                                      ? null
+                                      : () => context.go(
+                                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
+                                            '&topic=${Uri.encodeComponent(t)}',
+                                          ),
+                                );
+                              },
+                            )
                           else
                             QuietEmpty(
                               message: routine['hint']?.toString() ?? 'Pode partir para a sessão.',
@@ -536,16 +369,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 child: const Text('Sessão'),
                               ),
                             ),
-
-                          const SizedBox(height: 8),
-                          SectionLabel('Seu ritmo'),
-                          StatsStrip(
-                            items: [
-                              ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                              ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                              ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                            ],
-                          ),
 
                           FutureBuilder(
                             future: apiClient.get('/api/essays/progress'),
@@ -558,7 +381,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               final mission = prog['nextMission'];
                               if (c < 1 || mission is! Map) return const SizedBox.shrink();
                               return Padding(
-                                padding: const EdgeInsets.only(top: 8),
+                                padding: const EdgeInsets.only(top: 4),
                                 child: PlaylistTile(
                                   title: 'Missão de redação · ${mission['label'] ?? 'eixo'}',
                                   subtitle: 'treino local · não banca',
@@ -570,50 +393,224 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             },
                           ),
 
-                          if (!focus) ...[
-                            SectionLabel('Explorar'),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ActionChip(
-                                  avatar: const Icon(Icons.playlist_play_rounded, size: 18),
-                                  label: const Text('Fila'),
-                                  onPressed: () => context.go('/fila'),
-                                ),
-                                ActionChip(
-                                  avatar: const Icon(Icons.local_hospital_rounded, size: 18),
-                                  label: const Text('Domínio'),
-                                  onPressed: () => context.go('/medicina'),
-                                ),
-                                ActionChip(
-                                  avatar: const Icon(Icons.menu_book_rounded, size: 18),
-                                  label: const Text('Biblioteca'),
-                                  onPressed: () => context.go('/biblioteca'),
-                                ),
-                                ActionChip(
-                                  avatar: const Icon(Icons.bolt_rounded, size: 18),
-                                  label: const Text('Simulados'),
-                                  onPressed: () => context.go('/simulados'),
+                          ExpansionTile(
+                            tilePadding: EdgeInsets.zero,
+                            initiallyExpanded: false,
+                            title: Text('Mais do dia', style: Theme.of(context).textTheme.titleSmall),
+                            subtitle: const Text('semana, pulso, ritmo e atalhos'),
+                            children: [
+                              if (week.isNotEmpty) ...[
+                                SectionLabel('Semana', hint: week['hint']?.toString()),
+                                SurfacePanel(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        week['label']?.toString() ?? 'Semana',
+                                        style: Theme.of(context).textTheme.titleSmall,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      LinearProgressIndicator(
+                                        value: ((week['minutesPercent'] as num?) ?? 0) / 100.0,
+                                        minHeight: 6,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        '${week['minutes'] ?? 0}/${week['goalMinutes'] ?? 300} min · '
+                                        '${week['daysActive'] ?? 0}/${week['goalDays'] ?? 5} dias · '
+                                        'streak ${week['streakDays'] ?? data['streakDays'] ?? 0}',
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
-                            ),
-                          ] else ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              'Modo foco — só sessão e checklist. Desligue com F.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                          if (exam.isNotEmpty && examDays != null) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              examDays >= 0 ? 'Prova: $exam' : 'Data da prova: $exam',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.45),
+                              Builder(
+                                builder: (_) {
+                                  final wc = Map<String, dynamic>.from(data['weekClose'] as Map? ?? const {});
+                                  if (wc.isEmpty) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: WeekClosePanel(
+                                      weekClose: wc,
+                                      onCloseWeek: _closeWeek,
+                                    ),
+                                  );
+                                },
+                              ),
+                              FutureBuilder(
+                                future: apiClient.get('/api/backup/last'),
+                                builder: (context, snap) {
+                                  if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                                  final last = Map<String, dynamic>.from(snap.data as Map);
+                                  final hasOk = last['ok'] == true;
+                                  String? staleMsg;
+                                  if (!hasOk) {
+                                    staleMsg = 'Nenhum backup verificado — salve em Ajustes.';
+                                  } else {
+                                    final at = last['at']?.toString() ?? '';
+                                    if (at.isNotEmpty) {
+                                      try {
+                                        final when = DateTime.parse(at);
+                                        if (DateTime.now().difference(when).inDays > 7) {
+                                          staleMsg = 'Último backup há mais de 7 dias ($at).';
+                                        }
+                                      } catch (_) {}
+                                    }
+                                  }
+                                  if (staleMsg == null) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: QuietEmpty(
+                                      message: staleMsg,
+                                      action: TextButton(
+                                        onPressed: () => context.go('/configuracoes'),
+                                        child: const Text('Fazer backup'),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              if (readyScore != null) ...[
+                                const SizedBox(height: 12),
+                                SectionLabel('Pulso local', hint: 'Não é probabilidade de aprovação UEMA'),
+                                SurfacePanel(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        readiness['label']?.toString() ?? 'Pulso',
+                                        style: Theme.of(context).textTheme.titleSmall,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Indicador ${readyScore.toStringAsFixed(0)}/100',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+                                            ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      LinearProgressIndicator(
+                                        value: (readyScore / 100).clamp(0.0, 1.0),
+                                        minHeight: 6,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      if (readiness['tip'] != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          readiness['tip'].toString(),
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                            ),
-                          ],
+                                ),
+                              ],
+                              if (calItems.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                SectionLabel('28 dias', hint: calendar['hint']?.toString()),
+                                SurfacePanel(
+                                  child: Wrap(
+                                    spacing: 4,
+                                    runSpacing: 4,
+                                    children: [
+                                      for (final raw in calItems)
+                                        Builder(
+                                          builder: (_) {
+                                            final it = Map<String, dynamic>.from(raw as Map);
+                                            final active = it['active'] == true;
+                                            final closed = it['closed'] == true;
+                                            final isToday = it['isToday'] == true;
+                                            final cs = Theme.of(context).colorScheme;
+                                            Color bg;
+                                            if (closed) {
+                                              bg = cs.primary.withOpacity(0.85);
+                                            } else if (active) {
+                                              bg = cs.primary.withOpacity(0.35);
+                                            } else {
+                                              bg = cs.onSurface.withOpacity(0.08);
+                                            }
+                                            return Container(
+                                              width: 12,
+                                              height: 12,
+                                              decoration: BoxDecoration(
+                                                color: bg,
+                                                borderRadius: BorderRadius.circular(2),
+                                                border: isToday
+                                                    ? Border.all(color: cs.primary, width: 1.5)
+                                                    : null,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (backupReminder != null)
+                                QuietEmpty(
+                                  message: backupReminder,
+                                  action: TextButton(
+                                    onPressed: () => context.go('/configuracoes'),
+                                    child: const Text('Ajustes'),
+                                  ),
+                                ),
+                              const SizedBox(height: 8),
+                              SectionLabel('Seu ritmo'),
+                              StatsStrip(
+                                items: [
+                                  ('${data['streakDays'] ?? 0}', 'dias seguidos'),
+                                  ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
+                                  ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
+                                ],
+                              ),
+                              if (!focus) ...[
+                                SectionLabel('Explorar'),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    ActionChip(
+                                      avatar: const Icon(Icons.playlist_play_rounded, size: 18),
+                                      label: const Text('Fila'),
+                                      onPressed: () => context.go('/fila'),
+                                    ),
+                                    ActionChip(
+                                      avatar: const Icon(Icons.local_hospital_rounded, size: 18),
+                                      label: const Text('Domínio'),
+                                      onPressed: () => context.go('/medicina'),
+                                    ),
+                                    ActionChip(
+                                      avatar: const Icon(Icons.menu_book_rounded, size: 18),
+                                      label: const Text('Biblioteca'),
+                                      onPressed: () => context.go('/biblioteca'),
+                                    ),
+                                    ActionChip(
+                                      avatar: const Icon(Icons.bolt_rounded, size: 18),
+                                      label: const Text('Simulados'),
+                                      onPressed: () => context.go('/simulados'),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Modo foco — só sessão e checklist. Desligue com F.',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                              if (exam.isNotEmpty && examDays != null) ...[
+                                const SizedBox(height: 12),
+                                Text(
+                                  examDays >= 0 ? 'Prova: $exam' : 'Data da prova: $exam',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.45),
+                                      ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ],
                       ),
                     ),

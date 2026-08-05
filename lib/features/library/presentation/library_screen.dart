@@ -26,11 +26,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   List<Map<String, dynamic>> searchHits = [];
   String? searchNote;
   bool searching = false;
+  String searchSourceKind = 'todos'; // todos | oficial | estudo
+  List<Map<String, dynamic>> searchHistory = [];
 
   @override
   void initState() {
     super.initState();
     _load();
+    _loadSearchHistory();
   }
 
   @override
@@ -631,6 +634,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  Future<void> _loadSearchHistory() async {
+    try {
+      final data = await apiClient.get('/api/library/search-history', {'limit': '12'});
+      final map = Map<String, dynamic>.from(data as Map);
+      if (!mounted) return;
+      setState(() {
+        searchHistory = (map['items'] as List? ?? [])
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      });
+    } catch (_) {}
+  }
+
   Future<void> _runSearch() async {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) {
@@ -642,7 +659,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     setState(() => searching = true);
     try {
-      final data = await apiClient.get('/api/library/search', {'q': q, 'limit': '30'});
+      final params = <String, String>{
+        'q': q,
+        'limit': '30',
+      };
+      if (searchSourceKind == 'oficial') {
+        params['sourceKind'] = 'oficial';
+      } else if (searchSourceKind == 'estudo') {
+        params['sourceKind'] = 'estudo';
+      }
+      final data = await apiClient.get('/api/library/search', params);
       final map = Map<String, dynamic>.from(data as Map);
       setState(() {
         searchHits = (map['items'] as List? ?? [])
@@ -651,6 +677,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             .toList();
         searchNote = map['note']?.toString();
       });
+      await _loadSearchHistory();
     } catch (e) {
       setState(() {
         searchHits = [];
@@ -885,6 +912,54 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
                 onSubmitted: (_) => _runSearch(),
               ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final kind in const [
+                    ('todos', 'Todos'),
+                    ('oficial', 'Oficial'),
+                    ('estudo', 'Estudo'),
+                  ])
+                    ChoiceChip(
+                      label: Text(kind.$2),
+                      selected: searchSourceKind == kind.$1,
+                      onSelected: (_) {
+                        setState(() => searchSourceKind = kind.$1);
+                        if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
+                      },
+                    ),
+                ],
+              ),
+              if (searchHistory.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final h in searchHistory.take(8))
+                      ActionChip(
+                        label: Text(
+                          h['q']?.toString() ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onPressed: () {
+                          final q = h['q']?.toString() ?? '';
+                          if (q.isEmpty) return;
+                          _searchCtrl.text = q;
+                          final sk = h['sourceKind']?.toString();
+                          if (sk == 'oficial' || sk == 'estudo') {
+                            searchSourceKind = sk!;
+                          } else {
+                            searchSourceKind = 'todos';
+                          }
+                          _runSearch();
+                        },
+                      ),
+                  ],
+                ),
+              ],
               if (searchNote != null && searchHits.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),

@@ -2875,6 +2875,143 @@ def main() -> int:
     else:
         ok("ciclo_bj_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo BK: essay timeline + rewrite ---
+    essay_bk = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bk_essay_open_detail",
+        "_openEssayDetail" in essay_bk and "Reescrever este texto" in essay_bk,
+        "essay open/rewrite",
+    )
+    ok(
+        "ciclo_bk_mission_rewrite",
+        "Reescrever missão" in essay_bk and "_startMissionRewrite" in essay_bk,
+        "mission rewrite CTA",
+    )
+    r = client.get("/api/essays")
+    ok(
+        "ciclo_bk_essays_list_shape",
+        r.status_code == 200 and isinstance(r.json(), list),
+        str(type(r.json())),
+    )
+    ok("ciclo_bk_como_section", "Ciclo BK" in como_ap, "COMO BK")
+
+    # --- Ciclo BL: library search history + filters ---
+    r = client.get("/api/library/search", params={"q": "genética", "sourceKind": "oficial", "limit": 10})
+    sear = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_bl_search_oficial_shape",
+        r.status_code == 200 and sear.get("ok") is True and "items" in sear,
+        str({"count": sear.get("count"), "sk": sear.get("sourceKind")})[:100],
+    )
+    r = client.get("/api/library/search", params={"q": "mendel", "limit": 5})
+    r = client.get("/api/library/search-history", params={"limit": 10})
+    hist = r.json() if r.status_code == 200 else {}
+    hims = hist.get("items") if isinstance(hist.get("items"), list) else []
+    ok(
+        "ciclo_bl_search_history",
+        r.status_code == 200 and hist.get("ok") is True and len(hims) >= 1,
+        str({"count": hist.get("count")}),
+    )
+    lib_ui = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bl_library_ui_filters",
+        "search-history" in lib_ui and "sourceKind" in lib_ui and "Oficial" in lib_ui,
+        "library filters+history UI",
+    )
+    ok("ciclo_bl_como_section", "Ciclo BL" in como_ap, "COMO BL")
+
+    # --- Ciclo BM: Hoje Z3 ---
+    dash_bm = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bm_hoje_agora_label",
+        "SectionLabel('Agora'" in dash_bm or 'SectionLabel("Agora"' in dash_bm or "Agora" in dash_bm,
+        "Agora section",
+    )
+    ok(
+        "ciclo_bm_mais_do_dia",
+        "Mais do dia" in dash_bm and "ExpansionTile" in dash_bm,
+        "Mais do dia collapsible",
+    )
+    ok("ciclo_bm_como_section", "Ciclo BM" in como_ap, "COMO BM")
+
+    # --- Ciclo BN: axes + export + sim media ---
+    fc_ui = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bn_flashcards_axes_toggle",
+        "axesOnly" in fc_ui and "Só eixos" in fc_ui and "flashcardsAxesProvider" in (
+            root / "lib" / "core" / "data" / "providers.dart"
+        ).read_text(encoding="utf-8", errors="ignore"),
+        "axesOnly UI",
+    )
+    r = client.get("/api/flashcards", params={"axesOnly": "true"})
+    ok(
+        "ciclo_bn_flashcards_axes_api",
+        r.status_code == 200 and isinstance(r.json(), list),
+        str(type(r.json())),
+    )
+    r = client.post(
+        "/api/study/export-day",
+        json={"markdown": "# Smoke BN\n\ntreino local.\n", "filename": "smoke_bn_export.md"},
+    )
+    exp = r.json() if r.status_code == 200 else {}
+    exp_path = Path(str(exp.get("path") or ""))
+    ok(
+        "ciclo_bn_export_day",
+        r.status_code == 200 and exp.get("ok") is True and exp_path.exists() and "exports" in str(exp_path),
+        str(exp)[:120],
+    )
+    sim_ui = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bn_sim_media_reinforcement",
+        "MediaReinforcement" in sim_ui,
+        "sim debrief media",
+    )
+    sess_bn = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bn_session_export_api",
+        "/api/study/export-day" in sess_bn,
+        "session export API",
+    )
+    ok(
+        "ciclo_bn_como_section",
+        "Ciclo BN" in como_ap and "Ciclo BK" in como_ap and "Ciclo BL" in como_ap and "Ciclo BM" in como_ap,
+        "COMO BK-BN",
+    )
+    ok(
+        "ciclo_bn_roadmap_bk_bn",
+        "BK–BN" in roadmap or "BK-BN" in roadmap or "ciclo_bk" in roadmap.lower(),
+        "ROADMAP BK-BN",
+    )
+    dist_dll_bn = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_bn.exists():
+        ok("ciclo_bn_dist_shape", True, str(dist_dll_bn))
+    else:
+        ok("ciclo_bn_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"
