@@ -338,10 +338,9 @@ class _MessageBubble extends StatelessWidget {
                           '/adaptativo?subject=${Uri.encodeComponent(subject)}'
                           '&topic=${Uri.encodeComponent(topic)}',
                         );
-                      } else if (type == 'edital') {
+                      } else if (type == 'edital' || type == 'lesson') {
+                        // Ciclo CF: lesson never hostil /aulas sob foco
                         context.go('/sessao');
-                      } else if (type == 'lesson') {
-                        context.go('/aulas');
                       }
                     },
                     child: Text(

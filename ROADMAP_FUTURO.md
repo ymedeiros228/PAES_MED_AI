@@ -195,6 +195,7 @@ flowchart TB
 | BS–BV | Sim teclado · export semana · calendário 28d · tutor/banca/a11y | `ciclo_bs_*`…`ciclo_bv_*` | **Feito** |
 | BW–BZ | Sessão numpad · export sim · calendário/gaps play · empties/rótulos | `ciclo_bw_*`…`ciclo_bz_*` | **Feito** |
 | CA–CD | Teclado estudo · empties CTA · foco + redação · gaps recover | `ciclo_ca_*`…`ciclo_cd_*` | **Feito** |
+| CE–CH | Versão +3/pack · theory/foco-safe · checkpoint UX · exam hydrate | `ciclo_ce_*`…`ciclo_ch_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -202,8 +203,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CA–CD)
+## Estado (atualizado pós CE–CH)
 
-- Fios AQ…BZ fechados; rodada CA–CD: teclado de estudo no front, empties com CTA, foco permite redação, lacunas recuperáveis.
-- Residual próximo: polish Avançado / pack lock se dist travado.
+- Fios AQ…CD fechados; rodada CE–CH: pack/versão visível, CTAs foco-safe, checkpoint legível, data da prova hidratada da API.
+- Residual próximo: polish Avançado / UI Ajustes denso.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

@@ -180,7 +180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PAES MED AI · 1.0.0+2',
+                      'PAES MED AI · 1.0.0+3',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
@@ -223,6 +223,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                     ),
+                    if (ref.watch(examDateProvider.notifier).daysUntilExam != null) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          () {
+                            final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
+                            if (d < 0) return 'Prova: $d dias atrás (data local)';
+                            if (d == 0) return 'Prova: é hoje (treino local)';
+                            return 'Prova em $d dia(s) · contagem local';
+                          }(),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                              ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -263,10 +280,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   : msg,
                               style: const TextStyle(fontSize: 12),
                             ),
-                            trailing: TextButton(
-                              onPressed: () => context.go('/medicina'),
-                              child: const Text('Domínio'),
-                            ),
+                            trailing: focus
+                                ? Tooltip(
+                                    message: 'Desligue F (modo foco) para abrir Domínio',
+                                    child: TextButton(
+                                      onPressed: null,
+                                      child: const Text('Domínio'),
+                                    ),
+                                  )
+                                : TextButton(
+                                    onPressed: () => context.go('/medicina'),
+                                    child: const Text('Domínio'),
+                                  ),
                           );
                         },
                       ),

@@ -75,6 +75,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     setState(() => checkpoint = null);
   }
 
+  String _checkpointShort(Map<String, dynamic> cp) {
+    final phase = cp['phaseName']?.toString() ?? '';
+    final phaseLabel = switch (phase) {
+      'theory' => 'Teoria',
+      'questions' => 'Questões',
+      'revisions' || 'review' || 'cards' => 'Revisão',
+      _ => phase.isEmpty ? 'Sessão' : phase,
+    };
+    final q = (cp['qIndex'] as num?)?.toInt();
+    if (phase == 'questions' && q != null) return '$phaseLabel · item ${q + 1}';
+    return phaseLabel;
+  }
+
   Future<void> _closeDay() async {
     try {
       final data = await apiClient.post('/api/study/day-close', {});
@@ -217,7 +230,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onPressed: () => context.go(
                             checkpoint != null ? '/sessao' : sessionPath,
                           ),
-                          child: Text(checkpoint != null ? 'Continuar sessão' : 'Começar sessão'),
+                          child: Text(
+                            checkpoint != null
+                                ? 'Continuar · ${_checkpointShort(checkpoint!)}'
+                                : 'Começar sessão',
+                          ),
                         ),
                         if (checkpoint != null)
                           OutlinedButton(

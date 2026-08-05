@@ -378,12 +378,23 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   builder: (context, snap) {
                     final cp = snap.hasData ? (snap.data as Map)['checkpoint'] : null;
                     if (cp is! Map || cp['started'] != true) return const SizedBox.shrink();
+                    final phase = cp['phaseName']?.toString() ?? '';
+                    final phaseLabel = switch (phase) {
+                      'theory' => 'Teoria',
+                      'questions' => 'Questões',
+                      'revisions' || 'review' || 'cards' => 'Revisão',
+                      _ => phase.isEmpty ? 'Sessão' : phase,
+                    };
+                    final q = (cp['qIndex'] as num?)?.toInt();
+                    final sub = phase == 'questions' && q != null
+                        ? '$phaseLabel · item ${q + 1}'
+                        : phaseLabel;
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: OutlinedButton.icon(
                         onPressed: () => context.go(sessionPath),
                         icon: const Icon(Icons.history_rounded),
-                        label: const Text('Continuar de onde parou'),
+                        label: Text('Continuar · $sub'),
                       ),
                     );
                   },

@@ -515,6 +515,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Fila / Revisões / Adaptive fim / week-close: **Marcar recuperada** → `POST /api/gaps/recover`.
 2. Smoke `ciclo_cd_*` + suite + pack + push.
 
+## Versão + pack visível (Ciclo CE)
+
+1. App **1.0.0+3** (pubspec + Ajustes → Sobre).
+2. `empacotar_windows.bat` grava `dist\PAES_MED_AI_Windows\VERSION.txt`.
+3. Smoke: `ciclo_ce_*` + push.
+
+## Theory CTA + foco-safe (Ciclo CF)
+
+1. Sessão teoria vazia → Biblioteca; Enter avança teoria; revisões empty com botão.
+2. Tutor lesson sem `/aulas`; Settings Domínio desabilitado em foco; library pipeline focus-aware.
+3. Smoke: `ciclo_cf_*` + push.
+
+## Checkpoint legível (Ciclo CG)
+
+1. Banner sessão / Hoje / Fila: fase · item (questões) · salvamento.
+2. Smoke: `ciclo_cg_*` + push.
+
+## Exam hydrate (Ciclo CH)
+
+1. Prefs vazia → `GET /api/study/exam-date` preenche (local wins se já tiver).
+2. Ajustes: eco countdown sob a data.
+3. Smoke `ciclo_ch_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

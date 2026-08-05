@@ -42,7 +42,22 @@ class ExamDateNotifier extends StateNotifier<String> {
 
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
-    state = p.getString(StudyPrefs.examDateKey) ?? '';
+    final local = p.getString(StudyPrefs.examDateKey) ?? '';
+    if (local.isNotEmpty) {
+      state = local;
+      return;
+    }
+    // Ciclo CH: hydrate do backend se prefs local vazia (local wins se já tem).
+    try {
+      final raw = await apiClient.get('/api/study/exam-date');
+      final apiDate = (raw is Map ? raw['examDate'] : null)?.toString().trim() ?? '';
+      if (apiDate.isNotEmpty && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(apiDate)) {
+        await p.setString(StudyPrefs.examDateKey, apiDate);
+        state = apiDate;
+        return;
+      }
+    } catch (_) {}
+    state = '';
   }
 
   Future<void> setDate(String iso) async {

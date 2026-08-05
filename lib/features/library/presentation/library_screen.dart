@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
@@ -214,7 +215,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       } else {
         await _professorBatchUema();
       }
-      if (mounted) context.go('/medicina');
+      if (mounted) {
+        final focus = ref.read(focusModeProvider);
+        context.go(focus ? '/sessao' : '/medicina');
+      }
     }
   }
 

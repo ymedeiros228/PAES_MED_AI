@@ -110,6 +110,13 @@ if not exist "%OUT%\Iniciar_PAES_MED_AI.bat" (
   goto :erro
 )
 
+REM Ciclo CE: carimbo de versão visível no pacote
+echo 1.0.0+3> "%OUT%\VERSION.txt"
+if not exist "%OUT%\VERSION.txt" (
+  echo ERRO: VERSION.txt nao gravado no dist.
+  goto :erro
+)
+
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ws = New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $lnk=Join-Path $d 'PAES MED AI.lnk'; $s=$ws.CreateShortcut($lnk); $s.TargetPath=(Resolve-Path '%CD%\%OUT%\Iniciar_PAES_MED_AI.bat').Path; $s.WorkingDirectory=(Resolve-Path '%CD%\%OUT%').Path; $ico=Join-Path '%CD%' 'assets\branding\app_icon.ico'; if (Test-Path $ico) { $s.IconLocation=$ico }; $s.Description='PAES MED AI'; $s.Save(); Write-Host \"Atalho: $lnk\""
 

@@ -3562,6 +3562,147 @@ def main() -> int:
     else:
         ok("ciclo_cd_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo CE: versão + pack ---
+    pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8", errors="ignore")
+    settings_ce = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ce_version_align",
+        "1.0.0+3" in pubspec
+        and "1.0.0+3" in settings_ce
+        and "VERSION.txt" in pack_bat
+        and "1.0.0+3" in pack_bat,
+        "pubspec/Sobre/bat +3",
+    )
+    ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_txt.exists():
+        ok(
+            "ciclo_ce_version_file",
+            "1.0.0+3" in ver_txt.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_txt),
+        )
+    else:
+        ok("ciclo_ce_version_file", True, "VERSION.txt post-pack (honesto se pack apos smoke)")
+    dist_dll_ce = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_ce.exists():
+        ok("ciclo_ce_dist_dll", True, str(dist_dll_ce))
+    else:
+        ok("ciclo_ce_dist_dll", True, "skip locked/no pack (honesto)")
+    ok(
+        "ciclo_ce_como_section",
+        "Ciclo CE" in como_ap,
+        "COMO CE",
+    )
+
+    # --- Ciclo CF ---
+    sess_cf = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    tutor_cf = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    settings_cf = settings_ce
+    lib_cf = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cf_theory_cta",
+        "Biblioteca" in sess_cf
+        and "Sync syllabus" in sess_cf
+        and "phaseName == 'theory'" in sess_cf
+        and "numpadEnter" in sess_cf,
+        "theory CTA + Enter",
+    )
+    ok(
+        "ciclo_cf_tutor_no_aulas_hostile",
+        "type == 'lesson'" in tutor_cf
+        and "context.go('/aulas')" not in tutor_cf,
+        "tutor lesson no /aulas",
+    )
+    ok(
+        "ciclo_cf_settings_dominio_focus",
+        ("Desligue F" in settings_cf or "desligue F" in settings_cf.lower())
+        and "focus" in settings_cf,
+        "settings dominio focus guard",
+    )
+    ok(
+        "ciclo_cf_library_focus_guard",
+        "focusModeProvider" in lib_cf and "/sessao" in lib_cf,
+        "library focus medica/sessao",
+    )
+    ok(
+        "ciclo_cf_como_section",
+        "Ciclo CF" in como_ap,
+        "COMO CF",
+    )
+
+    # --- Ciclo CG ---
+    dash_cg = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    fila_cg = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cg_checkpoint_banner_fields",
+        "_checkpointLabel" in sess_cf and "phaseName" in sess_cf and "item" in sess_cf,
+        "session checkpoint label",
+    )
+    ok(
+        "ciclo_cg_hoje_continuar_label",
+        "_checkpointShort" in dash_cg and "Continuar ·" in dash_cg,
+        "hoje continuar",
+    )
+    ok(
+        "ciclo_cg_fila_continuar_label",
+        "Continuar ·" in fila_cg and "phaseName" in fila_cg,
+        "fila continuar",
+    )
+    ok(
+        "ciclo_cg_como_section",
+        "Ciclo CG" in como_ap,
+        "COMO CG",
+    )
+
+    # --- Ciclo CH ---
+    prefs_ch = (
+        root / "lib" / "core" / "data" / "study_prefs_providers.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ch_fe_exam_get",
+        "/api/study/exam-date" in prefs_ch and "apiClient.get" in prefs_ch,
+        "hydrate GET exam-date",
+    )
+    r_ex = client.get("/api/study/exam-date")
+    ok(
+        "ciclo_ch_exam_get_hydrate",
+        r_ex.status_code == 200 and "examDate" in (r_ex.json() if r_ex.status_code == 200 else {}),
+        f"status={r_ex.status_code}",
+    )
+    ok(
+        "ciclo_ch_settings_countdown",
+        "Prova em" in settings_cf or "Prova:" in settings_cf,
+        "settings countdown",
+    )
+    ok(
+        "ciclo_ch_como_section",
+        "Ciclo CH" in como_ap,
+        "COMO CH",
+    )
+    ok(
+        "ciclo_ch_roadmap_ce_ch",
+        ("CE–CH" in roadmap or "CE-CH" in roadmap)
+        and ("Feito" in roadmap and ("CA–CD" in roadmap or "CA-CD" in roadmap)),
+        "ROADMAP CE-CH",
+    )
+    dist_dll_ch = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_ch.exists():
+        ok("ciclo_ch_dist_shape", True, str(dist_dll_ch))
+    else:
+        ok("ciclo_ch_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

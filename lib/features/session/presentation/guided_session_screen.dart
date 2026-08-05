@@ -159,6 +159,30 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     } catch (_) {}
   }
 
+  String _checkpointLabel(Map cp) {
+    final phase = cp['phaseName']?.toString() ?? '';
+    final phaseLabel = switch (phase) {
+      'theory' => 'Teoria',
+      'questions' => 'Questões',
+      'revisions' || 'review' || 'cards' => 'Revisão',
+      _ => phase.isEmpty ? 'Sessão' : phase,
+    };
+    final q = (cp['qIndex'] as num?)?.toInt();
+    final correct = (cp['correctCount'] as num?)?.toInt();
+    final parts = <String>[phaseLabel];
+    if (phase == 'questions' && q != null) {
+      parts.add('item ${q + 1}');
+    }
+    if (correct != null && correct > 0) {
+      parts.add('$correct acerto(s)');
+    }
+    final at = cp['updatedAt']?.toString();
+    if (at != null && at.isNotEmpty) {
+      parts.add('salva ${at.length > 16 ? at.substring(0, 16) : at}');
+    }
+    return parts.join(' · ');
+  }
+
   Future<void> _clearCheckpoint() async {
     try {
       await apiClient.delete('/api/session/checkpoint');
@@ -590,6 +614,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final phase = Map<String, dynamic>.from(phases[phaseIndex.clamp(0, phases.length - 1)] as Map);
     final phaseName = phase['phase']?.toString() ?? '';
 
+    // Fase theory: Enter avança (Ciclo CF)
+    if (phaseName == 'theory') {
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        unawaited(_nextPhase());
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
     // Fase cards (revisão prática) — paridade com flashcards (Ciclo CA)
     if (phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards') {
       if (sessionCards.isEmpty || revisionUsingQuestions) return KeyEventResult.ignored;
@@ -871,7 +905,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Sessão em andamento encontrada'),
-                subtitle: Text('Salva em ${pendingCheckpoint!['updatedAt'] ?? '—'}'),
+                subtitle: Text(_checkpointLabel(pendingCheckpoint!)),
                 trailing: Wrap(
                   spacing: 4,
                   children: [
@@ -956,7 +990,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               const Divider(height: 24),
               Text('Teoria do edital', style: Theme.of(context).textTheme.titleMedium),
               if (snippets.isEmpty)
-                const Text('Sem tópicos de syllabus para o assunto do dia — rode Sync syllabus na Biblioteca.')
+                QuietEmpty(
+                  message: 'Sem tópicos de syllabus para o assunto do dia — rode Sync syllabus na Biblioteca.',
+                  action: TextButton(
+                    onPressed: () => context.go('/biblioteca'),
+                    child: const Text('Biblioteca'),
+                  ),
+                )
               else
                 for (final s in snippets.take(10))
                   Padding(
@@ -1085,9 +1125,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               const Divider(height: 24),
               Text('Revisão prática', style: Theme.of(context).textTheme.titleMedium),
               if (sessionCards.isEmpty)
-                Text(
-                  'Sem flashcards due. Revisões na fila: ${((plan?['revisions'] as List?) ?? []).length}. '
-                  'Toque em “Carregar revisões” para praticar questões dos tópicos, ou avance a fase.',
+                QuietEmpty(
+                  message:
+                      'Sem flashcards due. Revisões na fila: ${((plan?['revisions'] as List?) ?? []).length}. '
+                      'Carregue revisões para praticar questões dos tópicos, ou avance a fase.',
+                  action: TextButton(
+                    onPressed: () => unawaited(_enterRevisionsPhase()),
+                    child: const Text('Carregar revisões'),
+                  ),
                 )
               else ...[
                 Text('Card ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
@@ -1112,7 +1157,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ],
             ],
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)
-              const Text('Toque em “Carregar revisões” para praticar questões dos tópicos due.'),
+              QuietEmpty(
+                message: 'Sem questões carregadas para as revisões due.',
+                action: TextButton(
+                  onPressed: () => unawaited(_enterRevisionsPhase()),
+                  child: const Text('Carregar revisões'),
+                ),
+              ),
           ],
           ], // !sessionComplete
           if (exportMsg != null) ...[
