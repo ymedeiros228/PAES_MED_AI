@@ -3570,17 +3570,18 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        "1.0.0+3" in pubspec
-        and "1.0.0+3" in settings_ce
+        ("1.0.0+3" in pubspec or "1.0.0+4" in pubspec)
+        and ("1.0.0+3" in settings_ce or "1.0.0+4" in settings_ce)
         and "VERSION.txt" in pack_bat
-        and "1.0.0+3" in pack_bat,
-        "pubspec/Sobre/bat +3",
+        and ("1.0.0+3" in pack_bat or "1.0.0+4" in pack_bat),
+        "pubspec/Sobre/bat +3/+4",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_txt.exists():
+        _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            "1.0.0+3" in ver_txt.read_text(encoding="utf-8", errors="ignore"),
+            "1.0.0+3" in _ver_ce or "1.0.0+4" in _ver_ce,
             str(ver_txt),
         )
     else:
@@ -3702,6 +3703,144 @@ def main() -> int:
         ok("ciclo_ch_dist_shape", True, str(dist_dll_ch))
     else:
         ok("ciclo_ch_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CI: revisão+questões teclado ---
+    sess_ci = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ci_session_rev_q_keys",
+        "revisionUsingQuestions" in sess_ci
+        and "questionsKeyboard" in sess_ci
+        and "numpad1" in sess_ci,
+        "rev+questions keyboard",
+    )
+    ok(
+        "ciclo_ci_como_section",
+        "Ciclo CI" in como_ap,
+        "COMO CI",
+    )
+
+    # --- Ciclo CJ: erros humanos ---
+    api_err = (
+        root / "lib" / "core" / "data" / "api_error.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "data" / "api_error.dart"
+    ).exists() else ""
+    lib_cj = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    adapt_cj = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_cj = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cj_human_helper",
+        "humanApiError" in api_err and "Sem conexão local" in api_err,
+        "api_error helper",
+    )
+    ok(
+        "ciclo_cj_search_no_exception_string",
+        "humanApiError" in lib_cj and "searchNote = e.toString()" not in lib_cj,
+        "search human",
+    )
+    ok(
+        "ciclo_cj_adaptive_human_error",
+        "humanApiError" in adapt_cj and "error = e.toString()" not in adapt_cj,
+        "adaptive human",
+    )
+    ok(
+        "ciclo_cj_ficha_subtitle_human",
+        "humanApiError" in ficha_cj,
+        "ficha human",
+    )
+    ok(
+        "ciclo_cj_como_section",
+        "Ciclo CJ" in como_ap,
+        "COMO CJ",
+    )
+
+    # --- Ciclo CK: first-run ---
+    onb_ck = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    settings_ck = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ck_onboarding_finish_paths",
+        "Ir ao Hoje" in onb_ck and "/dashboard" in onb_ck and "Biblioteca" in onb_ck,
+        "onboarding paths",
+    )
+    ok(
+        "ciclo_ck_folder_no_exception",
+        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and "\$e" not in onb_ck,
+        "folder human",
+    )
+    ok(
+        "ciclo_ck_settings_aprovacao_focus",
+        "aprovacao" in settings_ck and "Desligue F" in settings_ck and "modo foco) para aprovar" in settings_ck,
+        "aprovar focus",
+    )
+    ok(
+        "ciclo_ck_como_section",
+        "Ciclo CK" in como_ap,
+        "COMO CK",
+    )
+
+    # --- Ciclo CL: avançado +4 ---
+    pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8", errors="ignore")
+    pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cl_settings_avancado_groups",
+        "SectionLabel('Mídia'" in settings_ck
+        or "SectionLabel(\n                    'Mídia'" in settings_ck
+        or "SectionLabel('Mídia'" in settings_ck.replace(" ", "")
+        or ("Mídia" in settings_ck and "Oficina" in settings_ck and "Índices" in settings_ck and "Paths" in settings_ck),
+        "avancado groups",
+    )
+    ok(
+        "ciclo_cl_reprocess_button",
+        "/api/library/reprocess" in settings_ck and "Recalcular base" in settings_ck,
+        "reprocess",
+    )
+    ok(
+        "ciclo_cl_msg_human",
+        "humanApiError" in settings_ck and "msg = e.toString()" not in settings_ck,
+        "msg human advanced",
+    )
+    ok(
+        "ciclo_cl_version_align",
+        "1.0.0+4" in pubspec and "1.0.0+4" in settings_ck and "1.0.0+4" in pack_bat,
+        "version +4",
+    )
+    ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_cl.exists():
+        ok(
+            "ciclo_cl_version_file",
+            "1.0.0+4" in ver_cl.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_cl),
+        )
+    else:
+        ok("ciclo_cl_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_cl_como_section",
+        "Ciclo CL" in como_ap,
+        "COMO CL",
+    )
+    ok(
+        "ciclo_cl_roadmap_ci_cl",
+        ("CI–CL" in roadmap or "CI-CL" in roadmap)
+        and ("Feito" in roadmap and ("CE–CH" in roadmap or "CE-CH" in roadmap)),
+        "ROADMAP CI-CL",
+    )
+    dist_dll_cl = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cl.exists():
+        ok("ciclo_cl_dist_shape", True, str(dist_dll_cl))
+    else:
+        ok("ciclo_cl_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

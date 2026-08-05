@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -685,7 +686,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     } catch (e) {
       setState(() {
         searchHits = [];
-        searchNote = e.toString();
+        searchNote = humanApiError(e, fallback: 'Busca indisponível agora. Tente de novo.');
       });
     } finally {
       setState(() => searching = false);
@@ -967,7 +968,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (searchNote != null && searchHits.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(searchNote!, style: Theme.of(context).textTheme.bodySmall),
+                  child: QuietEmpty(
+                    message: searchNote!,
+                    action: TextButton(
+                      onPressed: searching ? null : _runSearch,
+                      child: const Text('Tentar'),
+                    ),
+                  ),
                 ),
               if (searchHits.isNotEmpty) ...[
                 SectionLabel('Resultados', hint: '${searchHits.length} local'),

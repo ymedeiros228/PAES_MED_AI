@@ -35,12 +35,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       final data = await apiClient.post('/api/library/open-folder', {'folder': folder});
       setState(() => folderMsg = 'Aberta: ${(data as Map)['path']}');
-    } catch (e) {
-      setState(() => folderMsg = 'Pasta indisponível agora. Depois: Biblioteca.\n$e');
+    } catch (_) {
+      setState(() => folderMsg = 'Pasta indisponível agora. Depois: Ajustes ou Biblioteca.');
     }
   }
 
-  Future<void> _finish({bool skipExam = false}) async {
+  Future<void> _finish({bool skipExam = false, String path = '/dashboard'}) async {
     final raw = examCtrl.text.trim();
     if (!skipExam && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(raw)) {
       await ref.read(examDateProvider.notifier).setDate(raw);
@@ -50,7 +50,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await prefs.setBool('onboarding_done_v1', true);
     await prefs.setBool('first_run_coach_pending', true);
     notifyOnboardingFinished();
-    if (mounted) context.go('/biblioteca');
+    if (mounted) context.go(path);
   }
 
   @override
@@ -62,7 +62,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       'Hub pessoal para Medicina na UEMA — acervo, sessão e revisão no seu ritmo.',
       'Calibra o plano e a contagem. Pode pular e definir depois em Ajustes.',
       'Importe 2024–26 na Biblioteca com um toque, ou abra as pastas e coloque os PDFs à mão.',
-      'Hoje → Sessão ou Fila. Simulado quando quiser medir. Tutor se travar num tópico.',
+      'Hoje → Sessão ou Fila. Biblioteca se ainda faltar prova. Simulado quando quiser medir.',
     ];
 
     return Scaffold(
@@ -148,8 +148,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       child: const Text('Continuar'),
                     )
                   else ...[
-                    TextButton(onPressed: () => _finish(skipExam: true), child: const Text('Pular')),
-                    FilledButton(onPressed: _finish, child: const Text('Ir à Biblioteca')),
+                    TextButton(
+                      onPressed: () => _finish(skipExam: true, path: '/biblioteca'),
+                      child: const Text('Biblioteca'),
+                    ),
+                    FilledButton(
+                      onPressed: () => _finish(path: '/dashboard'),
+                      child: const Text('Ir ao Hoje'),
+                    ),
                   ],
                 ],
               ),

@@ -624,9 +624,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       return KeyEventResult.ignored;
     }
 
-    // Fase cards (revisão prática) — paridade com flashcards (Ciclo CA)
-    if (phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards') {
-      if (sessionCards.isEmpty || revisionUsingQuestions) return KeyEventResult.ignored;
+    // Fase cards (revisão prática) — Space/L/E só em cards reais (Ciclo CA)
+    final isRevPhase =
+        phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
+    if (isRevPhase && !revisionUsingQuestions) {
+      if (sessionCards.isEmpty) return KeyEventResult.ignored;
       if (event.logicalKey == LogicalKeyboardKey.space) {
         setState(() => cardFlipped = !cardFlipped);
         return KeyEventResult.handled;
@@ -646,7 +648,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       return KeyEventResult.ignored;
     }
 
-    if (phaseName != 'questions') return KeyEventResult.ignored;
+    // Ciclo CI: revisão com questões reusa teclado da fase questions
+    final questionsKeyboard = phaseName == 'questions' ||
+        (isRevPhase && revisionUsingQuestions && sessionQuestions.isNotEmpty);
+    if (!questionsKeyboard) return KeyEventResult.ignored;
 
     // Tipo de erro após miss: 1–5 + Enter (Ciclo CA)
     if (pendingErrorPick) {

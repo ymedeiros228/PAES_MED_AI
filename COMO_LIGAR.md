@@ -538,6 +538,28 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Ajustes: eco countdown sob a data.
 3. Smoke `ciclo_ch_*` + suite + pack + push.
 
+## Teclado revisão+questões (Ciclo CI)
+
+1. Sessão: fase revisions com `revisionUsingQuestions` usa 1–5 / Enter / error-pick.
+2. Cards puras: Space/L/E intactos.
+3. Smoke: `ciclo_ci_*` + push.
+
+## Erros humanos (Ciclo CJ)
+
+1. `humanApiError` em busca, treino, ficha, encerrar dia/semana.
+2. Smoke: `ciclo_cj_*` + push.
+
+## First-run (Ciclo CK)
+
+1. Onboarding → **Ir ao Hoje** (primário) + Biblioteca; pasta sem exception.
+2. Aprovar desabilitado sob foco (como Domínio).
+3. Smoke: `ciclo_ck_*` + push.
+
+## Ajustes Avançado (Ciclo CL)
+
+1. Grupos Mídia · Oficina · Índices · Paths; Recalcular base; versão **1.0.0+4**.
+2. Smoke `ciclo_cl_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

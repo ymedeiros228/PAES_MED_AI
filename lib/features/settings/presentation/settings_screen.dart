@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/data/theme_mode_provider.dart';
@@ -117,6 +118,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _reprocess() async {
+    try {
+      final data = await apiClient.post('/api/library/reprocess', {});
+      final map = Map<String, dynamic>.from(data as Map);
+      setState(() => msg = map['message']?.toString() ?? 'Base reprocessada.');
+    } catch (e) {
+      setState(() => msg = humanApiError(e, fallback: 'Falha ao recalcular a base local.'));
+    }
+  }
+
   Future<void> _pickPdf() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result == null || result.files.single.path == null) return;
@@ -180,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PAES MED AI · 1.0.0+3',
+                      'PAES MED AI · 1.0.0+4',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
@@ -372,8 +383,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
-                subtitle: const Text('IA, PDF direto, paths e ferramentas de oficina'),
+                subtitle: const Text('Mídia · oficina · índices · paths'),
                 children: [
+                  SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Tutor com IA online'),
@@ -415,7 +427,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 await apiClient.post('/api/media/prefs', {'suggestVideos': v});
                                 setState(() {});
                               } catch (e) {
-                                setState(() => msg = e.toString());
+                                setState(
+                                  () => msg = humanApiError(e, fallback: 'Não deu para salvar preferência.'),
+                                );
                               }
                             },
                           ),
@@ -433,7 +447,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 await apiClient.post('/api/media/prefs', {'suggestArticles': v});
                                 setState(() {});
                               } catch (e) {
-                                setState(() => msg = e.toString());
+                                setState(
+                                  () => msg = humanApiError(e, fallback: 'Não deu para salvar preferência.'),
+                                );
                               }
                             },
                           ),
@@ -485,7 +501,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                             'topic': raw['topic']?.toString(),
                                           });
                                         } catch (e) {
-                                          setState(() => msg = e.toString());
+                                          setState(
+                                            () => msg = humanApiError(
+                                              e,
+                                              fallback: 'Não deu para abrir o material.',
+                                            ),
+                                          );
                                         }
                                       },
                                     ),
@@ -497,6 +518,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
+                  SectionLabel('Oficina', hint: 'PDF, aprovação, rascunhos'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Importar PDF aqui'),
@@ -517,21 +539,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Aprovar questões geradas'),
-                    trailing: FilledButton.tonal(
-                      onPressed: () => context.go('/aprovacao'),
-                      child: const Text('Abrir'),
-                    ),
+                    trailing: focus
+                        ? Tooltip(
+                            message: 'Desligue F (modo foco) para aprovar',
+                            child: FilledButton.tonal(
+                              onPressed: null,
+                              child: const Text('Abrir'),
+                            ),
+                          )
+                        : FilledButton.tonal(
+                            onPressed: () => context.go('/aprovacao'),
+                            child: const Text('Abrir'),
+                          ),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Lote de rascunhos (professor)'),
                     trailing: FilledButton.tonal(onPressed: _professorBatch, child: const Text('Rodar')),
                   ),
+                  SectionLabel('Índices', hint: 'RAG e recálculo local'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Reindexar material local'),
                     trailing: FilledButton.tonal(onPressed: _reindex, child: const Text('Rodar')),
                   ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Recalcular base local'),
+                    subtitle: const Text('POST reprocess — frequência/perfil na leitura'),
+                    trailing: FilledButton.tonal(onPressed: _reprocess, child: const Text('Rodar')),
+                  ),
+                  SectionLabel('Paths', hint: 'Onde ficam os dados'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Pasta de dados'),

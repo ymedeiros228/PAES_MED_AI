@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
@@ -96,7 +97,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       final data = await apiClient.get('/api/questions/${widget.questionId}');
       setState(() => question = Question.fromJson(Map<String, dynamic>.from(data as Map)));
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para abrir a ficha. Tente de novo.'));
     }
   }
 
