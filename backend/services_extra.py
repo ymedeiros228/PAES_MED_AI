@@ -1071,6 +1071,55 @@ def clear_session_checkpoint() -> dict[str, Any]:
         conn.close()
 
 
+_SIM_CHECKPOINT_KEY = "sim_checkpoint"
+
+
+def save_sim_checkpoint(payload: dict[str, Any]) -> dict[str, Any]:
+    """Checkpoint mid-flow de simulado (Ciclo BP) — settings.sim_checkpoint."""
+    now = datetime.now().isoformat(timespec="seconds")
+    body = dict(payload)
+    body["started"] = True
+    body["kind"] = "sim"
+    body["updatedAt"] = now
+    conn = connect()
+    try:
+        conn.execute(
+            """
+            INSERT INTO settings(key, value) VALUES(?, ?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            """,
+            (_SIM_CHECKPOINT_KEY, json.dumps(body, ensure_ascii=False)),
+        )
+        conn.commit()
+        return {"ok": True, "updatedAt": now}
+    finally:
+        conn.close()
+
+
+def get_sim_checkpoint() -> dict[str, Any] | None:
+    conn = connect()
+    try:
+        row = conn.execute("SELECT value FROM settings WHERE key=?", (_SIM_CHECKPOINT_KEY,)).fetchone()
+        if not row:
+            return None
+        data = json.loads(row["value"] or "{}")
+        if not isinstance(data, dict) or not data.get("started"):
+            return None
+        return data
+    finally:
+        conn.close()
+
+
+def clear_sim_checkpoint() -> dict[str, Any]:
+    conn = connect()
+    try:
+        conn.execute("DELETE FROM settings WHERE key=?", (_SIM_CHECKPOINT_KEY,))
+        conn.commit()
+        return {"ok": True}
+    finally:
+        conn.close()
+
+
 def schedule_gap_revisions(gaps: list[dict[str, Any]]) -> dict[str, Any]:
     """Agenda revisões para lacunas do simulado (subject/topic)."""
     scheduled = 0

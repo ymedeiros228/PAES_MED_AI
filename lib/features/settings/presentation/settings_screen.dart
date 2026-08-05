@@ -173,6 +173,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Preferências do dia a dia',
               ),
 
+              SectionLabel('Sobre'),
+              SurfacePanel(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'PAES MED AI · 1.0.0+2',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'App local de treino para PAES UEMA Medicina.\n'
+                      '• Offline-first — dados no seu PC\n'
+                      '• Não inventa % de aprovação nem prova oficial ausente\n'
+                      '• Catálogo de reforço (vídeo/leitura) não é edital da banca',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+
               SectionLabel('Aparência'),
               _ThemeModePicker(mode: ref.watch(themeModeProvider)),
 

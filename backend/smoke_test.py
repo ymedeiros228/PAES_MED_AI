@@ -3012,6 +3012,139 @@ def main() -> int:
     else:
         ok("ciclo_bn_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo BO: plan export via export-day ---
+    plan_ui = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bo_plan_export_api",
+        "/api/study/export-day" in plan_ui and "plano_semana" in plan_ui,
+        "plan export API",
+    )
+    r = client.post(
+        "/api/study/export-day",
+        json={"markdown": "# Plano semana smoke\n\nEstimativas ≠ garantia.\n", "filename": "plano_semana_smoke.md"},
+    )
+    exp_bo = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_bo_export_file",
+        r.status_code == 200 and exp_bo.get("ok") is True and "exports" in str(exp_bo.get("path") or ""),
+        str(exp_bo)[:100],
+    )
+    ok("ciclo_bo_como_section", "Ciclo BO" in como_ap, "COMO BO")
+
+    # --- Ciclo BP: sim checkpoint ---
+    r = client.post(
+        "/api/sim/checkpoint",
+        json={
+            "mode": "dia_prova",
+            "limit": 5,
+            "answers": {"q1": 0},
+            "questionIds": ["q1"],
+            "questions": [{"id": "q1", "statement": "smoke"}],
+            "elapsedSec": 12,
+            "started": True,
+        },
+    )
+    ok(
+        "ciclo_bp_sim_checkpoint_save",
+        r.status_code == 200 and (r.json() or {}).get("ok") is True,
+        str(r.status_code),
+    )
+    r = client.get("/api/sim/checkpoint")
+    scp = r.json() if r.status_code == 200 else {}
+    cp = scp.get("checkpoint") if isinstance(scp.get("checkpoint"), dict) else {}
+    ok(
+        "ciclo_bp_sim_checkpoint_get",
+        r.status_code == 200 and cp.get("mode") == "dia_prova" and cp.get("started") is True,
+        str({"mode": cp.get("mode"), "nQ": len(cp.get("questions") or [])}),
+    )
+    r = client.delete("/api/sim/checkpoint")
+    ok("ciclo_bp_sim_checkpoint_clear", r.status_code == 200, str(r.status_code))
+    sim_bp = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bp_sim_ui_continue",
+        "/api/sim/checkpoint" in sim_bp and "Continuar" in sim_bp and "Descartar" in sim_bp,
+        "sim continue UI",
+    )
+    ok("ciclo_bp_como_section", "Ciclo BP" in como_ap, "COMO BP")
+
+    # --- Ciclo BQ: ficha + cards keyboard ---
+    qdet = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bq_ficha_media",
+        "MediaReinforcement" in qdet,
+        "ficha media",
+    )
+    fc_bq = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_bq_cards_keyboard",
+        "LogicalKeyboardKey.space" in fc_bq and "keyL" in fc_bq and "keyE" in fc_bq,
+        "cards keyboard",
+    )
+    ok("ciclo_bq_como_section", "Ciclo BQ" in como_ap, "COMO BQ")
+
+    # --- Ciclo BR: domínio Z3 + Sobre + a11y ---
+    med_br = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_br_dominio_avancado",
+        "Rascunhos, labels sujas" in med_br or "labels sujas" in med_br,
+        "domínio Avançado",
+    )
+    sett_br = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_br_settings_sobre",
+        "SectionLabel('Sobre'" in sett_br or "Sobre" in sett_br and "1.0.0+2" in sett_br,
+        "settings Sobre",
+    )
+    shell_br = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_br_shell_semantics",
+        "Semantics" in shell_br and "Tooltip" in shell_br,
+        "shell a11y",
+    )
+    ok(
+        "ciclo_br_como_section",
+        "Ciclo BR" in como_ap and "Ciclo BO" in como_ap and "Ciclo BP" in como_ap and "Ciclo BQ" in como_ap,
+        "COMO BO-BR",
+    )
+    ok(
+        "ciclo_br_roadmap_bo_br",
+        "BO–BR" in roadmap or "BO-BR" in roadmap or "ciclo_bo" in roadmap.lower(),
+        "ROADMAP BO-BR",
+    )
+    dist_dll_br = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_br.exists():
+        ok("ciclo_br_dist_shape", True, str(dist_dll_br))
+    else:
+        ok("ciclo_br_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

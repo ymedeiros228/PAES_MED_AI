@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -380,6 +381,15 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ],
             ),
           ),
+          if (revealed && !pendingErrorPick && q.subject.isNotEmpty && q.topic.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: MediaReinforcement(
+                subject: q.subject,
+                topic: q.topic,
+                compact: true,
+              ),
+            ),
           const SizedBox(height: 8),
           _Block('Relacionados', ((pm['relatedTopics'] as List?) ?? q.relatedTopics).join(', ')),
           _Block('No acervo', 'Anos: ${(freq['years'] as List?)?.join(', ') ?? q.year} · ${freq['count'] ?? 1}x'),

@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path/path.dart' as p;
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/providers.dart';
@@ -62,6 +59,29 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     await _load();
   }
 
+  Future<void> _exportMarkdown(String markdown, String filename) async {
+    try {
+      final data = await apiClient.post('/api/study/export-day', {
+        'markdown': markdown,
+        'filename': filename,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final path = map['path']?.toString() ?? '';
+      setState(() => exportMsg = path.isNotEmpty ? 'Exportado: $path' : 'Exportado em data/exports');
+      if (path.isNotEmpty) {
+        try {
+          final parent = path.replaceAll('\\', '/');
+          final dir = parent.contains('/')
+              ? parent.substring(0, parent.lastIndexOf('/'))
+              : path;
+          await apiClient.post('/api/library/open-path', {'path': dir});
+        } catch (_) {}
+      }
+    } catch (e) {
+      setState(() => exportMsg = e.toString());
+    }
+  }
+
   Future<void> _exportWeek() async {
     final week = plan.take(7).toList();
     final buf = StringBuffer('# Plano da semana — PAES MED AI\n\n');
@@ -73,11 +93,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       buf.writeln('## Dia ${item['day']}: ${item['subject']} — ${item['topic']}');
       buf.writeln('${item['reason']}\n');
     }
-    final dir = Directory.current.path;
-    final file = File(p.join(dir, 'data', 'plano_semana.md'));
-    await file.parent.create(recursive: true);
-    await file.writeAsString(buf.toString());
-    setState(() => exportMsg = 'Exportado: ${file.path}');
+    final stamp = DateTime.now().toIso8601String().replaceAll(':', '').substring(0, 15);
+    await _exportMarkdown(buf.toString(), 'plano_semana_$stamp.md');
   }
 
   Future<void> _exportMonth() async {
@@ -90,11 +107,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       final item = Map<String, dynamic>.from(raw as Map);
       buf.writeln('- Dia ${item['day']}: ${item['subject']} — ${item['topic']}');
     }
-    final dir = Directory.current.path;
-    final file = File(p.join(dir, 'data', 'plano_mes.md'));
-    await file.parent.create(recursive: true);
-    await file.writeAsString(buf.toString());
-    setState(() => exportMsg = 'Exportado: ${file.path}');
+    final stamp = DateTime.now().toIso8601String().replaceAll(':', '').substring(0, 15);
+    await _exportMarkdown(buf.toString(), 'plano_mes_$stamp.md');
   }
 
   @override

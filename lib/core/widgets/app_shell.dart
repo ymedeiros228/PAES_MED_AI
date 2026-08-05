@@ -383,42 +383,52 @@ class _NavTileState extends State<_NavTile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => hovered = true),
-        onExit: (_) => setState(() => hovered = false),
-        child: Material(
-          color: bg,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              height: 44,
-              padding: EdgeInsets.symmetric(horizontal: widget.expanded ? 12 : 0),
-              child: Row(
-                mainAxisAlignment: widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.item.icon,
-                    size: 22,
-                    color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
-                  ),
-                  if (widget.expanded) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.item.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
-                              color: widget.selected ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.78),
-                            ),
+      child: Tooltip(
+        message: widget.item.label,
+        child: Semantics(
+          button: true,
+          label: widget.item.label,
+          selected: widget.selected,
+          child: MouseRegion(
+            onEnter: (_) => setState(() => hovered = true),
+            onExit: (_) => setState(() => hovered = false),
+            child: Material(
+              color: bg,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: widget.onTap,
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  height: 44,
+                  padding: EdgeInsets.symmetric(horizontal: widget.expanded ? 12 : 0),
+                  child: Row(
+                    mainAxisAlignment: widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        widget.item.icon,
+                        size: 22,
+                        color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
                       ),
-                    ),
-                  ],
-                ],
+                      if (widget.expanded) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            widget.item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+                                  color: widget.selected
+                                      ? cs.onPrimaryContainer
+                                      : cs.onSurface.withOpacity(0.78),
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -446,31 +456,38 @@ class _RailControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: active ? cs.primaryContainer.withOpacity(0.55) : cs.surfaceContainer.withOpacity(0.5),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          height: 42,
-          child: expanded
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Icon(icon, size: 20, color: cs.primary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          label,
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Material(
+          color: active ? cs.primaryContainer.withOpacity(0.55) : cs.surfaceContainer.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              height: 42,
+              child: expanded
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          Icon(icon, size: 20, color: cs.primary),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              label,
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )
-              : Icon(icon, size: 20, color: cs.primary),
+                    )
+                  : Icon(icon, size: 20, color: cs.primary),
+            ),
+          ),
         ),
       ),
     );

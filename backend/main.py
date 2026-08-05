@@ -56,6 +56,7 @@ from services_extra import (
     build_rag_context,
     build_rag_context_with_citations,
     clear_session_checkpoint,
+    clear_sim_checkpoint,
     complete_revision,
     create_backup,
     create_natureza_pack,
@@ -64,6 +65,7 @@ from services_extra import (
     fill_professor_drafts,
     generate_similar_question_stub,
     get_session_checkpoint,
+    get_sim_checkpoint,
     grade_simulation,
     ingest_pdf_placeholder,
     essay_progress,
@@ -80,6 +82,7 @@ from services_extra import (
     remediation_for,
     save_essay,
     save_session_checkpoint,
+    save_sim_checkpoint,
     schedule_gap_revisions,
     skip_professor_draft,
     structure_lesson_from_text,
@@ -2434,6 +2437,40 @@ def api_session_checkpoint_save(payload: SessionCheckpointRequest) -> dict[str, 
 @app.delete("/api/session/checkpoint")
 def api_session_checkpoint_clear() -> dict[str, Any]:
     return clear_session_checkpoint()
+
+
+class SimCheckpointRequest(BaseModel):
+    mode: str = "dia_prova"
+    limit: int = 10
+    subject: str | None = None
+    startedAt: str | None = None
+    answers: dict[str, Any] = Field(default_factory=dict)
+    errorTypes: dict[str, Any] = Field(default_factory=dict)
+    questionIds: list[str] = Field(default_factory=list)
+    questions: list[dict[str, Any]] = Field(default_factory=list)
+    currentIndex: int = 0
+    elapsedSec: int = 0
+    examLocked: bool = False
+    preflightDone: bool = False
+    basis: str | None = None
+    warning: str | None = None
+    started: bool = True
+
+
+@app.get("/api/sim/checkpoint")
+def api_sim_checkpoint_get() -> dict[str, Any]:
+    data = get_sim_checkpoint()
+    return {"checkpoint": data}
+
+
+@app.post("/api/sim/checkpoint")
+def api_sim_checkpoint_save(payload: SimCheckpointRequest) -> dict[str, Any]:
+    return save_sim_checkpoint(payload.model_dump())
+
+
+@app.delete("/api/sim/checkpoint")
+def api_sim_checkpoint_clear() -> dict[str, Any]:
+    return clear_sim_checkpoint()
 
 
 class ScheduleGapsRequest(BaseModel):

@@ -424,6 +424,28 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Sim debrief: MediaReinforcement compact na 1ª lacuna.
 4. Smoke `ciclo_bn_*` + suite + pack + push.
 
+## Export de plano (Ciclo BO)
+
+1. Plano semana/mês → `POST /api/study/export-day` (arquivo em `data/exports`).
+2. Smoke: `ciclo_bo_*` + push.
+
+## Checkpoint de simulado (Ciclo BP)
+
+1. `GET/POST/DELETE /api/sim/checkpoint` · Continuar / Descartar.
+2. Smoke: `ciclo_bp_*` + push.
+
+## Ficha + Cards teclado (Ciclo BQ)
+
+1. Ficha: MediaReinforcement pós-revelar.
+2. Cards: Space / L / E.
+3. Smoke: `ciclo_bq_*` + push.
+
+## Domínio Z3 + Sobre (Ciclo BR)
+
+1. Rascunhos/labels em Avançado; Sobre em Ajustes.
+2. Rail com Tooltip/Semantics.
+3. Smoke `ciclo_br_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

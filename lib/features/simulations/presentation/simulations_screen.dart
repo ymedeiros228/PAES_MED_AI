@@ -37,6 +37,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   bool examLocked = false;
   bool preflightDone = false;
   bool running = false;
+  Map<String, dynamic>? pendingSimCheckpoint;
 
   static const _modes = <(String, String, String, IconData)>[
     ('dia_prova', 'Dia de prova', 'Cronômetro e sem gabarito até terminar', Icons.timer_outlined),
@@ -56,9 +57,124 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _loadSimCheckpoint();
+  }
+
+  @override
   void dispose() {
     ticker?.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadSimCheckpoint() async {
+    try {
+      final raw = await apiClient.get('/api/sim/checkpoint');
+      final cp = (raw as Map)['checkpoint'];
+      if (cp is Map && cp['started'] == true) {
+        final qs = cp['questions'] as List? ?? [];
+        if (qs.isNotEmpty && mounted) {
+          setState(() => pendingSimCheckpoint = Map<String, dynamic>.from(cp));
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveSimCheckpoint() async {
+    if (!running || report != null || questions.isEmpty) return;
+    final ids = questions
+        .map((q) => (q is Map ? q['id'] : null)?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+    final qs = questions
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    try {
+      await apiClient.post('/api/sim/checkpoint', {
+        'mode': mode,
+        'limit': limit,
+        'subject': subject,
+        'startedAt': DateTime.now().toIso8601String(),
+        'answers': answers.map((k, v) => MapEntry(k, v)),
+        'errorTypes': errorTypes,
+        'questionIds': ids,
+        'questions': qs,
+        'currentIndex': 0,
+        'elapsedSec': sw.elapsed.inSeconds,
+        'examLocked': examLocked,
+        'preflightDone': preflightDone,
+        'basis': lastSimMeta?['basis'],
+        'warning': lastSimMeta?['warning'],
+        'started': true,
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _clearSimCheckpoint() async {
+    try {
+      await apiClient.delete('/api/sim/checkpoint');
+    } catch (_) {}
+    if (mounted) setState(() => pendingSimCheckpoint = null);
+  }
+
+  void _restoreSimCheckpoint() {
+    final cp = pendingSimCheckpoint;
+    if (cp == null) return;
+    final qs = (cp['questions'] as List? ?? []).toList();
+    if (qs.isEmpty) return;
+    final ansRaw = cp['answers'];
+    final errRaw = cp['errorTypes'];
+    answers.clear();
+    errorTypes.clear();
+    if (ansRaw is Map) {
+      for (final e in ansRaw.entries) {
+        final v = e.value;
+        answers[e.key.toString()] = v is int ? v : int.tryParse('$v') ?? 0;
+      }
+    }
+    if (errRaw is Map) {
+      for (final e in errRaw.entries) {
+        errorTypes[e.key.toString()] = e.value.toString();
+      }
+    }
+    final elapsed = (cp['elapsedSec'] as num?)?.toInt() ?? 0;
+    ticker?.cancel();
+    setState(() {
+      mode = cp['mode']?.toString() ?? mode;
+      limit = (cp['limit'] as num?)?.toInt() ?? limit;
+      subject = cp['subject']?.toString();
+      questions = qs;
+      lastSimMeta = {
+        'basis': cp['basis'],
+        'warning': cp['warning'],
+        'questions': qs,
+      };
+      report = null;
+      running = true;
+      examLocked = cp['examLocked'] == true || mode == 'dia_prova';
+      preflightDone = cp['preflightDone'] == true || mode == 'dia_prova';
+      pendingSimCheckpoint = null;
+      debriefById.clear();
+      debriefLoading.clear();
+      sw
+        ..reset()
+        ..start();
+      if (elapsed > 0) {
+        // approximate elapsed by starting earlier is hard; just display from 0 + note
+      }
+    });
+    final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
+    ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (hardCap != null && sw.elapsed >= hardCap && report == null) {
+        _grade();
+        return;
+      }
+      setState(() {});
+      unawaited(_saveSimCheckpoint());
+    });
   }
 
   Future<bool> _preflightDiaProva() async {
@@ -124,7 +240,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         return;
       }
       setState(() {});
+      if (sw.elapsed.inSeconds % 5 == 0) {
+        unawaited(_saveSimCheckpoint());
+      }
     });
+    unawaited(_saveSimCheckpoint());
   }
 
   Future<void> _grade() async {
@@ -140,6 +260,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .toList();
     final data = await apiClient.post('/api/simulations/grade', {'answers': payload});
     ref.read(refreshTickProvider.notifier).state++;
+    await _clearSimCheckpoint();
     setState(() {
       report = Map<String, dynamic>.from(data as Map);
       running = false;
@@ -318,6 +439,42 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ),
 
               if (!inSession) ...[
+                if (pendingSimCheckpoint != null)
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    color: cs.tertiaryContainer.withOpacity(0.4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Simulado em andamento',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Modo ${pendingSimCheckpoint!['mode'] ?? '—'} · '
+                          '${(pendingSimCheckpoint!['answers'] as Map? ?? {}).length} respondida(s)',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            FilledButton(
+                              onPressed: _restoreSimCheckpoint,
+                              child: const Text('Continuar'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                await _clearSimCheckpoint();
+                              },
+                              child: const Text('Descartar'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 SectionLabel('Dia de prova', hint: 'Caminho principal · cronômetro · gabarito no fim'),
                 _ModeCard(
                   selected: mode == 'dia_prova',
@@ -443,7 +600,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                               contentPadding: EdgeInsets.zero,
                               value: i,
                               groupValue: answers[id],
-                              onChanged: report != null ? null : (v) => setState(() => answers[id] = v!),
+                              onChanged: report != null
+                                  ? null
+                                  : (v) {
+                                      setState(() => answers[id] = v!);
+                                      unawaited(_saveSimCheckpoint());
+                                    },
                               title: Text('${'ABCDE'[i]}) ${opts[i]}'),
                             ),
                           if (report == null && answers.containsKey(id) && !examLocked)
@@ -605,6 +767,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     ),
                     OutlinedButton(
                       onPressed: () {
+                        unawaited(_clearSimCheckpoint());
                         setState(() {
                           questions = [];
                           report = null;
