@@ -86,11 +86,15 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     }
     final top = currentId ?? (_itemIds.isNotEmpty ? _itemIds.first : null);
     if (top == null) return KeyEventResult.ignored;
-    if (event.logicalKey == LogicalKeyboardKey.keyL || event.logicalKey == LogicalKeyboardKey.digit1) {
+    if (event.logicalKey == LogicalKeyboardKey.keyL ||
+        event.logicalKey == LogicalKeyboardKey.digit1 ||
+        event.logicalKey == LogicalKeyboardKey.numpad1) {
       _review(top, true);
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.keyE || event.logicalKey == LogicalKeyboardKey.digit2) {
+    if (event.logicalKey == LogicalKeyboardKey.keyE ||
+        event.logicalKey == LogicalKeyboardKey.digit2 ||
+        event.logicalKey == LogicalKeyboardKey.numpad2) {
       _review(top, false);
       return KeyEventResult.handled;
     }

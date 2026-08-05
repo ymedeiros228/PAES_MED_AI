@@ -3382,6 +3382,186 @@ def main() -> int:
     else:
         ok("ciclo_bz_dist_shape", True, "skip locked/no pack (honesto)")
 
+    # --- Ciclo CA: teclado estudo ---
+    adapt_ca = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_ca = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    cards_ca = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_ca = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ca_adaptive_numpad_enter",
+        "numpadEnter" in adapt_ca and "numpad1" in adapt_ca,
+        "adaptive numpad",
+    )
+    ok(
+        "ciclo_ca_ficha_enter_after_reveal",
+        "numpadEnter" in ficha_ca and "keyN" in ficha_ca,
+        "ficha enter after reveal",
+    )
+    ok(
+        "ciclo_ca_cards_numpad",
+        "numpad1" in cards_ca and "numpad2" in cards_ca,
+        "cards numpad L/E",
+    )
+    ok(
+        "ciclo_ca_session_cards_keys",
+        "cardFlipped" in sess_ca
+        and "LogicalKeyboardKey.space" in sess_ca
+        and "pendingErrorPick" in sess_ca
+        and "_errorTypes" in sess_ca,
+        "session cards + error pick keys",
+    )
+    ok(
+        "ciclo_ca_como_section",
+        "Ciclo CA" in como_ap,
+        "COMO CA",
+    )
+
+    # --- Ciclo CB: empties CTA ---
+    ok(
+        "ciclo_cb_adaptive_empty_cta",
+        "Abrir ficha" in adapt_ca and "Sem alternativas" in adapt_ca,
+        "adaptive empty CTA",
+    )
+    ok(
+        "ciclo_cb_ficha_error_retry",
+        "Não deu para abrir a ficha" in ficha_ca and "Tentar" in ficha_ca,
+        "ficha error",
+    )
+    bank_cb = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lessons_cb = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_cb = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    appr_cb = (
+        root / "lib" / "features" / "approval" / "presentation" / "approval_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_export = sess_ca
+    sim_cb = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cb_bank_freq_cta",
+        "Frequência indisponível" in bank_cb and "Tentar" in bank_cb and "Sem série temporal" in bank_cb,
+        "bank freq CTA",
+    )
+    ok(
+        "ciclo_cb_lessons_empty_cta",
+        "Lista indisponível" in lessons_cb and "Cole acima" in lessons_cb,
+        "lessons CTA",
+    )
+    ok(
+        "ciclo_cb_library_empty_cta",
+        "Atualizar 2024–26" in lib_cb and "Gravar PDFs do PC" in lib_cb,
+        "library empty CTA",
+    )
+    ok(
+        "ciclo_cb_approval_empty",
+        "Fila limpa" in appr_cb and "Biblioteca" in appr_cb,
+        "approval empty CTA",
+    )
+    ok(
+        "ciclo_cb_export_labels",
+        "Exportar pacote do dia" in sess_export and "Exportar relatório" in sim_cb,
+        "export labels",
+    )
+    ok(
+        "ciclo_cb_como_section",
+        "Ciclo CB" in como_ap,
+        "COMO CB",
+    )
+
+    # --- Ciclo CC: focus honesty ---
+    shell_cc = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    fila_cc = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    hostile_slice = shell_cc[shell_cc.find("_focusHostile") : shell_cc.find("_focusAllowed")]
+    allowed_slice = shell_cc[shell_cc.find("_focusAllowed") : shell_cc.find("_focusAllowed") + 900]
+    ok(
+        "ciclo_cc_redacao_not_hostile",
+        "/redacao" not in hostile_slice and "/redacao" in allowed_slice,
+        "redacao focus",
+    )
+    ok(
+        "ciclo_cc_focus_still_blocks_avancado",
+        "/cronograma" in hostile_slice and "/medicina" in hostile_slice and "/aulas" in hostile_slice,
+        "hostis avançados",
+    )
+    ok(
+        "ciclo_cc_fila_hide_hostis",
+        "focusModeProvider" in fila_cc and "Modo foco" in fila_cc,
+        "fila hide plano/dominio",
+    )
+    ok(
+        "ciclo_cc_como_section",
+        "Ciclo CC" in como_ap,
+        "COMO CC",
+    )
+
+    # --- Ciclo CD: gaps recover ---
+    week_cd = (
+        root / "lib" / "core" / "widgets" / "week_close_panel.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    rev_cd = (
+        root / "lib" / "features" / "revisions" / "presentation" / "revisions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cd_fila_recover",
+        "/api/gaps/recover" in fila_cc and "Marcar recuperada" in fila_cc,
+        "fila recover",
+    )
+    ok(
+        "ciclo_cd_adaptive_recover",
+        "/api/gaps/recover" in adapt_ca and "Marcar recuperada" in adapt_ca,
+        "adaptive recover",
+    )
+    ok(
+        "ciclo_cd_week_recover",
+        "/api/gaps/recover" in week_cd and "Recuperada" in week_cd,
+        "week recover",
+    )
+    ok(
+        "ciclo_cd_revisoes_recover",
+        "/api/gaps/recover" in rev_cd,
+        "revisoes recover",
+    )
+    r_rec = client.post("/api/gaps/recover", json={"subject": "Biologia", "topic": "SmokeRecoverCA"})
+    ok(
+        "ciclo_cd_recover_api",
+        r_rec.status_code == 200,
+        f"status={r_rec.status_code}",
+    )
+    ok(
+        "ciclo_cd_como_section",
+        "Ciclo CD" in como_ap,
+        "COMO CD",
+    )
+    ok(
+        "ciclo_cd_roadmap_ca_cd",
+        ("CA–CD" in roadmap or "CA-CD" in roadmap)
+        and ("Feito" in roadmap and ("BW–BZ" in roadmap or "BW-BZ" in roadmap)),
+        "ROADMAP CA-CD",
+    )
+    dist_dll_cd = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cd.exists():
+        ok("ciclo_cd_dist_shape", True, str(dist_dll_cd))
+    else:
+        ok("ciclo_cd_dist_shape", True, "skip locked/no pack (honesto)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

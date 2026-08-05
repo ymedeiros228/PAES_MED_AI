@@ -1023,8 +1023,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               SectionLabel('2024–26', hint: 'Toque Estudar quando estiver Pronto'),
               if (board.isEmpty)
-                const QuietEmpty(
+                QuietEmpty(
                   message: 'Nenhum ano 2024–26 ainda — use Atualizar 2024–26.',
+                  action: TextButton(
+                    onPressed: busy ? null : _semana1Real,
+                    child: const Text('Atualizar 2024–26'),
+                  ),
                 )
               else
                 for (final g in board)
@@ -1131,9 +1135,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 subtitle: const Text('Só se você tiver o PDF no PC — sem inventar cobertura'),
                 children: [
                   if (hist.isEmpty)
-                    const QuietEmpty(
+                    QuietEmpty(
                       message:
                           'Falta o PDF deste intervalo (2017–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura.',
+                      action: TextButton(
+                        onPressed: busy ? null : _commitOnDisk,
+                        child: const Text('Gravar PDFs do PC'),
+                      ),
                     )
                   else
                     for (final g in hist)

@@ -18,6 +18,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   final titleCtrl = TextEditingController(text: 'Aula importada');
   final transcriptCtrl = TextEditingController();
   final linkCtrl = TextEditingController();
+  final transcriptFocus = FocusNode();
   String? status;
   bool busy = false;
   Map<String, dynamic>? lastLesson;
@@ -27,6 +28,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     titleCtrl.dispose();
     transcriptCtrl.dispose();
     linkCtrl.dispose();
+    transcriptFocus.dispose();
     super.dispose();
   }
 
@@ -119,6 +121,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: transcriptCtrl,
+                      focusNode: transcriptFocus,
                       minLines: 8,
                       maxLines: 14,
                       onChanged: (_) => setState(() {}),
@@ -197,10 +200,22 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               SectionLabel('Suas aulas'),
               lessons.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const QuietEmpty(message: 'Lista indisponível.'),
+                error: (_, __) => QuietEmpty(
+                  message: 'Lista indisponível.',
+                  action: TextButton(
+                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    child: const Text('Tentar'),
+                  ),
+                ),
                 data: (items) {
                   if (items.isEmpty) {
-                    return const QuietEmpty(message: 'Nenhuma aula ainda — cole uma legenda acima.');
+                    return QuietEmpty(
+                      message: 'Nenhuma aula ainda — cole uma legenda acima.',
+                      action: TextButton(
+                        onPressed: () => transcriptFocus.requestFocus(),
+                        child: const Text('Cole acima'),
+                      ),
+                    );
                   }
                   return Column(
                     children: [

@@ -29,7 +29,6 @@ class AppShell extends ConsumerWidget {
     '/aprovacao',
     '/banca',
     '/aulas',
-    '/redacao',
     '/cronograma',
     '/medicina',
   };
@@ -48,6 +47,7 @@ class AppShell extends ConsumerWidget {
       '/simulados',
       '/revisoes',
       '/adaptativo',
+      '/redacao',
       '/onboarding',
     ];
     return allowed.any((p) => path == p || path.startsWith('$p/'));

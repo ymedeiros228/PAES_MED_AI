@@ -73,18 +73,51 @@ class RevisionsScreen extends ConsumerWidget {
                               '/adaptativo?subject=${Uri.encodeComponent(subject)}'
                               '&topic=${Uri.encodeComponent(topic)}',
                             ),
-                            secondary: IconButton(
-                              tooltip: 'Marcar feita',
-                              icon: const Icon(Icons.check_circle_outline),
-                              onPressed: () async {
-                                await apiClient.post(
-                                  '/api/revisions/complete'
-                                  '?subject=${Uri.encodeComponent(subject)}'
-                                  '&topic=${Uri.encodeComponent(topic)}',
-                                  {},
-                                );
-                                ref.read(refreshTickProvider.notifier).state++;
-                              },
+                            secondary: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: 'Marcar feita',
+                                  icon: const Icon(Icons.check_circle_outline),
+                                  onPressed: () async {
+                                    await apiClient.post(
+                                      '/api/revisions/complete'
+                                      '?subject=${Uri.encodeComponent(subject)}'
+                                      '&topic=${Uri.encodeComponent(topic)}',
+                                      {},
+                                    );
+                                    ref.read(refreshTickProvider.notifier).state++;
+                                  },
+                                ),
+                                IconButton(
+                                  tooltip: 'Marcar recuperada',
+                                  icon: const Icon(Icons.flag_outlined),
+                                  onPressed: () async {
+                                    try {
+                                      await apiClient.post('/api/gaps/recover', {
+                                        'subject': subject,
+                                        'topic': topic,
+                                      });
+                                      ref.read(refreshTickProvider.notifier).state++;
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Lacuna marcada como recuperada (treino local).',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('$e')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           );
                         },

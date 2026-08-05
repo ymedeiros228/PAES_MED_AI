@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +60,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent || question == null) return KeyEventResult.ignored;
     if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN ||
+          event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         context.go('/questoes');
         return KeyEventResult.handled;
       }
@@ -250,7 +254,31 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (error != null) return Center(child: Text(error!));
+    if (error != null) {
+      return Center(
+        child: EmptyState(
+          title: 'Não deu para abrir a ficha',
+          subtitle: error!,
+          action: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton(
+                onPressed: () {
+                  setState(() => error = null);
+                  unawaited(_load());
+                },
+                child: const Text('Tentar'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.go('/questoes'),
+                child: const Text('Voltar à lista'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final q = question;
     if (q == null) return const Center(child: CircularProgressIndicator());
 
@@ -265,7 +293,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       children: [
         Text('${q.subject} · ${q.topic} · ${q.year}', style: Theme.of(context).textTheme.titleMedium),
         Text(
-          'Atalhos: 1–5 · Enter · N',
+          'Atalhos: 1–5 · Enter · N (após revelar)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
         ),
         if (q.sourcePdf != null && q.sourcePdf!.isNotEmpty)

@@ -172,7 +172,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent || queue.isEmpty || finished) return KeyEventResult.ignored;
     if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN || event.logicalKey == LogicalKeyboardKey.enter) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN ||
+          event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
         _next();
         return KeyEventResult.handled;
       }
@@ -198,7 +200,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
         return KeyEventResult.handled;
       }
     }
-    if (event.logicalKey == LogicalKeyboardKey.enter && selected != null) {
+    if ((event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
+        selected != null) {
       _submit();
       return KeyEventResult.handled;
     }
@@ -273,6 +277,31 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               onPressed: () => context.go('/flashcards'),
                               child: const Text('Cards'),
                             ),
+                            if (subject.isNotEmpty && topic.isNotEmpty)
+                              OutlinedButton(
+                                onPressed: () async {
+                                  try {
+                                    await apiClient.post('/api/gaps/recover', {
+                                      'subject': subject,
+                                      'topic': topic,
+                                    });
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Lacuna marcada como recuperada (treino local).',
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('$e')),
+                                    );
+                                  }
+                                },
+                                child: const Text('Marcar recuperada'),
+                              ),
                             OutlinedButton(
                               onPressed: () => context.go('/dashboard'),
                               child: const Text('Hoje'),
@@ -308,7 +337,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   ),
                   if (error != null) ...[
                     const SizedBox(height: 8),
-                    Text(error!, style: TextStyle(color: cs.error)),
+                    QuietEmpty(
+                      message: error!,
+                      action: TextButton(
+                        onPressed: loading || topic.isEmpty ? null : _start,
+                        child: const Text('Tentar'),
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 16),
                   QuietEmpty(
@@ -342,7 +377,16 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         Text(q['statement']?.toString() ?? q['id']?.toString() ?? ''),
                         const SizedBox(height: 8),
                         if (options.isEmpty)
-                          const QuietEmpty(message: 'Sem alternativas — abra a questão completa se precisar.')
+                          QuietEmpty(
+                            message: 'Sem alternativas — abra a questão completa se precisar.',
+                            action: TextButton(
+                              onPressed: () {
+                                final id = q['id']?.toString() ?? '';
+                                if (id.isNotEmpty) context.go('/questoes/$id');
+                              },
+                              child: const Text('Abrir ficha'),
+                            ),
+                          )
                         else
                           for (var i = 0; i < options.length; i++)
                             RadioListTile<int>(
@@ -458,7 +502,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Atalhos: 1–5 opção · Enter confirma · N próxima',
+                          'Atalhos: 1–5 opção · Enter/numpad confirma · N/Enter próxima',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: cs.onSurface.withOpacity(0.45),
                               ),

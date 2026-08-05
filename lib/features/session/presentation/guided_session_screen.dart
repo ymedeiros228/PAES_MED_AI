@@ -588,8 +588,59 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if (event is! KeyDownEvent || !started) return KeyEventResult.ignored;
     final phases = plan?['sessionPlan'] as List? ?? [];
     final phase = Map<String, dynamic>.from(phases[phaseIndex.clamp(0, phases.length - 1)] as Map);
-    if ((phase['phase']?.toString() ?? '') != 'questions') return KeyEventResult.ignored;
-    if (pendingErrorPick) return KeyEventResult.ignored;
+    final phaseName = phase['phase']?.toString() ?? '';
+
+    // Fase cards (revisão prática) — paridade com flashcards (Ciclo CA)
+    if (phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards') {
+      if (sessionCards.isEmpty || revisionUsingQuestions) return KeyEventResult.ignored;
+      if (event.logicalKey == LogicalKeyboardKey.space) {
+        setState(() => cardFlipped = !cardFlipped);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyL ||
+          event.logicalKey == LogicalKeyboardKey.digit1 ||
+          event.logicalKey == LogicalKeyboardKey.numpad1) {
+        unawaited(_reviewCard(remembered: true));
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyE ||
+          event.logicalKey == LogicalKeyboardKey.digit2 ||
+          event.logicalKey == LogicalKeyboardKey.numpad2) {
+        unawaited(_reviewCard(remembered: false));
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (phaseName != 'questions') return KeyEventResult.ignored;
+
+    // Tipo de erro após miss: 1–5 + Enter (Ciclo CA)
+    if (pendingErrorPick) {
+      final errKeys = <LogicalKeyboardKey, String>{
+        LogicalKeyboardKey.digit1: _errorTypes[0],
+        LogicalKeyboardKey.digit2: _errorTypes[1],
+        LogicalKeyboardKey.digit3: _errorTypes[2],
+        LogicalKeyboardKey.digit4: _errorTypes[3],
+        LogicalKeyboardKey.digit5: _errorTypes[4],
+        LogicalKeyboardKey.numpad1: _errorTypes[0],
+        LogicalKeyboardKey.numpad2: _errorTypes[1],
+        LogicalKeyboardKey.numpad3: _errorTypes[2],
+        LogicalKeyboardKey.numpad4: _errorTypes[3],
+        LogicalKeyboardKey.numpad5: _errorTypes[4],
+      };
+      final pick = errKeys[event.logicalKey];
+      if (pick != null) {
+        setState(() => errorType = pick);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        unawaited(_confirmErrorAndSave());
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
     if (revealed) {
       if (event.logicalKey == LogicalKeyboardKey.keyN ||
           event.logicalKey == LogicalKeyboardKey.enter ||
@@ -621,7 +672,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       _submitAnswer();
       return KeyEventResult.handled;
     }
-    // Escape: não fingir ação (Ciclo BW)
     return KeyEventResult.ignored;
   }
 
@@ -899,7 +949,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                               : 'Próxima fase',
                     ),
                   ),
-                FilledButton.tonal(onPressed: _exportDay, child: const Text('Exportar')),
+                FilledButton.tonal(onPressed: _exportDay, child: const Text('Exportar pacote do dia')),
               ],
             ),
             if (isTheory) ...[
@@ -1054,9 +1104,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 Wrap(
                   spacing: 8,
                   children: [
-                    FilledButton.tonal(onPressed: () => setState(() => cardFlipped = true), child: const Text('Revelar')),
-                    FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei')),
-                    OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci')),
+                    FilledButton.tonal(onPressed: () => setState(() => cardFlipped = true), child: const Text('Revelar (Space)')),
+                    FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei (L)')),
+                    OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci (E)')),
                   ],
                 ),
               ],

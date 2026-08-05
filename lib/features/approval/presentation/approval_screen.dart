@@ -79,9 +79,11 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                   action: TextButton(onPressed: _load, child: const Text('Tentar')),
                 ),
               if (!loading && error == null && items.isEmpty)
-                const EmptyState(
+                EmptyState(
                   title: 'Fila limpa',
                   subtitle: 'Nenhuma questão pendente de aprovação.',
+                  actionLabel: 'Biblioteca',
+                  onAction: () => context.go('/biblioteca'),
                 ),
               for (final q in items)
                 SurfacePanel(

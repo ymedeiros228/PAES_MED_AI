@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -35,6 +36,23 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       });
     } catch (e) {
       setState(() => error = e.toString());
+    }
+  }
+
+  Future<void> _recoverGap(String subject, String topic) async {
+    try {
+      await apiClient.post('/api/gaps/recover', {
+        'subject': subject,
+        'topic': topic,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lacuna marcada como recuperada (treino local).')),
+      );
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }
   }
 
@@ -443,6 +461,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                 icon: const Icon(Icons.timer_outlined, size: 20),
                                 onPressed: () => context.go(_sessionFor(s, t)),
                               ),
+                              IconButton(
+                                tooltip: 'Marcar recuperada',
+                                icon: const Icon(Icons.check_circle_outline, size: 20),
+                                onPressed: s.isEmpty || t.isEmpty
+                                    ? null
+                                    : () => _recoverGap(s, t),
+                              ),
                             ],
                           ),
                         );
@@ -578,13 +603,27 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 ],
 
                 const SizedBox(height: 24),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    TextButton(onPressed: () => context.go('/cronograma'), child: const Text('Plano')),
-                    TextButton(onPressed: () => context.go('/medicina'), child: const Text('Domínio')),
-                    TextButton(onPressed: () => context.go('/adaptativo'), child: const Text('Treino livre')),
-                  ],
+                Builder(
+                  builder: (ctx) {
+                    final focus = ref.watch(focusModeProvider);
+                    return Wrap(
+                      spacing: 8,
+                      children: [
+                        if (!focus) ...[
+                          TextButton(onPressed: () => context.go('/cronograma'), child: const Text('Plano')),
+                          TextButton(onPressed: () => context.go('/medicina'), child: const Text('Domínio')),
+                        ],
+                        TextButton(onPressed: () => context.go('/adaptativo'), child: const Text('Treino livre')),
+                        if (focus)
+                          Text(
+                            'Modo foco: Plano/Domínio escondidos (F desliga)',
+                            style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.55),
+                                ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

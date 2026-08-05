@@ -492,6 +492,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Plano: **Exportar plano (semana/mês)** ≠ export semana do fecho.
 3. Smoke `ciclo_bz_*` + suite + pack + push.
 
+## Teclado de estudo (Ciclo CA)
+
+1. Adaptive/ficha: Enter/numpad pós-revelar; adaptive numpadEnter confirma.
+2. Cards: numpad1/2 = L/E; sessão fase revisão: Space/L/E + error-pick 1–5.
+3. Smoke: `ciclo_ca_*` + push.
+
+## Empties com CTA (Ciclo CB)
+
+1. Adaptive sem opções / erro; ficha load; banca freq; aulas; biblioteca boards; aprovação limpa.
+2. Labels: **Exportar pacote do dia** · **Exportar relatório**.
+3. Smoke: `ciclo_cb_*` + push.
+
+## Foco honesto (Ciclo CC)
+
+1. `/redacao` permitida no modo foco; Plano/Domínio/Aulas/… Hostis mantidos.
+2. Fila esconde Plano/Domínio em foco.
+3. Smoke: `ciclo_cc_*` + push.
+
+## Lacunas recuperadas (Ciclo CD)
+
+1. Fila / Revisões / Adaptive fim / week-close: **Marcar recuperada** → `POST /api/gaps/recover`.
+2. Smoke `ciclo_cd_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

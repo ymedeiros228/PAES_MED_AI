@@ -229,10 +229,22 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               SectionLabel('Frequência no tempo'),
               freq.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const QuietEmpty(message: 'Frequência indisponível.'),
+                error: (_, __) => QuietEmpty(
+                  message: 'Frequência indisponível.',
+                  action: TextButton(
+                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    child: const Text('Tentar'),
+                  ),
+                ),
                 data: (items) {
                   if (items.isEmpty) {
-                    return const QuietEmpty(message: 'Sem série temporal ainda.');
+                    return QuietEmpty(
+                      message: 'Sem série temporal ainda.',
+                      action: TextButton(
+                        onPressed: () => context.go('/sessao'),
+                        child: const Text('Sessão'),
+                      ),
+                    );
                   }
                   return Column(
                     children: [

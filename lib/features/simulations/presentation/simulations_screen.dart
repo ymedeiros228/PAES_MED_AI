@@ -889,7 +889,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   children: [
                     FilledButton.tonal(
                       onPressed: _exportReport,
-                      child: const Text('Exportar'),
+                      child: const Text('Exportar relatório'),
                     ),
                     if ((report!['gaps'] as List? ?? []).isNotEmpty)
                       FilledButton(

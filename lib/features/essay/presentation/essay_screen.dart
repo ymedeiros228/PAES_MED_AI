@@ -541,7 +541,13 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               SectionLabel('Histórico'),
               history.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const QuietEmpty(message: 'Histórico indisponível.'),
+                error: (_, __) => QuietEmpty(
+                  message: 'Histórico indisponível.',
+                  action: TextButton(
+                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    child: const Text('Tentar'),
+                  ),
+                ),
                 data: (items) {
                   if (items.isEmpty) {
                     return QuietEmpty(

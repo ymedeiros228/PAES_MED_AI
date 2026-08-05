@@ -126,20 +126,48 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                       if (subject.isEmpty) {
                         return Text('· $label', style: Theme.of(context).textTheme.bodySmall);
                       }
-                      return InkWell(
-                        onTap: () => context.go(
-                          '/adaptativo?subject=${Uri.encodeComponent(subject)}'
-                          '&topic=${Uri.encodeComponent(topic)}',
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Text(
-                            '· $label → treinar',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => context.go(
+                                  '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+                                  '&topic=${Uri.encodeComponent(topic)}',
                                 ),
-                          ),
+                                child: Text(
+                                  '· $label → treinar',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                try {
+                                  await apiClient.post('/api/gaps/recover', {
+                                    'subject': subject,
+                                    'topic': topic,
+                                  });
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Lacuna marcada como recuperada (treino local).'),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('$e')),
+                                  );
+                                }
+                              },
+                              child: const Text('Recuperada'),
+                            ),
+                          ],
                         ),
                       );
                     },
