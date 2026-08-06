@@ -616,6 +616,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Questões: empty com Limpar filtros · Biblioteca · Sessão · Treinar tópico.
 3. **1.0.0+8** · smoke `ciclo_cv_*` + suite + pack + push.
 
+## Teoria F2 + tutor fila (Ciclo CW)
+
+1. Fila: teoria/tutor em lacunas e meta do dia; sheet teoria → Tutor.
+2. Sessão: fase teoria — **Marquei como li** + Tutor; fim de sessão → Tutor.
+3. Onboarding: chips Hoje/Sessão/Biblioteca + dica Semana 1.
+4. **1.0.0+9** · smoke `ciclo_cw_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

@@ -310,6 +310,16 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                             },
                             child: const Text('Biblioteca'),
                           ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              context.go(
+                                '/tutor?subject=${Uri.encodeComponent(subject)}'
+                                '&topic=${Uri.encodeComponent(topic)}',
+                              );
+                            },
+                            child: const Text('Tutor'),
+                          ),
                         ],
                       ),
                     ],
@@ -492,6 +502,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                 },
                               ),
                               IconButton(
+                                tooltip: 'Perguntar ao tutor',
+                                icon: const Icon(Icons.psychology_outlined, size: 20),
+                                onPressed: () => context.go(
+                                  '/tutor?subject=${Uri.encodeComponent(s)}'
+                                  '&topic=${Uri.encodeComponent(t)}',
+                                ),
+                              ),
+                              IconButton(
                                 tooltip: 'Sessão longa',
                                 icon: const Icon(Icons.timer_outlined, size: 20),
                                 onPressed: () => context.go(_sessionFor(s, t)),
@@ -574,6 +592,32 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       final t = study['topic']?.toString() ?? '';
                       context.go(_sessionFor(s, t));
                     },
+                    secondary: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Ler teoria',
+                          icon: const Icon(Icons.menu_book_outlined, size: 20),
+                          onPressed: () {
+                            final s = study['subject']?.toString() ?? '';
+                            final t = study['topic']?.toString() ?? '';
+                            if (s.isNotEmpty && t.isNotEmpty) _openTheory(s, t);
+                          },
+                        ),
+                        IconButton(
+                          tooltip: 'Tutor',
+                          icon: const Icon(Icons.psychology_outlined, size: 20),
+                          onPressed: () {
+                            final s = study['subject']?.toString() ?? '';
+                            final t = study['topic']?.toString() ?? '';
+                            context.go(
+                              '/tutor?subject=${Uri.encodeComponent(s)}'
+                              '&topic=${Uri.encodeComponent(t)}',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
 

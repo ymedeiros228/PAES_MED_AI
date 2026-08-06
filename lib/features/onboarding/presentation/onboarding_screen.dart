@@ -90,6 +90,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(titles[step], style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 12),
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
+              if (step == 0) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Sem prova no PC ainda? Depois do tour, comece pela Biblioteca (Semana 1).',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.65)),
+                ),
+              ],
               if (step == 1) ...[
                 const SizedBox(height: 16),
                 TextField(
@@ -116,6 +123,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   const SizedBox(height: 8),
                   Text(folderMsg!, style: Theme.of(context).textTheme.bodySmall),
                 ],
+              ],
+              if (step == 3) ...[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.wb_sunny_outlined, size: 18),
+                      label: const Text('Hoje'),
+                      onPressed: () => _finish(path: '/dashboard'),
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.timer_outlined, size: 18),
+                      label: const Text('Sessão'),
+                      onPressed: () => _finish(path: '/sessao'),
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.auto_stories_outlined, size: 18),
+                      label: const Text('Biblioteca'),
+                      onPressed: () => _finish(path: '/biblioteca'),
+                    ),
+                  ],
+                ),
               ],
               const Spacer(),
               Row(

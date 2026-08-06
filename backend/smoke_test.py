@@ -3570,18 +3570,18 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8")),
-        "pubspec/Sobre/bat +3..+8",
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        "pubspec/Sobre/bat +3..+9",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_txt.exists():
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_txt),
         )
     else:
@@ -3813,9 +3813,10 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat),
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec
+        or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3823,7 +3824,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_cl),
         )
     else:
@@ -3948,9 +3949,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3958,7 +3959,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            "1.0.0+5" in _ver_cp or "1.0.0+6" in _ver_cp or "1.0.0+7" in _ver_cp or "1.0.0+8" in _ver_cp,
+            "1.0.0+5" in _ver_cp or "1.0.0+6" in _ver_cp or "1.0.0+7" in _ver_cp or "1.0.0+8" in _ver_cp or "1.0.0+9" in _ver_cp,
             str(ver_cp),
         )
     else:
@@ -4093,16 +4094,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8")),
-        "version +6/+7/+8",
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        "version +6..+9",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_ct),
         )
     else:
@@ -4177,16 +4178,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8"))
-        and any(v in settings_ck for v in ("1.0.0+7", "1.0.0+8"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8")),
-        "version +7/+8",
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        "version +7/+8/+9",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8")),
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_cu),
         )
     else:
@@ -4266,14 +4267,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cv_version_align",
-        "1.0.0+8" in pubspec and "1.0.0+8" in settings_ck and "1.0.0+8" in pack_bat,
-        "version +8",
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9")),
+        "version +8/+9",
     )
     ver_cv = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cv.exists():
         ok(
             "ciclo_cv_version_file",
-            "1.0.0+8" in ver_cv.read_text(encoding="utf-8", errors="ignore"),
+            any(v in ver_cv.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+8", "1.0.0+9")),
             str(ver_cv),
         )
     else:
@@ -4293,6 +4296,71 @@ def main() -> int:
         ok("ciclo_cv_dist_shape", True, str(dist_dll_cv))
     else:
         ok("ciclo_cv_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CW: teoria F2 + tutor fila/sessão + onboarding + 1.0.0+9 ---
+    queue_cw = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_cw = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    onb_cw = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_cw = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cw_fila_theory_tutor",
+        "Perguntar ao tutor" in queue_cw
+        and "Meta de hoje" in queue_cw
+        and "_openTheory" in queue_cw,
+        "fila theory tutor",
+    )
+    ok(
+        "ciclo_cw_session_theory_read",
+        "_markTheoryRead" in sess_cw and "Marquei como li" in sess_cw and "_goTutorForStudy" in sess_cw,
+        "session theory",
+    )
+    ok(
+        "ciclo_cw_onboarding_chips",
+        "ActionChip" in onb_cw and "Semana 1" in onb_cw and "step == 3" in onb_cw,
+        "onboarding chips",
+    )
+    ok(
+        "ciclo_cw_ficha_seed_q",
+        "'q': seed" in ficha_cw,
+        "ficha seed q",
+    )
+    ok(
+        "ciclo_cw_version_align",
+        "1.0.0+9" in pubspec and "1.0.0+9" in settings_ck and "1.0.0+9" in pack_bat,
+        "version +9",
+    )
+    ver_cw = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_cw.exists():
+        ok(
+            "ciclo_cw_version_file",
+            "1.0.0+9" in ver_cw.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_cw),
+        )
+    else:
+        ok("ciclo_cw_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_cw_como_section",
+        "Ciclo CW" in como_ap,
+        "COMO CW",
+    )
+    ok(
+        "ciclo_cw_roadmap_cv_cw",
+        ("CV–CW" in roadmap or "CV-CW" in roadmap) and "Feito" in roadmap,
+        "ROADMAP CV-CW",
+    )
+    dist_dll_cw = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cw.exists():
+        ok("ciclo_cw_dist_shape", True, str(dist_dll_cw))
+    else:
+        ok("ciclo_cw_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

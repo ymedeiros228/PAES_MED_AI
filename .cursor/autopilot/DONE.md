@@ -17,3 +17,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo CV: Revisões — CTA tutor + erro humano em “marcar feita”
 - [x] Ciclo CV: Aulas — botão Tutor na última importação
 - [x] Versão **1.0.0+8** + smoke **501/501** + docs COMO/ROADMAP CU–CV
+- [x] Ciclo CW: Fila — tutor em lacunas/meta; teoria sheet → Tutor
+- [x] Ciclo CW: Sessão — fase teoria `Marquei como li` + Tutor; fim sessão → Tutor
+- [x] Ciclo CW: Onboarding — dica Semana 1 + chips Hoje/Sessão/Biblioteca (passo 4)
+- [x] Versão **1.0.0+9** + smoke **510/510** + docs COMO/ROADMAP CV–CW

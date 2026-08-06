@@ -73,6 +73,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   Map<String, dynamic>? pendingCheckpoint;
   /// Ciclo AI: painel final da sessão (após último bloco).
   bool sessionComplete = false;
+  bool theoryMarked = false;
   @override
   void initState() {
     super.initState();
@@ -498,6 +499,28 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   },
                   child: const Text('Treinar tópico fraco'),
                 ),
+              if (first != null ||
+                  (plan?['studyToday'] is Map &&
+                      (plan!['studyToday'] as Map)['subject'] != null))
+                OutlinedButton(
+                  onPressed: () {
+                    final g = first ??
+                        (plan?['studyToday'] is Map
+                            ? Map<String, dynamic>.from(plan!['studyToday'] as Map)
+                            : null);
+                    if (g == null) {
+                      context.go('/tutor');
+                      return;
+                    }
+                    final s = g['subject']?.toString() ?? '';
+                    final t = g['topic']?.toString() ?? '';
+                    context.go(
+                      '/tutor?subject=${Uri.encodeComponent(s)}'
+                      '&topic=${Uri.encodeComponent(t)}',
+                    );
+                  },
+                  child: const Text('Tutor'),
+                ),
               FilledButton.tonal(
                 onPressed: () => context.go('/flashcards?due=1'),
                 child: const Text('Cards due'),
@@ -802,6 +825,41 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     }
   }
 
+  Future<void> _markTheoryRead() async {
+    final study = plan?['studyToday'] as Map?;
+    if (study == null) return;
+    final s = study['subject']?.toString() ?? '';
+    final t = study['topic']?.toString() ?? '';
+    if (s.isEmpty || t.isEmpty) return;
+    try {
+      await apiClient.post('/api/study/mark-read', {'subject': s, 'topic': t});
+      if (!mounted) return;
+      setState(() => theoryMarked = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Teoria marcada como lida (local · não banca).')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a leitura.'))),
+      );
+    }
+  }
+
+  void _goTutorForStudy() {
+    final study = plan?['studyToday'] as Map?;
+    if (study == null) return;
+    final s = study['subject']?.toString() ?? '';
+    final t = study['topic']?.toString() ?? '';
+    if (s.isEmpty && t.isEmpty) {
+      context.go('/tutor');
+      return;
+    }
+    context.go(
+      '/tutor?subject=${Uri.encodeComponent(s)}&topic=${Uri.encodeComponent(t)}',
+    );
+  }
+
   Widget _debriefForCurrent() {
     final q = sessionQuestions[qIndex];
     final s = q['subject']?.toString() ?? '';
@@ -1021,6 +1079,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     ),
                   ),
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: study == null ? null : _markTheoryRead,
+                    child: Text(theoryMarked ? 'Li · teoria' : 'Marquei como li'),
+                  ),
+                  OutlinedButton(
+                    onPressed: study == null ? null : _goTutorForStudy,
+                    child: const Text('Tutor'),
+                  ),
+                  TextButton(
+                    onPressed: study == null
+                        ? null
+                        : () => context.go('/fila'),
+                    child: const Text('Fila'),
+                  ),
+                ],
+              ),
               if (study != null)
                 MediaReinforcement(
                   subject: study['subject']?.toString() ?? '',
