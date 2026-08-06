@@ -30,3 +30,10 @@ Anos com download direto (found): **2024, 2025, 2026**. Em 2024 o manifesto pref
 No app: **Biblioteca → Acervo UEMA → Baixar todos disponíveis** → **Revisar** → **Commitar**.
 
 Rótulos: `UEMA_PAES` (oficial commitada) · `TREINO` · `OUTRA` (parecida).
+
+## Histórico completo (2014+)
+
+PDFs de prova: copiar para `data/provas/` como `paes_YYYY.pdf` (e `paes_YYYY_etapa2.pdf` se 2 cadernos).
+Gabaritos: `data/gabaritos/gabarito_YYYY.pdf`. Sem gabarito o ano fica **parcial** — estude só após Revisar respostas.
+
+Biblioteca → grade de anos → Importar / Revisar / Commitar.

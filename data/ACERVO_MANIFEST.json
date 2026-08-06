@@ -9,6 +9,27 @@
   "notes": "Inventário de PDFs públicos PAES-UEMA. status=found quando há URL direta de PDF; needs_manual quando só há página portal. Baixar só oficiais públicos (*.uema.br). gabaritoPrefer=retificacao usa gabaritoRetificacao quando existir.",
   "years": [
     {
+      "year": 2014,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Prova no disco local se dropada; gabarito manual."
+    },
+    {
+      "year": 2015,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Prova no disco local se dropada; gabarito manual."
+    },
+    {
+      "year": 2016,
+      "status": "needs_manual",
+      "portal": "https://www.paes.uema.br/",
+      "urls": {},
+      "notes": "Prova no disco local se dropada; gabarito manual."
+    },
+    {
       "year": 2017,
       "status": "needs_manual",
       "portal": "https://www.paes.uema.br/",

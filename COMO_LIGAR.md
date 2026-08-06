@@ -1134,6 +1134,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Sobre / pubspec / VERSION = **1.0.0+9**.
 3. Stop micro-teclas; ship pack OK.
 
+## Acervo provas 2014–25 (drop Downloads)
+
+1. Copiar para `data/provas/` como `paes_YYYY.pdf` (2021: `paes_2021.pdf` + `paes_2021_etapa2.pdf`).
+2. Biblioteca → grade 2014–23; import/revisar só com gabarito para commit seguro.
+3. Sem gabarito no disco: **parcial** — preview extract OK; **não** inventa resposta (correctIndex 0).
+4. Smoke leve: inventário lista 2014+; import 2021 mescla 2 PDFs.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

@@ -4,13 +4,11 @@ PAES MED AI — pasta de PROVAS oficiais
 Coloque aqui os PDFs das provas do PAES/UEMA.
 
 Nomenclatura recomendada (use exatamente este padrão):
-  paes_2017.pdf
-  paes_2018.pdf
-  ...
-  paes_2026.pdf
+  paes_2014.pdf … paes_2026.pdf
+  paes_2021_etapa2.pdf   (segundo caderno no mesmo ano)
 
 Também funciona qualquer nome com o ano (ex.: PAES_UEMA_2024_prova.pdf),
-mas paes_YYYY.pdf facilita o checklist da Biblioteca.
+mas paes_YYYY.pdf é a prova canônica do ano (import prefere este nome).
 
 Depois: abra o app → Biblioteca → Importar por ano → revisar preview → Commitar.
 O sistema cria backup e atualiza a busca RAG ao confirmar o commit.

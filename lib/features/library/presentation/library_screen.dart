@@ -38,7 +38,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   List<Map<String, dynamic>> searchHistory = [];
   int _hitSelected = 0;
   final _focusNode = FocusNode();
+  final _semana1PanelKey = GlobalKey();
   bool showFirstRunCoach = false;
+  bool _wantSemana1Scroll = false;
+  bool _didSemana1Scroll = false;
 
   bool _textFieldFocused() {
     final primary = FocusManager.instance.primaryFocus;
@@ -72,6 +75,32 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_wantSemana1Scroll) {
+      final q = GoRouterState.of(context).uri.queryParameters;
+      _wantSemana1Scroll = q['semana1'] == '1';
+    }
+    _scheduleSemana1Scroll();
+  }
+
+  void _scheduleSemana1Scroll() {
+    if (!_wantSemana1Scroll || _didSemana1Scroll || library == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _didSemana1Scroll) return;
+      final ctx = _semana1PanelKey.currentContext;
+      if (ctx == null) return;
+      _didSemana1Scroll = true;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
+        alignment: 0.06,
+      );
+    });
   }
 
   @override
@@ -133,6 +162,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         curation = cur;
         partialLoadNote = partialNote;
       });
+      _scheduleSemana1Scroll();
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
@@ -985,7 +1015,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         .map((e) => Map<String, dynamic>.from(e as Map))
         .where((g) {
           final y = g['year'] as int? ?? 0;
-          return y >= 2017 && y <= 2023;
+          return y >= 2014 && y <= 2023;
         })
         .toList();
     final pending = Map<String, dynamic>.from(
@@ -994,6 +1024,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final pendingItems = pending['items'] as List? ?? const [];
     final pendingN = pending['pendingCount'] as int? ?? pendingItems.length;
     final cs = Theme.of(context).colorScheme;
+
+    final semana1Route = GoRouterState.of(context).uri.queryParameters['semana1'] == '1';
+    final highlightSemana1 = officialN == 0 && (showFirstRunCoach || semana1Route);
 
     return Focus(
       focusNode: _focusNode,
@@ -1176,8 +1209,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ],
 
               SurfacePanel(
+                key: _semana1PanelKey,
                 margin: const EdgeInsets.only(bottom: 16),
-                color: cs.primaryContainer.withOpacity(showFirstRunCoach && officialN == 0 ? 0.65 : 0.4),
+                color: cs.primaryContainer.withOpacity(highlightSemana1 ? 0.65 : 0.4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1335,13 +1369,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Anos antigos (2017–23)', style: Theme.of(context).textTheme.titleSmall),
+                title: Text('Anos antigos (2014–23)', style: Theme.of(context).textTheme.titleSmall),
                 subtitle: const Text('Só se você tiver o PDF no PC — sem inventar cobertura'),
                 children: [
                   if (hist.isEmpty)
                     QuietEmpty(
                       message:
-                          'Falta o PDF deste intervalo (2017–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura.',
+                          'Falta o PDF deste intervalo (2014–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura. Sem gabarito, o app mostra prova e preview, mas não inventa resposta correta.',
                       action: TextButton(
                         onPressed: busy ? null : _commitOnDisk,
                         child: const Text('Gravar PDFs do PC'),

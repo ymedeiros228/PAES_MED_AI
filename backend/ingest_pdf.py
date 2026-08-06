@@ -628,6 +628,17 @@ def list_pdf_inventory() -> list[dict[str, Any]]:
     return inventory
 
 
+def _prefer_canonical_prova(year: int, items: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Prefere paes_YYYY.pdf; senão o primeiro nome estável (evita etapa2 sobrescrever)."""
+    if not items:
+        return None
+    canonical = f"paes_{year}.pdf".lower()
+    for item in items:
+        if str(item.get("filename") or "").lower() == canonical:
+            return item
+    return sorted(items, key=lambda x: str(x.get("filename") or "").lower())[0]
+
+
 def pair_prova_gabarito(inventory: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     inventory = inventory if inventory is not None else list_pdf_inventory()
     grouped: dict[int, dict[str, Any]] = {}
@@ -635,22 +646,37 @@ def pair_prova_gabarito(inventory: list[dict[str, Any]] | None = None) -> list[d
         year = item.get("year")
         if year is None or item["kind"] not in {"prova", "gabarito"}:
             continue
-        grouped.setdefault(year, {"year": year, "prova": None, "gabarito": None})
-        grouped[year][item["kind"]] = item
+        g = grouped.setdefault(
+            year,
+            {"year": year, "prova": None, "gabarito": None, "provas": []},
+        )
+        if item["kind"] == "prova":
+            g["provas"].append(item)
+        else:
+            g["gabarito"] = item
+    for year, g in grouped.items():
+        g["provas"] = sorted(g["provas"], key=lambda x: str(x.get("filename") or "").lower())
+        g["prova"] = _prefer_canonical_prova(year, g["provas"])
+        g["extraProvas"] = [p for p in g["provas"] if p is not g["prova"]]
     return [grouped[year] for year in sorted(grouped)]
 
 
 def compute_year_statuses() -> list[dict[str, Any]]:
-    """Situação 2017–2026, derivada de arquivos e questões oficiais no SQLite."""
+    """Situação 2014–2026, derivada de arquivos e questões oficiais no SQLite."""
     inventory = list_pdf_inventory()
-    years = range(2017, 2027)
+    years = range(2014, 2027)
     provas = {item["year"] for item in inventory if item["kind"] == "prova" and item.get("year") in years}
     gabaritos = {item["year"] for item in inventory if item["kind"] == "gabarito" and item.get("year") in years}
+    prova_files: dict[int, int] = {}
+    for item in inventory:
+        y = item.get("year")
+        if item["kind"] == "prova" and y in years:
+            prova_files[y] = prova_files.get(y, 0) + 1
     conn = connect()
     try:
         rows = conn.execute(
             """SELECT year, source, generated, COUNT(*) AS count FROM questions
-               WHERE year BETWEEN 2017 AND 2026 GROUP BY year, source, generated"""
+               WHERE year BETWEEN 2014 AND 2026 GROUP BY year, source, generated"""
         ).fetchall()
     finally:
         conn.close()
@@ -677,6 +703,7 @@ def compute_year_statuses() -> list[dict[str, Any]]:
                 "status": status,
                 "hasProva": has_prova,
                 "hasGabarito": has_gabarito,
+                "provaFileCount": prova_files.get(year, 0),
                 "officialQuestionCount": count,
                 "officialCount": count,
             }
@@ -684,23 +711,67 @@ def compute_year_statuses() -> list[dict[str, Any]]:
     return result
 
 
-def import_year_pair(year: int) -> dict[str, Any]:
-    """Monta preview de uma prova anual e aplica o gabarito disponível."""
+def import_year_pair(year: int, *, include_extra_provas: bool = True) -> dict[str, Any]:
+    """Monta preview de uma prova anual e aplica o gabarito disponível.
+
+    Com várias provas do mesmo ano (ex.: 2021 etapa 1 + 2), mescla cadernos:
+    gabarito (se houver) aplica só nos números originais da etapa canônica;
+    etapas extras vêm a seguir (números + offset) e ficam sem gabarito até revisão.
+    """
     pair = next((item for item in pair_prova_gabarito() if item["year"] == year), None)
     if not pair or not pair.get("prova"):
         raise ValueError(f"Prova de {year} não encontrada nas pastas de dados.")
-    prova = pair["prova"]
-    raw_text = extract_pdf_text(Path(prova["path"]))
-    needs_ocr = "[NEEDS_OCR]" in raw_text
-    ocr_failed = needs_ocr and "Instale pytesseract" in raw_text
-    questions = heuristic_parse_questions(raw_text, default_year=year)
+    prova_items: list[dict[str, Any]] = []
+    if include_extra_provas and pair.get("provas"):
+        # canônica primeiro, depois extras
+        primary = pair["prova"]
+        extras = [p for p in pair.get("provas") or [] if p.get("path") != primary.get("path")]
+        prova_items = [primary, *extras]
+    else:
+        prova_items = [pair["prova"]]
+
     answers: dict[int, int] = {}
     gabarito_ocr = False
     if pair.get("gabarito"):
         gab_text = extract_pdf_text(Path(pair["gabarito"]["path"]))
         gabarito_ocr = "[NEEDS_OCR]" in gab_text
         answers = parse_gabarito(gab_text)
-        questions = apply_gabarito(questions, answers)
+
+    questions: list[dict[str, Any]] = []
+    needs_ocr = False
+    ocr_failed = False
+    raw_chunks: list[str] = []
+    number_offset = 0
+    files_used: list[str] = []
+    for stage_i, prova in enumerate(prova_items):
+        raw_text = extract_pdf_text(Path(prova["path"]))
+        raw_chunks.append(f"--- {prova.get('filename')} ---\n{raw_text}")
+        stage_needs = "[NEEDS_OCR]" in raw_text
+        needs_ocr = needs_ocr or stage_needs
+        ocr_failed = ocr_failed or (stage_needs and "Instale pytesseract" in raw_text)
+        stage_qs = heuristic_parse_questions(raw_text, default_year=year)
+        for q in stage_qs:
+            q["source"] = f"pdf_ingest:{prova.get('filename')}"
+            q["examBoard"] = "UEMA_PAES"
+            if stage_i == 0:
+                continue
+            # Etapas extra: desloca número para não colidir; gabarito oficial não se aplica
+            n = int(q.get("number") or 0)
+            if n > 0 and number_offset > 0:
+                q["number"] = n + number_offset
+            q["similarityNote"] = f"Caderno extra ({prova.get('filename')}) — revisar gabarito."
+        if stage_i == 0 and answers:
+            stage_qs = apply_gabarito(stage_qs, answers)
+        questions.extend(stage_qs)
+        files_used.append(str(prova.get("filename") or ""))
+        max_n = 0
+        for q in stage_qs:
+            try:
+                max_n = max(max_n, int(q.get("number") or 0))
+            except (TypeError, ValueError):
+                pass
+        number_offset = max(number_offset, max_n)
+
     questions = classify_questions_by_syllabus(questions)
     q_numbers = {int(q.get("number") or i) for i, q in enumerate(questions, start=1)}
     a_numbers = set(answers.keys())
@@ -710,11 +781,16 @@ def import_year_pair(year: int) -> dict[str, Any]:
         "matched": len(q_numbers & a_numbers),
         "unmatchedQuestions": sorted(q_numbers - a_numbers)[:20],
         "unmatchedAnswers": sorted(a_numbers - q_numbers)[:20],
-        "ok": (not answers) or (len(q_numbers & a_numbers) >= max(1, int(0.5 * len(q_numbers)))),
+        "files": files_used,
+        "ok": (not answers) or (len(q_numbers & a_numbers) >= max(1, int(0.5 * min(len(q_numbers), max(1, len(a_numbers)))))),
         "message": (
             "Par prova↔gabarito inconsistente — revise gabaritos antes do commit."
-            if answers and len(q_numbers & a_numbers) < max(1, int(0.5 * len(q_numbers)))
-            else ("Gabarito aplicado." if answers else "Sem gabarito no acervo para este ano.")
+            if answers and len(q_numbers & a_numbers) < max(1, int(0.5 * min(len(q_numbers), max(1, len(a_numbers)))))
+            else (
+                "Gabarito aplicado (etapa canônica)."
+                if answers
+                else "Sem gabarito no acervo para este ano — revise respostas antes de estudiar."
+            )
         ),
     }
     avg_conf = (
@@ -722,7 +798,8 @@ def import_year_pair(year: int) -> dict[str, Any]:
         if questions
         else 0
     )
-    preview = save_preview("prova", prova["filename"], questions, raw_text)
+    primary_name = str(pair["prova"].get("filename") or f"paes_{year}.pdf")
+    preview = save_preview("prova", primary_name, questions, "\n\n".join(raw_chunks)[:50000])
     preview["year"] = year
     preview["needsOcr"] = needs_ocr or gabarito_ocr
     preview["ocrFailed"] = ocr_failed
@@ -732,11 +809,13 @@ def import_year_pair(year: int) -> dict[str, Any]:
     preview["gabaritoApplied"] = sum(1 for question in questions if question.get("gabaritoApplied"))
     preview["answersFound"] = len(answers)
     preview["gabaritoAnswers"] = len(answers)
+    preview["files"] = files_used
     preview["classified"] = sum(1 for q in questions if (q.get("topic") or "") != "A classificar")
     preview["message"] = (
-        f"Preview {year}: {len(questions)} questões · confiança média {avg_conf}"
+        f"Preview {year}: {len(questions)} questões · {len(files_used)} PDF(s) · confiança média {avg_conf}"
         + (" — PDF parece escaneado (OCR recomendado)." if needs_ocr or gabarito_ocr else "")
         + (" — OCR não disponível/falhou." if ocr_failed else "")
+        + (" — sem gabarito no disco." if not answers else "")
     )
     return preview
 

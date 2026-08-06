@@ -204,7 +204,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       onSelected: (v) => _resetPage(() => year = (v == null || v.isEmpty) ? null : v),
                       dropdownMenuEntries: [
                         const DropdownMenuEntry(value: '', label: 'Todos'),
-                        for (var y = 2017; y <= 2026; y++) DropdownMenuEntry(value: '$y', label: '$y'),
+                        for (var y = 2014; y <= 2026; y++) DropdownMenuEntry(value: '$y', label: '$y'),
                       ],
                     ),
                     FilterChip(

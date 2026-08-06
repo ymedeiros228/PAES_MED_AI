@@ -6092,6 +6092,61 @@ def main() -> int:
         "fila gap read chip",
     )
 
+    # --- Ciclo HE: biblioteca scroll Semana 1 (?semana1=1) ---
+    onb_he = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_he = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_he = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_he_library_semana1_scroll",
+        "semana1=1" in onb_he
+        and "_semana1PanelKey" in lib_he
+        and "Scrollable.ensureVisible" in lib_he
+        and "semana1=1" in dash_he,
+        "biblioteca semana1 scroll",
+    )
+
+    # --- Drop acervo provas 2014–25 (host PDFs) ---
+    from ingest_pdf import list_pdf_inventory as _inv_ac, pair_prova_gabarito as _pair_ac, compute_year_statuses as _st_ac
+
+    inv_ac = _inv_ac()
+    provas_years_ac = {i.get("year") for i in inv_ac if i.get("kind") == "prova"}
+    pair_2021 = next((p for p in _pair_ac() if p.get("year") == 2021), None)
+    ok(
+        "ciclo_acervo_drop_provas_2014_25",
+        {2014, 2017, 2020, 2021, 2023, 2025}.issubset(provas_years_ac)
+        and any(str(i.get("filename") or "").endswith("paes_2014.pdf") for i in inv_ac),
+        f"provas years={sorted(y for y in provas_years_ac if y)}",
+    )
+    ok(
+        "ciclo_acervo_2021_dual_pdf",
+        bool(pair_2021)
+        and len(pair_2021.get("provas") or []) >= 2
+        and str((pair_2021.get("prova") or {}).get("filename") or "").lower() == "paes_2021.pdf",
+        "2021 multi-caderno prefer canônico",
+    )
+    st_ac = {s["year"]: s for s in _st_ac()}
+    ok(
+        "ciclo_acervo_status_2014",
+        2014 in st_ac and st_ac[2014].get("hasProva") is True,
+        "status includes 2014",
+    )
+    ok(
+        "ciclo_acervo_hist_ui_2014",
+        "2014–23" in lib_he or "2014-23" in lib_he or "y >= 2014" in lib_he,
+        "library hist 2014",
+    )
+    ok(
+        "ciclo_acervo_como_drop",
+        "Acervo provas 2014" in como_ap or "paes_2021_etapa2" in como_ap,
+        "COMO acervo drop",
+    )
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

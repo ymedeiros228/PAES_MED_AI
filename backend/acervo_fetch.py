@@ -483,8 +483,8 @@ def years_complete_on_disk(*, min_year: int = 2017, max_year: int = 2030) -> lis
     return out
 
 
-def acervo_year_grid(*, min_year: int = 2017, max_year: int = 2026) -> list[dict[str, Any]]:
-    """Grade 2017–2026: committed / preview / onDisk / found / needs_manual / empty."""
+def acervo_year_grid(*, min_year: int = 2014, max_year: int = 2026) -> list[dict[str, Any]]:
+    """Grade 2014–2026: committed / preview / onDisk / found / needs_manual / empty."""
     m = manifest_with_local()
     by_m = {int(y["year"]): y for y in (m.get("years") or [])}
     preview_by_year: dict[int, dict[str, Any]] = {}

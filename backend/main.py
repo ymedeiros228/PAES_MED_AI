@@ -1565,9 +1565,9 @@ def api_library() -> dict[str, Any]:
             "yearsWithProva": provas_years,
             "yearsWithGabarito": gabaritos_years,
             "yearsComplete": sorted(set(provas_years) & set(gabaritos_years)),
-            "coveragePct": round(100 * len(set(provas_years) & set(gabaritos_years)) / 10, 1),
+            "coveragePct": round(100 * len(set(provas_years) & set(gabaritos_years)) / 13, 1),
             "missingYears": [
-                year for year in range(2017, 2027)
+                year for year in range(2014, 2027)
                 if year not in provas_years or year not in gabaritos_years
             ],
             "yearStatuses": year_statuses,
