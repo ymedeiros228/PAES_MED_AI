@@ -288,7 +288,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     }
   }
 
-  void _editMeta() async {
+  Future<void> _editMeta() async {
     final q = current;
     final subjectCtrl = TextEditingController(text: '${q['subject'] ?? ''}');
     final topicCtrl = TextEditingController(text: '${q['topic'] ?? ''}');

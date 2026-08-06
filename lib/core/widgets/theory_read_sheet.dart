@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
-import 'status_widgets.dart';
+import 'ui_kit.dart';
 
 /// Bottom sheet F2: materiais locais + mark-read + empty honesto.
 Future<void> openTheoryReadSheet(
