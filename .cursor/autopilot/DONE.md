@@ -1,16 +1,12 @@
 # Auto-Pilot — DONE
 
-## GR–GU (2026-08-05)
+## GR–GU / GV–GW / GY–HA
 
-- Pack Desktop + F2 Ler teoria + **1.0.0+9**; fix compile Windows.
+- Pack + F2 + F1 acervo + F3 Tutor → **1.0.0+11**.
 
-## GV–GW (2026-08-06)
+## HC–HD Mode A (2026-08-06)
 
-- Acervo no Hoje + gates 2017–23 + **1.0.0+10**.
-
-## GY–HA F3 deep (2026-08-06)
-
-- **GY**: `score_questions_for_query`, `/api/tutor/ask`, aliases `refType`/`refId`, reject fake ids.
-- **GZ**: UI block sem fonte; `ActionChip` fontes; repo usa `/api/tutor/ask`.
-- **HA**: `preferOfficial` e2e + toggle UI + Natureza bias.
-- **HB ship**: **1.0.0+11**.
+- **HC**: Sessão empties/erros em PT (sem API/due/syllabus jargão) + 1 CTA.
+- **HD**: Ficha e debrief — Ler teoria primeiro + `trainSessionPath` → `/sessao`; sheet hint.
+- **HE ship**: **1.0.0+12**.
+- PR #3 fechado (superseded).
