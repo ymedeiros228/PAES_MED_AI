@@ -12,3 +12,8 @@ Projeto: PAES_MED_AI
 - [x] Ciclo CY: Biblioteca — chip **Só PDF** + badge/ícone PDF nos hits de busca + tooltip leitor Windows
 - [x] Ciclo CY: Simulados — `_start` trata lista vazia + empty com Biblioteca/Sessão/Fila
 - [x] Versão **1.0.0+11** + smoke **526/526** + docs COMO/ROADMAP CX–CY + checks legados atualizados
+- [x] Ciclo CZ: Revisões — ícone **Teoria local** (`TheoryTopicSheet`)
+- [x] Ciclo CZ: Aulas — botão Teoria local (última importação + lista)
+- [x] Ciclo CZ: Sessão — **Material local** na fase teoria + `onMarkedRead` sincroniza “Li · teoria”
+- [x] Ciclo CZ: Ficha questão — CTA **Teoria local** no debrief
+- [x] Versão **1.0.0+12** + smoke **535/535** + docs COMO/ROADMAP CY–CZ

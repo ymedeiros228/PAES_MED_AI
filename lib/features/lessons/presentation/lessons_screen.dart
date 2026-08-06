@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
@@ -31,6 +32,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     linkCtrl.dispose();
     transcriptFocus.dispose();
     super.dispose();
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    if (subject.isEmpty || topic.isEmpty) return;
+    await TheoryTopicSheet.show(context, subject: subject, topic: topic);
   }
 
   Future<void> _submitText() async {
@@ -205,6 +211,13 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             ),
                             child: const Text('Tutor'),
                           ),
+                          OutlinedButton(
+                            onPressed: () => _openTheory(
+                              lastLesson!['subject']?.toString() ?? '',
+                              lastLesson!['topic']?.toString() ?? '',
+                            ),
+                            child: const Text('Teoria local'),
+                          ),
                         ],
                       ),
                     ],
@@ -256,12 +269,25 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                             style: Theme.of(context).textTheme.bodySmall,
                                           ),
                                         const SizedBox(height: 8),
-                                        FilledButton.tonal(
-                                          onPressed: () => context.go(
-                                            '/adaptativo?subject=${Uri.encodeComponent('${item['subject']}')}'
-                                            '&topic=${Uri.encodeComponent('${item['topic']}')}',
-                                          ),
-                                          child: const Text('Estudar'),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            FilledButton.tonal(
+                                              onPressed: () => context.go(
+                                                '/adaptativo?subject=${Uri.encodeComponent('${item['subject']}')}'
+                                                '&topic=${Uri.encodeComponent('${item['topic']}')}',
+                                              ),
+                                              child: const Text('Estudar'),
+                                            ),
+                                            OutlinedButton(
+                                              onPressed: () => _openTheory(
+                                                item['subject']?.toString() ?? '',
+                                                item['topic']?.toString() ?? '',
+                                              ),
+                                              child: const Text('Teoria local'),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

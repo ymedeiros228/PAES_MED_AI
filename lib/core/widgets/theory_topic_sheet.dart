@@ -22,6 +22,7 @@ class TheoryTopicSheet {
     required String subject,
     required String topic,
     bool includeArticles = true,
+    VoidCallback? onMarkedRead,
   }) async {
     if (subject.isEmpty || topic.isEmpty) return;
     try {
@@ -201,6 +202,7 @@ class TheoryTopicSheet {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Marcado como li (local).')),
                                   );
+                                  onMarkedRead?.call();
                                 }
                               } catch (e) {
                                 if (context.mounted) {

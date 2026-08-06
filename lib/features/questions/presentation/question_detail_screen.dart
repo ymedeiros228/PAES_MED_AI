@@ -11,6 +11,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../domain/question.dart';
 
@@ -459,6 +460,15 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   },
                   child: const Text('Perguntar ao tutor'),
                 ),
+                if (q.subject.isNotEmpty && q.topic.isNotEmpty)
+                  TextButton(
+                    onPressed: () => TheoryTopicSheet.show(
+                      context,
+                      subject: q.subject,
+                      topic: q.topic,
+                    ),
+                    child: const Text('Teoria local'),
+                  ),
                 TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar card')),
               ],
             ),

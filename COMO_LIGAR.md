@@ -637,6 +637,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Simulados: lista vazia → snackbar + empty com Biblioteca/Sessão/Fila.
 4. **1.0.0+11** · smoke `ciclo_cy_*` + suite + pack + push.
 
+## Teoria em Revisões/Aulas/Sessão/Ficha (Ciclo CZ)
+
+1. `TheoryTopicSheet` — Revisões (ícone teoria) · Aulas (última + lista) · Sessão fase teoria (**Material local**) · Ficha questão.
+2. Callback `onMarkedRead` sincroniza “Li · teoria” na sessão.
+3. **1.0.0+12** · smoke `ciclo_cz_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

@@ -13,6 +13,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -860,6 +861,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     );
   }
 
+  Future<void> _openTheoryMaterial() async {
+    final study = plan?['studyToday'] as Map?;
+    if (study == null) return;
+    final s = study['subject']?.toString() ?? '';
+    final t = study['topic']?.toString() ?? '';
+    if (s.isEmpty || t.isEmpty) return;
+    await TheoryTopicSheet.show(
+      context,
+      subject: s,
+      topic: t,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryMarked = true);
+      },
+    );
+  }
+
   Widget _debriefForCurrent() {
     final q = sessionQuestions[qIndex];
     final s = q['subject']?.toString() ?? '';
@@ -1087,6 +1104,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   FilledButton.tonal(
                     onPressed: study == null ? null : _markTheoryRead,
                     child: Text(theoryMarked ? 'Li · teoria' : 'Marquei como li'),
+                  ),
+                  OutlinedButton(
+                    onPressed: study == null ? null : _openTheoryMaterial,
+                    child: const Text('Material local'),
                   ),
                   OutlinedButton(
                     onPressed: study == null ? null : _goTutorForStudy,

@@ -6,6 +6,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class RevisionsScreen extends ConsumerWidget {
@@ -77,6 +78,17 @@ class RevisionsScreen extends ConsumerWidget {
                             secondary: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                  tooltip: 'Teoria local (PDF/edital)',
+                                  icon: const Icon(Icons.menu_book_outlined),
+                                  onPressed: subject.isEmpty || topic.isEmpty
+                                      ? null
+                                      : () => TheoryTopicSheet.show(
+                                            context,
+                                            subject: subject,
+                                            topic: topic,
+                                          ),
+                                ),
                                 IconButton(
                                   tooltip: 'Perguntar ao tutor',
                                   icon: const Icon(Icons.psychology_outlined),
