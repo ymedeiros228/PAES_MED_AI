@@ -196,9 +196,8 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       return EmptyState(
         title: 'Fila indisponível',
         subtitle: error!,
-        action: Wrap(
-          spacing: 8,
-          alignment: WrapAlignment.center,
+        action: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
             TextButton(
@@ -320,11 +319,8 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 if (!hasAnything) ...[
                   const SizedBox(height: 20),
                   QuietEmpty(
-                    message: 'Fila leve — sessão guiada é o caminho.',
-                    action: TextButton(
-                      onPressed: () => context.go('/sessao'),
-                      child: const Text('Sessão'),
-                    ),
+                    message:
+                        'Nada pendente na fila. Toque em Começar sessão acima para montar o plano de hoje.',
                   ),
                 ],
 

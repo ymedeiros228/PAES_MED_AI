@@ -11,7 +11,7 @@ Prioridade: topo = primeiro.
 
 ## P1 · Uso real (modo A) — default
 
-- [ ] Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
+- [x] Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
 - [ ] Ficha pós-erro: path “li teoria → treino” ainda confuso em algum fluxo (validar ao vivo; só se sim)
 - [ ] Soft landing primeiro uso se onboarding + Semana 1 quebrar após +9 (só se repro)
 

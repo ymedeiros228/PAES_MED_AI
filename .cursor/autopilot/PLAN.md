@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: n/a (template)
+<!-- ciclo: 1
 modo: A
-item: —
-smoke: —
-nota: —
+item: Sessão/Fila empty+erro — jargão e CTA
+smoke: flutter analyze OK; smoke_test.py bloqueado (sem fastapi no host)
+nota: copy PT + CTA único primário; painel fim sessão; smoke strings atualizadas
 -->
 ```
 

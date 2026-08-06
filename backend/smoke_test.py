@@ -3630,7 +3630,7 @@ def main() -> int:
     ok(
         "ciclo_cf_theory_cta",
         "Biblioteca" in sess_cf
-        and "Sync syllabus" in sess_cf
+        and "edital" in sess_cf
         and "phaseName == 'theory'" in sess_cf
         and "numpadEnter" in sess_cf,
         "theory CTA + Enter",
@@ -5217,7 +5217,7 @@ def main() -> int:
     ok(
         "ciclo_fb_session_checkpoint_load",
         "checkpointLoadError" in sess_fb
-        and "Checkpoint de sessão indisponível." in sess_fb,
+        and "Não deu para recuperar a sessão salva." in sess_fb,
         "session checkpoint load",
     )
     ok(
@@ -5574,7 +5574,7 @@ def main() -> int:
     ok(
         "ciclo_fz_session_partial_load",
         "questionsPartialLoadNote" in sess_fb
-        and "questões não carregaram — API instável?" in sess_fb,
+        and "questões não carregaram" in sess_fb,
         "session partial load",
     )
     ok(
@@ -5587,7 +5587,7 @@ def main() -> int:
     ok(
         "ciclo_ga_session_revision_fetch",
         "fetchFailures" in sess_fb
-        and "Não foi possível buscar questões das revisões due." in sess_fb,
+        and "Não foi possível buscar questões das revisões" in sess_fb,
         "session revision fetch",
     )
     ok(

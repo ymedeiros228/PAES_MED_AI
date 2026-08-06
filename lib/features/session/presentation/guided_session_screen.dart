@@ -135,7 +135,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         cp = (raw as Map)['checkpoint'] as Map<String, dynamic>?;
         if (cp != null) cp = Map<String, dynamic>.from(cp);
       } catch (e) {
-        cpErr = humanApiError(e, fallback: 'Checkpoint de sessão indisponível.');
+        cpErr = humanApiError(e, fallback: 'Não deu para recuperar a sessão salva.');
       }
       setState(() {
         plan = Map<String, dynamic>.from(data as Map);
@@ -218,7 +218,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            humanApiError(e, fallback: 'Não foi possível descartar checkpoint da sessão.'),
+            humanApiError(e, fallback: 'Não deu para descartar a sessão salva.'),
           ),
         ),
       );
@@ -313,10 +313,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       pendingErrorPick = false;
       errorType = 'conceito';
       questionsLoadError = out.isEmpty && batch.isNotEmpty
-          ? 'Não foi possível carregar as questões desta fase — API offline?'
+          ? 'Não foi possível carregar as questões desta fase. Verifique se o app está rodando e tente de novo.'
           : null;
       questionsPartialLoadNote = failed > 0 && out.isNotEmpty
-          ? '$failed de ${batch.length} questões não carregaram — API instável?'
+          ? '$failed de ${batch.length} questões não carregaram. Toque em Recarregar para tentar de novo.'
           : null;
     });
     qSw
@@ -431,7 +431,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       sessionCards = [];
       revisionUsingQuestions = true;
       questionsLoadError = ids.isEmpty && fetchFailures > 0
-          ? 'Não foi possível buscar questões das revisões due.'
+          ? 'Não foi possível buscar questões das revisões. Tente de novo.'
           : null;
     });
     if (ids.isNotEmpty) await _loadQuestionBodies(ids);
@@ -476,7 +476,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ],
         });
       } catch (e) {
-        gapsErr = humanApiError(e, fallback: 'Lacunas não agendadas — fila manual.');
+        gapsErr = humanApiError(e, fallback: 'Lacunas não agendadas na fila — abra a Fila para revisar.');
       }
     }
     if (!mounted) return;
@@ -539,11 +539,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ],
           const SizedBox(height: 12),
           if (scheduleGapsError != null) ...[
-            Text(scheduleGapsError!, style: Theme.of(context).textTheme.bodySmall),
+            QuietEmpty(
+              message: scheduleGapsError!,
+              action: TextButton(
+                onPressed: () => context.go('/fila'),
+                child: const Text('Abrir fila'),
+              ),
+            ),
             const SizedBox(height: 8),
           ],
           if (gaps.isEmpty)
-            const Text('Sem misses neste bloco — siga a fila ou os cards due.')
+            const Text('Nenhum erro neste bloco — veja o que vem a seguir na Fila.')
           else ...[
             Text(
               'Tópicos fracos',
@@ -552,16 +558,18 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             for (final g in gaps.take(6)) Text('· ${g['subject']} / ${g['topic']}'),
           ],
           const SizedBox(height: 16),
+          Divider(color: cs.outlineVariant.withOpacity(0.5)),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               FilledButton(
                 onPressed: () => context.go('/fila'),
-                child: const Text('Fila'),
+                child: const Text('Abrir fila'),
               ),
               if (first != null)
-                FilledButton.tonal(
+                OutlinedButton(
                   onPressed: () {
                     final s = Uri.encodeComponent(first['subject'] ?? '');
                     final t = Uri.encodeComponent(first['topic'] ?? '');
@@ -569,9 +577,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   },
                   child: const Text('Treinar tópico fraco'),
                 ),
-              FilledButton.tonal(
+              TextButton(
                 onPressed: () => context.go('/flashcards?due=1'),
-                child: const Text('Cards due'),
+                child: const Text('Revisar cards'),
               ),
               OutlinedButton(
                 onPressed: _closeStudyDay,
@@ -954,7 +962,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final phases = (plan!['sessionPlan'] as List? ?? [
       {'phase': 'theory', 'minutes': 20, 'title': 'Teoria do dia'},
       {'phase': 'questions', 'minutes': 30, 'title': 'Questões'},
-      {'phase': 'revisions', 'minutes': 10, 'title': 'Revisão spaced'},
+      {'phase': 'revisions', 'minutes': 10, 'title': 'Revisão'},
     ]);
     final study = plan!['studyToday'] as Map<String, dynamic>?;
     final current = Map<String, dynamic>.from(phases[phaseIndex.clamp(0, phases.length - 1)] as Map);
@@ -984,7 +992,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             subtitle: sessionComplete
                 ? 'Sessão completa — próximos passos'
                 : study == null
-                    ? 'Gere um plano para calibrar a meta.'
+                    ? 'Inicie a sessão para montar o plano de estudo de hoje.'
                     : 'Meta: ${study['subject']} · ${study['topic']}${started ? _keyboardHintForPhase(phaseName) : ''}',
             trailing: started
                 ? SurfacePanel(
@@ -1055,23 +1063,23 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           if (questionsLoadError != null) ...[
             QuietEmpty(
               message: questionsLoadError!,
-              action: Wrap(
-                spacing: 8,
-                children: [
-                  TextButton(
-                    onPressed: () => unawaited(
-                      revisionUsingQuestions ? _enterRevisionsPhase() : _enterQuestionsPhase(),
-                    ),
-                    child: const Text('Tentar'),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go('/biblioteca'),
-                    child: const Text('Biblioteca'),
-                  ),
-                ],
+              action: FilledButton.tonal(
+                onPressed: () => unawaited(
+                  revisionUsingQuestions ? _enterRevisionsPhase() : _enterQuestionsPhase(),
+                ),
+                child: const Text('Tentar de novo'),
               ),
             ),
-            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () => context.go('/biblioteca'),
+                  child: const Text('Biblioteca'),
+                ),
+              ),
+            ),
           ],
           if (questionsPartialLoadNote != null) ...[
             QuietEmpty(
@@ -1160,10 +1168,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               Text('Teoria do edital', style: Theme.of(context).textTheme.titleMedium),
               if (snippets.isEmpty)
                 QuietEmpty(
-                  message: 'Sem tópicos de syllabus para o assunto do dia — rode Sync syllabus na Biblioteca.',
-                  action: TextButton(
+                  message:
+                      'Sem teoria do edital para o assunto de hoje. Atualize o edital na Biblioteca.',
+                  action: FilledButton.tonal(
                     onPressed: () => context.go('/biblioteca'),
-                    child: const Text('Biblioteca'),
+                    child: const Text('Abrir Biblioteca'),
                   ),
                 )
               else
@@ -1310,16 +1319,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               ),
             ] else if (isQuestions && started)
-              const Text('Toque em “Carregar questões” (1–5 + Enter).'),
+              QuietEmpty(
+                message: 'Questões ainda não carregadas. Toque no botão abaixo ou use 1–5 + Enter.',
+                action: FilledButton.tonal(
+                  onPressed: () => unawaited(_enterQuestionsPhase()),
+                  child: const Text('Carregar questões'),
+                ),
+              ),
             if (isRevisions && !revisionUsingQuestions) ...[
               const Divider(height: 24),
               Text('Revisão prática', style: Theme.of(context).textTheme.titleMedium),
               if (sessionCards.isEmpty)
                 QuietEmpty(
                   message:
-                      'Sem flashcards due. Revisões na fila: ${((plan?['revisions'] as List?) ?? []).length}. '
-                      'Carregue revisões para praticar questões dos tópicos, ou avance a fase.',
-                  action: TextButton(
+                      'Nenhum card para revisar agora (${((plan?['revisions'] as List?) ?? []).length} '
+                      'assunto(s) na fila). Carregue revisões para praticar com questões.',
+                  action: FilledButton.tonal(
                     onPressed: () => unawaited(_enterRevisionsPhase()),
                     child: const Text('Carregar revisões'),
                   ),
@@ -1346,19 +1361,20 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
                 if (cardReviewError != null) ...[
                   const SizedBox(height: 8),
-                  Text(
-                    cardReviewError!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                  QuietEmpty(
+                    message: cardReviewError!,
+                    action: TextButton(
+                      onPressed: () => setState(() => cardReviewError = null),
+                      child: const Text('Tentar de novo'),
+                    ),
                   ),
                 ],
               ],
             ],
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)
               QuietEmpty(
-                message: 'Sem questões carregadas para as revisões due.',
-                action: TextButton(
+                message: 'Sem questões carregadas para revisar. Toque para buscar questões dos tópicos.',
+                action: FilledButton.tonal(
                   onPressed: () => unawaited(_enterRevisionsPhase()),
                   child: const Text('Carregar revisões'),
                 ),

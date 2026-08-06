@@ -1,46 +1,34 @@
 # Continuar no Cursor a partir do Auto-Pilot
 
-## Cole isto no chat do Cursor (projeto aberto)
+## Cole isto no chat do Cursor (no projeto aberto)
 
 ```
 Analise a pasta .cursor/autopilot e continue a partir do Auto-Pilot.
-Leia nesta ordem: PLAN.md → FOCUS.md → QUEUE.md → BLOCKED.md → STATUS.md.
-1 item da QUEUE por ciclo, no modo ativo do FOCUS.
-Implemente, rode smoke se tocar código, atualize DONE/STATUS/BLOCKED/QUEUE/FOCUS “Agora”.
-NÃO edite PLAN.md seções norte (§2–5) nem mude o modo sozinho.
-NÃO edite arquivos .cursor/plans/*.plan.md do Plan Mode.
+Leia PLAN.md → FOCUS.md → QUEUE.md → BLOCKED.md → STATUS.md.
+Implemente 1 item da QUEUE por ciclo; atualize DONE/QUEUE/FOCUS.
+Priorize BLOCKED.md e o que falta em CONTINUE.md / STATUS.md.
+
+
 ```
 
-Ou: `@.cursor/autopilot`
+Ou com menção: `@.cursor/autopilot`
 
-## Fonte de verdade (ordem)
-
-| Ordem | Arquivo | Papel |
-|------:|---------|--------|
-| 1 | **PLAN.md** | Plano grande + quando seguir/parar + o que AP pode editar |
-| 2 | **FOCUS.md** | Modo calibrado (A–E) + “Agora” |
-| 3 | **QUEUE.md** | Fila do que fazer (1 item/ciclo) |
-| 4 | BLOCKED.md | Travas |
-| 5 | STATUS.md / DONE.md | Runtime e histórico curto |
-
-## O Auto-Pilot pode mexer?
-
-**Sim** em: QUEUE, FOCUS (linha Agora), STATUS, DONE, BLOCKED, live.json, log, control (se a sessão expõe).
-
-**Não** (sem você pedir): mudar **modo** do FOCUS, reescrever norte do PLAN, apagar anti-padrões, editar plans do Plan Mode do Cursor.
-
-## Sessão (metadados — AP pode atualizar timestamps)
+## Sessão
 
 - Projeto: `C:\Users\Yuri\Documents\uema estudos\PAES_MED_AI`
-- Missão default: modo A (uso real), ver FOCUS.md
-- Handoff: `.cursor/autopilot`
-- Git host: `C:\Users\Yuri\tools\MinGit\cmd` + `C:\Users\Yuri\flutter\bin` no PATH
-- Parar: `control.json` → `{ "action": "stop" }`
+- Missão: Missao: seguir .cursor/autopilot (PLAN + FOCUS + QUEUE). 1 item da QUEUE por ciclo. Smoke/validate se codigo. Atualize DONE/STATUS/BLOCKED/QUEUE/FOCUS Agora. Nao mudar modo do FOCUS sozinho. Host faz Git/PR.
+- Modo FOCUS: A · Uso real
+- Cabeça QUEUE: Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
+- Fase: running
+- Início: 2026-08-06T15:58:32.217Z
+- Fim planejado: 2026-08-06T16:58:32.217Z
+- Handoff: `C:\Users\Yuri\Documents\uema estudos\PAES_MED_AI\.cursor\autopilot`
 
 ## Arquivos
 
-- `PLAN.md` — planejamento grande  
-- `FOCUS.md` — calibração de foco  
-- `QUEUE.md` — fila  
-- `STATUS.md` / `DONE.md` / `BLOCKED.md`  
-- `live.json` / `control.json`  
+- `PLAN.md` / `FOCUS.md` / `QUEUE.md` — missão calibrada (não overwrite se existirem)
+- `STATUS.md` — o que está acontecendo
+- `DONE.md` — o que já foi feito
+- `BLOCKED.md` — o que travou (para você organizar)
+- `live.json` — estado em tempo real (dashboard)
+- `control.json` — `{ "action": "stop" }` para parar a sessão

@@ -13,3 +13,19 @@ Autopilot micro-ciclos GN–GQ (e anteriores) estavam **certos**.
 GR–GU = ship de residual real (pack/git/F2), não substituir toda a missão do Auto-Pilot.
 
 **Pack rule:** nunca deixar dist só com `app\` sem launcher/ico.
+
+
+---
+## Nova sessão 2026-08-06T15:28:36.767Z
+
+
+
+---
+## Nova sessão 2026-08-06T15:43:46.242Z
+
+
+
+---
+## Nova sessão 2026-08-06T15:58:32.217Z
+
+- [x] **Sessão/Fila empty+erro (modo A):** copy em PT sem jargão (misses/due/spaced/syllabus/API); CTAs primários únicos (Tentar de novo, Abrir fila, Carregar questões/revisões); erro de lacunas e card review com ação; fila vazia aponta para Começar sessão. **Polish UI:** divisor no painel fim de sessão. Smoke strings atualizadas (cf/fb/fz/ga).

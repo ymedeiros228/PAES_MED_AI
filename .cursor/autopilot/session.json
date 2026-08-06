@@ -1,9 +1,9 @@
 {
   "projectPath": "C:\\Users\\Yuri\\Documents\\uema estudos\\PAES_MED_AI",
   "projectName": "PAES_MED_AI",
-  "task": "Analise o projeto e IMPLEMENTE melhorias o tempo todo. Atualize .cursor/autopilot (DONE/BLOCKED/STATUS). Host cuida de Git/PR.",
+  "task": "Missao: seguir .cursor/autopilot (PLAN + FOCUS + QUEUE). 1 item da QUEUE por ciclo. Smoke/validate se codigo. Atualize DONE/STATUS/BLOCKED/QUEUE/FOCUS Agora. Nao mudar modo do FOCUS sozinho. Host faz Git/PR.",
   "model": "composer-2.5",
   "hours": 1,
-  "startsAt": "2026-08-06T01:04:22.847Z",
-  "endsAt": "2026-08-06T02:04:22.847Z"
+  "startsAt": "2026-08-06T15:58:32.217Z",
+  "endsAt": "2026-08-06T16:58:32.217Z"
 }

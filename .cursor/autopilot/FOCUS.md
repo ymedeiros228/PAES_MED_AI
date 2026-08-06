@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; aguarda relançar Auto-Pilot ou item em QUEUE |
-| **Próximo** | 1 residual de uso (A) ou F2 material thin se gap real |
-| **Último feito** | GR–GU: pack + Ler teoria + gates + ship + fix compile |
+| **Agora** | — idle; ciclo 1 concluído |
+| **Próximo** | Ficha pós-erro: path “li teoria → treino” (validar ao vivo) |
+| **Último feito** | Sessão/Fila: empty+erro legíveis, CTAs claros, jargão removido |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 
