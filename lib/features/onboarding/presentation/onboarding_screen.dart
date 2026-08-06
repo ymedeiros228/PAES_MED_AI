@@ -111,8 +111,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final bodies = [
       'Hub pessoal para Medicina na UEMA — acervo, sessão e revisão no seu ritmo.',
       'Calibra o plano e a contagem. Pode pular e definir depois em Ajustes.',
-      'Importe 2024–26 na Biblioteca com um toque, ou abra as pastas e coloque os PDFs à mão.',
-      'Hoje → Sessão ou Fila. Biblioteca se ainda faltar prova. Simulado quando quiser medir.',
+      'Importe 2024–26 na Biblioteca (Semana 1) com um toque, ou abra as pastas e coloque os PDFs à mão.',
+      'Hoje → Sessão ou Fila. Semana 1 na Biblioteca se ainda faltar prova. Simulado quando quiser medir.',
     ];
 
     return Focus(
@@ -212,12 +212,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     )
                   else ...[
                     TextButton(
-                      onPressed: () => _finish(skipExam: true, path: '/biblioteca'),
-                      child: const Text('Biblioteca'),
-                    ),
-                    FilledButton(
                       onPressed: () => _finish(path: '/dashboard'),
                       child: const Text('Ir ao Hoje'),
+                    ),
+                    FilledButton(
+                      onPressed: () => _finish(skipExam: true, path: '/biblioteca'),
+                      child: const Text('Ir para Semana 1'),
                     ),
                   ],
                 ],

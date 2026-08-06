@@ -1192,6 +1192,23 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+12**; Mode A HC–HD.
 2. Host: `empacotar_windows.bat` após merge.
 
+## First-run Semana 1 (Ciclo HF)
+
+1. Onboarding: CTA **Ir para Semana 1** → `/biblioteca`.
+2. Coach no Hoje (sem oficiais): **Ir para Semana 1** → Biblioteca.
+3. Smoke: `ciclo_hf_*`.
+
+## Fila vazia / sem material (Ciclo HG)
+
+1. Fila vazia sem base oficial → QuietEmpty Biblioteca / Semana 1 (não só Sessão).
+2. Cards de eixo: “para revisar” (sem jargão `due` na UI).
+3. Smoke: `ciclo_hg_*`.
+
+## Pack gate + 1.0.0+13 (Ciclo HH ship)
+
+1. Bump **1.0.0+13**.
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

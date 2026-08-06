@@ -9,50 +9,20 @@ Ler **depois** de [PLAN.md](PLAN.md).
 |-------|--------|
 | **Modo** | **A · Uso real** |
 | **Secundário** | B · Material thin (só se fila A vazia) |
-| **Evitar** | Micro-teclas R/S por tela; redesign; PDF inventado |
-| **Versão alvo** | **1.0.0+12** (Mode A HC–HD) |
-
-## Quem mexe no quê
-
-| Você (humano) | Auto-Pilot (Cursor) |
-|---------------|---------------------|
-| Define **modo** (A/B/C/D/E) | Preenche **Agora / Próximo / Fez** |
-| Pode editar PLAN norte §2–5 | Edita **só** tabela abaixo + QUEUE |
-| `control.json` stop | STATUS / DONE / BLOCKED / log |
-| Planos em `.cursor/plans/*.plan.md` | **Não edita** esses planos |
-
-**O Auto-Pilot PODE e DEVE mexer** em: STATUS, DONE, BLOCKED, QUEUE, live.json, log.txt, e a tabela **Agora** deste FOCUS.  
-**Não deve reescrever sozinho** o modo ativo nem o PLAN mestre (exceto § “Ajustes do ciclo” / fila dinâmica).
+| **Evitar** | Micro-teclas R/S; redesign; PDF inventado |
+| **Versão alvo** | **1.0.0+13** (HF–HG) |
 
 ## Agora (AP atualiza)
 
 | | |
 |---|---|
-| **Agora** | — idle pós HC–HD |
-| **Próximo** | Soft landing só se repro; senão QUEUE P2 |
-| **Último feito** | HC–HD Mode A + ship 1.0.0+12 |
+| **Agora** | HF Semana 1 CTA → HG Fila empty |
+| **Próximo** | Ship 1.0.0+13 + pack host |
+| **Último feito** | HC–HD Mode A + 1.0.0+12 |
 
-## Prompt curto para missões novas (cole no Auto-Pilot)
+## Prompt curto
 
 ```
-Missão: modo A (uso real). Ler .cursor/autopilot/PLAN.md + FOCUS.md + QUEUE.md.
-1 item da QUEUE por ciclo. Smoke verde. Atualize DONE/STATUS/BLOCKED/QUEUE.
-Não micro-teclas R/S por tela. Não inventar PDF. Pack: nunca deixar dist sem launcher+ico.
-Git: PATH MinGit + flutter se commit/push; sem force. Host se travar em git/pack.
+Missão: modo A. Ler PLAN + FOCUS + QUEUE. 1 item por ciclo. Smoke verde.
+Não micro-teclas. Não inventar PDF. Pack: launcher+ico.
 ```
-
-## Checklist de calibração (30s no início do ciclo)
-
-1. [ ] Li PLAN §2–4 e FOCUS **modo ativo**  
-2. [ ] Peguei **1** item da QUEUE (não 10)  
-3. [ ] Não estou repetindo teclado já coberto  
-4. [ ] Se mexer em dist → restaurar launcher+ico+VERSION  
-5. [ ] No fim: DONE + STATUS + (smoke se código)
-
-## Se você quiser “calibrar” de novo
-
-Edite **só** a linha **Modo** na tabela “Modo ativo”, ou diga no chat:
-
-> Muda o Auto-Pilot para modo B (material)
-
-Sem você mudar o modo, o AP **não** promove reescrita de foco “porque achou melhor”.

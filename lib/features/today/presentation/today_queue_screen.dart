@@ -320,10 +320,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 if (!hasAnything) ...[
                   const SizedBox(height: 20),
                   QuietEmpty(
-                    message: 'Fila leve — sessão guiada é o caminho.',
+                    message: officialUnlocked
+                        ? 'Fila leve — sessão guiada é o caminho.'
+                        : 'Ainda sem base oficial na fila. Comece pela Semana 1 (2024–26) na Biblioteca.',
                     action: TextButton(
-                      onPressed: () => context.go('/sessao'),
-                      child: const Text('Sessão'),
+                      onPressed: () => context.go(
+                        officialUnlocked ? '/sessao' : '/biblioteca',
+                      ),
+                      child: Text(officialUnlocked ? 'Sessão' : 'Ir para Semana 1'),
                     ),
                   ),
                 ],
@@ -413,9 +417,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final due = (queue!['axisCardsDue'] as int?) ?? 0;
                         final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
                         if (due > 0 && neu > 0) {
-                          return '$due due · $neu dos eixos sem revisão';
+                          return '$due para revisar · $neu dos eixos ainda sem revisão';
                         }
-                        if (due > 0) return '$due card(s) dos eixos due';
+                        if (due > 0) return '$due card(s) dos eixos para revisar';
                         return '$neu card(s) dos eixos (ainda sem revisão)';
                       }(),
                       badge: 'eixos',

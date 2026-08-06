@@ -311,6 +311,8 @@ flowchart TB
 | HA | preferOfficial + Natureza e2e | `ciclo_ha_*` | **Feito** |
 | HC | Sessão empties/erros PT + 1 CTA | `ciclo_hc_*` | **Feito** |
 | HD | Ficha Ler teoria → treinar + trainSessionPath | `ciclo_hd_*` | **Feito** |
+| HF | First-run CTA Semana 1 | `ciclo_hf_*` | **Feito** |
+| HG | Fila empty → Biblioteca + PT sem due | `ciclo_hg_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -318,9 +320,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HC–HD / Mode A)
+## Estado (atualizado pós HF–HG / Mode A)
 
-- Rodada **GY–HA** (F3 deep): grounding por pergunta, `/api/tutor/ask`, UI block+chips, `preferOfficial` + Natureza + ship **1.0.0+11**.
 - Rodada **HC–HD** (Mode A): Sessão sem jargão + ficha “Ler teoria → treinar” + ship **1.0.0+12**.
+- Rodada **HF–HG** (Mode A): first-run Semana 1 + Fila vazia → Biblioteca + ship **1.0.0+13**.
 - Residual: pack Windows no host após merge (`empacotar_windows.bat`).
 - Push no GitHub após suite verde (autor: Yuri Medeiros).

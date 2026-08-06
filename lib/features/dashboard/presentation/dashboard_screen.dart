@@ -377,10 +377,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Comece pelo acervo', style: Theme.of(context).textTheme.titleMedium),
+                                  Text('Comece pela Semana 1', style: Theme.of(context).textTheme.titleMedium),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'Com as provas UEMA na Biblioteca, o estudo fica alinhado à banca.',
+                                    'Atualize 2024–26 na Biblioteca para alinhar o estudo às provas UEMA.',
                                     style: Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const SizedBox(height: 12),
@@ -392,7 +392,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           _dismissFirstRunCoach();
                                           context.go('/biblioteca');
                                         },
-                                        child: const Text('Ir à Biblioteca'),
+                                        child: const Text('Ir para Semana 1'),
                                       ),
                                       TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
                                     ],

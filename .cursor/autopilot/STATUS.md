@@ -1,23 +1,15 @@
 # Auto-Pilot — STATUS
 
-## Cloud Agent — Mode A HC–HD (ship 1.0.0+12)
+## Cloud Agent — Mode A HF–HG (ship 1.0.0+13)
 
 | | |
 |---|---|
-| **Estado** | DONE (product) / host pack residual |
-| **Projeto** | PAES_MED_AI |
-| **Ciclo** | HC–HD (+ HE ship) |
-| **Versão** | 1.0.0+12 |
-| **Branch** | `cursor/mode-a-uso-real-2d73` |
+| **Estado** | IN_PROGRESS |
+| **Ciclo** | HF–HG |
+| **Versão alvo** | 1.0.0+13 |
+| **Branch** | `cursor/mode-a-first-run-2d73` |
 | **Atualizado** | 2026-08-06 |
 
-### Missão (encerrada)
+### Missão
 
-Sessão sem jargão + ficha “Ler teoria → treinar” + ship **1.0.0+12**.
-
-### Host Windows
-
-1. Merge PR → `git pull origin main`
-2. Fechar app + explorer em `dist\`
-3. `empacotar_windows.bat` → **1.0.0+12**
-4. Smoke local
+First-run CTA Semana 1 + Fila vazia → Biblioteca (sem jargão due).
