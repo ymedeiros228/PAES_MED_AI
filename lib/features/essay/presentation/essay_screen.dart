@@ -10,6 +10,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/ui_kit.dart';
+import '../essay_draft.dart';
 import '../essay_progress_view.dart';
 
 class EssayScreen extends ConsumerStatefulWidget {
@@ -28,6 +29,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
   List<Map<String, dynamic>> personas = [];
   String? personaId;
   bool busy = false;
+  Timer? _draftDebounce;
+  bool _draftRestored = false;
   String? setupError;
 
   Future<void> _reloadSetup() async {
@@ -41,12 +44,46 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     _loadThemes();
     _loadProgress();
     _loadPersonas();
+    _restoreDraft();
   }
 
   @override
   void dispose() {
+    _draftDebounce?.cancel();
     textCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _restoreDraft() async {
+    final draft = await loadEssayDraft();
+    if (!mounted || draft == null) return;
+    // Não sobrescreve texto já digitado ou vindo de "Reescrever".
+    if (textCtrl.text.trim().isNotEmpty) return;
+    setState(() {
+      textCtrl.text = draft.text;
+      if (draft.theme.isNotEmpty) {
+        if (!themes.contains(draft.theme)) themes = [...themes, draft.theme];
+        theme = draft.theme;
+      }
+      _draftRestored = true;
+    });
+  }
+
+  void _scheduleDraftSave() {
+    _draftDebounce?.cancel();
+    _draftDebounce = Timer(const Duration(milliseconds: 600), () {
+      unawaited(saveEssayDraft(EssayDraft(theme: theme ?? '', text: textCtrl.text)));
+    });
+  }
+
+  Future<void> _clearDraft({bool clearEditor = false}) async {
+    _draftDebounce?.cancel();
+    await clearEssayDraft();
+    if (!mounted) return;
+    setState(() {
+      _draftRestored = false;
+      if (clearEditor) textCtrl.clear();
+    });
   }
 
   Future<void> _loadThemes() async {
@@ -140,6 +177,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       final data = await apiClient.post('/api/essay/grade', body);
       ref.read(refreshTickProvider.notifier).state++;
       setState(() => last = Map<String, dynamic>.from(data as Map));
+      // Redação corrigida: o rascunho local já cumpriu seu papel.
+      unawaited(_clearDraft());
       await _loadProgress();
     } catch (e) {
       setState(() => last = {
@@ -582,7 +621,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   initialSelection: theme,
                   label: const Text('Tema'),
                   width: double.infinity,
-                  onSelected: (v) => setState(() => theme = v),
+                  onSelected: (v) {
+                    setState(() => theme = v);
+                    _scheduleDraftSave();
+                  },
                   dropdownMenuEntries: [
                     for (final t in themes) DropdownMenuEntry(value: t, label: t),
                   ],
@@ -592,7 +634,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 controller: textCtrl,
                 minLines: 12,
                 maxLines: 20,
-                onChanged: (_) => setState(() {}),
+                onChanged: (_) {
+                  setState(() {});
+                  _scheduleDraftSave();
+                },
                 decoration: const InputDecoration(
                   labelText: 'Sua redação',
                   alignLabelWithHint: true,
@@ -615,6 +660,34 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         ),
                   ),
                 ),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Row(
+                  children: [
+                    Icon(
+                      _draftRestored ? Icons.history_rounded : Icons.save_outlined,
+                      size: 14,
+                      color: cs.onSurface.withOpacity(0.55),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _draftRestored
+                            ? 'Rascunho restaurado · salvo automaticamente no seu PC'
+                            : 'Rascunho salvo automaticamente no seu PC',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: cs.onSurface.withOpacity(0.55),
+                            ),
+                      ),
+                    ),
+                    if (textCtrl.text.trim().isNotEmpty)
+                      TextButton(
+                        onPressed: () => _clearDraft(clearEditor: true),
+                        child: const Text('Limpar rascunho'),
+                      ),
+                  ],
+                ),
+              ),
               if (last != null) ...[
                 SectionLabel('Resultado'),
                 SurfacePanel(
