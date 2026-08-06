@@ -3,13 +3,14 @@
 Itens que o Auto-Pilot **não conseguiu** concluir sozinho.
 Formato: `- [ ] [TÍTULO] | por quê | onde | próxima ação`
 
-Sessão GR–GU (host)
+- [x] dist pack | launcher + ico + exe + VERSION 1.0.0+9 + Desktop .lnk | host
+- [x] land main | `origin/main` @ 6f61f73 (ship GR–GU + fix compile) | sem force
+- [x] git para o agente | MinGit em `C:\Users\Yuri\tools\MinGit\cmd` (prefixar PATH; não está no PATH padrão do Windows) | host/scripts: export PATH no início do ciclo
+- [x] flutter | `C:\Users\Yuri\flutter\bin` | prefixar PATH
 
-- [x] dist pack | Restored: Iniciar bat + branding/app_icon.ico + app/exe + VERSION.txt + Desktop .lnk | host xcopy restore
-- [ ] git no PATH do agente | `git.exe` ainda ausente no PATH padrão do shell do agente (Flutter build exige Git) | host | Instalar Git for Windows e garantir `git` no PATH do sistema
-- [x] flutter path documentado | usar `C:\Users\Yuri\flutter\bin` | scripts/host
+## Residual aberto (produto, não travamento)
 
-Checklist host residual (se push falhar no agente):
-1. Abrir terminal com Git no PATH: `git status` na raiz `PAES_MED_AI`
-2. Commit como **Yuri Medeiros** + push `origin/main` (sem force; sem `.env`/`dist`/`*.db`)
-3. Fechar PR #2 / branch autopilot se limpo e já em main
+- [ ] F1/F3 deep (acervo UEMA completo) | escopo grande | ROADMAP | só thin se gap real de uso
+- [ ] PR #2 autopilot | branches antigas podem existir | GitHub | fechar se já merged via main
+
+Sem item BLOCKED crítico para continuar Auto-Pilot.
