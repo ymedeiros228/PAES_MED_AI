@@ -34,7 +34,7 @@ void main() {
       late http.Request seen;
       final client = ApiClient(
         client: MockClient((req) async {
-          seen = req as http.Request;
+          seen = req;
           return http.Response(jsonEncode({'ok': true}), 200);
         }),
       );
