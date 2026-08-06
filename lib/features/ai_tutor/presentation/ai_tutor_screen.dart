@@ -160,6 +160,14 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
             child: Row(
               children: [
+                FilterChip(
+                  label: const Text('Preferir oficiais'),
+                  selected: state.preferOfficial,
+                  showCheckmark: false,
+                  onSelected: (v) =>
+                      ref.read(aiTutorControllerProvider.notifier).setPreferOfficial(v),
+                ),
+                const SizedBox(width: 8),
                 for (final s in _styles)
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
@@ -320,13 +328,24 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
 }
 
 String _citeLine(Map<String, dynamic> c) {
-  final type = c['type']?.toString() ?? 'fonte';
+  final type = (c['type'] ?? c['refType'])?.toString() ?? 'fonte';
+  final id = (c['id'] ?? c['refId'])?.toString();
   final year = c['year']?.toString();
   final tag = year != null && year.isNotEmpty ? '[$type · $year]' : '[$type]';
-  final label = c['label'] ?? c['id'] ?? '—';
-  final snippet = c['snippet']?.toString();
-  if (snippet != null && snippet.isNotEmpty) return '$tag $label — $snippet';
-  return '$tag $label';
+  final label = (c['label'] ?? id ?? '—').toString();
+  // Chip: texto curto (label), sem snippet longo
+  final short = label.length > 36 ? '${label.substring(0, 34)}…' : label;
+  return '$tag $short';
+}
+
+IconData _citeIcon(Map<String, dynamic> c) {
+  final type = (c['type'] ?? c['refType'])?.toString() ?? '';
+  return switch (type) {
+    'question' => Icons.quiz_outlined,
+    'edital' => Icons.menu_book_outlined,
+    'lesson' => Icons.school_outlined,
+    _ => Icons.link,
+  };
 }
 
 class _MessageBubble extends StatelessWidget {
@@ -375,40 +394,41 @@ class _MessageBubble extends StatelessWidget {
             if (message.citations.isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
-                'Fontes na base (clique abre ficha/treino)',
+                'Fontes na base (chip · clique abre ficha/treino)',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 4),
-              for (final c in message.citations.take(5))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: InkWell(
-                    onTap: () {
-                      final type = c['type']?.toString();
-                      final id = c['id']?.toString();
-                      final subject = c['subject']?.toString() ?? '';
-                      final topic = c['topic']?.toString() ?? '';
-                      if (type == 'question' && id != null && id.isNotEmpty) {
-                        context.go('/questoes/$id');
-                      } else if ((type == 'edital' || type == 'lesson') && subject.isNotEmpty) {
-                        context.go(
-                          '/adaptativo?subject=${Uri.encodeComponent(subject)}'
-                          '&topic=${Uri.encodeComponent(topic)}',
-                        );
-                      } else if (type == 'edital' || type == 'lesson') {
-                        // Ciclo CF: lesson never hostil /aulas sob foco
-                        context.go('/sessao');
-                      }
-                    },
-                    child: Text(
-                      '• ${_citeLine(c)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            decoration: TextDecoration.underline,
-                          ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final c in message.citations.take(6))
+                    ActionChip(
+                      avatar: Icon(
+                        _citeIcon(c),
+                        size: 16,
+                        color: scheme.primary,
+                      ),
+                      label: Text(_citeLine(c)),
+                      onPressed: () {
+                        final type = (c['type'] ?? c['refType'])?.toString();
+                        final id = (c['id'] ?? c['refId'])?.toString();
+                        final subject = c['subject']?.toString() ?? '';
+                        final topic = c['topic']?.toString() ?? '';
+                        if (type == 'question' && id != null && id.isNotEmpty) {
+                          context.go('/questoes/$id');
+                        } else if ((type == 'edital' || type == 'lesson') && subject.isNotEmpty) {
+                          context.go(
+                            '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+                            '&topic=${Uri.encodeComponent(topic)}',
+                          );
+                        } else if (type == 'edital' || type == 'lesson') {
+                          context.go('/sessao');
+                        }
+                      },
                     ),
-                  ),
-                ),
+                ],
+              ),
             ],
           ],
         ),

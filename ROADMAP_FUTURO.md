@@ -306,6 +306,9 @@ flowchart TB
 | GU | Pack smoke gate + **1.0.0+9** | `ciclo_gu_*` | **Feito** |
 | GV | Dashboard acervo summary (F1 deep) | `ciclo_gv_*` | **Feito** |
 | GW | Gate honestidade 2017–23 + dry-run fetch | `ciclo_gw_*` | **Feito** |
+| GY | F3 grounding + `/api/tutor/ask` + aliases | `ciclo_gy_*` | **Feito** |
+| GZ | Tutor UI block sem fonte + chips | `ciclo_gz_*` | **Feito** |
+| HA | preferOfficial + Natureza e2e | `ciclo_ha_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -313,9 +316,10 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós GV–GW)
+## Estado (atualizado pós GY–HA / F3 deep)
 
 - Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
 - Rodada **GV–GW** (F1 deep): card Acervo no Hoje + gates honestidade 2017–23 + ship **1.0.0+10**.
-- Residual: F3 deep (Tutor citações mais rígidas) TBD; pack Windows no host após merge.
-- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: `empacotar_windows.bat` se `dist` desatualizado.
+- Rodada **GY–HA** (F3 deep): grounding por pergunta, `/api/tutor/ask`, UI block+chips, `preferOfficial` + Natureza + ship **1.0.0+11**.
+- Residual: pack Windows no host após merge (`empacotar_windows.bat`).
+- Push no GitHub após suite verde (autor: Yuri Medeiros).

@@ -343,13 +343,22 @@ def build_rag_context_embedded(query: str, limit: int = 8) -> tuple[str, str]:
     return context, mode
 
 
-def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, str, list[dict[str, Any]]]:
+def build_rag_context_embedded_full(
+    query: str,
+    limit: int = 8,
+    *,
+    prefer_official: bool | None = None,
+    coach_subject: str | None = None,
+    coach_topic: str | None = None,
+    natureza_bias: bool = False,
+) -> tuple[str, str, list[dict[str, Any]]]:
     """Retorna (contexto, modo, citações)."""
     from services_core import is_official_source, stats_basis
-    from services_extra import build_rag_context_with_citations
+    from services_extra import build_rag_context_with_citations, normalize_citation
 
     basis = stats_basis()
-    prefer_official = basis["officialCount"] >= 10
+    if prefer_official is None:
+        prefer_official = basis["officialCount"] >= 10
     qvec = openai_embedding(query) or local_embedding(query)
     conn = connect()
     try:
@@ -381,7 +390,14 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
     scored.sort(key=lambda x: -x[0])
 
     if not scored:
-        ctx, cites = build_rag_context_with_citations(query, limit)
+        ctx, cites = build_rag_context_with_citations(
+            query,
+            limit,
+            prefer_official=prefer_official,
+            coach_subject=coach_subject,
+            coach_topic=coach_topic,
+            natureza_bias=natureza_bias,
+        )
         disclaimer = (
             ""
             if prefer_official
@@ -390,21 +406,31 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
         return ctx + disclaimer, "keyword", cites
 
     mode = "embedded"
+    tokens = {t.lower() for t in query.replace("?", " ").split() if len(t) > 3}
     chunks: list[str] = ["=== EDITAL ==="]
     if not prefer_official:
         chunks.insert(0, "[AVISO] officialCount < 10 — RAG pode citar treino. Não invente incidência oficial.")
     citations: list[dict[str, Any]] = []
-    for s in syllabus[:25]:
+    scored_s: list[tuple[int, dict[str, Any]]] = []
+    for s in syllabus:
+        blob = f"{s.get('subject','')} {s.get('topic','')} {s.get('subtopic') or ''}".lower()
+        score = sum(1 for t in tokens if t in blob)
+        if score:
+            scored_s.append((score, s))
+    scored_s.sort(key=lambda x: -x[0])
+    for s in ([x[1] for x in scored_s[:8]] or syllabus[:5]):
         chunks.append(f"- {s['subject']} > {s['topic']} peso={s['weight']}")
         citations.append(
-            {
-                "type": "edital",
-                "id": s.get("id"),
-                "label": f"Edital · {s['subject']} · {s['topic']}",
-                "snippet": s["topic"],
-                "subject": s["subject"],
-                "topic": s["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "edital",
+                    "id": s.get("id"),
+                    "label": f"Edital · {s['subject']} · {s['topic']}",
+                    "snippet": s["topic"],
+                    "subject": s["subject"],
+                    "topic": s["topic"],
+                }
+            )
         )
 
     chunks.append("=== QUESTÕES (top similaridade) ===")
@@ -417,21 +443,35 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
             continue
         if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
             continue
+        boost = 0.0
+        subj = (q.get("subject") or "").strip()
+        topic = (q.get("topic") or "").strip()
+        if coach_subject and subj.lower() == coach_subject.lower():
+            boost += 0.02
+        if coach_topic and coach_topic.lower() in topic.lower():
+            boost += 0.03
+        if natureza_bias:
+            from services_core import NATUREZA_SUBJECTS
+
+            if subj in NATUREZA_SUBJECTS:
+                boost += 0.02
         chunks.append(
-            f"[sim={score:.3f}] [{q['year']}] {q['subject']}/{q['topic']} id={q['id']}\n"
+            f"[sim={score + boost:.3f}] [{q['year']}] {q['subject']}/{q['topic']} id={q['id']}\n"
             f"{q['statement']}\nResolução: {q.get('resolution') or 'n/d'}\nMacete: {q.get('macete') or 'n/d'}"
         )
         citations.append(
-            {
-                "type": "question",
-                "id": q["id"],
-                "label": f"{q['subject']} · {q['topic']} ({q['year']})",
-                "snippet": (q["statement"] or "")[:140],
-                "score": round(float(score), 3),
-                "official": is_official_source(q.get("source"), q.get("generated")),
-                "subject": q["subject"],
-                "topic": q["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "question",
+                    "id": q["id"],
+                    "label": f"{q['subject']} · {q['topic']} ({q['year']})",
+                    "snippet": (q["statement"] or "")[:140],
+                    "score": round(float(score + boost), 3),
+                    "official": is_official_source(q.get("source"), q.get("generated")),
+                    "subject": q["subject"],
+                    "topic": q["topic"],
+                }
+            )
         )
         used += 1
         if used >= limit:
@@ -442,14 +482,16 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
         for lesson in lessons[:3]:
             chunks.append(f"{lesson['title']}: {lesson.get('summary') or ''}")
             citations.append(
-                {
-                    "type": "lesson",
-                    "id": lesson["id"],
-                    "label": lesson["title"],
-                    "snippet": (lesson.get("summary") or "")[:140],
-                    "subject": lesson.get("subject"),
-                    "topic": lesson.get("topic"),
-                }
+                normalize_citation(
+                    {
+                        "type": "lesson",
+                        "id": lesson["id"],
+                        "label": lesson["title"],
+                        "snippet": (lesson.get("summary") or "")[:140],
+                        "subject": lesson.get("subject"),
+                        "topic": lesson.get("topic"),
+                    }
+                )
             )
 
     return "\n\n".join(chunks), mode, citations[:12]

@@ -8,18 +8,21 @@ class AiTutorState {
     this.isLoading = false,
     this.error,
     this.style = 'professor',
+    this.preferOfficial = true,
   });
 
   final List<ChatMessage> messages;
   final bool isLoading;
   final String? error;
   final String style;
+  final bool preferOfficial;
 
   AiTutorState copyWith({
     List<ChatMessage>? messages,
     bool? isLoading,
     String? error,
     String? style,
+    bool? preferOfficial,
     bool clearError = false,
   }) {
     return AiTutorState(
@@ -27,6 +30,7 @@ class AiTutorState {
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
       style: style ?? this.style,
+      preferOfficial: preferOfficial ?? this.preferOfficial,
     );
   }
 }
@@ -61,6 +65,10 @@ class AiTutorController extends StateNotifier<AiTutorState> {
     state = state.copyWith(style: style);
   }
 
+  void setPreferOfficial(bool value) {
+    state = state.copyWith(preferOfficial: value);
+  }
+
   Future<void> send(String rawText) async {
     final text = rawText.trim();
     if (text.isEmpty || state.isLoading) return;
@@ -78,7 +86,16 @@ class AiTutorController extends StateNotifier<AiTutorState> {
         message: text,
         history: previousHistory,
         style: state.style,
+        preferOfficial: state.preferOfficial,
       );
+      // GZ: só commit se grounded (cites) ou uncited explícito
+      if (!answer.isGroundedOk) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Resposta sem fonte na base local. Tente de novo ou abra Biblioteca.',
+        );
+        return;
+      }
       state = state.copyWith(
         messages: [
           ...state.messages,
@@ -101,6 +118,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
   void clearConversation() {
     state = AiTutorState(
       style: state.style,
+      preferOfficial: state.preferOfficial,
       messages: const [
         ChatMessage(
           role: ChatRole.assistant,

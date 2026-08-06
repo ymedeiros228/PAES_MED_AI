@@ -1152,6 +1152,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+10** (pubspec, Ajustes, `empacotar_windows.bat`).
 2. Host Windows: fechar app, `empacotar_windows.bat`, smoke local.
 
+## Tutor grounding por pergunta (Ciclo GY)
+
+1. `POST /api/tutor/ask` = alias de `/api/chat`; cites com `refType`/`refId` + `type`/`id`.
+2. Offline/online: score pela **mensagem** (+ boost coach); só ids reais no SQLite.
+3. Smoke: `ciclo_gy_*` (genética → cites ou sem base; rejeita id inventado).
+
+## Tutor UI block + chips (Ciclo GZ)
+
+1. Sucesso = `citations` não vazio **ou** `uncited` explícito; senão erro (“Resposta sem fonte”).
+2. Fontes como `ActionChip` → `/questoes/{id}` ou adaptativo.
+3. Smoke: `ciclo_gz_*`.
+
+## preferOfficial + Natureza (Ciclo HA)
+
+1. `ChatRequest.preferOfficial` (default = officialUnlocked); UI toggle **Preferir oficiais**.
+2. RAG filtra oficial quando pedido; coach Natureza → bias Bio/Fís/Qui.
+3. Smoke: `ciclo_ha_*`.
+
+## Pack gate + 1.0.0+11 (Ciclo HB ship)
+
+1. Bump **1.0.0+11**; F3 deep fechado.
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

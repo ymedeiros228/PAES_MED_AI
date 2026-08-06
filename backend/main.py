@@ -77,7 +77,9 @@ from services_extra import (
     list_revisions,
     list_study_gaps,
     mark_gap_card_remembered,
+    normalize_citation,
     parse_gate_flags,
+    score_questions_for_query,
     record_answer,
     recover_study_gap,
     remediation_for,
@@ -172,6 +174,10 @@ class ChatRequest(BaseModel):
         default="professor",
         description="professor|medico|crianca|analogia|mapa|resumo|macete|flashcard",
     )
+    preferOfficial: bool | None = Field(
+        default=None,
+        description="Se true, prioriza questões oficiais; default = officialUnlocked",
+    )
 
 
 class ChatResponse(BaseModel):
@@ -182,6 +188,40 @@ class ChatResponse(BaseModel):
     ragMode: str | None = None
     hasLocalBase: bool = True
     uncited: bool = False
+    preferOfficial: bool | None = None
+
+
+def _existing_question_ids() -> set[str]:
+    conn = connect()
+    try:
+        return {str(r["id"]) for r in conn.execute("SELECT id FROM questions").fetchall()}
+    finally:
+        conn.close()
+
+
+def _filter_real_question_cites(cites: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Só mantém question cites com id presente no SQLite; normaliza aliases."""
+    known = _existing_question_ids()
+    out: list[dict[str, Any]] = []
+    for c in cites:
+        if not isinstance(c, dict):
+            continue
+        nc = normalize_citation(c)
+        ctype = nc.get("type") or nc.get("refType")
+        cid = nc.get("id") if nc.get("id") is not None else nc.get("refId")
+        if ctype == "question":
+            if not cid or str(cid) not in known:
+                continue
+        out.append(nc)
+    return out
+
+
+def _resolve_prefer_official(payload_flag: bool | None) -> bool:
+    basis = stats_basis()
+    unlocked = int(basis.get("officialCount") or 0) >= 10
+    if payload_flag is None:
+        return unlocked
+    return bool(payload_flag)
 
 
 class AnswerRequest(BaseModel):
@@ -684,16 +724,43 @@ def api_simulations_grade(payload: GradeRequest) -> dict[str, Any]:
 
 @app.post("/api/chat", response_model=ChatResponse)
 def api_chat(payload: ChatRequest) -> ChatResponse:
+    from services_core import NATUREZA_SUBJECTS
+
+    prefer_official = _resolve_prefer_official(payload.preferOfficial)
+    dash = dashboard_stats()
+    daily = dash.get("dailyRoutine") or {}
+    coach_subject = daily.get("subject") or None
+    coach_topic = daily.get("topic") or None
+    session_path = daily.get("sessionPath") or "/sessao"
+    natureza_bias = bool(
+        (coach_subject in NATUREZA_SUBJECTS)
+        or "natureza" in (session_path or "").lower()
+    )
+
     citations: list[dict[str, Any]] = []
     try:
-        context, rag_mode, citations = build_rag_context_embedded_full(payload.message)
+        context, rag_mode, citations = build_rag_context_embedded_full(
+            payload.message,
+            prefer_official=prefer_official,
+            coach_subject=coach_subject,
+            coach_topic=coach_topic,
+            natureza_bias=natureza_bias,
+        )
     except Exception:
         try:
-            context, citations = build_rag_context_with_citations(payload.message)
+            context, citations = build_rag_context_with_citations(
+                payload.message,
+                prefer_official=prefer_official,
+                coach_subject=coach_subject,
+                coach_topic=coach_topic,
+                natureza_bias=natureza_bias,
+            )
             rag_mode = "keyword"
         except Exception:
             context, rag_mode = build_rag_context(payload.message), "keyword"
             citations = []
+
+    citations = _filter_real_question_cites(citations)
     style_hint = {
         "professor": "Explique como professor especialista, com perguntas.",
         "medico": "Explique conectando com raciocínio clínico/Medicina quando fizer sentido.",
@@ -718,54 +785,53 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     q_cites = [
         c
         for c in citations
-        if isinstance(c, dict) and c.get("type") == "question" and c.get("id")
+        if isinstance(c, dict) and (c.get("type") == "question" or c.get("refType") == "question") and (c.get("id") or c.get("refId"))
     ]
     has_local = bool(q_cites) or bool((context or "").strip())
 
     client = _openai_client()
     if client is None:
-        from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
-
         basis = stats_basis()
-        dash = dashboard_stats()
-        daily = dash.get("dailyRoutine") or {}
-        subject = daily.get("subject") or "Biologia"
-        topic = daily.get("topic") or "Genética"
-        session_path = daily.get("sessionPath") or "/sessao"
         hot = dash.get("errorHotTopics") or []
+        # GY: score pela pergunta (+ boost coach / Natureza), não só tópico do dia
+        pool = score_questions_for_query(
+            payload.message,
+            prefer_official=prefer_official,
+            coach_subject=coach_subject,
+            coach_topic=coach_topic,
+            natureza_bias=natureza_bias,
+            limit=12,
+        )
         grounded_cites: list[dict[str, Any]] = []
         lines: list[str] = [
-            f"Tutor offline · tópico do dia: {subject} · {topic}",
+            f"Tutor offline · pergunta alinhada à base"
+            + (f" · coach: {coach_subject} · {coach_topic}" if coach_subject else ""),
             "",
         ]
-        # Prefer oficiais Natureza no coach Natureza; senão tópico do dia
-        prefer_nat = (subject in NATUREZA_SUBJECTS) or "natureza" in (session_path or "").lower()
-        pool = list_questions(subject=subject, topic=topic, exam_board="UEMA_PAES", limit=8) or list_questions(
-            subject=subject, topic=topic, limit=8
-        )
-        if prefer_nat and pool:
-            nat_pool = [q for q in pool if (q.get("subject") or "") in NATUREZA_SUBJECTS]
-            if nat_pool:
-                pool = nat_pool + [q for q in pool if q not in nat_pool]
         grounded = 0
-        for q in pool[:5]:
+        for q in pool[:8]:
             res = (q.get("resolution") or "").strip()
             if not res or res == "—":
                 continue
             qid = q.get("id")
+            if not qid:
+                continue
             lines.append(f"• Questão {qid} ({q.get('year') or '—'}):")
             for ln in res.splitlines()[:4]:
                 if ln.strip():
                     lines.append(f"  {ln.strip()[:200]}")
             grounded_cites.append(
-                {
-                    "type": "question",
-                    "id": qid,
-                    "label": f"{q.get('subject')} · {q.get('topic')} ({q.get('year')})",
-                    "snippet": (q.get("statement") or "")[:140],
-                    "subject": q.get("subject"),
-                    "topic": q.get("topic"),
-                }
+                normalize_citation(
+                    {
+                        "type": "question",
+                        "id": qid,
+                        "label": f"{q.get('subject')} · {q.get('topic')} ({q.get('year')})",
+                        "snippet": (q.get("statement") or "")[:140],
+                        "subject": q.get("subject"),
+                        "topic": q.get("topic"),
+                        "official": is_official_source(q.get("source"), q.get("generated")),
+                    }
+                )
             )
             grounded += 1
             if grounded >= 2:
@@ -778,14 +844,17 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                     lines.append(f"• {label}: {snippet}")
                 else:
                     lines.append(f"• {label}")
-                grounded_cites.append(cite)
-        # Merge RAG question cites not already used
-        seen_ids = {c.get("id") for c in grounded_cites}
+                grounded_cites.append(normalize_citation(cite))
+        seen_ids = {c.get("id") or c.get("refId") for c in grounded_cites}
         for cite in q_cites:
-            if cite.get("id") not in seen_ids:
-                grounded_cites.append(cite)
-                seen_ids.add(cite.get("id"))
-        has_local_off = bool(grounded_cites)
+            cid = cite.get("id") or cite.get("refId")
+            if cid not in seen_ids:
+                grounded_cites.append(normalize_citation(cite))
+                seen_ids.add(cid)
+        grounded_cites = _filter_real_question_cites(grounded_cites)
+        has_local_off = bool(
+            [c for c in grounded_cites if (c.get("type") or c.get("refType")) == "question"]
+        )
         if hot and has_local_off:
             h0 = hot[0]
             lines.append("")
@@ -793,7 +862,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         if not has_local_off:
             answer = (
                 "Sem base local para esta pergunta.\n\n"
-                "Não há trechos de questões/resoluções oficiais na base alinhados ao pedido. "
+                "Não há trechos de questões/resoluções na base alinhados ao pedido. "
                 "Abra Biblioteca (2024–26) ou a Fila com preferNatureza=1 — o tutor não inventa cobranca UEMA.\n\n"
                 f"Próximo passo: {session_path}"
             )
@@ -805,6 +874,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                 ragMode=rag_mode,
                 hasLocalBase=False,
                 uncited=True,
+                preferOfficial=prefer_official,
             )
         lines.append("")
         lines.append(f"Próximo passo: sessão em {session_path}")
@@ -824,10 +894,10 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             ragMode=rag_mode,
             hasLocalBase=True,
             uncited=False,
+            preferOfficial=prefer_official,
         )
 
     if not has_local or not q_cites:
-        # Online sem ids reais: recusa honesta (não bola de cristal)
         return ChatResponse(
             answer=(
                 "Sem base local suficiente para responder com fonte.\n\n"
@@ -840,6 +910,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             ragMode=rag_mode,
             hasLocalBase=False,
             uncited=True,
+            preferOfficial=prefer_official,
         )
 
     answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
@@ -851,7 +922,14 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         ragMode=rag_mode,
         hasLocalBase=True,
         uncited=False,
+        preferOfficial=prefer_official,
     )
+
+
+@app.post("/api/tutor/ask", response_model=ChatResponse)
+def api_tutor_ask(payload: ChatRequest) -> ChatResponse:
+    """Alias F3: mesmo contrato de POST /api/chat."""
+    return api_chat(payload)
 
 
 @app.post("/api/lessons/from-text")

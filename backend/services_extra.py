@@ -82,8 +82,81 @@ def build_rag_context(query: str, limit: int = 8) -> str:
     return context
 
 
-def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, list[dict[str, Any]]]:
+def normalize_citation(cite: dict[str, Any]) -> dict[str, Any]:
+    """Aliases F3: refType/refId espelham type/id (compat UI)."""
+    out = dict(cite)
+    ctype = out.get("type") or out.get("refType")
+    cid = out.get("id") if out.get("id") is not None else out.get("refId")
+    if ctype is not None:
+        out["type"] = ctype
+        out["refType"] = ctype
+    if cid is not None:
+        out["id"] = cid
+        out["refId"] = cid
+    return out
+
+
+def score_questions_for_query(
+    query: str,
+    *,
+    prefer_official: bool = False,
+    coach_subject: str | None = None,
+    coach_topic: str | None = None,
+    natureza_bias: bool = False,
+    limit: int = 12,
+) -> list[dict[str, Any]]:
+    """Pontua questões pela pergunta (+ boost coach / Natureza). Só ids reais do SQLite."""
+    from services_core import NATUREZA_SUBJECTS, is_official_source
+
+    tokens = {t.lower() for t in query.replace("?", " ").replace("·", " ").split() if len(t) > 2}
+    conn = connect()
+    try:
+        questions = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
+    finally:
+        conn.close()
+
+    scored: list[tuple[int, dict[str, Any]]] = []
+    for q in questions:
+        if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
+            continue
+        blob = " ".join(
+            [
+                q.get("subject") or "",
+                q.get("topic") or "",
+                q.get("subtopic") or "",
+                q.get("statement") or "",
+                q.get("resolution") or "",
+                q.get("macete") or "",
+                q.get("banca_intent") or "",
+            ]
+        ).lower()
+        score = sum(1 for t in tokens if t in blob)
+        subj = (q.get("subject") or "").strip()
+        topic = (q.get("topic") or "").strip()
+        if coach_subject and subj.lower() == coach_subject.lower():
+            score += 2
+        if coach_topic and coach_topic.lower() in topic.lower():
+            score += 3
+        if natureza_bias and subj in NATUREZA_SUBJECTS:
+            score += 2
+        if score:
+            scored.append((score, q))
+    scored.sort(key=lambda x: -x[0])
+    return [q for _, q in scored[:limit]]
+
+
+def build_rag_context_with_citations(
+    query: str,
+    limit: int = 8,
+    *,
+    prefer_official: bool = False,
+    coach_subject: str | None = None,
+    coach_topic: str | None = None,
+    natureza_bias: bool = False,
+) -> tuple[str, list[dict[str, Any]]]:
     """Retorna (contexto, citações) para o tutor mostrar fontes."""
+    from services_core import is_official_source
+
     tokens = {t.lower() for t in query.replace("?", " ").split() if len(t) > 3}
     conn = connect()
     try:
@@ -95,6 +168,8 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
 
     scored_q: list[tuple[int, dict[str, Any]]] = []
     for q in questions:
+        if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
+            continue
         blob = " ".join(
             [
                 q["subject"],
@@ -106,24 +181,46 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             ]
         ).lower()
         score = sum(1 for t in tokens if t in blob)
+        subj = (q.get("subject") or "").strip()
+        topic = (q.get("topic") or "").strip()
+        if coach_subject and subj.lower() == (coach_subject or "").lower():
+            score += 2
+        if coach_topic and (coach_topic or "").lower() in topic.lower():
+            score += 3
+        if natureza_bias:
+            from services_core import NATUREZA_SUBJECTS
+
+            if subj in NATUREZA_SUBJECTS:
+                score += 2
         if score:
             scored_q.append((score, q))
     scored_q.sort(key=lambda x: -x[0])
 
+    scored_s: list[tuple[int, dict[str, Any]]] = []
+    for s in syllabus:
+        blob = f"{s.get('subject','')} {s.get('topic','')} {s.get('subtopic') or ''}".lower()
+        score = sum(1 for t in tokens if t in blob)
+        if score:
+            scored_s.append((score, s))
+    scored_s.sort(key=lambda x: -x[0])
+    syllabus_hits = [s for _, s in scored_s[:8]] or syllabus[:5]
+
     chunks: list[str] = []
     citations: list[dict[str, Any]] = []
-    chunks.append("=== EDITAL (tópicos cadastrados) ===")
-    for s in syllabus[:30]:
+    chunks.append("=== EDITAL (tópicos alinhados à pergunta) ===")
+    for s in syllabus_hits:
         chunks.append(f"- {s['subject']} > {s['topic']} ({s.get('subtopic') or ''}) peso={s['weight']}")
         citations.append(
-            {
-                "type": "edital",
-                "id": s.get("id"),
-                "label": f"Edital · {s['subject']} · {s['topic']}",
-                "snippet": s["topic"],
-                "subject": s["subject"],
-                "topic": s["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "edital",
+                    "id": s.get("id"),
+                    "label": f"Edital · {s['subject']} · {s['topic']}",
+                    "snippet": s["topic"],
+                    "subject": s["subject"],
+                    "topic": s["topic"],
+                }
+            )
         )
 
     chunks.append("=== QUESTÕES / RESOLUÇÕES RELEVANTES ===")
@@ -136,15 +233,18 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             f"Macete: {q.get('macete') or 'n/d'}"
         )
         citations.append(
-            {
-                "type": "question",
-                "id": q["id"],
-                "label": f"{q['subject']} · {q['topic']} ({q['year']})",
-                "snippet": (q["statement"] or "")[:140],
-                "score": score,
-                "subject": q["subject"],
-                "topic": q["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "question",
+                    "id": q["id"],
+                    "label": f"{q['subject']} · {q['topic']} ({q['year']})",
+                    "snippet": (q["statement"] or "")[:140],
+                    "score": score,
+                    "subject": q["subject"],
+                    "topic": q["topic"],
+                    "official": is_official_source(q.get("source"), q.get("generated")),
+                }
+            )
         )
 
     if lessons:
@@ -155,14 +255,16 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
                 f"Resumo: {lesson.get('summary') or ''}"
             )
             citations.append(
-                {
-                    "type": "lesson",
-                    "id": lesson["id"],
-                    "label": lesson["title"],
-                    "snippet": (lesson.get("summary") or "")[:140],
-                    "subject": lesson.get("subject"),
-                    "topic": lesson.get("topic"),
-                }
+                normalize_citation(
+                    {
+                        "type": "lesson",
+                        "id": lesson["id"],
+                        "label": lesson["title"],
+                        "snippet": (lesson.get("summary") or "")[:140],
+                        "subject": lesson.get("subject"),
+                        "topic": lesson.get("topic"),
+                    }
+                )
             )
 
     freq = topic_frequency()[:10]
