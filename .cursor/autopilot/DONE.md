@@ -17,3 +17,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo CZ: Sessão — **Material local** na fase teoria + `onMarkedRead` sincroniza “Li · teoria”
 - [x] Ciclo CZ: Ficha questão — CTA **Teoria local** no debrief
 - [x] Versão **1.0.0+12** + smoke **535/535** + docs COMO/ROADMAP CY–CZ
+- [x] Ciclo DA: Adaptativo — **Teoria local** (preflight, fim da fila, debrief por questão)
+- [x] Ciclo DA: Flashcards — ícone teoria por card (subject/topic)
+- [x] Ciclo DA: Tutor — chip **Material local (N)** via `/api/library/materials` + atalho no empty
+- [x] Versão **1.0.0+13** + smoke **543/543** + docs COMO/ROADMAP CZ–DA

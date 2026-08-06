@@ -7,6 +7,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class FlashcardsScreen extends ConsumerStatefulWidget {
@@ -297,6 +298,16 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                           child: const Text('Esqueci (E)'),
                                         ),
                                         const Spacer(),
+                                        if (subj.isNotEmpty && top.isNotEmpty)
+                                          IconButton(
+                                            tooltip: 'Teoria local',
+                                            onPressed: () => TheoryTopicSheet.show(
+                                              context,
+                                              subject: subj,
+                                              topic: top,
+                                            ),
+                                            icon: const Icon(Icons.menu_book_outlined),
+                                          ),
                                         IconButton(
                                           tooltip: 'Apagar',
                                           onPressed: () async {

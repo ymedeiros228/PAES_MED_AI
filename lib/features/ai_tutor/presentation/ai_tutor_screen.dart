@@ -6,6 +6,7 @@ import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AiTutorScreen extends ConsumerStatefulWidget {
@@ -30,6 +31,8 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   bool _seedApplied = false;
   bool? _openaiConfigured;
   bool _healthLoaded = false;
+  int? _localMaterialCount;
+  bool _materialChecked = false;
 
   static const _styles = <(String, String)>[
     ('professor', 'Professor'),
@@ -46,7 +49,41 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   void initState() {
     super.initState();
     _loadHealth();
+    _loadMaterialHint();
     WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
+  }
+
+  Future<void> _loadMaterialHint() async {
+    final sub = widget.seedSubject?.trim() ?? '';
+    final top = widget.seedTopic?.trim() ?? '';
+    if (sub.isEmpty || top.isEmpty) {
+      if (mounted) setState(() {
+        _localMaterialCount = null;
+        _materialChecked = true;
+      });
+      return;
+    }
+    try {
+      final data = await apiClient.get('/api/library/materials', {'subject': sub, 'topic': top});
+      final map = Map<String, dynamic>.from(data as Map);
+      final n = (map['items'] as List? ?? []).length;
+      if (mounted) setState(() {
+        _localMaterialCount = n;
+        _materialChecked = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() {
+        _localMaterialCount = 0;
+        _materialChecked = true;
+      });
+    }
+  }
+
+  void _openLocalMaterial() {
+    final sub = widget.seedSubject?.trim() ?? '';
+    final top = widget.seedTopic?.trim() ?? '';
+    if (sub.isEmpty || top.isEmpty) return;
+    TheoryTopicSheet.show(context, subject: sub, topic: top);
   }
 
   Future<void> _loadHealth() async {
@@ -178,6 +215,21 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                 ),
               ),
             ),
+          if (_materialChecked &&
+              (_localMaterialCount ?? 0) > 0 &&
+              (widget.seedSubject?.trim().isNotEmpty == true) &&
+              (widget.seedTopic?.trim().isNotEmpty == true))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ActionChip(
+                  avatar: const Icon(Icons.menu_book_outlined, size: 18),
+                  label: Text('Material local ($_localMaterialCount)'),
+                  onPressed: _openLocalMaterial,
+                ),
+              ),
+            ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
@@ -248,6 +300,16 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                 label: const Text('Abrir sessão'),
                                 onPressed: () => context.go('/sessao'),
                               ),
+                              if (widget.seedSubject?.trim().isNotEmpty == true &&
+                                  widget.seedTopic?.trim().isNotEmpty == true)
+                                ActionChip(
+                                  label: Text(
+                                    (_localMaterialCount ?? 0) > 0
+                                        ? 'Material local ($_localMaterialCount)'
+                                        : 'Teoria local',
+                                  ),
+                                  onPressed: _openLocalMaterial,
+                                ),
                             ],
                           ),
                         ],

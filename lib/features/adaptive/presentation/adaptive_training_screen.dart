@@ -11,6 +11,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AdaptiveTrainingScreen extends ConsumerStatefulWidget {
@@ -88,6 +89,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   }
 
   String get topic => topicCtrl.text.trim();
+
+  Future<void> _openTheory([String? s, String? t]) async {
+    final sub = (s ?? subject).trim();
+    final top = (t ?? topic).trim();
+    if (sub.isEmpty || top.isEmpty) return;
+    await TheoryTopicSheet.show(context, subject: sub, topic: top);
+  }
 
   Future<void> _start() async {
     setState(() {
@@ -364,6 +372,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               onPressed: () => context.go('/dashboard'),
                               child: const Text('Hoje'),
                             ),
+                            if (subject.isNotEmpty && topic.isNotEmpty)
+                              OutlinedButton(
+                                onPressed: () => _openTheory(),
+                                child: const Text('Teoria local'),
+                              ),
                           ],
                         ),
                       ],
@@ -400,6 +413,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(loading ? 'Montando…' : 'Iniciar treino'),
                   ),
+                  if (subject.isNotEmpty && topic.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: loading ? null : () => _openTheory(),
+                      icon: const Icon(Icons.menu_book_outlined),
+                      label: const Text('Teoria local antes de treinar'),
+                    ),
+                  ],
                   if (error != null) ...[
                     const SizedBox(height: 8),
                     QuietEmpty(
@@ -532,6 +553,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                     );
                                   },
                                   child: const Text('Treinar este tópico'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    final s = (q['subject'] ?? subject).toString();
+                                    final t = (q['topic'] ?? topic).toString();
+                                    if (s.isNotEmpty && t.isNotEmpty) _openTheory(s, t);
+                                  },
+                                  child: const Text('Teoria local'),
                                 ),
                                 TextButton(
                                   onPressed: () async {
