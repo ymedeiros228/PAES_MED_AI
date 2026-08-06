@@ -8,3 +8,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo CX: Hoje — banner acervo vazio persistente + empty “Agora” com Biblioteca/Plano
 - [x] Ciclo CX: Biblioteca — hint/tooltip PDF leitor padrão Windows
 - [x] Versão **1.0.0+10** + smoke **518/518** + docs COMO/ROADMAP CW–CX
+- [x] Ciclo CY: `TheoryTopicSheet` unificado — Fila + Plano (remove ~250 linhas duplicadas)
+- [x] Ciclo CY: Biblioteca — chip **Só PDF** + badge/ícone PDF nos hits de busca + tooltip leitor Windows
+- [x] Ciclo CY: Simulados — `_start` trata lista vazia + empty com Biblioteca/Sessão/Fila
+- [x] Versão **1.0.0+11** + smoke **526/526** + docs COMO/ROADMAP CX–CY + checks legados atualizados

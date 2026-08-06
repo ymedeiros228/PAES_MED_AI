@@ -203,6 +203,7 @@ flowchart TB
 | CU–CV | Tutor offline UX · questões empty CTA · offlineOnly API +8 | `ciclo_cu_*`…`ciclo_cv_*` | **Feito** |
 | CV–CW | Teoria F2 fila/sessão · onboarding chips · ficha seed q +9 | `ciclo_cv_*`…`ciclo_cw_*` | **Feito** |
 | CW–CX | Plano teoria/dia · dashboard empty · PDF hint Windows +10 | `ciclo_cw_*`…`ciclo_cx_*` | **Feito** |
+| CX–CY | TheoryTopicSheet · busca PDF · simulado empty +11 | `ciclo_cx_*`…`ciclo_cy_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -210,9 +211,10 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CW–CX)
+## Estado (atualizado pós CX–CY)
 
 - Rodada CV–CW: teoria/sessão/fila, onboarding, 1.0.0+9.
 - Rodada CW–CX: teoria por dia no Plano, dashboard sem acervo, hint PDF Windows, 1.0.0+10.
+- Rodada CX–CY: TheoryTopicSheet unificado, busca PDF, simulado empty, 1.0.0+11.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

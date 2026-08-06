@@ -630,6 +630,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Biblioteca: hint PDF leitor padrão Windows + tooltip no botão.
 4. **1.0.0+10** · smoke `ciclo_cx_*` + suite + pack + push.
 
+## Teoria unificada + PDF busca + sim empty (Ciclo CY)
+
+1. `TheoryTopicSheet` compartilhado — Fila + Plano (menos duplicação).
+2. Biblioteca: chip **Só PDF** + badge PDF nos resultados da busca.
+3. Simulados: lista vazia → snackbar + empty com Biblioteca/Sessão/Fila.
+4. **1.0.0+11** · smoke `ciclo_cy_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

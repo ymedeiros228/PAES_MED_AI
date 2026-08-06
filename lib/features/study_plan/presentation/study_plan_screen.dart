@@ -7,6 +7,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Plano de estudos — modo visual (calendário leve + checklist).
@@ -67,123 +68,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   }
 
   Future<void> _openTheoryForTopic(String subject, String topic) async {
-    if (subject.isEmpty || topic.isEmpty) return;
-    try {
-      final results = await Future.wait([
-        apiClient.get('/api/library/materials', {'subject': subject, 'topic': topic}),
-        apiClient.get('/api/study/reads', {'subject': subject, 'topic': topic}),
-      ]);
-      if (!mounted) return;
-      final map = Map<String, dynamic>.from(results[0] as Map);
-      final readMap = Map<String, dynamic>.from(results[1] as Map);
-      final items = (map['items'] as List? ?? []).whereType<Map>().toList();
-      var isRead = readMap['read'] == true;
-      await showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (ctx) {
-          return StatefulBuilder(
-            builder: (ctx, setModal) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Teoria · $subject · $topic', style: Theme.of(ctx).textTheme.titleMedium),
-                    if (isRead)
-                      Text(
-                        'Li · local',
-                        style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                              color: Theme.of(ctx).colorScheme.primary,
-                            ),
-                      ),
-                    const SizedBox(height: 8),
-                    if (items.isEmpty)
-                      QuietEmpty(
-                        message: map['note']?.toString() ?? 'Sem material local — Biblioteca ou edital.',
-                        action: TextButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.go('/biblioteca');
-                          },
-                          child: const Text('Biblioteca'),
-                        ),
-                      )
-                    else
-                      for (final raw in items.take(5))
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(raw['label']?.toString() ?? 'Material'),
-                          subtitle: Text(
-                            (raw['snippet']?.toString() ?? '').length > 120
-                                ? '${raw['snippet'].toString().substring(0, 120)}…'
-                                : raw['snippet']?.toString() ?? '',
-                          ),
-                        ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        FilledButton.tonal(
-                          onPressed: () async {
-                            try {
-                              await apiClient.post('/api/study/mark-read', {
-                                'subject': subject,
-                                'topic': topic,
-                              });
-                              setModal(() => isRead = true);
-                            } catch (e) {
-                              if (ctx.mounted) {
-                                ScaffoldMessenger.of(ctx).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      humanApiError(e, fallback: 'Não deu para marcar como lido.'),
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          child: Text(isRead ? 'Li' : 'Marquei como li'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.go(
-                              '/tutor?subject=${Uri.encodeComponent(subject)}'
-                              '&topic=${Uri.encodeComponent(topic)}',
-                            );
-                          },
-                          child: const Text('Tutor'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.go(
-                              '/sessao?examBoard=UEMA_PAES'
-                              '&subject=${Uri.encodeComponent(subject)}'
-                              '&topic=${Uri.encodeComponent(topic)}',
-                            );
-                          },
-                          child: const Text('Sessão'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir a teoria.'))),
-      );
-    }
+    await TheoryTopicSheet.show(context, subject: subject, topic: topic, includeArticles: false);
   }
 
   Future<void> _exportMarkdown(String markdown, String filename) async {

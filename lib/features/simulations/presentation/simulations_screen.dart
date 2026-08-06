@@ -390,43 +390,63 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       final ok = await _preflightDiaProva();
       if (!ok) return;
     }
-    final data = await apiClient.post('/api/simulations', {
-      'mode': mode,
-      'subject': subject,
-      'limit': limit,
-    });
-    final map = Map<String, dynamic>.from(data as Map);
-    ticker?.cancel();
-    setState(() {
-      lastSimMeta = map;
-      questions = map['questions'] as List<dynamic>? ?? [];
-      answers.clear();
-      errorTypes.clear();
-      debriefById.clear();
-      debriefLoading.clear();
-      report = null;
-      running = true;
-      keyboardQi = 0;
-      examLocked = mode == 'dia_prova';
-      preflightDone = mode == 'dia_prova';
-      sw
-        ..reset()
-        ..start();
-    });
-    final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
-    ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      if (hardCap != null && sw.elapsed >= hardCap && report == null) {
-        _grade();
+    try {
+      final data = await apiClient.post('/api/simulations', {
+        'mode': mode,
+        'subject': subject,
+        'limit': limit,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final qs = map['questions'] as List<dynamic>? ?? [];
+      if (qs.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              map['note']?.toString() ??
+                  'Nenhuma questão para este modo — monte o acervo ou mude o filtro.',
+            ),
+          ),
+        );
         return;
       }
-      setState(() {});
-      if (sw.elapsed.inSeconds % 5 == 0) {
-        unawaited(_saveSimCheckpoint());
-      }
-    });
-    unawaited(_saveSimCheckpoint());
-    _requestSessionFocus();
+      ticker?.cancel();
+      setState(() {
+        lastSimMeta = map;
+        questions = qs;
+        answers.clear();
+        errorTypes.clear();
+        debriefById.clear();
+        debriefLoading.clear();
+        report = null;
+        running = true;
+        keyboardQi = 0;
+        examLocked = mode == 'dia_prova';
+        preflightDone = mode == 'dia_prova';
+        sw
+          ..reset()
+          ..start();
+      });
+      final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
+      ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        if (hardCap != null && sw.elapsed >= hardCap && report == null) {
+          _grade();
+          return;
+        }
+        setState(() {});
+        if (sw.elapsed.inSeconds % 5 == 0) {
+          unawaited(_saveSimCheckpoint());
+        }
+      });
+      unawaited(_saveSimCheckpoint());
+      _requestSessionFocus();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para iniciar o simulado.'))),
+      );
+    }
   }
 
   Future<void> _grade() async {
@@ -750,6 +770,31 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               if (examLocked && report == null)
                 QuietEmpty(
                   message: 'Modo dia de prova: resposta livre agora; revisão só no fim.',
+                ),
+
+              if (running && report == null && questions.isEmpty && !examLocked)
+                QuietEmpty(
+                  message: lastSimMeta?['note']?.toString() ??
+                      'Sem questões para este simulado — monte o acervo ou escolha outro modo.',
+                  action: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      TextButton(onPressed: () => context.go('/biblioteca'), child: const Text('Biblioteca')),
+                      TextButton(onPressed: () => context.go('/sessao'), child: const Text('Sessão')),
+                      TextButton(onPressed: () => context.go('/fila'), child: const Text('Fila')),
+                      FilledButton(
+                        onPressed: () => setState(() {
+                          running = false;
+                          questions = [];
+                          lastSimMeta = null;
+                          ticker?.cancel();
+                        }),
+                        child: const Text('Voltar'),
+                      ),
+                    ],
+                  ),
                 ),
 
               for (var qi = 0; qi < questions.length; qi++)

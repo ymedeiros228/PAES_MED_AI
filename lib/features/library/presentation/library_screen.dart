@@ -29,6 +29,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String? searchNote;
   bool searching = false;
   String searchSourceKind = 'todos'; // todos | oficial | estudo
+  bool searchPdfOnly = false;
   List<Map<String, dynamic>> searchHistory = [];
 
   @override
@@ -640,6 +641,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  static bool _hitIsPdf(Map<String, dynamic> hit) {
+    final path = hit['path']?.toString().toLowerCase() ?? '';
+    final kind = hit['kind']?.toString().toLowerCase() ?? '';
+    return path.endsWith('.pdf') || kind.contains('pdf');
+  }
+
   Future<void> _loadSearchHistory() async {
     try {
       final data = await apiClient.get('/api/library/search-history', {'limit': '12'});
@@ -719,7 +726,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     if (path.isNotEmpty) {
       try {
         await apiClient.post('/api/library/open-path', {'path': path});
-        setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
+        final isPdf = path.toLowerCase().endsWith('.pdf');
+        setState(() => msg = isPdf
+            ? 'Abrindo no leitor padrão (Windows): ${hit['label'] ?? path}'
+            : 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
         setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
       }
@@ -936,6 +946,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
                       },
                     ),
+                  FilterChip(
+                    label: const Text('Só PDF'),
+                    selected: searchPdfOnly,
+                    onSelected: (v) {
+                      setState(() => searchPdfOnly = v);
+                      if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
+                    },
+                  ),
                 ],
               ),
               if (searchHistory.isNotEmpty) ...[
@@ -978,20 +996,51 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     ),
                   ),
                 ),
-              if (searchHits.isNotEmpty) ...[
-                SectionLabel('Resultados', hint: '${searchHits.length} local'),
-                for (final hit in searchHits.take(12))
-                  PlaylistTile(
-                    title: hit['label']?.toString() ?? 'item',
-                    subtitle:
-                        '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
-                    badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
-                    leadingIcon: hit['kind'] == 'question'
-                        ? Icons.quiz_outlined
-                        : Icons.description_outlined,
-                    onPlay: () => _openSearchHit(hit),
-                  ),
-              ],
+              Builder(
+                builder: (context) {
+                  final visibleHits = searchPdfOnly
+                      ? searchHits.where(_hitIsPdf).toList()
+                      : searchHits;
+                  if (visibleHits.isEmpty) {
+                    if (searchPdfOnly && searchHits.isNotEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: QuietEmpty(
+                          message: 'Nenhum PDF nesta busca — desmarque “Só PDF” ou mude o termo.',
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SectionLabel('Resultados', hint: '${visibleHits.length} local'),
+                      for (final hit in visibleHits.take(12))
+                        Builder(
+                          builder: (_) {
+                            final isPdf = _hitIsPdf(hit);
+                            return Tooltip(
+                              message: isPdf ? 'Abre no leitor padrão (Windows)' : 'Abrir',
+                              child: PlaylistTile(
+                                title: hit['label']?.toString() ?? 'item',
+                                subtitle:
+                                    '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
+                                badge: isPdf
+                                    ? 'PDF'
+                                    : (hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local'),
+                                leadingIcon: hit['kind'] == 'question'
+                                    ? Icons.quiz_outlined
+                                    : (isPdf ? Icons.picture_as_pdf_outlined : Icons.description_outlined),
+                                onPlay: () => _openSearchHit(hit),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
+              ),
 
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
