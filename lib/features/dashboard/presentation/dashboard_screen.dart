@@ -9,6 +9,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
@@ -26,6 +27,51 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Map<String, dynamic>? checkpoint;
   bool showFirstRunCoach = false;
+  Map<String, bool> theoryReadByKey = {};
+  String? _readsSignature;
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
+
+  Future<void> _loadDashboardReads(Map<String, dynamic> data) async {
+    final pairs = <(String, String)>[];
+    void add(String s, String t) {
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    final study = data['studyToday'] as Map?;
+    if (study != null) {
+      add(study['subject']?.toString() ?? '', study['topic']?.toString() ?? '');
+    }
+    final openGaps = data['openGaps'] as Map?;
+    for (final raw in openGaps?['items'] as List? ?? const []) {
+      final g = Map<String, dynamic>.from(raw as Map);
+      add(g['subject']?.toString() ?? '', g['topic']?.toString() ?? '');
+    }
+    for (final raw in data['errorHotTopics'] as List? ?? const []) {
+      final item = Map<String, dynamic>.from(raw as Map);
+      final key = item['key']?.toString() ?? '';
+      final parts = key.split('::');
+      if (parts.isNotEmpty) {
+        add(parts[0], parts.length > 1 ? parts[1] : '');
+      }
+    }
+    final sig = pairs.map((p) => theoryReadKey(p.$1, p.$2)).join(';');
+    if (sig == _readsSignature) return;
+    _readsSignature = sig;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
 
   @override
   void initState() {
@@ -184,6 +230,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
 
+        WidgetsBinding.instance.addPostFrameCallback((_) => _loadDashboardReads(data));
+
         return CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -271,11 +319,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               side: const BorderSide(color: Colors.white70),
                             ),
                             icon: const Icon(Icons.menu_book_outlined, size: 18),
-                            onPressed: () => TheoryTopicSheet.show(
-                              context,
-                              subject: studySub,
-                              topic: studyTop,
-                            ),
+                            onPressed: () => _openTheory(studySub, studyTop),
                             label: const Text('Teoria do dia'),
                           ),
                       ],
@@ -397,17 +441,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             PlaylistTile(
                               title: studySub,
                               subtitle: studyTop,
-                              badge: 'hoje',
+                              badge: _isTheoryRead(studySub, studyTop) ? 'Li' : 'hoje',
                               leadingIcon: Icons.lightbulb_outline_rounded,
                               onPlay: () => context.go(sessionPath),
                               secondary: IconButton(
                                 tooltip: 'Teoria local',
                                 icon: const Icon(Icons.menu_book_outlined),
-                                onPressed: () => TheoryTopicSheet.show(
-                                  context,
-                                  subject: studySub,
-                                  topic: studyTop,
-                                ),
+                                onPressed: () => _openTheory(studySub, studyTop),
                               ),
                             ),
                           ],
@@ -422,7 +462,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   return PlaylistTile(
                                     title: 'Retomar · $s',
                                     subtitle: t,
-                                    badge: 'lacuna',
+                                    badge: _isTheoryRead(s, t) ? 'Li' : 'lacuna',
                                     leadingIcon: Icons.flag_rounded,
                                     onPlay: () => context.go(
                                       '/adaptativo?subject=${Uri.encodeComponent(s)}'
@@ -432,11 +472,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                         ? IconButton(
                                             tooltip: 'Teoria local',
                                             icon: const Icon(Icons.menu_book_outlined),
-                                            onPressed: () => TheoryTopicSheet.show(
-                                              context,
-                                              subject: s,
-                                              topic: t,
-                                            ),
+                                            onPressed: () => _openTheory(s, t),
                                           )
                                         : null,
                                   );
@@ -453,7 +489,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 return PlaylistTile(
                                   title: s.isEmpty ? key : s,
                                   subtitle: t.isEmpty ? 'Reforçar' : t,
-                                  badge: 'reforçar',
+                                  badge: _isTheoryRead(s, t) ? 'Li' : 'reforçar',
                                   leadingIcon: Icons.replay_rounded,
                                   onPlay: s.isEmpty
                                       ? null
@@ -465,11 +501,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       ? IconButton(
                                           tooltip: 'Teoria local',
                                           icon: const Icon(Icons.menu_book_outlined),
-                                          onPressed: () => TheoryTopicSheet.show(
-                                            context,
-                                            subject: s,
-                                            topic: t,
-                                          ),
+                                          onPressed: () => _openTheory(s, t),
                                         )
                                       : null,
                                 );

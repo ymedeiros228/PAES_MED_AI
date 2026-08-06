@@ -32,3 +32,9 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DD: Fila — badge **Li** em lacunas/meta/revisões/domínio + batch load + `onMarkedRead`
 - [x] Ciclo DD: Plano migrado para reads batch (1 POST vs N GETs)
 - [x] Versão **1.0.0+16** + smoke **567/567** + docs COMO/ROADMAP DC–DD
+- [x] Ciclo DE: `lib/core/data/theory_reads.dart` — `fetchTheoryReadMap` + `theoryReadKey` compartilhado
+- [x] Ciclo DE: Fila/Plano refatorados para helper; Hoje batch reads + badge **Li** (tópico/lacuna/reforço)
+- [x] Ciclo DE: Revisões — `ConsumerStatefulWidget` + batch + badge **Li** + `onMarkedRead`
+- [x] Versão **1.0.0+17** + smoke **575/575** + docs COMO/ROADMAP DD–DE + fix checks DD pós-refactor
+- [x] Ciclo DF: Domínio — batch reads + badge **Li** + `onMarkedRead` (`medicine_screen`)
+- [x] Versão **1.0.0+18** + smoke **581/581** + docs COMO/ROADMAP DE–DF

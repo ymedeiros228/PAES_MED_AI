@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
@@ -24,16 +25,15 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   String? error;
   Map<String, bool> theoryReadByKey = {};
 
-  String _readKey(String subject, String topic) => '$subject|$topic';
+  String _readKey(String subject, String topic) => theoryReadKey(subject, topic);
 
   bool _isTheoryRead(String subject, String topic) =>
       theoryReadByKey[_readKey(subject, topic)] == true;
 
   Future<void> _loadTheoryReads(Map<String, dynamic> q) async {
-    final pairs = <String, (String, String)>{};
+    final pairs = <(String, String)>[];
     void add(String s, String t) {
-      if (s.isEmpty || t.isEmpty) return;
-      pairs[_readKey(s, t)] = (s, t);
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
     }
 
     final openGaps = q['openGaps'] is Map ? q['openGaps'] as Map : null;
@@ -60,26 +60,8 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       }
     }
 
-    if (pairs.isEmpty) {
-      if (mounted) setState(() => theoryReadByKey = {});
-      return;
-    }
-    try {
-      final data = await apiClient.post('/api/study/reads/batch', {
-        'items': pairs.values.map((p) => {'subject': p.$1, 'topic': p.$2}).toList(),
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      final out = <String, bool>{};
-      for (final raw in map['items'] as List? ?? const []) {
-        final it = Map<String, dynamic>.from(raw as Map);
-        final s = it['subject']?.toString() ?? '';
-        final t = it['topic']?.toString() ?? '';
-        if (s.isNotEmpty && t.isNotEmpty) out[_readKey(s, t)] = it['read'] == true;
-      }
-      if (mounted) setState(() => theoryReadByKey = out);
-    } catch (_) {
-      if (mounted) setState(() => theoryReadByKey = {});
-    }
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
   }
 
   @override

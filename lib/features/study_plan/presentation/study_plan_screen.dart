@@ -6,6 +6,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -42,22 +43,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       if (mounted) setState(() => theoryReadByKey = {});
       return;
     }
-    try {
-      final data = await apiClient.post('/api/study/reads/batch', {
-        'items': pairs.map((p) => {'subject': p.$1, 'topic': p.$2}).toList(),
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      final out = <String, bool>{};
-      for (final raw in map['items'] as List? ?? const []) {
-        final it = Map<String, dynamic>.from(raw as Map);
-        final s = it['subject']?.toString() ?? '';
-        final t = it['topic']?.toString() ?? '';
-        if (s.isNotEmpty && t.isNotEmpty) out['$s|$t'] = it['read'] == true;
-      }
-      if (mounted) setState(() => theoryReadByKey = out);
-    } catch (_) {
-      if (mounted) setState(() => theoryReadByKey = {});
-    }
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
   }
 
   Future<void> _load({bool regenerate = false}) async {

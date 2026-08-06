@@ -5,16 +5,54 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Domínio: ranking para estudar. Ferramentas de curadoria ficam em Avançado.
-class MedicineScreen extends ConsumerWidget {
+class MedicineScreen extends ConsumerStatefulWidget {
   const MedicineScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MedicineScreen> createState() => _MedicineScreenState();
+}
+
+class _MedicineScreenState extends ConsumerState<MedicineScreen> {
+  Map<String, bool> theoryReadByKey = {};
+  String? _readsSignature;
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadReads(List<dynamic> items) async {
+    final pairs = <(String, String)>[];
+    for (final raw in items.take(24)) {
+      final item = Map<String, dynamic>.from(raw as Map);
+      final s = item['subject']?.toString() ?? '';
+      final t = item['topic']?.toString() ?? '';
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    final sig = pairs.map((p) => theoryReadKey(p.$1, p.$2)).join(';');
+    if (sig == _readsSignature) return;
+    _readsSignature = sig;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(medicineProvider);
     final tick = ref.watch(refreshTickProvider);
     return async.when(
@@ -27,6 +65,7 @@ class MedicineScreen extends ConsumerWidget {
       ),
       data: (payload) {
         final items = (payload['items'] as List? ?? []);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _loadReads(items));
         final basis = Map<String, dynamic>.from(payload['statsBasis'] as Map? ?? {});
         final curation = Map<String, dynamic>.from(payload['curation'] as Map? ?? {});
         final officialN = basis['officialCount'] as int? ?? 0;
@@ -102,9 +141,11 @@ class MedicineScreen extends ConsumerWidget {
                           final status = item['curationStatus']?.toString() ?? '';
                           final curated = item['curated'] == true;
                           final dirty = item['crossDomain'] == true || status == 'sujo';
-                          // badges: curado / pendente (sujo sem alarde no título)
+                          // badges: Li > curado / pendente (sujo sem alarde no título)
                           String? badge;
-                          if (dirty) {
+                          if (_isTheoryRead(s, t)) {
+                            badge = 'Li';
+                          } else if (dirty) {
                             badge = 'revisar label';
                           } else if (curated) {
                             badge = 'curado';
@@ -137,11 +178,7 @@ class MedicineScreen extends ConsumerWidget {
                                 ? IconButton(
                                     tooltip: 'Teoria local',
                                     icon: const Icon(Icons.menu_book_outlined),
-                                    onPressed: () => TheoryTopicSheet.show(
-                                      context,
-                                      subject: s,
-                                      topic: t,
-                                    ),
+                                    onPressed: () => _openTheory(s, t),
                                   )
                                 : null,
                           );

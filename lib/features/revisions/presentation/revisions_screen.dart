@@ -5,15 +5,53 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
-class RevisionsScreen extends ConsumerWidget {
+class RevisionsScreen extends ConsumerStatefulWidget {
   const RevisionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RevisionsScreen> createState() => _RevisionsScreenState();
+}
+
+class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
+  Map<String, bool> theoryReadByKey = {};
+  String? _readsSignature;
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadReads(List<dynamic> items) async {
+    final pairs = <(String, String)>[];
+    for (final raw in items) {
+      final item = Map<String, dynamic>.from(raw as Map);
+      final s = item['subject']?.toString() ?? '';
+      final t = item['topic']?.toString() ?? '';
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    final sig = pairs.map((p) => theoryReadKey(p.$1, p.$2)).join(';');
+    if (sig == _readsSignature) return;
+    _readsSignature = sig;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(revisionsApiProvider);
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -26,6 +64,7 @@ class RevisionsScreen extends ConsumerWidget {
         ),
       ),
       data: (items) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _loadReads(items));
         return ListView(
           children: [
             PageBody(
@@ -69,7 +108,7 @@ class RevisionsScreen extends ConsumerWidget {
                           return PlaylistTile(
                             title: '$subject · $topic',
                             subtitle: 'Próxima: $due${days != null ? ' · a cada ${days}d' : ''}',
-                            badge: 'revisar',
+                            badge: _isTheoryRead(subject, topic) ? 'Li' : 'revisar',
                             leadingIcon: Icons.replay_rounded,
                             onPlay: () => context.go(
                               '/adaptativo?subject=${Uri.encodeComponent(subject)}'
@@ -80,14 +119,14 @@ class RevisionsScreen extends ConsumerWidget {
                               children: [
                                 IconButton(
                                   tooltip: 'Teoria local (PDF/edital)',
-                                  icon: const Icon(Icons.menu_book_outlined),
+                                  icon: Icon(
+                                    _isTheoryRead(subject, topic)
+                                        ? Icons.menu_book_rounded
+                                        : Icons.menu_book_outlined,
+                                  ),
                                   onPressed: subject.isEmpty || topic.isEmpty
                                       ? null
-                                      : () => TheoryTopicSheet.show(
-                                            context,
-                                            subject: subject,
-                                            topic: topic,
-                                          ),
+                                      : () => _openTheory(subject, topic),
                                 ),
                                 IconButton(
                                   tooltip: 'Perguntar ao tutor',

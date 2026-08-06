@@ -669,6 +669,18 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Plano migrado para batch (menos N GETs).
 4. **1.0.0+16** · smoke `ciclo_dd_*` + suite + pack + push.
 
+## Helper reads + Hoje/Revisões Li (Ciclo DE)
+
+1. `lib/core/data/theory_reads.dart` — `fetchTheoryReadMap` compartilhado (Fila/Plano/Hoje/Revisões).
+2. Hoje: batch reads + badge **Li** em tópico/lacuna/reforço.
+3. Revisões: badge **Li** + batch + `onMarkedRead`.
+4. **1.0.0+17** · smoke `ciclo_de_*` + suite + pack + push.
+
+## Domínio Li batch (Ciclo DF)
+
+1. Domínio (`medicine_screen`): batch reads via `fetchTheoryReadMap` + badge **Li** + `onMarkedRead`.
+2. **1.0.0+18** · smoke `ciclo_df_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
