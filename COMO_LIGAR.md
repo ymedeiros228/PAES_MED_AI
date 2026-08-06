@@ -623,6 +623,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Onboarding: chips Hoje/Sessão/Biblioteca + dica Semana 1.
 4. **1.0.0+9** · smoke `ciclo_cw_*` + suite + pack + push.
 
+## Plano teoria + dashboard + PDF (Ciclo CX)
+
+1. Plano: **Ler teoria** por dia (sheet local + marcar li) · Tutor · Sessão.
+2. Hoje: banner acervo vazio + empty “Agora” com Biblioteca/Plano.
+3. Biblioteca: hint PDF leitor padrão Windows + tooltip no botão.
+4. **1.0.0+10** · smoke `ciclo_cx_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

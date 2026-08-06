@@ -703,7 +703,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         return;
       }
       await apiClient.post('/api/library/open-path', {'path': map['path']});
-      setState(() => msg = 'Abrindo PDF ${map['label'] ?? year}');
+      setState(() => msg = 'Abrindo no leitor padrão (Windows): ${map['label'] ?? year}');
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
@@ -1034,7 +1034,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
               ),
 
-              SectionLabel('2024–26', hint: 'Toque Estudar quando estiver Pronto'),
+              SectionLabel('2024–26', hint: 'PDF abre no leitor padrão do Windows · não embutido'),
+              if (board.any((g) {
+                final od = (g as Map)['onDisk'];
+                return od is Map && od['hasProva'] == true;
+              }))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'Toque PDF para abrir paes_YYYY.pdf no app padrão do sistema.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                        ),
+                  ),
+                ),
               if (board.isEmpty)
                 QuietEmpty(
                   message: 'Nenhum ano 2024–26 ainda — use Atualizar 2024–26.',
@@ -1094,9 +1107,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (onDisk['hasProva'] == true)
-                                    TextButton(
-                                      onPressed: busy ? null : () => _openYearPdf(y),
-                                      child: const Text('PDF'),
+                                    Tooltip(
+                                      message: 'Abre paes_$y.pdf no leitor padrão (Windows)',
+                                      child: TextButton(
+                                        onPressed: busy ? null : () => _openYearPdf(y),
+                                        child: const Text('PDF'),
+                                      ),
                                     ),
                                   FilledButton(
                                     onPressed: busy

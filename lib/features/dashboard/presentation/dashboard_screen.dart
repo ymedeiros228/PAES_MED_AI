@@ -306,6 +306,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   ),
                                 ],
                               ),
+                            )
+                          else if (officialN == 0)
+                            SurfacePanel(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.folder_open_outlined, color: Theme.of(context).colorScheme.primary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Sem questões oficiais UEMA — importe 2024–26 na Biblioteca antes de confiar nas estatísticas.',
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                  FilledButton.tonal(
+                                    onPressed: () => context.go('/biblioteca'),
+                                    child: const Text('Biblioteca'),
+                                  ),
+                                ],
+                              ),
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
@@ -397,10 +418,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             )
                           else
                             QuietEmpty(
-                              message: routine['hint']?.toString() ?? 'Pode partir para a sessão.',
-                              action: TextButton(
-                                onPressed: () => context.go(sessionPath),
-                                child: const Text('Sessão'),
+                              message: officialN == 0
+                                  ? 'Sem acervo oficial — Biblioteca primeiro; depois sessão com provas reais.'
+                                  : (routine['hint']?.toString() ?? 'Pode partir para a sessão.'),
+                              action: Wrap(
+                                spacing: 8,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  if (officialN == 0)
+                                    FilledButton(
+                                      onPressed: () => context.go('/biblioteca'),
+                                      child: const Text('Biblioteca'),
+                                    ),
+                                  TextButton(
+                                    onPressed: () => context.go(sessionPath),
+                                    child: const Text('Sessão'),
+                                  ),
+                                  if (officialN == 0)
+                                    TextButton(
+                                      onPressed: () => context.go('/plano'),
+                                      child: const Text('Plano'),
+                                    ),
+                                ],
                               ),
                             ),
 
