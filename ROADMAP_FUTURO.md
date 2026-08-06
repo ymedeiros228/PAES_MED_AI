@@ -200,6 +200,7 @@ flowchart TB
 | CM–CP | Erros onda 2 · sim keys · adaptive/essay keys · Hoje path +5 | `ciclo_cm_*`…`ciclo_cp_*` | **Feito** |
 | CQ–CT | Erros onda 3 · ficha error keys · cards/sim Enter · coach +6 | `ciclo_cq_*`…`ciclo_ct_*` | **Feito** |
 | CT–CU | Erros onda 4 · plano reforço coach · cards/aulas/import +7 | `ciclo_ct_*`…`ciclo_cu_*` | **Feito** |
+| CU–CV | Tutor offline UX · questões empty CTA · offlineOnly API +8 | `ciclo_cu_*`…`ciclo_cv_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -207,9 +208,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CT–CU)
+## Estado (atualizado pós CU–CV)
 
-- Fios AQ…CP fechados; rodada CQ–CT: mídia/revisões/aprovação/sessão humanos, ficha teclado grava tipo, cards re-foco, sim Enter preflight/report, coach limpo com acervo, 1.0.0+6.
-- Rodada CT–CU: humanApiError em Aulas/Cards/Ingest review, reforço compacto no Plano (coach do dia), 1.0.0+7.
+- Rodada CT–CU: humanApiError em Aulas/Cards/Ingest/Biblioteca; reforço compacto no Plano e Adaptativo; 1.0.0+7.
+- Rodada CU–CV: tutor offline (banner, chip, `offlineOnly`), empty states ricos em Questões; 1.0.0+8.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

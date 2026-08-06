@@ -64,6 +64,30 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     });
   }
 
+  void _clearFilters() {
+    setState(() {
+      subject = null;
+      topic = null;
+      difficulty = null;
+      year = null;
+      source = null;
+      examBoard = null;
+      similares = false;
+      medicine = false;
+      page = 0;
+    });
+  }
+
+  bool get _hasActiveFilters =>
+      subject != null ||
+      topic != null ||
+      difficulty != null ||
+      year != null ||
+      source != null ||
+      examBoard != null ||
+      similares ||
+      medicine;
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(questionsProvider(filters));
@@ -195,12 +219,47 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
             ),
             data: (items) {
               if (items.isEmpty) {
+                final filterHint = examBoard == 'UEMA_PAES'
+                    ? 'Nenhuma oficial UEMA neste recorte — tente “Todos” no ano ou importe na Biblioteca.'
+                    : page > 0
+                        ? 'Volte uma página ou limpe os filtros.'
+                        : 'Importe provas na Biblioteca ou afrouxe os filtros.';
                 return EmptyState(
                   title: 'Nada neste filtro',
-                  subtitle: page > 0 ? 'Volte uma página ou limpe os filtros.' : 'Importe provas na Biblioteca ou afrouxa os filtros.',
-                  action: page > 0
-                      ? TextButton(onPressed: () => setState(() => page--), child: const Text('Página anterior'))
-                      : FilledButton(onPressed: () => context.go('/biblioteca'), child: const Text('Biblioteca')),
+                  subtitle: filterHint,
+                  action: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      if (page > 0)
+                        TextButton(
+                          onPressed: () => setState(() => page--),
+                          child: const Text('Página anterior'),
+                        ),
+                      if (_hasActiveFilters)
+                        OutlinedButton(
+                          onPressed: _clearFilters,
+                          child: const Text('Limpar filtros'),
+                        ),
+                      FilledButton(
+                        onPressed: () => context.go('/biblioteca'),
+                        child: const Text('Biblioteca'),
+                      ),
+                      FilledButton.tonal(
+                        onPressed: () => context.go('/sessao'),
+                        child: const Text('Sessão'),
+                      ),
+                      if (subject != null && subject!.isNotEmpty)
+                        OutlinedButton(
+                          onPressed: () => context.go(
+                            '/adaptativo?subject=${Uri.encodeComponent(subject!)}'
+                            '${topic != null && topic!.isNotEmpty ? '&topic=${Uri.encodeComponent(topic!)}' : ''}',
+                          ),
+                          child: const Text('Treinar tópico'),
+                        ),
+                    ],
+                  ),
                 );
               }
               return Column(

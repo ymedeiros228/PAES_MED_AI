@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:paes_med_ai/features/ai_tutor/application/ai_tutor_controller.dart';
 import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 
+import '../../../core/data/api_client.dart';
+import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AiTutorScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,8 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   bool _seedApplied = false;
+  bool? _openaiConfigured;
+  bool _healthLoaded = false;
 
   static const _styles = <(String, String)>[
     ('professor', 'Professor'),
@@ -41,7 +45,41 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   @override
   void initState() {
     super.initState();
+    _loadHealth();
     WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
+  }
+
+  Future<void> _loadHealth() async {
+    try {
+      final data = await apiClient.get('/health');
+      final map = Map<String, dynamic>.from(data as Map);
+      if (!mounted) return;
+      setState(() {
+        _openaiConfigured = map['openai_configured'] == true;
+        _healthLoaded = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _openaiConfigured = false;
+        _healthLoaded = true;
+      });
+    }
+  }
+
+  bool get _offlineMode {
+    final tutorOn = ref.read(tutorOnlinePrefProvider);
+    return _openaiConfigured != true || !tutorOn;
+  }
+
+  String get _offlineBannerText {
+    if (_openaiConfigured != true) {
+      return 'Modo offline — trechos da base local. OPENAI_API_KEY em backend/.env para diálogo completo.';
+    }
+    if (!ref.read(tutorOnlinePrefProvider)) {
+      return 'IA online desligada em Ajustes — respostas só com material local.';
+    }
+    return '';
   }
 
   void _applyRouteSeed() {
@@ -83,6 +121,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiTutorControllerProvider);
+    ref.watch(tutorOnlinePrefProvider);
     final cs = Theme.of(context).colorScheme;
 
     ref.listen(aiTutorControllerProvider, (previous, next) {
@@ -114,6 +153,31 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
               ),
             ),
           ),
+          if (_healthLoaded && _offlineMode && _offlineBannerText.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+              child: SurfacePanel(
+                color: cs.secondaryContainer.withOpacity(0.45),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.cloud_off_outlined, size: 20, color: cs.onSecondaryContainer),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _offlineBannerText,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    if (_openaiConfigured != true)
+                      TextButton(
+                        onPressed: () => context.go('/ajustes'),
+                        child: const Text('Ajustes'),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
@@ -165,6 +229,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                     : () {
                                         ref.read(aiTutorControllerProvider.notifier).send(
                                               'Qual a meta de estudo de hoje e o que priorizar?',
+                                              offlineOnly: _offlineMode,
                                             );
                                       },
                               ),
@@ -175,6 +240,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                     : () {
                                         ref.read(aiTutorControllerProvider.notifier).send(
                                               'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
+                                              offlineOnly: _offlineMode,
                                             );
                                       },
                               ),
@@ -259,7 +325,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     final text = _controller.text;
     if (text.trim().isEmpty) return;
     _controller.clear();
-    await ref.read(aiTutorControllerProvider.notifier).send(text);
+    await ref.read(aiTutorControllerProvider.notifier).send(
+          text,
+          offlineOnly: _offlineMode,
+        );
   }
 
   void _scrollToBottom() {
@@ -296,6 +365,24 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!message.isUser && message.isOffline) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer.withOpacity(0.55),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Resposta offline · trechos da base local',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: scheme.onSecondaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ),
+            ],
             if (!message.isUser && message.uncited) ...[
               Container(
                 width: double.infinity,

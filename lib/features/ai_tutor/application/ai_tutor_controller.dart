@@ -61,7 +61,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
     state = state.copyWith(style: style);
   }
 
-  Future<void> send(String rawText) async {
+  Future<void> send(String rawText, {bool offlineOnly = false}) async {
     final text = rawText.trim();
     if (text.isEmpty || state.isLoading) return;
 
@@ -78,6 +78,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
         message: text,
         history: previousHistory,
         style: state.style,
+        offlineOnly: offlineOnly,
       );
       state = state.copyWith(
         messages: [
@@ -88,6 +89,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
             citations: answer.citations,
             uncited: answer.uncited,
             hasLocalBase: answer.hasLocalBase,
+            isOffline: answer.isOffline,
           ),
         ],
         isLoading: false,

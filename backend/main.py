@@ -172,6 +172,7 @@ class ChatRequest(BaseModel):
         default="professor",
         description="professor|medico|crianca|analogia|mapa|resumo|macete|flashcard",
     )
+    offlineOnly: bool = False
 
 
 class ChatResponse(BaseModel):
@@ -723,7 +724,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     has_local = bool(q_cites) or bool((context or "").strip())
 
     client = _openai_client()
-    if client is None:
+    if client is None or payload.offlineOnly:
         from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
 
         basis = stats_basis()

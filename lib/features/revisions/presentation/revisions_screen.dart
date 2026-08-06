@@ -78,16 +78,36 @@ class RevisionsScreen extends ConsumerWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  tooltip: 'Perguntar ao tutor',
+                                  icon: const Icon(Icons.psychology_outlined),
+                                  onPressed: () => context.go(
+                                    '/tutor?subject=${Uri.encodeComponent(subject)}'
+                                    '&topic=${Uri.encodeComponent(topic)}',
+                                  ),
+                                ),
+                                IconButton(
                                   tooltip: 'Marcar feita',
                                   icon: const Icon(Icons.check_circle_outline),
                                   onPressed: () async {
-                                    await apiClient.post(
-                                      '/api/revisions/complete'
-                                      '?subject=${Uri.encodeComponent(subject)}'
-                                      '&topic=${Uri.encodeComponent(topic)}',
-                                      {},
-                                    );
-                                    ref.read(refreshTickProvider.notifier).state++;
+                                    try {
+                                      await apiClient.post(
+                                        '/api/revisions/complete'
+                                        '?subject=${Uri.encodeComponent(subject)}'
+                                        '&topic=${Uri.encodeComponent(topic)}',
+                                        {},
+                                      );
+                                      ref.read(refreshTickProvider.notifier).state++;
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              humanApiError(e, fallback: 'Não deu para marcar a revisão.'),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   },
                                 ),
                                 IconButton(

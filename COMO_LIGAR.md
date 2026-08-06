@@ -610,6 +610,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Biblioteca: commits/fetch/bootstrap sem `$e` cru; Adaptativo: reforço pós-treino.
 4. **1.0.0+7** · smoke `ciclo_cu_*` + suite + pack + push.
 
+## Tutor offline + questões empty (Ciclo CV)
+
+1. Tutor: banner offline · chip “Resposta offline” · `offlineOnly` na API quando sem chave ou IA desligada.
+2. Questões: empty com Limpar filtros · Biblioteca · Sessão · Treinar tópico.
+3. **1.0.0+8** · smoke `ciclo_cv_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

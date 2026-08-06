@@ -187,12 +187,25 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         Text('Macete: ${lastLesson!['macetes']}', style: Theme.of(context).textTheme.bodySmall),
                       ],
                       const SizedBox(height: 10),
-                      FilledButton.tonal(
-                        onPressed: () => context.go(
-                          '/adaptativo?subject=${Uri.encodeComponent('${lastLesson!['subject']}')}'
-                          '&topic=${Uri.encodeComponent('${lastLesson!['topic']}')}',
-                        ),
-                        child: const Text('Treinar este tópico'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          FilledButton.tonal(
+                            onPressed: () => context.go(
+                              '/adaptativo?subject=${Uri.encodeComponent('${lastLesson!['subject']}')}'
+                              '&topic=${Uri.encodeComponent('${lastLesson!['topic']}')}',
+                            ),
+                            child: const Text('Treinar este tópico'),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => context.go(
+                              '/tutor?subject=${Uri.encodeComponent('${lastLesson!['subject']}')}'
+                              '&topic=${Uri.encodeComponent('${lastLesson!['topic']}')}',
+                            ),
+                            child: const Text('Tutor'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
