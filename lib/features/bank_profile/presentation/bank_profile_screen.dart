@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -18,6 +19,41 @@ class BankProfileScreen extends ConsumerStatefulWidget {
 
 class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
   String? exportMsg;
+  Map<String, bool> theoryReadByKey = {};
+  final Set<(String, String)> _readPairs = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  (String, String)? _parseCoKey(String raw) {
+    final parts = raw.split('::');
+    if (parts.isEmpty) return null;
+    final sub = parts[0].trim();
+    final top = parts.length >= 2 ? parts.sublist(1).join('::').trim() : '';
+    if (sub.isEmpty || top.isEmpty) return null;
+    return (sub, top);
+  }
+
+  Future<void> _addReads(Iterable<(String, String)> pairs) async {
+    final before = _readPairs.length;
+    for (final p in pairs) {
+      if (p.$1.isNotEmpty && p.$2.isNotEmpty) _readPairs.add(p);
+    }
+    if (_readPairs.length == before) return;
+    final out = await fetchTheoryReadMap(_readPairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
 
   void _onHeatCellTap(String subject, int count) {
     if (count <= 0 || subject.isEmpty) return;
@@ -31,7 +67,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
       }
     }
     if (topic.isNotEmpty) {
-      TheoryTopicSheet.show(context, subject: subject, topic: topic);
+      _openTheory(subject, topic);
     } else {
       context.go(
         '/sessao?examBoard=UEMA_PAES&subject=${Uri.encodeComponent(subject)}',
@@ -112,6 +148,15 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                   final co = (data['cooccurrence'] as List? ?? data['correlations'] as List? ?? []);
                   final total = data['totalQuestions'];
                   final ctas = data['studyCtas'] as List? ?? [];
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final pairs = <(String, String)>[];
+                    for (final raw in co.take(10)) {
+                      final m = Map<String, dynamic>.from(raw as Map);
+                      final parsed = _parseCoKey(m['a']?.toString() ?? '');
+                      if (parsed != null) pairs.add(parsed);
+                    }
+                    _addReads(pairs);
+                  });
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -212,38 +257,32 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       if (co.isNotEmpty) ...[
                         SectionLabel('Tópicos que costumam aparecer juntos'),
                         for (final raw in co.take(10))
-                          PlaylistTile(
-                            title: '${(raw as Map)['a']} ↔ ${raw['b']}',
-                            subtitle: '${raw['count']} ocorrência(s)',
-                            leadingIcon: Icons.link_rounded,
-                            onPlay: () {
-                              final a = raw['a']?.toString() ?? '';
-                              final parts = a.split('::');
-                              final sub = parts.isNotEmpty ? parts[0] : '';
-                              final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
-                              context.go(
-                                '/adaptativo?subject=${Uri.encodeComponent(sub)}'
-                                '&topic=${Uri.encodeComponent(top)}',
+                          Builder(
+                            builder: (_) {
+                              final item = Map<String, dynamic>.from(raw as Map);
+                              final parsed = _parseCoKey(item['a']?.toString() ?? '');
+                              final sub = parsed?.$1 ?? '';
+                              final top = parsed?.$2 ?? '';
+                              return PlaylistTile(
+                                title: '${item['a']} ↔ ${item['b']}',
+                                subtitle: '${item['count']} ocorrência(s)',
+                                badge: parsed != null && _isTheoryRead(sub, top) ? 'Li' : null,
+                                leadingIcon: Icons.link_rounded,
+                                onPlay: () {
+                                  context.go(
+                                    '/adaptativo?subject=${Uri.encodeComponent(sub)}'
+                                    '&topic=${Uri.encodeComponent(top)}',
+                                  );
+                                },
+                                secondary: sub.isNotEmpty && top.isNotEmpty
+                                    ? IconButton(
+                                        tooltip: 'Teoria local',
+                                        icon: const Icon(Icons.menu_book_outlined),
+                                        onPressed: () => _openTheory(sub, top),
+                                      )
+                                    : const SizedBox.shrink(),
                               );
                             },
-                            secondary: Builder(
-                              builder: (_) {
-                                final a = raw['a']?.toString() ?? '';
-                                final parts = a.split('::');
-                                final sub = parts.isNotEmpty ? parts[0] : '';
-                                final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
-                                if (sub.isEmpty || top.isEmpty) return const SizedBox.shrink();
-                                return IconButton(
-                                  tooltip: 'Teoria local',
-                                  icon: const Icon(Icons.menu_book_outlined),
-                                  onPressed: () => TheoryTopicSheet.show(
-                                    context,
-                                    subject: sub,
-                                    topic: top,
-                                  ),
-                                );
-                              },
-                            ),
                           ),
                       ],
                       ExpansionTile(
@@ -305,6 +344,16 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       ),
                     );
                   }
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final pairs = <(String, String)>[];
+                    for (final raw in items.take(24)) {
+                      final item = Map<String, dynamic>.from(raw as Map);
+                      final s = item['subject']?.toString() ?? '';
+                      final t = item['topic']?.toString() ?? '';
+                      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+                    }
+                    _addReads(pairs);
+                  });
                   return Column(
                     children: [
                       for (final raw in items.take(24))
@@ -319,6 +368,11 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                   'Anos: ${(item['years'] as List? ?? []).join(', ')} · ${item['frequency'] ?? '—'}x'
                                   '${item['forgotten'] == true ? ' · sumiu' : ''}'
                                   '${item['favorite'] == true ? ' · frequente' : ''}',
+                              badge: _isTheoryRead(sub, top)
+                                  ? 'Li'
+                                  : (item['forgotten'] == true
+                                      ? 'sumiu'
+                                      : (item['favorite'] == true ? 'frequente' : null)),
                               leadingIcon: Icons.timeline_rounded,
                               onPlay: () => context.go(
                                 '/adaptativo?subject=${Uri.encodeComponent(sub)}'
@@ -328,11 +382,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                   ? IconButton(
                                       tooltip: 'Teoria local',
                                       icon: const Icon(Icons.menu_book_outlined),
-                                      onPressed: () => TheoryTopicSheet.show(
-                                        context,
-                                        subject: sub,
-                                        topic: top,
-                                      ),
+                                      onPressed: () => _openTheory(sub, top),
                                     )
                                   : null,
                             );

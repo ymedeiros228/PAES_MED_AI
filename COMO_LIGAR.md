@@ -681,6 +681,11 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Domínio (`medicine_screen`): batch reads via `fetchTheoryReadMap` + badge **Li** + `onMarkedRead`.
 2. **1.0.0+18** · smoke `ciclo_df_*` + suite + pack + push.
 
+## Banca Li batch (Ciclo DG)
+
+1. Banca (`bank_profile_screen`): batch reads co-ocorrência + frequência; badge **Li**; heatmap → `_openTheory`.
+2. **1.0.0+19** · smoke `ciclo_dg_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

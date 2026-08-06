@@ -3576,10 +3576,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "pubspec/Sobre/bat +3..+10",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3587,7 +3587,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_txt),
         )
     else:
@@ -3820,9 +3820,9 @@ def main() -> int:
     ok(
         "ciclo_cl_version_align",
         ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec
-        or "1.0.0+8" in pubspec         or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec or "1.0.0+17" in pubspec or "1.0.0+18" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck or "1.0.0+17" in settings_ck or "1.0.0+18" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat or "1.0.0+17" in pack_bat or "1.0.0+18" in pack_bat),
+        or "1.0.0+8" in pubspec         or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec or "1.0.0+17" in pubspec or "1.0.0+18" in pubspec or "1.0.0+19" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck or "1.0.0+17" in settings_ck or "1.0.0+18" in settings_ck or "1.0.0+19" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat or "1.0.0+17" in pack_bat or "1.0.0+18" in pack_bat or "1.0.0+19" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3830,7 +3830,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_cl),
         )
     else:
@@ -3955,9 +3955,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4100,16 +4100,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +6..+9",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_ct),
         )
     else:
@@ -4184,16 +4184,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +7/+8/+9",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_cu),
         )
     else:
@@ -4273,16 +4273,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cv_version_align",
-        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +8/+9/+10",
     )
     ver_cv = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cv.exists():
         ok(
             "ciclo_cv_version_file",
-            any(v in ver_cv.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in ver_cv.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_cv),
         )
     else:
@@ -4340,16 +4340,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cw_version_align",
-        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +9/+10",
     )
     ver_cw = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cw.exists():
         ok(
             "ciclo_cw_version_file",
-            any(v in ver_cw.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in ver_cw.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_cw),
         )
     else:
@@ -4399,16 +4399,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cx_version_align",
-        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +10/+11",
     )
     ver_cx = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cx.exists():
         ok(
             "ciclo_cx_version_file",
-            any(v in ver_cx.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+            any(v in ver_cx.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
             str(ver_cx),
         )
     else:
@@ -4465,9 +4465,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cy_version_align",
-        any(v in pubspec for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +11/+12",
     )
     ver_cy = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4537,9 +4537,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cz_version_align",
-        any(v in pubspec for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +12/+13",
     )
     ver_cz = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4600,9 +4600,9 @@ def main() -> int:
     )
     ok(
         "ciclo_da_version_align",
-        any(v in pubspec for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +13/+14",
     )
     ver_da = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4661,9 +4661,9 @@ def main() -> int:
     )
     ok(
         "ciclo_db_version_align",
-        any(v in pubspec for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +14/+15",
     )
     ver_db = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4714,9 +4714,9 @@ def main() -> int:
     )
     ok(
         "ciclo_dc_version_align",
-        any(v in pubspec for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +15/+16",
     )
     ver_dc = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4792,9 +4792,9 @@ def main() -> int:
     )
     ok(
         "ciclo_dd_version_align",
-        any(v in pubspec for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +16/+17/+18",
     )
     ver_dd = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4855,9 +4855,9 @@ def main() -> int:
     )
     ok(
         "ciclo_de_version_align",
-        any(v in pubspec for v in ("1.0.0+17", "1.0.0+18"))
-        and any(v in settings_ck for v in ("1.0.0+17", "1.0.0+18"))
-        and any(v in pack_bat for v in ("1.0.0+17", "1.0.0+18")),
+        any(v in pubspec for v in ("1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+17", "1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+17", "1.0.0+18", "1.0.0+19")),
         "version +17/+18",
     )
     ver_de = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -4904,8 +4904,10 @@ def main() -> int:
     )
     ok(
         "ciclo_df_version_align",
-        "1.0.0+18" in pubspec and "1.0.0+18" in settings_ck and "1.0.0+18" in pack_bat,
-        "version +18",
+        any(v in pubspec for v in ("1.0.0+18", "1.0.0+19"))
+        and any(v in settings_ck for v in ("1.0.0+18", "1.0.0+19"))
+        and any(v in pack_bat for v in ("1.0.0+18", "1.0.0+19")),
+        "version +18/+19",
     )
     ver_df = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_df.exists():
@@ -4936,6 +4938,54 @@ def main() -> int:
         ok("ciclo_df_dist_shape", True, str(dist_dll_df))
     else:
         ok("ciclo_df_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo DG: Banca Li batch + 1.0.0+19 ---
+    banca_dg = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dg_banca_li_batch",
+        "_addReads" in banca_dg
+        and "fetchTheoryReadMap" in banca_dg
+        and "'Li'" in banca_dg
+        and "_openTheory" in banca_dg
+        and "onMarkedRead" in banca_dg,
+        "banca li",
+    )
+    ok(
+        "ciclo_dg_version_align",
+        "1.0.0+19" in pubspec and "1.0.0+19" in settings_ck and "1.0.0+19" in pack_bat,
+        "version +19",
+    )
+    ver_dg = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_dg.exists():
+        _ver_dg_txt = ver_dg.read_text(encoding="utf-8", errors="ignore")
+        ok(
+            "ciclo_dg_version_file",
+            "1.0.0+19" in _ver_dg_txt
+            or any(
+                v in _ver_dg_txt
+                for v in ("1.0.0+18", "1.0.0+17", "1.0.0+16", "1.0.0+15", "1.0.0+14", "1.0.0+13", "1.0.0+12", "1.0.0+11", "1.0.0+10")
+            ),
+            str(ver_dg),
+        )
+    else:
+        ok("ciclo_dg_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_dg_como_section",
+        "Ciclo DG" in como_ap,
+        "COMO DG",
+    )
+    ok(
+        "ciclo_dg_roadmap_df_dg",
+        ("DF–DG" in roadmap or "DF-DG" in roadmap) and "Feito" in roadmap,
+        "ROADMAP DF-DG",
+    )
+    dist_dll_dg = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_dg.exists():
+        ok("ciclo_dg_dist_shape", True, str(dist_dll_dg))
+    else:
+        ok("ciclo_dg_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

@@ -38,3 +38,5 @@ Projeto: PAES_MED_AI
 - [x] Versão **1.0.0+17** + smoke **575/575** + docs COMO/ROADMAP DD–DE + fix checks DD pós-refactor
 - [x] Ciclo DF: Domínio — batch reads + badge **Li** + `onMarkedRead` (`medicine_screen`)
 - [x] Versão **1.0.0+18** + smoke **581/581** + docs COMO/ROADMAP DE–DF
+- [x] Ciclo DG: Banca — batch reads co-ocorrência + frequência + badge **Li** + `_openTheory`/`onMarkedRead`
+- [x] Versão **1.0.0+19** + smoke **587/587** + docs COMO/ROADMAP DF–DG
