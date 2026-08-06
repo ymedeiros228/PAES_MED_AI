@@ -52,3 +52,6 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DK: Simulados — `_loadSimReads` (questões/lacunas/erros) + **Li** gaps/debrief + `onMarkedRead`
 - [x] Ciclo DK: Biblioteca — `_loadSearchReads` em hits questão + badge **Li** + ícone teoria
 - [x] Versão **1.0.0+23** + smoke **615/615** + docs COMO/ROADMAP DJ–DK
+- [x] Ciclo DL: Lista Questões — batch reads + badge **Li** + ícone teoria + filtro ativo
+- [x] Ciclo DL: Aprovar — batch reads + **Li** + botão Teoria + `onMarkedRead`
+- [x] Versão **1.0.0+24** + smoke **622/622** + docs COMO/ROADMAP DK–DL

@@ -710,6 +710,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Biblioteca: busca questões — batch reads + badge **Li** + ícone teoria.
 3. **1.0.0+23** · smoke `ciclo_dk_*` + suite + pack + push.
 
+## Questões/Aprovar Li (Ciclo DL)
+
+1. Lista Questões: batch reads + badge **Li** + ícone teoria + filtro ativo.
+2. Aprovar: batch reads + **Li** + botão Teoria.
+3. **1.0.0+24** · smoke `ciclo_dl_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

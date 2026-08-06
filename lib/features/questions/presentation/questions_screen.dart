@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class QuestionsScreen extends ConsumerStatefulWidget {
@@ -33,6 +37,33 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
   bool medicine = false;
   int page = 0;
   static const pageSize = 40;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadReads(List<dynamic> items) async {
+    final pairs = <(String, String)>[];
+    for (final raw in items) {
+      final s = raw.subject?.toString() ?? '';
+      final t = raw.topic?.toString() ?? '';
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    if (pairs.isEmpty) return;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -40,6 +71,15 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     subject = widget.initialSubject;
     topic = widget.initialTopic;
     examBoard = widget.initialExamBoard;
+    if (subject != null &&
+        subject!.isNotEmpty &&
+        topic != null &&
+        topic!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final out = await fetchTheoryReadMap([(subject!, topic!)]);
+        if (mounted) setState(() => theoryReadByKey = out);
+      });
+    }
   }
 
   Map<String, String> get filters {
@@ -109,6 +149,25 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   child: const Text('Sessão'),
                 ),
               ),
+              if (subject != null &&
+                  subject!.isNotEmpty &&
+                  topic != null &&
+                  topic!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openTheory(subject!, topic!),
+                      icon: const Icon(Icons.menu_book_outlined, size: 18),
+                      label: Text(
+                        _isTheoryRead(subject!, topic!)
+                            ? 'Teoria do filtro · Li'
+                            : 'Teoria do filtro',
+                      ),
+                    ),
+                  ),
+                ),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -218,6 +277,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
               ),
             ),
             data: (items) {
+              WidgetsBinding.instance.addPostFrameCallback((_) => _loadReads(items));
               if (items.isEmpty) {
                 final filterHint = examBoard == 'UEMA_PAES'
                     ? 'Nenhuma oficial UEMA neste recorte — tente “Todos” no ano ou importe na Biblioteca.'
@@ -270,18 +330,25 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       itemCount: items.length,
                       itemBuilder: (context, i) {
                         final q = items[i];
-                        final badge = _badgeLabel(
-                          source: q.source,
-                          generated: q.generated,
-                          approved: q.approved,
-                          examBoard: q.examBoard,
-                        );
+                        final badge = _isTheoryRead(q.subject, q.topic)
+                            ? 'Li'
+                            : _badgeLabel(
+                                source: q.source,
+                                generated: q.generated,
+                                approved: q.approved,
+                                examBoard: q.examBoard,
+                              );
                         return PlaylistTile(
                           title: '${q.subject} · ${q.topic}',
                           subtitle: '${q.year} · ${q.difficulty} · ${q.statement}',
                           badge: badge,
                           leadingIcon: Icons.quiz_outlined,
                           onPlay: () => context.go('/questoes/${q.id}'),
+                          secondary: IconButton(
+                            tooltip: 'Teoria local',
+                            icon: const Icon(Icons.menu_book_outlined),
+                            onPressed: () => _openTheory(q.subject, q.topic),
+                          ),
                         );
                       },
                     ),
