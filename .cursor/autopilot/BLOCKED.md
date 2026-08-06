@@ -1,20 +1,18 @@
 # Auto-Pilot — TRAVADO / PARA O CURSOR
 
-Formato: `- [ ] [TÍTULO] | por quê | onde | próxima ação`
-
 ## Resolvido
 
-- [x] PR #3 draft | Superseded pelo F3/Mode A | GitHub | Fechado 2026-08-06
-- [x] HC–HD Mode A | Sessão PT + ficha teoria→treino | Cloud | ship 1.0.0+12
+- [x] PR #4 | Superseded pelo #5 / tip Mode A | Fechado
+- [x] HF–HG | Semana 1 CTA + Fila empty | ship 1.0.0+13
 
-## Residual aberto
+## Residual
 
-- [ ] dist pack 1.0.0+12 | só no PC Windows | host | Fechar app/explorer e `empacotar_windows.bat`
-- [ ] Soft landing Semana 1 | só se repro real | QUEUE P1 | validar no host
+- [ ] dist pack 1.0.0+13 | host | `empacotar_windows.bat` após merge
+- [ ] Soft landing Semana 1 | só se repro real | QUEUE
 
-## Checklist host Windows (após merge)
+## Checklist host
 
 1. `git pull origin main`
 2. Fechar app + explorer em `dist\`
-3. `empacotar_windows.bat` → Desktop **1.0.0+12**
-4. Smoke: `backend\.venv\Scripts\python.exe backend\smoke_test.py`
+3. `empacotar_windows.bat`
+4. Smoke local

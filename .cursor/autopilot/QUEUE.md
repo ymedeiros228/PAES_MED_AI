@@ -2,25 +2,21 @@
 
 ## P0 · travas / pack
 
-- [ ] (vazio) se Desktop órfão ou dist sem launcher/ico → modo **C**
+- [ ] Desktop órfão / dist sem launcher → modo **C**
 
 ## P1 · Uso real (modo A)
 
-- [x] Sessão jargão → HC
-- [x] Ficha teoria→treino → HD
-- [x] Soft landing rewrite → **não** (só se repro)
-- [ ] First-run Semana 1 CTA → **HF** (em andamento)
-- [ ] Fila empty → Biblioteca + PT sem due → **HG** (em andamento)
+- [x] HC Sessão jargão
+- [x] HD ficha teoria→treino
+- [x] HF first-run Semana 1
+- [x] HG Fila empty → Biblioteca
+- [ ] Soft landing só se repro
 
 ## P3 · Ship
 
-- [ ] Bump **1.0.0+13**
-- [ ] Pack host `empacotar_windows.bat`
+- [x] Bump **1.0.0+13**
+- [ ] Pack host
 
 ## P4 · Congelado
 
-- ~~Teclado R/S~~ · ~~F4 thin~~ · ~~F3 reabrir~~ · ~~PR #4~~ (fechado)
-
-## Notas
-
-- PR #4 fechado (superseded pelo #5 / tip Mode A). Branch `cursor/mode-a-first-run-2d73`.
+- ~~Teclado R/S~~ · ~~F4 thin~~ · ~~PR #4~~

@@ -1,12 +1,12 @@
 # Auto-Pilot — DONE
 
-## GR–GU / GV–GW / GY–HA
+## HC–HD Mode A → 1.0.0+12
 
-- Pack + F2 + F1 acervo + F3 Tutor → **1.0.0+11**.
+- Sessão PT + ficha teoria→treino.
 
-## HC–HD Mode A (2026-08-06)
+## HF–HG Mode A (2026-08-06)
 
-- **HC**: Sessão empties/erros em PT (sem API/due/syllabus jargão) + 1 CTA.
-- **HD**: Ficha e debrief — Ler teoria primeiro + `trainSessionPath` → `/sessao`; sheet hint.
-- **HE ship**: **1.0.0+12**.
-- PR #3 fechado (superseded).
+- **HF**: Onboarding + coach Hoje → **Ir para Semana 1** (`/biblioteca`).
+- **HG**: Fila vazia sem oficiais → Semana 1; copy “para revisar” (sem due).
+- **HH ship**: **1.0.0+13**.
+- PR #4 fechado (superseded).

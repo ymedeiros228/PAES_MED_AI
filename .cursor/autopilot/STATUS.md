@@ -4,12 +4,14 @@
 
 | | |
 |---|---|
-| **Estado** | IN_PROGRESS |
-| **Ciclo** | HF–HG |
-| **Versão alvo** | 1.0.0+13 |
+| **Estado** | DONE (product) / host pack residual |
+| **Ciclo** | HF–HG (+ HH ship) |
+| **Versão** | 1.0.0+13 |
 | **Branch** | `cursor/mode-a-first-run-2d73` |
 | **Atualizado** | 2026-08-06 |
 
-### Missão
+### Host Windows
 
-First-run CTA Semana 1 + Fila vazia → Biblioteca (sem jargão due).
+1. Merge PR → `git pull origin main`
+2. Fechar app + explorer em `dist\`
+3. `empacotar_windows.bat` → **1.0.0+13**
