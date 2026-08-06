@@ -209,6 +209,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ? '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
                 : '/sessao');
         final coachLine = routine['line']?.toString() ?? 'Pronto para estudar?';
+        final teachMission = routine['teachMission'] is Map
+            ? Map<String, dynamic>.from(routine['teachMission'] as Map)
+            : null;
         final closePath = routine['closePath']?.toString() ?? '/fila';
         final closeLabel = routine['closeLabel']?.toString() ?? 'Ver fila';
         final progress = routine['progressLabel']?.toString() ?? '';
@@ -418,6 +421,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
+                          if (teachMission != null) ...[
+                            PlaylistTile(
+                              title: 'Missão: ${teachMission['topic'] ?? 'lacuna'}',
+                              subtitle: teachMission['line']?.toString() ??
+                                  'Fechar lacuna · teoria → treino',
+                              badge: 'missão',
+                              leadingIcon: Icons.school_outlined,
+                              onPlay: () {
+                                final path = teachMission['path']?.toString();
+                                if (path != null && path.isNotEmpty) {
+                                  context.go(path);
+                                } else {
+                                  context.go('/fila');
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           _CheckRow(
                             done: checklist['session'] == true,
                             label: 'Sessão (~15+ min)',

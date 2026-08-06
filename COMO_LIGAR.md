@@ -1256,6 +1256,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+15** (gênio em ensinar — pedagogia amarrada).
 2. Host: `empacotar_windows.bat` após merge.
 
+## Tutor multi-turno (Ciclo HQ)
+
+1. Se a última resposta pediu verificação, o próximo turno fecha o loop (certo/quase/reexplicar).
+2. Offline: `grade_verification_reply`; online: regra MULTI-TURNO no prompt.
+3. Smoke: `ciclo_hq_*`.
+
+## Domínio após remediação (Ciclo HR)
+
+1. `/api/answers` devolve `teachMastery` (recuperado / ainda frágil).
+2. Adaptive: painel **Domínio** no fim da fila.
+3. Smoke: `ciclo_hr_*`.
+
+## Missão didática Hoje/Fila (Ciclo HS)
+
+1. `dailyRoutine.teachMission` a partir da lacuna aberta (tópico + tipo de erro).
+2. Coach line: “Hoje: fechar {tópico} (erro de {tipo}) — teoria → 5 itens”.
+3. Smoke: `ciclo_hs_*`.
+
+## Pack gate + 1.0.0+16 (Ciclo HT ship)
+
+1. Bump **1.0.0+16** (loop didático fechado).
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

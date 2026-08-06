@@ -3590,10 +3590,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3601,7 +3601,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_txt),
         )
     else:
@@ -3833,9 +3833,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat),
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat),
         "version +4..+13",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3843,7 +3843,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_cl),
         )
     else:
@@ -3968,9 +3968,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3978,7 +3978,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_cp),
         )
     else:
@@ -4113,16 +4113,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_ct),
         )
     else:
@@ -4194,16 +4194,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +7/+8",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
             or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
             str(ver_cu),
         )
@@ -4373,7 +4373,7 @@ def main() -> int:
     if ver_dc.exists():
         ok(
             "ciclo_dc_version_file",
-            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_dc),
         )
     else:
@@ -4836,9 +4836,9 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ed_version_108",
-        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +8/+9",
     )
     ok(
@@ -5873,9 +5873,9 @@ def main() -> int:
     # --- Ciclo GU: pack gate + versão 1.0.0+9 (histórico; atual +10 em GX) ---
     ok(
         "ciclo_gu_version_109",
-        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +9/+10",
     )
     dist_gu = root / "dist" / "PAES_MED_AI_Windows"
@@ -5894,7 +5894,7 @@ def main() -> int:
         )
         ok(
             "ciclo_gu_pack_version_txt",
-            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             "VERSION.txt match",
         )
         ok(
@@ -5913,7 +5913,7 @@ def main() -> int:
         "Iniciar_PAES_MED_AI.bat" in pack_bat
         and "app_icon.ico" in pack_bat
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "empacotar gates +9/+10",
     )
     ok(
@@ -6018,9 +6018,9 @@ def main() -> int:
     # --- Ciclo GX ship: versão 1.0.0+10 ---
     ok(
         "ciclo_gx_version_110",
-        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +10/+11",
     )
     ok(
@@ -6173,9 +6173,9 @@ def main() -> int:
     # --- Ciclo HB ship: versão 1.0.0+11 (histórico; atual +12) ---
     ok(
         "ciclo_hb_version_111",
-        any(v in pubspec for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +11/+12",
     )
 
@@ -6253,9 +6253,9 @@ def main() -> int:
     # --- Ciclo HE ship: 1.0.0+12 (histórico; atual +13) ---
     ok(
         "ciclo_he_version_112",
-        any(v in pubspec for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +12/+13",
     )
 
@@ -6316,9 +6316,9 @@ def main() -> int:
     # --- Ciclo HH ship: 1.0.0+13 (histórico; atual +14) ---
     ok(
         "ciclo_hh_version_113",
-        any(v in pubspec for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +13+",
     )
 
@@ -6449,9 +6449,9 @@ def main() -> int:
     # --- Ciclo HL ship: 1.0.0+14 (histórico; atual +15) ---
     ok(
         "ciclo_hl_version_114",
-        any(v in pubspec for v in ("1.0.0+14", "1.0.0+15"))
-        and any(v in settings_ed for v in ("1.0.0+14", "1.0.0+15"))
-        and any(v in pack_bat for v in ("1.0.0+14", "1.0.0+15")),
+        any(v in pubspec for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +14+",
     )
 
@@ -6561,13 +6561,203 @@ def main() -> int:
         "roadmap HM-HO",
     )
 
-    # --- Ciclo HP ship: 1.0.0+15 ---
+    # --- Ciclo HP ship: 1.0.0+15 (histórico; atual +16) ---
     ok(
         "ciclo_hp_version_115",
-        "1.0.0+15" in pubspec
-        and "1.0.0+15" in settings_ed
-        and "1.0.0+15" in pack_bat,
-        "version +15",
+        any(v in pubspec for v in ("1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+15", "1.0.0+16")),
+        "version +15+",
+    )
+
+
+
+    # --- Ciclo HQ: Tutor multi-turno verificação ---
+    svc_hq = (root / "backend" / "services_extra.py").read_text(encoding="utf-8", errors="ignore")
+    main_hq = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    tutor_hq = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hq_grade_fn",
+        "def grade_verification_reply" in svc_hq
+        and "def last_assistant_awaits_verification" in svc_hq
+        and "MULTI-TURNO" in svc_hq,
+        "verify helpers",
+    )
+    ok(
+        "ciclo_hq_verify_mode",
+        "verify_mode" in main_hq and "offline-verify" in main_hq,
+        "chat verify mode",
+    )
+    r1 = client.post(
+        "/api/tutor/ask",
+        json={"message": "Explique genética mendeliana", "preferOfficial": False, "subject": "Biologia", "topic": "Genética"},
+    )
+    j1 = r1.json() if r1.status_code == 200 else {}
+    a1 = j1.get("answer") or ""
+    hist = [
+        {"role": "user", "content": "Explique genética mendeliana"},
+        {"role": "assistant", "content": a1},
+    ]
+    r2 = client.post(
+        "/api/tutor/ask",
+        json={
+            "message": "O comando pede a definição de recessivo e elimino o distrator de dominante.",
+            "history": hist,
+            "preferOfficial": False,
+            "subject": "Biologia",
+            "topic": "Genética",
+        },
+    )
+    j2 = r2.json() if r2.status_code == 200 else {}
+    a2 = (j2.get("answer") or "").lower()
+    ok(
+        "ciclo_hq_multiturn_feedback",
+        r2.status_code == 200
+        and (
+            "fechou" in a2
+            or "quase" in a2
+            or "ainda não" in a2
+            or "próximo passo" in a2
+            or "verificação" in a2
+        )
+        and "questão bio-" not in a2
+        and "http://" not in a2,
+        "multiturn feedback",
+    )
+    ok(
+        "ciclo_hq_ui_hint",
+        "responda a verificação" in tutor_hq.lower(),
+        "tutor verify hint",
+    )
+    ok(
+        "ciclo_hq_como_section",
+        "Ciclo HQ" in como_ap,
+        "COMO HQ",
+    )
+
+    # --- Ciclo HR: Mastery após remediação ---
+    # abrir lacuna + 2 acertos
+    qid_hr = None
+    for row in __import__("db").connect().execute(
+        "SELECT id, subject, topic FROM questions WHERE subject='Biologia' AND topic LIKE '%Gen%' LIMIT 1"
+    ):
+        qid_hr = dict(row)
+        break
+    if qid_hr:
+        client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": False,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+                "errorType": "conceito",
+            },
+        )
+        r_m1 = client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": True,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+            },
+        )
+        j_m1 = r_m1.json() if r_m1.status_code == 200 else {}
+        r_m2 = client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": True,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+            },
+        )
+        j_m2 = r_m2.json() if r_m2.status_code == 200 else {}
+        tm = j_m2.get("teachMastery") or j_m1.get("teachMastery") or {}
+        ok(
+            "ciclo_hr_teach_mastery_payload",
+            "teachMastery" in j_m1 or "teachMastery" in j_m2,
+            str(tm)[:100],
+        )
+    else:
+        ok("ciclo_hr_teach_mastery_payload", False, "no bio question")
+    adapt_hr = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hr_dominio_ui",
+        "'Domínio'" in adapt_hr and "teachMastery" in adapt_hr,
+        "adaptive dominio UI",
+    )
+    ok(
+        "ciclo_hr_como_section",
+        "Ciclo HR" in como_ap,
+        "COMO HR",
+    )
+
+    # --- Ciclo HS: Missão didática Hoje/Fila ---
+    core_hs = (root / "backend" / "services_core.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hs_teach_mission_api",
+        "teachMission" in core_hs and "fechar" in core_hs and "open_gap_items" in core_hs,
+        "dailyRoutine teachMission",
+    )
+    dash_hs = client.get("/api/dashboard").json() if True else {}
+    # ensure a gap exists from HR above
+    dr = (dash_hs.get("dailyRoutine") or {}) if isinstance(dash_hs, dict) else {}
+    # may or may not have open gap if recovered — create one
+    client.post(
+        "/api/answers",
+        json={
+            "questionId": (qid_hr or {}).get("id") or "bio-2017-01",
+            "correct": False,
+            "subject": "Biologia",
+            "topic": "Genética",
+            "errorType": "interpretacao",
+        },
+    )
+    dash_hs2 = client.get("/api/dashboard").json()
+    dr2 = dash_hs2.get("dailyRoutine") or {}
+    tm2 = dr2.get("teachMission") or {}
+    ok(
+        "ciclo_hs_coach_gap_line",
+        isinstance(tm2, dict)
+        and "line" in tm2
+        and ("erro de" in (tm2.get("line") or "").lower() or "fechar" in (tm2.get("line") or "").lower()),
+        str(tm2.get("line"))[:120],
+    )
+    fila_hs = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_ui = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hs_ui_missao",
+        "Missão didática" in fila_hs and "teachMission" in dash_ui,
+        "hoje/fila missao UI",
+    )
+    ok(
+        "ciclo_hs_como_section",
+        "Ciclo HS" in como_ap,
+        "COMO HS",
+    )
+    ok(
+        "ciclo_hs_roadmap",
+        "HQ |" in roadmap and "HR |" in roadmap and "HS |" in roadmap,
+        "roadmap HQ-HS",
+    )
+
+    # --- Ciclo HT ship: 1.0.0+16 ---
+    ok(
+        "ciclo_ht_version_116",
+        "1.0.0+16" in pubspec
+        and "1.0.0+16" in settings_ed
+        and "1.0.0+16" in pack_bat,
+        "version +16",
     )
 
 

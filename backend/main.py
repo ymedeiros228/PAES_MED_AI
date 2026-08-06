@@ -59,6 +59,7 @@ from services_extra import (
     build_offline_tutor_lesson,
     clear_session_checkpoint,
     clear_sim_checkpoint,
+    clean_resolution_lines,
     complete_revision,
     create_backup,
     create_natureza_pack,
@@ -69,8 +70,10 @@ from services_extra import (
     get_session_checkpoint,
     get_sim_checkpoint,
     grade_simulation,
+    grade_verification_reply,
     ingest_pdf_placeholder,
     essay_progress,
+    last_assistant_awaits_verification,
     list_essays,
     list_lessons,
     list_pending_ingest_previews,
@@ -744,10 +747,19 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         or "natureza" in (session_path or "").lower()
     )
 
+    # HQ: multi-turno — se a última assistant pediu verificação, feche o loop
+    verify_mode = last_assistant_awaits_verification(payload.history)
+    prior_asst = ""
+    if verify_mode and payload.history:
+        for item in reversed(list(payload.history)):
+            if item.role == "assistant" and item.content:
+                prior_asst = item.content
+                break
+
     citations: list[dict[str, Any]] = []
     try:
         context, rag_mode, citations = build_rag_context_embedded_full(
-            payload.message,
+            payload.message if not verify_mode else (prior_asst or payload.message),
             prefer_official=prefer_official,
             coach_subject=coach_subject,
             coach_topic=coach_topic,
@@ -756,7 +768,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     except Exception:
         try:
             context, citations = build_rag_context_with_citations(
-                payload.message,
+                payload.message if not verify_mode else (prior_asst or payload.message),
                 prefer_official=prefer_official,
                 coach_subject=coach_subject,
                 coach_topic=coach_topic,
@@ -787,6 +799,12 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         f"NÃO escreva ids de questão, paths ou URLs no corpo da resposta; "
         f"as fontes vão só no schema citations. Fale de assunto/tópico/ano em prosa.\n\n"
     )
+    if verify_mode:
+        user_content += (
+            "MODO: verify_reply — o aluno está respondendo SUA pergunta de verificação. "
+            "Feche o loop: feedback certo/quase/reexplicar + 1 próximo passo. "
+            "Não abra tópico novo.\n\n"
+        )
     if payload.errorType:
         rem_hint = remediation_for(
             payload.errorType,
@@ -819,6 +837,72 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     client = _openai_client()
     if client is None:
         basis = stats_basis()
+        # HQ: fechar verificação antes de nova aula
+        if verify_mode:
+            pool_v = score_questions_for_query(
+                prior_asst or payload.message,
+                prefer_official=prefer_official,
+                coach_subject=coach_subject or payload.subject,
+                coach_topic=coach_topic or payload.topic,
+                natureza_bias=natureza_bias,
+                limit=6,
+            )
+            concept_lines: list[str] = []
+            grounded_cites_v: list[dict[str, Any]] = []
+            for q in pool_v[:4]:
+                res = (q.get("resolution") or "").strip()
+                if not res or res == "—":
+                    continue
+                qid = q.get("id")
+                if not qid:
+                    continue
+                concept_lines.extend(clean_resolution_lines(res, limit=2))
+                grounded_cites_v.append(
+                    normalize_citation(
+                        {
+                            "type": "question",
+                            "id": qid,
+                            "label": f"{q.get('subject') or '—'} · {q.get('topic') or '—'}",
+                            "snippet": (q.get("statement") or "")[:140],
+                            "subject": q.get("subject"),
+                            "topic": q.get("topic"),
+                            "year": q.get("year"),
+                            "official": is_official_source(q.get("source"), q.get("generated")),
+                        }
+                    )
+                )
+            grounded_cites_v = _filter_real_question_cites(grounded_cites_v)
+            graded = grade_verification_reply(
+                student_reply=payload.message,
+                prior_assistant=prior_asst,
+                concept_lines=concept_lines,
+                subject=payload.subject or coach_subject or "",
+                topic=payload.topic or coach_topic or "",
+                error_type=payload.errorType,
+            )
+            if not grounded_cites_v and not concept_lines:
+                # Ainda dá feedback sem inventar; marca uncited se zero base
+                return ChatResponse(
+                    answer=graded["answer"],
+                    model=f"offline-verify-{rag_mode}",
+                    usedRag=False,
+                    citations=[],
+                    ragMode=rag_mode,
+                    hasLocalBase=False,
+                    uncited=True,
+                    preferOfficial=prefer_official,
+                )
+            return ChatResponse(
+                answer=graded["answer"],
+                model=f"offline-verify-{rag_mode}",
+                usedRag=True,
+                citations=grounded_cites_v[:8],
+                ragMode=rag_mode,
+                hasLocalBase=True,
+                uncited=False,
+                preferOfficial=prefer_official,
+            )
+
         # HM: lição offline estruturada — socrático → conceito → diagnóstico → verificação
         pool = score_questions_for_query(
             payload.message,

@@ -2264,6 +2264,7 @@ def dashboard_stats() -> dict[str, Any]:
         medicine_top=med_rank,
         due_cards=due_cards,
         gap_n=gap_n,
+        open_gap_items=list(open_gaps.get("items") or []),
         due_revisions=len([r for r in revisions if (r.get("next_due") or "") <= datetime.now().isoformat(timespec="seconds")]),
         study_minutes_today=round(study_minutes_today, 1),
         study_minutes_week=round(study_minutes_week, 1),
@@ -2354,8 +2355,9 @@ def build_daily_routine(
     day_closed: bool = False,
     countdown: dict[str, Any] | None = None,
     readiness: dict[str, Any] | None = None,
+    open_gap_items: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Coach do dia + checklist + semana + contagem (Ciclo C/E/F/AA). Sem inventar % de incidência."""
+    """Coach do dia + checklist + semana + contagem (Ciclo C/E/F/AA/HS). Sem inventar % de incidência."""
     focus = pick_coach_focus(medicine_top or [], study_today)
     subject = (focus or {}).get("subject") or "Biologia"
     topic = (focus or {}).get("topic") or "Genética"
@@ -2364,6 +2366,35 @@ def build_daily_routine(
         focus = pick_coach_focus(medicine_top or [], None)
         subject = (focus or {}).get("subject") or "Biologia"
         topic = (focus or {}).get("topic") or "Genética"
+
+    # HS: missão didática a partir da lacuna mais recente
+    teach_mission: dict[str, Any] | None = None
+    gap_items = list(open_gap_items or [])
+    if gap_items:
+        g0 = gap_items[0]
+        gs = (g0.get("subject") or "").strip()
+        gt = (g0.get("topic") or "").strip()
+        ge = (g0.get("errorType") or "conceito").strip()
+        if gs and gt:
+            from services_extra import _ERROR_LABEL_PT, remediation_for
+
+            elabel = _ERROR_LABEL_PT.get(ge, ge)
+            rem = remediation_for(ge, gs, gt)
+            teach_mission = {
+                "subject": gs,
+                "topic": gt,
+                "errorType": ge,
+                "errorLabel": elabel,
+                "line": f"Hoje: fechar {gt} (erro de {elabel}) — teoria → 5 itens",
+                "path": rem.get("cta", {}).get("path")
+                or f"/adaptativo?subject={quote(gs)}&topic={quote(gt)}",
+                "theorySubject": gs,
+                "theoryTopic": gt,
+            }
+            # Coach foca na lacuna (missão didática), não no medicineTop genérico
+            subject, topic = gs, gt
+            focus = {**(focus or {}), "subject": gs, "topic": gt, "from": "openGap"}
+
     nat = subject in NATUREZA_SUBJECTS
     year = latest_official_year_for(subject, topic)
     session_path = (
@@ -2392,6 +2423,11 @@ def build_daily_routine(
         primary = "closed"
         close_path = "/dashboard"
         close_label = "Ok"
+    elif teach_mission:
+        line = teach_mission["line"]
+        primary = "gaps"
+        close_path = teach_mission["path"]
+        close_label = "Treinar lacuna"
     elif gap_n > 0:
         line = f"Hoje: recuperar {gap_n} lacuna(s), depois sessão em {subject}"
         primary = "gaps"
@@ -2459,7 +2495,7 @@ def build_daily_routine(
     progress_denom = 4 if day_closed or session_done else 3
     progress_n = min(progress_denom, sum([session_done, cards_done, revs_done]) + (1 if day_closed else 0))
 
-    return {
+    out = {
         "line": line,
         "primary": primary,
         "sessionPath": session_path,
@@ -2513,6 +2549,9 @@ def build_daily_routine(
             )
         ),
     }
+    if teach_mission:
+        out["teachMission"] = teach_mission
+    return out
 
 
 def list_study_gaps_safe(limit: int = 8) -> dict[str, Any]:

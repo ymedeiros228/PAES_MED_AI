@@ -223,6 +223,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     final sessionPath = routine['sessionPath']?.toString() ??
         '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
     final coach = routine['line']?.toString();
+    final teachMission = routine['teachMission'] is Map
+        ? Map<String, dynamic>.from(routine['teachMission'] as Map)
+        : null;
     final officialUnlocked = queue!['officialUnlocked'] == true;
     final coachYear = routine['year'];
     final coachSubject = routine['subject']?.toString();
@@ -295,6 +298,28 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('Começar sessão (S)'),
                 ),
+                if (teachMission != null) ...[
+                  const SizedBox(height: 12),
+                  SectionLabel(
+                    'Missão didática',
+                    hint: teachMission['errorLabel'] != null
+                        ? 'Erro de ${teachMission['errorLabel']}'
+                        : 'Lacuna aberta',
+                  ),
+                  PlaylistTile(
+                    title: teachMission['topic']?.toString() ?? 'Lacuna',
+                    subtitle: teachMission['line']?.toString() ??
+                        '${teachMission['subject']} · fechar lacuna',
+                    badge: 'missão',
+                    leadingIcon: Icons.school_outlined,
+                    onPlay: () {
+                      final path = teachMission['path']?.toString();
+                      if (path != null && path.isNotEmpty) {
+                        context.go(path);
+                      }
+                    },
+                  ),
+                ],
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
                   builder: (context, snap) {

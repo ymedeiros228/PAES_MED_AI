@@ -319,6 +319,9 @@ flowchart TB
 | HM | Tutor offline didático (socrático+passo) | `ciclo_hm_*` | **Feito** |
 | HN | Miss → diagnóstico + CTA remediação | `ciclo_hn_*` | **Feito** |
 | HO | Tutor errorType + adaptive opener | `ciclo_ho_*` | **Feito** |
+| HQ | Tutor multi-turno verificação | `ciclo_hq_*` | **Feito** |
+| HR | Mastery após remediação | `ciclo_hr_*` | **Feito** |
+| HS | Missão didática Hoje/Fila | `ciclo_hs_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -326,9 +329,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HM–HO / ensinar)
+## Estado (atualizado pós HQ–HS / loop didático)
 
-- Rodada **HI–HK** (qualidade): Tutor prosa limpa + ficha sem lixo + identidade + ship **1.0.0+14**.
-- Rodada **HM–HO** (gênio ensinar): lição offline estruturada + remediação acionável + tutor/adaptativo calibrados por tipo de erro + ship **1.0.0+15**.
+- Rodada **HM–HO** (gênio ensinar): lição + remediação + errorType + ship **1.0.0+15**.
+- Rodada **HQ–HS** (loop fechado): multi-turno verificação + domínio + missão didática + ship **1.0.0+16**.
 - Residual: pack Windows no host após merge (`empacotar_windows.bat`).
 - Push no GitHub após suite verde (autor: Yuri Medeiros).

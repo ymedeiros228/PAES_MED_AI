@@ -136,7 +136,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
             child: PageHeader(
               eyebrow: 'PAES MED',
               title: 'Tutor',
-              subtitle: 'Pergunte com base local · fontes clicáveis no rodapé · clique abre ficha',
+              subtitle: 'Pergunte com base local · responda a verificação para fechar a aula · fontes clicáveis no rodapé · clique abre ficha',
               trailing: IconButton(
                 tooltip: 'Limpar conversa',
                 onPressed: state.isLoading

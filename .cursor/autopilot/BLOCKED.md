@@ -10,7 +10,8 @@
 - [x] HF–HG | Semana 1 CTA + Fila empty | ship 1.0.0+13
 - [x] HI–HK | Qualidade IA + visual | ship 1.0.0+14
 - [x] HM–HO | Gênio ensinar | ship 1.0.0+15
-- [ ] dist pack 1.0.0+15 | host | `empacotar_windows.bat` após merge
+- [x] HQ–HS | Loop didático fechado | ship 1.0.0+16
+- [ ] dist pack 1.0.0+16 | host | `empacotar_windows.bat` após merge
 - [ ] Soft landing Semana 1 | só se repro real | QUEUE
 
 ## Checklist host

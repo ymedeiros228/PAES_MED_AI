@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import uuid
 from datetime import datetime, timedelta
@@ -212,6 +213,122 @@ def build_offline_tutor_lesson(
     return bits
 
 
+def last_assistant_awaits_verification(history: list[Any] | None) -> bool:
+    """True se a última mensagem do assistente pediu verificação (HQ)."""
+    if not history:
+        return False
+    last_asst = None
+    for item in reversed(list(history)):
+        role = getattr(item, "role", None) or (item.get("role") if isinstance(item, dict) else None)
+        content = getattr(item, "content", None) or (item.get("content") if isinstance(item, dict) else None)
+        if role == "assistant" and content:
+            last_asst = str(content)
+            break
+    if not last_asst:
+        return False
+    low = last_asst.lower()
+    markers = (
+        "verificação:",
+        "verificacao:",
+        "qual distrator",
+        "em uma frase",
+        "o que este tópico exige",
+        "qual é o verbo de comando",
+        "quais dados numéricos",
+        "o que você marcou",
+        "atalho elimina",
+        "antes do gabarito",
+        "antes de memorizar",
+    )
+    return any(m in low for m in markers)
+
+
+def grade_verification_reply(
+    *,
+    student_reply: str,
+    prior_assistant: str,
+    concept_lines: list[str] | None = None,
+    subject: str = "",
+    topic: str = "",
+    error_type: str | None = None,
+) -> dict[str, Any]:
+    """
+    Fecha o loop da verificação (HQ): feedback certo/quase/reexplicar + próximo passo.
+    Heurística lexical offline — sem inventar % UEMA.
+    """
+    reply = (student_reply or "").strip()
+    prior = (prior_assistant or "").strip()
+    concepts = [c for c in (concept_lines or []) if (c or "").strip()]
+    if not concepts:
+        # Extrai "Ponto da base local:" do turno anterior
+        chunk = ""
+        if "ponto da base local:" in prior.lower():
+            idx = prior.lower().find("ponto da base local:")
+            rest = prior[idx:].split("\n", 1)[-1] if idx >= 0 else ""
+            for ln in rest.splitlines():
+                t = ln.strip()
+                if not t:
+                    if chunk:
+                        break
+                    continue
+                low = t.lower()
+                if low.startswith("como o erro") or low.startswith("próximo") or low.startswith("foque"):
+                    break
+                if low.startswith("verificação") or low.startswith("aviso:"):
+                    break
+                chunk = f"{chunk} {t}".strip() if chunk else t
+                if len(chunk) > 200:
+                    break
+            if chunk:
+                concepts = [chunk]
+    rem = remediation_for(error_type, subject, topic) if error_type else None
+    tokens = {t for t in re.findall(r"[a-zA-ZÀ-ÿ0-9]{4,}", reply.lower())}
+    concept_toks = {
+        t
+        for c in concepts
+        for t in re.findall(r"[a-zA-ZÀ-ÿ0-9]{4,}", c.lower())
+    }
+    overlap = len(tokens & concept_toks) if concept_toks else 0
+    # Respostas muito curtas ou vazias = frágil
+    if len(reply) < 8:
+        grade = "retry"
+    elif overlap >= 2 or (overlap >= 1 and len(reply) >= 40):
+        grade = "ok"
+    elif overlap == 1 or len(reply) >= 25:
+        grade = "almost"
+    else:
+        grade = "retry"
+
+    bits: list[str] = []
+    if grade == "ok":
+        bits.append("Fechou a verificação — bom raciocínio.")
+        if concepts:
+            bits.append(f"Você alinhou com o ponto da base: {concepts[0][:180]}")
+        bits.append("Próximo passo: faça 3 itens semelhantes no Treino ou volte à Fila.")
+    elif grade == "almost":
+        bits.append("Quase — a direção está certa, falta precisão.")
+        if concepts:
+            bits.append(f"Complete com isto da base local: {concepts[0][:200]}")
+        step = (rem or {}).get("steps", ["Releia o comando e elimine 2 alternativas."])[0]
+        bits.append(f"Próximo passo: {step}")
+        bits.append("Verificação: diga de novo, em uma frase, o ponto central.")
+    else:
+        bits.append("Ainda não fechou — vamos retomar sem pressa.")
+        if concepts:
+            bits.append(f"Ponto da base local: {concepts[0][:200]}")
+        elif topic:
+            bits.append(f"Lembre o essencial de {topic} antes de marcar.")
+        step = (rem or {}).get("steps", ["Releia o trecho de teoria (2–3 min)."])[0]
+        bits.append(f"Próximo passo: {step}")
+        bits.append("Verificação: qual é o comando / conceito em uma frase?")
+
+    return {
+        "grade": grade,
+        "answer": "\n\n".join(bits),
+        "awaitingVerification": grade != "ok",
+    }
+
+
 TUTOR_SYSTEM = """
 Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
 Responda em português do Brasil, em prosa clara para o aluno.
@@ -222,16 +339,19 @@ guiar o próximo passo. Não despeje texto; conduza o aprendizado.
 REGRAS OBRIGATÓRIAS:
 1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
 2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
-3. Estrutura da resposta (nessa ordem):
+3. Estrutura da resposta (nessa ordem), quando for NOVA aula:
    (a) 1 pergunta socrática OU diagnóstico curto do tipo de erro (se informado);
    (b) 2–4 frases com o conceito/comando certo, com base no contexto;
    (c) 1 próximo passo concreto (releitura, eliminação, cálculo, treino);
    (d) UMA pergunta de verificação no final.
-4. Nunca entregue só o gabarito. Ensine o raciocínio.
-5. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
-6. NÃO cole no texto da resposta: ids de questão (ex. bio-2017-01), paths de arquivo, URLs, nem rótulos técnicos.
+4. MULTI-TURNO: se o histórico mostra que você fez uma verificação e o aluno está respondendo a ela,
+   NÃO abra tópico novo. Dê feedback (certo / quase / reexplicar 2 frases) + 1 próximo passo;
+   só faça nova verificação se ainda não fechou.
+5. Nunca entregue só o gabarito. Ensine o raciocínio.
+6. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
+7. NÃO cole no texto da resposta: ids de questão (ex. bio-2017-01), paths de arquivo, URLs, nem rótulos técnicos.
    As fontes estruturadas vão no schema citations (fora do texto). No corpo, fale só de assunto/tópico/ano em linguagem natural.
-7. Se o aluno informar errorType (conceito/interpretação/cálculo/distração/tempo), priorize o eixo didático correspondente
+8. Se o aluno informar errorType (conceito/interpretação/cálculo/distração/tempo), priorize o eixo didático correspondente
    (conceito; comando+distrator; conta/unidade; foco; ritmo) e cite a remediação em 1 passo.
 """.strip()
 
@@ -468,6 +588,50 @@ def record_answer(
         out: dict[str, Any] = {"ok": True}
         if gap_info:
             out["gap"] = gap_info
+            # HR: teachMastery a partir do progresso da lacuna
+            status = gap_info.get("status")
+            streak = int(gap_info.get("correctStreak") or gap_info.get("missCount") or 0)
+            err_t = gap_info.get("errorType") or error_type
+            if status == "recovered":
+                out["teachMastery"] = {
+                    "status": "recovered",
+                    "label": "recuperado",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "correctStreak": gap_info.get("correctStreak"),
+                    "message": (
+                        f"Domínio: erro de {err_t or 'conceito'} em {topic} — recuperado. "
+                        "Volte à Fila ou peça uma verificação no Tutor."
+                    ),
+                }
+            elif status == "open" and gap_info.get("action") == "progress":
+                out["teachMastery"] = {
+                    "status": "fragile",
+                    "label": "ainda frágil",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "correctStreak": gap_info.get("correctStreak"),
+                    "message": (
+                        f"Domínio: {topic} ainda frágil "
+                        f"({gap_info.get('correctStreak') or 0}/2 acertos seguidos). "
+                        "Continue o treino ou releia a teoria."
+                    ),
+                }
+            elif status == "open" and gap_info.get("action") == "opened":
+                out["teachMastery"] = {
+                    "status": "open",
+                    "label": "lacuna aberta",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "message": (
+                        f"Lacuna aberta em {topic}"
+                        + (f" (erro de {err_t})" if err_t else "")
+                        + " — teoria → treino."
+                    ),
+                }
         if not correct:
             out["remediation"] = remediation_for(error_type, subject, topic)
             if flash_info:
@@ -556,6 +720,7 @@ def _progress_gap_on_correct(conn, subject: str, topic: str) -> dict[str, Any] |
             "topic": topic,
             "status": "recovered",
             "correctStreak": streak,
+            "errorType": row["error_type"],
             "action": "recovered",
         }
     conn.execute(
@@ -567,6 +732,7 @@ def _progress_gap_on_correct(conn, subject: str, topic: str) -> dict[str, Any] |
         "topic": topic,
         "status": "open",
         "correctStreak": streak,
+        "errorType": row["error_type"],
         "action": "progress",
     }
 
