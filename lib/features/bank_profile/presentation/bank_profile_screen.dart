@@ -6,6 +6,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/training_basis_banner.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class BankProfileScreen extends ConsumerStatefulWidget {
@@ -186,6 +187,24 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 '&topic=${Uri.encodeComponent(top)}',
                               );
                             },
+                            secondary: Builder(
+                              builder: (_) {
+                                final a = raw['a']?.toString() ?? '';
+                                final parts = a.split('::');
+                                final sub = parts.isNotEmpty ? parts[0] : '';
+                                final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
+                                if (sub.isEmpty || top.isEmpty) return const SizedBox.shrink();
+                                return IconButton(
+                                  tooltip: 'Teoria local',
+                                  icon: const Icon(Icons.menu_book_outlined),
+                                  onPressed: () => TheoryTopicSheet.show(
+                                    context,
+                                    subject: sub,
+                                    topic: top,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                       ],
                       ExpansionTile(
@@ -250,17 +269,35 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                   return Column(
                     children: [
                       for (final raw in items.take(24))
-                        PlaylistTile(
-                          title: '${(raw as Map)['subject']} · ${raw['topic']}',
-                          subtitle:
-                              'Anos: ${(raw['years'] as List? ?? []).join(', ')} · ${raw['frequency'] ?? '—'}x'
-                              '${raw['forgotten'] == true ? ' · sumiu' : ''}'
-                              '${raw['favorite'] == true ? ' · frequente' : ''}',
-                          leadingIcon: Icons.timeline_rounded,
-                          onPlay: () => context.go(
-                            '/adaptativo?subject=${Uri.encodeComponent(raw['subject']?.toString() ?? '')}'
-                            '&topic=${Uri.encodeComponent(raw['topic']?.toString() ?? '')}',
-                          ),
+                        Builder(
+                          builder: (_) {
+                            final item = Map<String, dynamic>.from(raw as Map);
+                            final sub = item['subject']?.toString() ?? '';
+                            final top = item['topic']?.toString() ?? '';
+                            return PlaylistTile(
+                              title: '$sub · $top',
+                              subtitle:
+                                  'Anos: ${(item['years'] as List? ?? []).join(', ')} · ${item['frequency'] ?? '—'}x'
+                                  '${item['forgotten'] == true ? ' · sumiu' : ''}'
+                                  '${item['favorite'] == true ? ' · frequente' : ''}',
+                              leadingIcon: Icons.timeline_rounded,
+                              onPlay: () => context.go(
+                                '/adaptativo?subject=${Uri.encodeComponent(sub)}'
+                                '&topic=${Uri.encodeComponent(top)}',
+                              ),
+                              secondary: sub.isNotEmpty && top.isNotEmpty
+                                  ? IconButton(
+                                      tooltip: 'Teoria local',
+                                      icon: const Icon(Icons.menu_book_outlined),
+                                      onPressed: () => TheoryTopicSheet.show(
+                                        context,
+                                        subject: sub,
+                                        topic: top,
+                                      ),
+                                    )
+                                  : null,
+                            );
+                          },
                         ),
                     ],
                   );

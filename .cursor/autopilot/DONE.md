@@ -21,3 +21,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DA: Flashcards — ícone teoria por card (subject/topic)
 - [x] Ciclo DA: Tutor — chip **Material local (N)** via `/api/library/materials` + atalho no empty
 - [x] Versão **1.0.0+13** + smoke **543/543** + docs COMO/ROADMAP CZ–DA
+- [x] Ciclo DB: Domínio — ícone **Teoria local** no ranking de prioridade
+- [x] Ciclo DB: Banca — teoria em frequência temporal + co-ocorrência
+- [x] Ciclo DB: Hoje — **Teoria do dia** no hero + card **Tópico do dia** + teoria em lacunas/reforço
+- [x] Versão **1.0.0+14** + smoke **551/551** + docs COMO/ROADMAP DA–DB

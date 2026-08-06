@@ -206,6 +206,7 @@ flowchart TB
 | CX–CY | TheoryTopicSheet · busca PDF · simulado empty +11 | `ciclo_cx_*`…`ciclo_cy_*` | **Feito** |
 | CY–CZ | Teoria Revisões/Aulas/Sessão/Ficha · onMarkedRead +12 | `ciclo_cy_*`…`ciclo_cz_*` | **Feito** |
 | CZ–DA | Adaptativo/Cards teoria · Tutor chip material local +13 | `ciclo_cz_*`…`ciclo_da_*` | **Feito** |
+| DA–DB | Domínio/Banca/Hoje teoria coach +14 | `ciclo_da_*`…`ciclo_db_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -213,9 +214,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CZ–DA)
+## Estado (atualizado pós DA–DB)
 
-- Rodada CY–CZ: teoria em Revisões/Aulas/Sessão/Ficha, callback mark-read, 1.0.0+12.
 - Rodada CZ–DA: teoria Adaptativo/Flashcards, Tutor chip material local, 1.0.0+13.
+- Rodada DA–DB: teoria Domínio/Banca/Hoje (coach do dia), 1.0.0+14.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

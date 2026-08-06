@@ -11,6 +11,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
 
@@ -176,6 +177,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
         final hot = (data['errorHotTopics'] as List? ?? []).take(2).toList();
+        final studyToday = Map<String, dynamic>.from(data['studyToday'] as Map? ?? {});
+        final studySub = studyToday['subject']?.toString() ?? '';
+        final studyTop = studyToday['topic']?.toString() ?? '';
         final dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
@@ -260,6 +264,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onPressed: () => context.go(closePath),
                           child: Text(closeLabel),
                         ),
+                        if (studySub.isNotEmpty && studyTop.isNotEmpty)
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white70),
+                            ),
+                            icon: const Icon(Icons.menu_book_outlined, size: 18),
+                            onPressed: () => TheoryTopicSheet.show(
+                              context,
+                              subject: studySub,
+                              topic: studyTop,
+                            ),
+                            label: const Text('Teoria do dia'),
+                          ),
                       ],
                     ),
                   ],
@@ -374,6 +392,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
 
                           const SizedBox(height: 8),
+                          if (studySub.isNotEmpty && studyTop.isNotEmpty) ...[
+                            SectionLabel('Tópico do dia', hint: 'coach · material local'),
+                            PlaylistTile(
+                              title: studySub,
+                              subtitle: studyTop,
+                              badge: 'hoje',
+                              leadingIcon: Icons.lightbulb_outline_rounded,
+                              onPlay: () => context.go(sessionPath),
+                              secondary: IconButton(
+                                tooltip: 'Teoria local',
+                                icon: const Icon(Icons.menu_book_outlined),
+                                onPressed: () => TheoryTopicSheet.show(
+                                  context,
+                                  subject: studySub,
+                                  topic: studyTop,
+                                ),
+                              ),
+                            ),
+                          ],
                           SectionLabel('Agora', hint: 'próximo passo · espelha Fila'),
                           if (gapN > 0)
                             for (final raw in gapItems.take(1))
@@ -391,6 +428,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       '/adaptativo?subject=${Uri.encodeComponent(s)}'
                                       '&topic=${Uri.encodeComponent(t)}',
                                     ),
+                                    secondary: s.isNotEmpty && t.isNotEmpty
+                                        ? IconButton(
+                                            tooltip: 'Teoria local',
+                                            icon: const Icon(Icons.menu_book_outlined),
+                                            onPressed: () => TheoryTopicSheet.show(
+                                              context,
+                                              subject: s,
+                                              topic: t,
+                                            ),
+                                          )
+                                        : null,
                                   );
                                 },
                               )
@@ -413,6 +461,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                             '/adaptativo?subject=${Uri.encodeComponent(s)}'
                                             '&topic=${Uri.encodeComponent(t)}',
                                           ),
+                                  secondary: s.isNotEmpty && t.isNotEmpty
+                                      ? IconButton(
+                                          tooltip: 'Teoria local',
+                                          icon: const Icon(Icons.menu_book_outlined),
+                                          onPressed: () => TheoryTopicSheet.show(
+                                            context,
+                                            subject: s,
+                                            topic: t,
+                                          ),
+                                        )
+                                      : null,
                                 );
                               },
                             )

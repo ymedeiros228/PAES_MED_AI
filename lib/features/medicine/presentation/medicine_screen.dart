@@ -6,6 +6,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Domínio: ranking para estudar. Ferramentas de curadoria ficam em Avançado.
@@ -132,6 +133,17 @@ class MedicineScreen extends ConsumerWidget {
                             active: curated,
                             leadingIcon: Icons.play_circle_outline_rounded,
                             onPlay: () => context.go(sessao),
+                            secondary: s.isNotEmpty && t.isNotEmpty
+                                ? IconButton(
+                                    tooltip: 'Teoria local',
+                                    icon: const Icon(Icons.menu_book_outlined),
+                                    onPressed: () => TheoryTopicSheet.show(
+                                      context,
+                                      subject: s,
+                                      topic: t,
+                                    ),
+                                  )
+                                : null,
                           );
                         },
                       ),

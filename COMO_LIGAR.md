@@ -650,6 +650,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Tutor: chip **Material local (N)** quando `/api/library/materials` retorna itens + atalho no empty.
 4. **1.0.0+13** · smoke `ciclo_da_*` + suite + pack + push.
 
+## Domínio/Banca/Hoje teoria (Ciclo DB)
+
+1. Domínio + Banca: ícone **Teoria local** nos rankings (prioridade, frequência, co-ocorrência).
+2. Hoje: **Teoria do dia** no hero + card tópico do coach + teoria em lacunas/reforço.
+3. **1.0.0+14** · smoke `ciclo_db_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
