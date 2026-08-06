@@ -25,6 +25,33 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   bool loading = false;
   String? exportMsg;
   bool weekOnly = true;
+  Map<String, bool> theoryReadByKey = {};
+
+  Future<void> _loadTheoryReads() async {
+    final seen = <String>{};
+    final pairs = <(String, String)>[];
+    for (final raw in plan) {
+      final item = Map<String, dynamic>.from(raw as Map);
+      final s = item['subject']?.toString() ?? '';
+      final t = item['topic']?.toString() ?? '';
+      if (s.isEmpty || t.isEmpty) continue;
+      final key = '$s|$t';
+      if (seen.add(key)) pairs.add((s, t));
+    }
+    if (pairs.isEmpty) {
+      if (mounted) setState(() => theoryReadByKey = {});
+      return;
+    }
+    final entries = await Future.wait(pairs.map((p) async {
+      try {
+        final r = await apiClient.get('/api/study/reads', {'subject': p.$1, 'topic': p.$2});
+        return MapEntry('${p.$1}|${p.$2}', (r as Map)['read'] == true);
+      } catch (_) {
+        return MapEntry('${p.$1}|${p.$2}', false);
+      }
+    }));
+    if (mounted) setState(() => theoryReadByKey = Map.fromEntries(entries));
+  }
 
   Future<void> _load({bool regenerate = false}) async {
     setState(() {
@@ -45,6 +72,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       } else {
         plan = await apiClient.get('/api/plans/$days') as List<dynamic>;
       }
+      await _loadTheoryReads();
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
       error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
@@ -68,7 +96,15 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   }
 
   Future<void> _openTheoryForTopic(String subject, String topic) async {
-    await TheoryTopicSheet.show(context, subject: subject, topic: topic, includeArticles: false);
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      includeArticles: false,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey['$subject|$topic'] = true);
+      },
+    );
   }
 
   Future<void> _exportMarkdown(String markdown, String filename) async {
@@ -360,6 +396,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     final subject = item['subject']?.toString() ?? '';
                     final topic = item['topic']?.toString() ?? '';
                     final nat = const {'Biologia', 'Química', 'Física'}.contains(subject);
+                    final readKey = '$subject|$topic';
+                    final theoryRead = theoryReadByKey[readKey] == true;
                     return SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: done
@@ -403,6 +441,17 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
+                                if (theoryRead)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      'Li · teoria',
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                            color: cs.primary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
                                 Text(
                                   item['reason']?.toString() ?? '',
                                   maxLines: 2,

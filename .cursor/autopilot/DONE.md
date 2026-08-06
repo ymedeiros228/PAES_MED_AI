@@ -25,3 +25,6 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DB: Banca — teoria em frequência temporal + co-ocorrência
 - [x] Ciclo DB: Hoje — **Teoria do dia** no hero + card **Tópico do dia** + teoria em lacunas/reforço
 - [x] Versão **1.0.0+14** + smoke **551/551** + docs COMO/ROADMAP DA–DB
+- [x] Ciclo DC: Banca — heatmap **clicável** (`_onHeatCellTap` → teoria ou sessão)
+- [x] Ciclo DC: Plano — badge **Li · teoria** via `_loadTheoryReads` + `onMarkedRead`
+- [x] Versão **1.0.0+15** + smoke **558/558** + docs COMO/ROADMAP DB–DC

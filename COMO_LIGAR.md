@@ -656,6 +656,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Hoje: **Teoria do dia** no hero + card tópico do coach + teoria em lacunas/reforço.
 3. **1.0.0+14** · smoke `ciclo_db_*` + suite + pack + push.
 
+## Heatmap Banca + Plano “Li” (Ciclo DC)
+
+1. Banca: heatmap **clicável** — célula/disciplina → `TheoryTopicSheet` (tópico via frequência) ou sessão.
+2. Plano: badge **Li · teoria** por dia quando `/api/study/reads` · sync via `onMarkedRead`.
+3. **1.0.0+15** · smoke `ciclo_dc_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

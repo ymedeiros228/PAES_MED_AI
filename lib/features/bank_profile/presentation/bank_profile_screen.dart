@@ -19,6 +19,26 @@ class BankProfileScreen extends ConsumerStatefulWidget {
 class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
   String? exportMsg;
 
+  void _onHeatCellTap(String subject, int count) {
+    if (count <= 0 || subject.isEmpty) return;
+    final freqItems = ref.read(frequencyProvider).valueOrNull ?? [];
+    var topic = '';
+    for (final raw in freqItems) {
+      final m = Map<String, dynamic>.from(raw as Map);
+      if (m['subject']?.toString() == subject) {
+        topic = m['topic']?.toString() ?? '';
+        break;
+      }
+    }
+    if (topic.isNotEmpty) {
+      TheoryTopicSheet.show(context, subject: subject, topic: topic);
+    } else {
+      context.go(
+        '/sessao?examBoard=UEMA_PAES&subject=${Uri.encodeComponent(subject)}',
+      );
+    }
+  }
+
   Future<void> _export() async {
     try {
       final data = await apiClient.post('/api/stats/bank-profile/export', {});
@@ -134,7 +154,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                         ),
                       ],
                       if (yearList.isNotEmpty) ...[
-                        SectionLabel('Disciplina × ano'),
+                        SectionLabel('Disciplina × ano', hint: 'toque na célula → teoria'),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
@@ -151,17 +171,36 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                         entry.key.toString().split(' ').first,
                                         style: const TextStyle(fontSize: 11),
                                       ),
+                                      onTap: () {
+                                        final subj = entry.key.toString();
+                                        final total = Map<String, dynamic>.from(entry.value as Map)
+                                            .values
+                                            .whereType<int>()
+                                            .fold<int>(0, (a, b) => a + b);
+                                        _onHeatCellTap(subj, total);
+                                      },
                                     ),
                                     for (final y in yearList)
                                       DataCell(
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          color: _heatColor(
-                                            Map<String, dynamic>.from(entry.value as Map)[y] as int? ?? 0,
-                                          ),
-                                          child: Text(
-                                            '${Map<String, dynamic>.from(entry.value as Map)[y] ?? 0}',
-                                          ),
+                                        Builder(
+                                          builder: (_) {
+                                            final n = Map<String, dynamic>.from(entry.value as Map)[y] as int? ?? 0;
+                                            return InkWell(
+                                              onTap: n > 0
+                                                  ? () => _onHeatCellTap(entry.key.toString(), n)
+                                                  : null,
+                                              child: Tooltip(
+                                                message: n > 0
+                                                    ? 'Teoria · ${entry.key} · $y'
+                                                    : 'Sem questões',
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  color: _heatColor(n),
+                                                  child: Text('$n'),
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                   ],
