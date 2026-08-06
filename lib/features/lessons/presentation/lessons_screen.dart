@@ -1,9 +1,13 @@
-﻿import 'package:file_picker/file_picker.dart';
+﻿import 'dart:async';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -51,7 +55,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         transcriptCtrl.clear();
       });
     } catch (e) {
-      setState(() => status = e.toString());
+      setState(() => status = humanApiError(e, fallback: 'Não deu para salvar a aula.'));
     } finally {
       setState(() => busy = false);
     }
@@ -79,7 +83,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         status = lastLesson?['message']?.toString() ?? 'Áudio processado.';
       });
     } catch (e) {
-      setState(() => status = e.toString());
+      setState(() => status = humanApiError(e, fallback: 'Não deu para processar o áudio.'));
     } finally {
       setState(() => busy = false);
     }
@@ -90,7 +94,27 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     final lessons = ref.watch(lessonsProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+          if (!busy && transcriptCtrl.text.trim().length >= 80) {
+            unawaited(_submitText());
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
+          if (!busy && transcriptCtrl.text.trim().length >= 80) {
+            unawaited(_submitText());
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true): () {
+          if (!busy && transcriptCtrl.text.trim().length >= 80) {
+            unawaited(_submitText());
+          }
+        },
+      },
+      child: Focus(
+        autofocus: false,
+        child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -99,7 +123,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               const PageHeader(
                 eyebrow: 'Conteúdo',
                 title: 'Aulas',
-                subtitle: 'Cole a legenda e ligue ao edital — link do YouTube é só referência',
+                subtitle: 'Cole a legenda e ligue ao edital — Ctrl+Enter estrutura · link YouTube é só referência',
               ),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -139,7 +163,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         FilledButton.icon(
                           onPressed: busy || transcriptCtrl.text.trim().length < 80 ? null : _submitText,
                           icon: const Icon(Icons.auto_awesome_rounded),
-                          label: Text(busy ? 'Processando…' : 'Estruturar legenda'),
+                          label: Text(busy ? 'Processando…' : 'Estruturar legenda (Ctrl+Enter)'),
                         ),
                         OutlinedButton.icon(
                           onPressed: busy ? null : _uploadAudio,
@@ -265,6 +289,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
           ),
         ),
       ],
+    ),
+      ),
     );
   }
 }

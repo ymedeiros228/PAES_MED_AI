@@ -1,4 +1,5 @@
 import 'package:paes_med_ai/core/data/api_client.dart';
+import 'package:paes_med_ai/core/data/api_error.dart';
 import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 
 class AiTutorException implements Exception {
@@ -53,7 +54,7 @@ class AiTutorRepository {
     } on ApiException catch (e) {
       throw AiTutorException(e.message);
     } catch (e) {
-      throw AiTutorException('Falha no Tutor IA: $e');
+      throw AiTutorException(humanApiError(e, fallback: 'Não deu para falar com o Tutor IA.'));
     }
   }
 }

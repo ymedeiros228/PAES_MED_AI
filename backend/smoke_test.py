@@ -3570,10 +3570,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3581,7 +3581,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
             str(ver_txt),
         )
     else:
@@ -3813,9 +3813,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat),
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3823,7 +3823,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
             str(ver_cl),
         )
     else:
@@ -3948,9 +3948,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3958,7 +3958,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            "1.0.0+5" in _ver_cp or "1.0.0+6" in _ver_cp,
+            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7")),
             str(ver_cp),
         )
     else:
@@ -4093,14 +4093,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        "1.0.0+6" in pubspec and "1.0.0+6" in settings_ck and "1.0.0+6" in pack_bat,
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            "1.0.0+6" in ver_ct.read_text(encoding="utf-8", errors="ignore"),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7")),
             str(ver_ct),
         )
     else:
@@ -4120,6 +4122,150 @@ def main() -> int:
         ok("ciclo_ct_dist_shape", True, str(dist_dll_ct))
     else:
         ok("ciclo_ct_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CU: erros humanos onda 4 + 1.0.0+7 ---
+    settings_cu = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lessons_cu = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ingest_cu = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    cards_cu = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_cu = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    tutor_cu = (
+        root / "lib" / "features" / "ai_tutor" / "data" / "ai_tutor_repository.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cu_settings_health_human",
+        "humanApiError" in settings_cu and "'error': e.toString()" not in settings_cu,
+        "settings health human",
+    )
+    ok(
+        "ciclo_cu_lessons_human",
+        "humanApiError" in lessons_cu and "status = e.toString()" not in lessons_cu,
+        "lessons human",
+    )
+    ok(
+        "ciclo_cu_ingest_human",
+        "humanApiError" in ingest_cu and "msg = e.toString()" not in ingest_cu,
+        "ingest human",
+    )
+    ok(
+        "ciclo_cu_cards_human",
+        "humanApiError" in cards_cu and "SnackBar(content: Text(humanApiError" in cards_cu,
+        "cards human",
+    )
+    ok(
+        "ciclo_cu_library_no_raw_e",
+        "humanApiError" in lib_cu and "falhou: $e" not in lib_cu and "body: '$e'" not in lib_cu,
+        "library no raw e",
+    )
+    ok(
+        "ciclo_cu_tutor_human",
+        "humanApiError" in tutor_cu and "Falha no Tutor IA: $e" not in tutor_cu,
+        "tutor human",
+    )
+    ok(
+        "ciclo_cu_version_align",
+        "1.0.0+7" in pubspec and "1.0.0+7" in settings_cu and "1.0.0+7" in pack_bat,
+        "version +7",
+    )
+    ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_cu.exists():
+        ok(
+            "ciclo_cu_version_file",
+            "1.0.0+7" in ver_cu.read_text(encoding="utf-8", errors="ignore")
+            or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_cu),
+        )
+    else:
+        ok("ciclo_cu_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_cu_como_section",
+        "Ciclo CU" in como_ap,
+        "COMO CU",
+    )
+    ok(
+        "ciclo_cu_roadmap_cu",
+        ("CU" in roadmap or "onda 4" in roadmap) and "Feito" in roadmap,
+        "ROADMAP CU",
+    )
+    dist_dll_cu = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cu.exists():
+        ok("ciclo_cu_dist_shape", True, str(dist_dll_cu))
+    else:
+        ok("ciclo_cu_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CV: Aulas Ctrl+Enter ---
+    lessons_cv = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cv_lessons_ctrl_enter",
+        "CallbackShortcuts" in lessons_cv
+        and "LogicalKeyboardKey.enter, control: true" in lessons_cv
+        and "unawaited(_submitText())" in lessons_cv,
+        "lessons ctrl enter",
+    )
+    ok(
+        "ciclo_cv_lessons_label",
+        "Ctrl+Enter" in lessons_cv and "Estruturar legenda (Ctrl+Enter)" in lessons_cv,
+        "lessons label",
+    )
+    ok(
+        "ciclo_cv_como_section",
+        "Ciclo CV" in como_ap,
+        "COMO CV",
+    )
+
+    # --- Ciclo CW: ingest review teclado ---
+    ingest_cw = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cw_ingest_nav_keys",
+        "_onKey" in ingest_cw
+        and "_prevQuestion" in ingest_cw
+        and "LogicalKeyboardKey.keyJ" in ingest_cw,
+        "ingest nav keys",
+    )
+    ok(
+        "ciclo_cw_ingest_answer_keys",
+        "_pickAnswer" in ingest_cw and "LogicalKeyboardKey.digit1" in ingest_cw,
+        "ingest answer keys",
+    )
+    ok(
+        "ciclo_cw_ingest_visible_nav",
+        "_visibleIndices" in ingest_cw and "_canPrev" in ingest_cw,
+        "ingest visible nav",
+    )
+    ok(
+        "ciclo_cw_como_section",
+        "Ciclo CW" in como_ap,
+        "COMO CW",
+    )
+
+    # --- Ciclo CX: health offline mostra humanApiError ---
+    settings_cx = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cx_health_offline_human",
+        "health?['error']" in settings_cx and "humanApiError" in settings_cx,
+        "health offline human",
+    )
+    ok(
+        "ciclo_cx_como_section",
+        "Ciclo CX" in como_ap,
+        "COMO CX",
+    )
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

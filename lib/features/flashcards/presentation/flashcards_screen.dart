@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -56,24 +57,38 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
 
   Future<void> _create() async {
     if (frontCtrl.text.trim().isEmpty || backCtrl.text.trim().isEmpty) return;
-    await apiClient.post('/api/flashcards', {
-      'front': frontCtrl.text.trim(),
-      'back': backCtrl.text.trim(),
-    });
-    frontCtrl.clear();
-    backCtrl.clear();
-    ref.read(refreshTickProvider.notifier).state++;
-    _ensureCardsFocus();
+    try {
+      await apiClient.post('/api/flashcards', {
+        'front': frontCtrl.text.trim(),
+        'back': backCtrl.text.trim(),
+      });
+      frontCtrl.clear();
+      backCtrl.clear();
+      ref.read(refreshTickProvider.notifier).state++;
+      _ensureCardsFocus();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para salvar o card.'))),
+      );
+    }
   }
 
   Future<void> _review(int id, bool remembered) async {
-    await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
-    setState(() {
-      showBack = false;
-      currentId = null;
-    });
-    ref.read(refreshTickProvider.notifier).state++;
-    _ensureCardsFocus();
+    try {
+      await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
+      setState(() {
+        showBack = false;
+        currentId = null;
+      });
+      ref.read(refreshTickProvider.notifier).state++;
+      _ensureCardsFocus();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar o card.'))),
+      );
+    }
   }
 
   void _flipTop() {
@@ -285,8 +300,19 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                         IconButton(
                                           tooltip: 'Apagar',
                                           onPressed: () async {
-                                            await apiClient.delete('/api/flashcards/$id');
-                                            ref.read(refreshTickProvider.notifier).state++;
+                                            try {
+                                              await apiClient.delete('/api/flashcards/$id');
+                                              ref.read(refreshTickProvider.notifier).state++;
+                                            } catch (e) {
+                                              if (!context.mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    humanApiError(e, fallback: 'Não deu para apagar o card.'),
+                                                  ),
+                                                ),
+                                              );
+                                            }
                                           },
                                           icon: const Icon(Icons.delete_outline),
                                         ),

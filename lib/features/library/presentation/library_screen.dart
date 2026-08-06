@@ -125,8 +125,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await _load();
     } catch (e) {
       setState(() {
-        msg =
-            'Falha de rede/download: $e — confira o portal no manifesto ou use Biblioteca → Manual / Abrir provas.';
+        msg = humanApiError(
+          e,
+          fallback:
+              'Falha de rede/download — confira o portal no manifesto ou use Biblioteca → Manual / Abrir provas.',
+        );
       });
     } finally {
       setState(() => busy = false);
@@ -275,8 +278,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await _load();
     } catch (e) {
       setState(() {
-        msg =
-            'Bootstrap+commit falhou: $e — use Baixar e revisar, ou Manual / Abrir provas.';
+        msg = humanApiError(
+          e,
+          fallback: 'Bootstrap+commit falhou — use Baixar e revisar, ou Manual / Abrir provas.',
+        );
       });
     } finally {
       if (mounted) setState(() => busy = false);
@@ -324,7 +329,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final data = await apiClient.post('/api/library/open-url', {'url': portal});
       setState(() => msg = 'Portal aberto no navegador: ${(data as Map)['url'] ?? portal}');
     } catch (e) {
-      setState(() => msg = 'Portal: $portal — abra no navegador e drope paes_YYYY.pdf / gabarito_YYYY.pdf.\n$e');
+      setState(() => msg = humanApiError(
+            e,
+            fallback:
+                'Portal: $portal — abra no navegador e drope paes_YYYY.pdf / gabarito_YYYY.pdf.',
+          ));
     }
   }
 
@@ -410,11 +419,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Semana 1 falhou: $e');
+      final err = humanApiError(e, fallback: 'Semana 1 falhou — tente de novo.');
+      setState(() => msg = err);
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Semana 1 — erro',
-          body: '$e\nUse Abrir provas/gabaritos ou o portal do manifesto.',
+          body: '$err\nUse Abrir provas/gabaritos ou o portal do manifesto.',
           canCommitDisk: true,
         );
       }
@@ -465,7 +475,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Commit no disco falhou: $e');
+      setState(() => msg = humanApiError(e, fallback: 'Commit no disco falhou — tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -584,7 +594,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Commit $year falhou: $e');
+      setState(() => msg = humanApiError(e, fallback: 'Commit $year falhou — tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -801,11 +811,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         );
       }
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
+      final err = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.');
+      setState(() => msg = err);
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Fetch PAES $year falhou',
-          body: '$e',
+          body: err,
           year: year,
         );
       }

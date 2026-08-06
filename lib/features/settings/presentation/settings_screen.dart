@@ -47,7 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final data = await apiClient.get('/health');
       setState(() => health = Map<String, dynamic>.from(data as Map));
     } catch (e) {
-      setState(() => health = {'status': 'offline', 'error': e.toString()});
+      setState(() => health = {'status': 'offline', 'error': humanApiError(e)});
     }
   }
 
@@ -191,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PAES MED AI · 1.0.0+6',
+                      'PAES MED AI · 1.0.0+7',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
@@ -268,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       subtitle: Text(
                         online
                             ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
-                            : 'Reabra pelo ícone da área de trabalho',
+                            : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
                       ),
                       trailing: IconButton(onPressed: _health, icon: const Icon(Icons.refresh_rounded)),
                     ),

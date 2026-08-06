@@ -603,6 +603,26 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Coach limpo se `officialN > 0`; Plano/Banca human errors; **1.0.0+6**.
 2. Smoke `ciclo_ct_*` + suite + pack + push.
 
+## Erros humanos onda 4 (Ciclo CU)
+
+1. `humanApiError` em Health (Ajustes), Aulas, ingest review, Cards (criar/revisar/apagar), Biblioteca commits/fetch e Tutor IA.
+2. Versão **1.0.0+7** · smoke `ciclo_cu_*` + suite + pack + push.
+
+## Aulas Ctrl+Enter (Ciclo CV)
+
+1. Legenda ≥80 chars: **Ctrl+Enter** / Cmd+Enter estrutura a aula (como redação).
+2. Smoke: `ciclo_cv_*` + push.
+
+## Ingest review teclado (Ciclo CW)
+
+1. Revisão PAES: **←/J** anterior · **→/K** próxima · **1–5** gabarito (respeita filtro duvidosas).
+2. Smoke: `ciclo_cw_*` + push.
+
+## Health offline legível (Ciclo CX)
+
+1. Ajustes → Seus dados: offline mostra mensagem `humanApiError` (não stack).
+2. Smoke: `ciclo_cx_*` + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -37,12 +39,92 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
   String? msg;
   bool filterSuspects = false;
   bool _bootstrapPromptShown = false;
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     questions = widget.args.questions.map((e) => Map<String, dynamic>.from(e)).toList();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeOfferBootstrapCommit());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeOfferBootstrapCommit();
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _prevQuestion() {
+    final vis = _visibleIndices;
+    if (vis.isEmpty) return;
+    final pos = vis.indexOf(index);
+    if (pos > 0) setState(() => index = vis[pos - 1]);
+  }
+
+  void _nextQuestion() {
+    final vis = _visibleIndices;
+    if (vis.isEmpty) return;
+    final pos = vis.indexOf(index);
+    if (pos >= 0 && pos < vis.length - 1) setState(() => index = vis[pos + 1]);
+  }
+
+  bool get _canPrev {
+    final vis = _visibleIndices;
+    if (vis.isEmpty) return false;
+    return vis.indexOf(index) > 0;
+  }
+
+  bool get _canNext {
+    final vis = _visibleIndices;
+    if (vis.isEmpty) return false;
+    final pos = vis.indexOf(index);
+    return pos >= 0 && pos < vis.length - 1;
+  }
+
+  void _pickAnswer(int i) {
+    final opts = current['options'] as List? ?? [];
+    if (i < 0 || i >= opts.length) return;
+    setState(() {
+      current['correctIndex'] = i;
+      current['gabaritoApplied'] = true;
+    });
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.keyJ) {
+      _prevQuestion();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight || key == LogicalKeyboardKey.keyK) {
+      _nextQuestion();
+      return KeyEventResult.handled;
+    }
+    const digitKeys = [
+      LogicalKeyboardKey.digit1,
+      LogicalKeyboardKey.digit2,
+      LogicalKeyboardKey.digit3,
+      LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5,
+    ];
+    const numpadKeys = [
+      LogicalKeyboardKey.numpad1,
+      LogicalKeyboardKey.numpad2,
+      LogicalKeyboardKey.numpad3,
+      LogicalKeyboardKey.numpad4,
+      LogicalKeyboardKey.numpad5,
+    ];
+    for (var i = 0; i < 5; i++) {
+      if (key == digitKeys[i] || key == numpadKeys[i]) {
+        _pickAnswer(i);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _maybeOfferBootstrapCommit() async {
@@ -174,7 +256,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         context.go('/biblioteca');
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para commitar — revise e tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -221,7 +303,10 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     final suspects = questions.where(_isSuspect).length;
     final visible = _visibleIndices;
 
-    return Scaffold(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('Revisão PAES ${widget.args.year}'),
         leading: IconButton(
@@ -351,6 +436,13 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      Text(
+                        'Teclado: ←/J anterior · →/K próxima · 1–5 gabarito',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+                            ),
+                      ),
+                      const SizedBox(height: 12),
                       Text(current['statement']?.toString() ?? ''),
                       const SizedBox(height: 16),
                       for (var i = 0; i < (current['options'] as List? ?? []).length; i++)
@@ -369,12 +461,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         children: [
                           FilledButton.tonal(onPressed: _editMeta, child: const Text('Editar disciplina/assunto')),
                           OutlinedButton(
-                            onPressed: index > 0 ? () => setState(() => index--) : null,
-                            child: const Text('Anterior'),
+                            onPressed: _canPrev ? _prevQuestion : null,
+                            child: const Text('Anterior (←/J)'),
                           ),
                           FilledButton(
-                            onPressed: index < questions.length - 1 ? () => setState(() => index++) : null,
-                            child: const Text('Próxima'),
+                            onPressed: _canNext ? _nextQuestion : null,
+                            child: const Text('Próxima (→/K)'),
                           ),
                           OutlinedButton(
                             onPressed: () {
@@ -403,6 +495,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                 ),
               ],
             ),
+    ),
     );
   }
 }
