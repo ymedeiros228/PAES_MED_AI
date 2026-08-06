@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/api_client.dart';
+import '../data/api_error.dart';
 import 'ui_kit.dart';
 
 /// Reforço unificado vídeo + leitura (BG) — não é edital/banca UEMA.
@@ -48,7 +49,9 @@ class MediaReinforcement extends StatelessWidget {
       });
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir o material.'))),
+      );
     }
   }
 
@@ -71,7 +74,9 @@ class MediaReinforcement extends StatelessWidget {
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar como lido.'))),
+      );
     }
   }
 

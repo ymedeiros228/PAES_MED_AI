@@ -166,6 +166,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final officialN = data['statsBasis'] is Map
             ? ((data['statsBasis'] as Map)['officialCount'] as int? ?? 0)
             : 0;
+        // Coach só com acervo vazio: se já há oficiais e flag pendente, limpa sem mostrar
+        if (showFirstRunCoach && officialN > 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && showFirstRunCoach) unawaited(_dismissFirstRunCoach());
+          });
+        }
         final openGaps = data['openGaps'] as Map?;
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;

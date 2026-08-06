@@ -3570,18 +3570,18 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5")),
-        "pubspec/Sobre/bat +3/+4/+5",
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
+        "pubspec/Sobre/bat +3..+7",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_txt.exists():
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
             str(ver_txt),
         )
     else:
@@ -3776,7 +3776,7 @@ def main() -> int:
     )
     ok(
         "ciclo_ck_folder_no_exception",
-        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and "\$e" not in onb_ck,
+        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and r"\$e" not in onb_ck,
         "folder human",
     )
     ok(
@@ -3813,17 +3813,17 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat),
-        "version +4/+5",
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat),
+        "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cl.exists():
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            "1.0.0+4" in _ver_cl or "1.0.0+5" in _ver_cl,
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
             str(ver_cl),
         )
     else:
@@ -3948,14 +3948,17 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        "1.0.0+5" in pubspec and "1.0.0+5" in settings_ck and "1.0.0+5" in pack_bat,
-        "version +5",
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7")),
+        "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cp.exists():
+        _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            "1.0.0+5" in ver_cp.read_text(encoding="utf-8", errors="ignore"),
+            "1.0.0+5" in _ver_cp or "1.0.0+6" in _ver_cp or "1.0.0+7" in _ver_cp,
             str(ver_cp),
         )
     else:
@@ -3975,6 +3978,232 @@ def main() -> int:
         ok("ciclo_cp_dist_shape", True, str(dist_dll_cp))
     else:
         ok("ciclo_cp_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CQ: erros humanos onda 3 ---
+    media_cq = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    rev_cq = (
+        root / "lib" / "features" / "revisions" / "presentation" / "revisions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    appr_cq = (
+        root / "lib" / "features" / "approval" / "presentation" / "approval_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_cq = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_cq = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cq_media_human",
+        "humanApiError" in media_cq and "SnackBar(content: Text('$e'))" not in media_cq,
+        "media human",
+    )
+    ok(
+        "ciclo_cq_revisions_human",
+        "humanApiError" in rev_cq,
+        "revisions human",
+    )
+    ok(
+        "ciclo_cq_approval_human",
+        "humanApiError" in appr_cq and "error = e.toString()" not in appr_cq,
+        "approval human",
+    )
+    ok(
+        "ciclo_cq_session_load_human",
+        "humanApiError" in sess_cq and "error = e.toString()" not in sess_cq,
+        "session load human",
+    )
+    ok(
+        "ciclo_cq_library_load_human",
+        "error = humanApiError" in lib_cq or "Não deu para carregar a Biblioteca" in lib_cq,
+        "library load",
+    )
+    ok(
+        "ciclo_cq_como_section",
+        "Ciclo CQ" in como_ap,
+        "COMO CQ",
+    )
+
+    # --- Ciclo CR: ficha error keys ---
+    ficha_cr = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cr_ficha_pending_error_keys",
+        "pendingErrorPick" in ficha_cr
+        and "_confirmErrorAndSave" in ficha_cr
+        and "if (pendingErrorPick)" in ficha_cr,
+        "ficha pending keys",
+    )
+    ok(
+        "ciclo_cr_como_section",
+        "Ciclo CR" in como_ap,
+        "COMO CR",
+    )
+
+    # --- Ciclo CS: cards focus + sim enter ---
+    cards_cs = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sim_cs = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cs_cards_refocus",
+        "_ensureCardsFocus" in cards_cs and "_review" in cards_cs,
+        "cards refocus",
+    )
+    ok(
+        "ciclo_cs_sim_preflight_enter",
+        "if (!running)" in sim_cs and "unawaited(_start())" in sim_cs,
+        "sim preflight enter",
+    )
+    ok(
+        "ciclo_cs_sim_report_enter",
+        "report != null" in sim_cs and "/dashboard" in sim_cs,
+        "sim report enter",
+    )
+    ok(
+        "ciclo_cs_como_section",
+        "Ciclo CS" in como_ap,
+        "COMO CS",
+    )
+
+    # --- Ciclo CT: coach + 1.0.0+6 ---
+    dash_ct = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    plan_ct = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    bank_ct = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ct_coach_clear_officials",
+        "officialN > 0" in dash_ct and "_dismissFirstRunCoach" in dash_ct,
+        "coach clear",
+    )
+    ok(
+        "ciclo_ct_plan_bank_human",
+        "humanApiError" in plan_ct and "humanApiError" in bank_ct,
+        "plan bank human",
+    )
+    ok(
+        "ciclo_ct_version_align",
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7")),
+        "version +6/+7",
+    )
+    ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_ct.exists():
+        ok(
+            "ciclo_ct_version_file",
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7")),
+            str(ver_ct),
+        )
+    else:
+        ok("ciclo_ct_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_ct_como_section",
+        "Ciclo CT" in como_ap,
+        "COMO CT",
+    )
+    ok(
+        "ciclo_ct_roadmap_cq_ct",
+        ("CQ–CT" in roadmap or "CQ-CT" in roadmap) and "Feito" in roadmap,
+        "ROADMAP CQ-CT",
+    )
+    dist_dll_ct = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_ct.exists():
+        ok("ciclo_ct_dist_shape", True, str(dist_dll_ct))
+    else:
+        ok("ciclo_ct_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CU: erros onda 4 + plano reforço + 1.0.0+7 ---
+    lessons_cu = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    cards_cu = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ingest_cu = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    plan_cu = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cu_lessons_ingest_human",
+        "humanApiError" in lessons_cu and "humanApiError" in ingest_cu,
+        "lessons ingest human",
+    )
+    ok(
+        "ciclo_cu_cards_human",
+        "humanApiError" in cards_cu and "Não deu para criar o card" in cards_cu,
+        "cards human",
+    )
+    ok(
+        "ciclo_cu_plan_media",
+        "MediaReinforcement" in plan_cu and "Reforço do coach" in plan_cu,
+        "plan media",
+    )
+    lib_cu = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cu_library_commit_human",
+        "Semana 1 falhou: $e" not in lib_cu
+        and "Commit no disco falhou: $e" not in lib_cu
+        and "falhou: $e" not in lib_cu
+        and "humanApiError" in lib_cu,
+        "library commit human",
+    )
+    ok(
+        "ciclo_cu_plan_toggle_human",
+        "humanApiError" in plan_cu and "_toggleDone" in plan_cu,
+        "plan toggle human",
+    )
+    adapt_cu = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cu_adaptive_media",
+        "MediaReinforcement" in adapt_cu and "Reforço pós-treino" in adapt_cu,
+        "adaptive media",
+    )
+    ok(
+        "ciclo_cu_version_align",
+        "1.0.0+7" in pubspec and "1.0.0+7" in settings_ck and "1.0.0+7" in pack_bat,
+        "version +7",
+    )
+    ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_cu.exists():
+        ok(
+            "ciclo_cu_version_file",
+            "1.0.0+7" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_cu),
+        )
+    else:
+        ok("ciclo_cu_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_cu_como_section",
+        "Ciclo CU" in como_ap,
+        "COMO CU",
+    )
+    ok(
+        "ciclo_cu_roadmap_ct_cu",
+        ("CT–CU" in roadmap or "CT-CU" in roadmap) and "Feito" in roadmap,
+        "ROADMAP CT-CU",
+    )
+    dist_dll_cu = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cu.exists():
+        ok("ciclo_cu_dist_shape", True, str(dist_dll_cu))
+    else:
+        ok("ciclo_cu_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:

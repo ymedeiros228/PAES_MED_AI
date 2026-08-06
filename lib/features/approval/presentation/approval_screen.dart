@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -36,7 +37,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
         items = (data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
       });
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a fila de aprovação.'));
     } finally {
       setState(() => loading = false);
     }
@@ -49,7 +50,9 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar a decisão.'))),
+        );
       }
     }
   }

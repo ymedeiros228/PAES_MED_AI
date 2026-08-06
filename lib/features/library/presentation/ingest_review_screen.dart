@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -174,7 +175,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         context.go('/biblioteca');
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir o import. Tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }

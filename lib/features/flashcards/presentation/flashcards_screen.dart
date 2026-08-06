@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -45,24 +46,49 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     super.dispose();
   }
 
+  void _ensureCardsFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final primary = FocusManager.instance.primaryFocus;
+      if (primary != null && primary.context?.widget is EditableText) return;
+      focusNode.requestFocus();
+    });
+  }
+
   Future<void> _create() async {
     if (frontCtrl.text.trim().isEmpty || backCtrl.text.trim().isEmpty) return;
-    await apiClient.post('/api/flashcards', {
-      'front': frontCtrl.text.trim(),
-      'back': backCtrl.text.trim(),
-    });
-    frontCtrl.clear();
-    backCtrl.clear();
-    ref.read(refreshTickProvider.notifier).state++;
+    try {
+      await apiClient.post('/api/flashcards', {
+        'front': frontCtrl.text.trim(),
+        'back': backCtrl.text.trim(),
+      });
+      frontCtrl.clear();
+      backCtrl.clear();
+      ref.read(refreshTickProvider.notifier).state++;
+      _ensureCardsFocus();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar o card. Tente de novo.'))),
+      );
+    }
   }
 
   Future<void> _review(int id, bool remembered) async {
-    await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
-    setState(() {
-      showBack = false;
-      currentId = null;
-    });
-    ref.read(refreshTickProvider.notifier).state++;
+    try {
+      await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
+      setState(() {
+        showBack = false;
+        currentId = null;
+      });
+      ref.read(refreshTickProvider.notifier).state++;
+      _ensureCardsFocus();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar a revisão. Tente de novo.'))),
+      );
+    }
   }
 
   void _flipTop() {
@@ -76,6 +102,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         showBack = true;
       }
     });
+    _ensureCardsFocus();
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {

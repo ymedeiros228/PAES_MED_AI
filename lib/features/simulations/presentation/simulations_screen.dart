@@ -65,6 +65,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   void initState() {
     super.initState();
     _loadSimCheckpoint();
+    _requestSessionFocus();
   }
 
   @override
@@ -76,14 +77,36 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
 
   void _requestSessionFocus() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && running && report == null) sessionFocus.requestFocus();
+      if (mounted) sessionFocus.requestFocus();
     });
   }
 
   KeyEventResult _onSessionKey(FocusNode node, KeyEvent event) {
-    // Só durante o sim em andamento — preflight e relatório sem teclas conflitantes.
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    if (!running || report != null || questions.isEmpty) return KeyEventResult.ignored;
+
+    final isEnter = event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter;
+
+    // Relatório: Enter → Hoje
+    if (report != null) {
+      if (isEnter) {
+        context.go('/dashboard');
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    // Preflight: Enter inicia (mesmo do botão Começar / Iniciar)
+    if (!running) {
+      if (isEnter) {
+        final canStart = !(mode == 'disciplina' && (subject == null || subject!.isEmpty));
+        if (canStart) unawaited(_start());
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (questions.isEmpty) return KeyEventResult.ignored;
 
     final qi = keyboardQi.clamp(0, questions.length - 1);
     final q = Map<String, dynamic>.from(questions[qi] as Map);
@@ -144,8 +167,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       return KeyEventResult.handled;
     }
 
-    if (event.logicalKey == LogicalKeyboardKey.enter ||
-        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+    if (isEnter) {
       if (id.isNotEmpty && answers.containsKey(id)) {
         if (qi < questions.length - 1) {
           setState(() => keyboardQi = qi + 1);
@@ -1000,15 +1022,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       ],
     );
 
-    if (running && report == null && questions.isNotEmpty) {
-      return Focus(
-        focusNode: sessionFocus,
-        autofocus: true,
-        onKeyEvent: _onSessionKey,
-        child: body,
-      );
-    }
-    return body;
+    return Focus(
+      focusNode: sessionFocus,
+      autofocus: true,
+      onKeyEvent: _onSessionKey,
+      child: body,
+    );
   }
 }
 

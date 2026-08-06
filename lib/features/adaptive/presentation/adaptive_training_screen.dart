@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -368,6 +369,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                       ],
                     ),
                   ),
+                  if (subject.isNotEmpty && topicCtrl.text.trim().isNotEmpty)
+                    MediaReinforcement(
+                      subject: subject,
+                      topic: topicCtrl.text.trim(),
+                      compact: true,
+                      heading: 'Reforço pós-treino',
+                    ),
                 ] else if (!inQueue) ...[
                   DropdownMenu<String>(
                     initialSelection: subject,

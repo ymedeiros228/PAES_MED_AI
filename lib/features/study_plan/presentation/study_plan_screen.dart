@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Plano de estudos — modo visual (calendário leve + checklist).
@@ -44,19 +46,24 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       }
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
-      error = e.toString();
+      error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _toggleDone(Map<String, dynamic> item, bool done) async {
-    await apiClient.post('/api/plans/done', {
-      'days': days,
-      'day': item['day'],
-      'done': done,
-    });
-    await _load();
+    try {
+      await apiClient.post('/api/plans/done', {
+        'days': days,
+        'day': item['day'],
+        'done': done,
+      });
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para marcar o dia. Tente de novo.'));
+    }
   }
 
   Future<void> _exportMarkdown(String markdown, String filename) async {
@@ -78,7 +85,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
         } catch (_) {}
       }
     } catch (e) {
-      setState(() => exportMsg = e.toString());
+      setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o plano.'));
     }
   }
 
@@ -254,18 +261,30 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                       if (rSubj.isNotEmpty)
                         SurfacePanel(
                           margin: const EdgeInsets.only(bottom: 12, top: 8),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  'Hoje: $rSubj · $rTopic',
-                                  style: Theme.of(context).textTheme.titleSmall,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Hoje: $rSubj · $rTopic',
+                                      style: Theme.of(context).textTheme.titleSmall,
+                                    ),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () => context.go(sessionPath),
+                                    child: const Text('Fazer agora'),
+                                  ),
+                                ],
+                              ),
+                              if (rTopic.isNotEmpty)
+                                MediaReinforcement(
+                                  subject: rSubj,
+                                  topic: rTopic,
+                                  compact: true,
+                                  heading: 'Reforço do coach',
                                 ),
-                              ),
-                              FilledButton(
-                                onPressed: () => context.go(sessionPath),
-                                child: const Text('Fazer agora'),
-                              ),
                             ],
                           ),
                         ),

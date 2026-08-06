@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -51,7 +52,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         transcriptCtrl.clear();
       });
     } catch (e) {
-      setState(() => status = e.toString());
+      setState(() => status = humanApiError(e, fallback: 'Não deu para salvar a aula. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -79,7 +80,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         status = lastLesson?['message']?.toString() ?? 'Áudio processado.';
       });
     } catch (e) {
-      setState(() => status = e.toString());
+      setState(() => status = humanApiError(e, fallback: 'Não deu para processar o áudio. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }

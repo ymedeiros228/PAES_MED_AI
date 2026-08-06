@@ -582,6 +582,34 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Cards checklist aguarda dados antes de “em dia”.
 3. Versão **1.0.0+5** · smoke `ciclo_cp_*` + suite + pack + push.
 
+## Erros humanos onda 3 (Ciclo CQ)
+
+1. `humanApiError` em mídia, revisões, aprovação, load sessão, Biblioteca e Domínio thin.
+2. Smoke: `ciclo_cq_*` + push.
+
+## Ficha error-pick teclado (Ciclo CR)
+
+1. `pendingErrorPick`: 1–5 tipo · Enter salva; N/Enter saem só após gravar.
+2. Smoke: `ciclo_cr_*` + push.
+
+## Cards foco + sim Enter (Ciclo CS)
+
+1. Flashcards re-focus após rate/flip.
+2. Sim preflight Enter inicia · report Enter → Hoje.
+3. Smoke: `ciclo_cs_*` + push.
+
+## First-run + ship (Ciclo CT)
+
+1. Coach limpo se `officialN > 0`; Plano/Banca human errors; **1.0.0+6**.
+2. Smoke `ciclo_ct_*` + suite + pack + push.
+
+## Erros onda 4 + plano reforço (Ciclo CU)
+
+1. Aulas / import review / flashcards: `humanApiError` (sem stack na UI).
+2. Plano: card **Reforço do coach** (`MediaReinforcement` compact) no tópico do dia.
+3. Biblioteca: commits/fetch/bootstrap sem `$e` cru; Adaptativo: reforço pós-treino.
+4. **1.0.0+7** · smoke `ciclo_cu_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

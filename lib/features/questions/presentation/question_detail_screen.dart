@@ -60,16 +60,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent || question == null) return KeyEventResult.ignored;
-    if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN ||
-          event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        context.go('/questoes');
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-    final keys = {
+
+    final digitMap = {
       LogicalKeyboardKey.digit1: 0,
       LogicalKeyboardKey.digit2: 1,
       LogicalKeyboardKey.digit3: 2,
@@ -81,12 +73,41 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       LogicalKeyboardKey.numpad4: 3,
       LogicalKeyboardKey.numpad5: 4,
     };
-    if (keys.containsKey(event.logicalKey)) {
-      setState(() => selected = keys[event.logicalKey]);
+    final errorKeys = _errorTypes.keys.toList();
+
+    // Miss: 1–5 tipo · Enter grava — não sair enquanto pendente
+    if (pendingErrorPick) {
+      final ei = digitMap[event.logicalKey];
+      if (ei != null && ei < errorKeys.length) {
+        setState(() => errorType = errorKeys[ei]);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        unawaited(_confirmErrorAndSave());
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (revealed) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN ||
+          event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        context.go('/questoes');
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    final opt = digitMap[event.logicalKey];
+    if (opt != null) {
+      setState(() => selected = opt);
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-      if (selected != null) _submit();
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (selected != null) unawaited(_submit());
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;

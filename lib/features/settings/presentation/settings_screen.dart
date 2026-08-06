@@ -86,7 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await _backups();
       await _lastBackup();
     } catch (e) {
-      setState(() => msg = 'Falha no backup.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no backup.'));
     }
   }
 
@@ -96,7 +96,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       setState(() => msg = 'Restaurado.');
     } catch (e) {
-      setState(() => msg = 'Falha ao restaurar.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha ao restaurar.'));
     }
   }
 
@@ -105,7 +105,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await apiClient.post('/api/rag/reindex', {});
       setState(() => msg = 'Índice atualizado.');
     } catch (e) {
-      setState(() => msg = 'Falha no índice.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no índice.'));
     }
   }
 
@@ -114,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final data = await apiClient.post('/api/professor/batch-fill', {'limit': 40});
       setState(() => msg = 'Rascunhos: ${(data as Map)['updated'] ?? 0}');
     } catch (e) {
-      setState(() => msg = 'Falha no lote.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no lote.'));
     }
   }
 
@@ -159,7 +159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
       setState(() => msg = 'Sem questões — use a Biblioteca.');
     } catch (e) {
-      setState(() => msg = 'Erro ao ler PDF.');
+      setState(() => msg = humanApiError(e, fallback: 'Erro ao ler PDF.'));
     }
   }
 
@@ -191,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PAES MED AI · 1.0.0+5',
+                      'PAES MED AI · 1.0.0+7',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),

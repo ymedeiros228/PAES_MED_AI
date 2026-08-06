@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -275,7 +276,11 @@ class MedicineScreen extends ConsumerWidget {
                               ref.read(refreshTickProvider.notifier).state++;
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.')),
+                                ),
+                              );
                             }
                           },
                           child: const Text('Gerar'),
@@ -303,7 +308,11 @@ class MedicineScreen extends ConsumerWidget {
                               ref.read(refreshTickProvider.notifier).state++;
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.')),
+                                ),
+                              );
                             }
                           },
                           child: const Text('Rodar'),
@@ -325,7 +334,11 @@ class MedicineScreen extends ConsumerWidget {
                               ref.invalidate(medicineProvider);
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.')),
+                                ),
+                              );
                             }
                           },
                           child: const Text('Rodar'),
@@ -348,7 +361,11 @@ class MedicineScreen extends ConsumerWidget {
                               ref.invalidate(medicineProvider);
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.')),
+                                ),
+                              );
                             }
                           },
                           child: const Text('Rodar'),

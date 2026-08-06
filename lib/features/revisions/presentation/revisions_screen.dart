@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -111,7 +112,11 @@ class RevisionsScreen extends ConsumerWidget {
                                     } catch (e) {
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('$e')),
+                                          SnackBar(
+                                            content: Text(
+                                              humanApiError(e, fallback: 'Não deu para marcar a lacuna.'),
+                                            ),
+                                          ),
                                         );
                                       }
                                     }

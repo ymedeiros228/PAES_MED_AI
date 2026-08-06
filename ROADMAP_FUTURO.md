@@ -198,6 +198,8 @@ flowchart TB
 | CE–CH | Versão +3/pack · theory/foco-safe · checkpoint UX · exam hydrate | `ciclo_ce_*`…`ciclo_ch_*` | **Feito** |
 | CI–CL | Rev+quest keys · erros humanos · first-run · Avançado +4 | `ciclo_ci_*`…`ciclo_cl_*` | **Feito** |
 | CM–CP | Erros onda 2 · sim keys · adaptive/essay keys · Hoje path +5 | `ciclo_cm_*`…`ciclo_cp_*` | **Feito** |
+| CQ–CT | Erros onda 3 · ficha error keys · cards/sim Enter · coach +6 | `ciclo_cq_*`…`ciclo_ct_*` | **Feito** |
+| CT–CU | Erros onda 4 · plano reforço coach · cards/aulas/import +7 | `ciclo_ct_*`…`ciclo_cu_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -205,8 +207,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CM–CP)
+## Estado (atualizado pós CT–CU)
 
-- Fios AQ…CL fechados; rodada CM–CP: erros Fila/Sessão/Sim/Redação, sim teclado completo, adaptive error-pick, Hoje Continuar com sessionPath, 1.0.0+5.
+- Fios AQ…CP fechados; rodada CQ–CT: mídia/revisões/aprovação/sessão humanos, ficha teclado grava tipo, cards re-foco, sim Enter preflight/report, coach limpo com acervo, 1.0.0+6.
+- Rodada CT–CU: humanApiError em Aulas/Cards/Ingest review, reforço compacto no Plano (coach do dia), 1.0.0+7.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

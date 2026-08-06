@@ -67,7 +67,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         curation = cur;
       });
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -124,9 +124,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
+      final human = humanApiError(e, fallback: 'Falha de rede ou download.');
       setState(() {
-        msg =
-            'Falha de rede/download: $e — confira o portal no manifesto ou use Biblioteca → Manual / Abrir provas.';
+        msg = '$human — confira o portal no manifesto ou use Biblioteca → Manual / Abrir provas.';
       });
     } finally {
       setState(() => busy = false);
@@ -150,7 +150,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       });
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -274,9 +274,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
+      final human = humanApiError(e, fallback: 'Bootstrap+commit falhou.');
       setState(() {
-        msg =
-            'Bootstrap+commit falhou: $e — use Baixar e revisar, ou Manual / Abrir provas.';
+        msg = '$human — use Baixar e revisar, ou Manual / Abrir provas.';
       });
     } finally {
       if (mounted) setState(() => busy = false);
@@ -324,7 +324,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final data = await apiClient.post('/api/library/open-url', {'url': portal});
       setState(() => msg = 'Portal aberto no navegador: ${(data as Map)['url'] ?? portal}');
     } catch (e) {
-      setState(() => msg = 'Portal: $portal — abra no navegador e drope paes_YYYY.pdf / gabarito_YYYY.pdf.\n$e');
+      setState(() => msg = 'Portal: $portal — abra no navegador e drope paes_YYYY.pdf / gabarito_YYYY.pdf.');
     }
   }
 
@@ -410,11 +410,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Semana 1 falhou: $e');
+      final human = humanApiError(e, fallback: 'Semana 1 não concluiu. Tente de novo ou use o playbook.');
+      setState(() => msg = 'Semana 1 falhou: $human');
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Semana 1 — erro',
-          body: '$e\nUse Abrir provas/gabaritos ou o portal do manifesto.',
+          body: '$human\nUse Abrir provas/gabaritos ou o portal do manifesto.',
           canCommitDisk: true,
         );
       }
@@ -465,7 +466,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Commit no disco falhou: $e');
+      setState(() => msg = humanApiError(e, fallback: 'Commit no disco falhou. Tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -584,7 +585,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = 'Commit $year falhou: $e');
+      setState(() => msg = humanApiError(e, fallback: 'Commit $year falhou. Tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -623,7 +624,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -635,7 +636,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final path = (data as Map)['path']?.toString() ?? folder;
       setState(() => msg = 'Pasta aberta: $path');
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
   }
 
@@ -704,7 +705,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await apiClient.post('/api/library/open-path', {'path': map['path']});
       setState(() => msg = 'Abrindo PDF ${map['label'] ?? year}');
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
   }
 
@@ -720,7 +721,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         await apiClient.post('/api/library/open-path', {'path': path});
         setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
-        setState(() => msg = e.toString());
+        setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
       }
     }
   }
@@ -754,7 +755,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         if (go == true) await _importYear(next);
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -801,11 +802,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         );
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      final human = humanApiError(e, fallback: 'Fetch não concluiu.');
+      setState(() => msg = human);
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Fetch PAES $year falhou',
-          body: '$e',
+          body: human,
           year: year,
         );
       }
@@ -821,7 +823,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = 'Classificação: $data');
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -834,7 +836,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = 'Syllabus: $data');
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
