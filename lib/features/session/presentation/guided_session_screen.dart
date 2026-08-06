@@ -132,7 +132,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         pendingCheckpoint = cp != null && cp['started'] == true ? cp : null;
       });
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para montar a sessão. Tente de novo.'));
     }
   }
 

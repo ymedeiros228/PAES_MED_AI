@@ -45,6 +45,15 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     super.dispose();
   }
 
+  void _ensureCardsFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final primary = FocusManager.instance.primaryFocus;
+      if (primary != null && primary.context?.widget is EditableText) return;
+      focusNode.requestFocus();
+    });
+  }
+
   Future<void> _create() async {
     if (frontCtrl.text.trim().isEmpty || backCtrl.text.trim().isEmpty) return;
     await apiClient.post('/api/flashcards', {
@@ -54,6 +63,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     frontCtrl.clear();
     backCtrl.clear();
     ref.read(refreshTickProvider.notifier).state++;
+    _ensureCardsFocus();
   }
 
   Future<void> _review(int id, bool remembered) async {
@@ -63,6 +73,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
       currentId = null;
     });
     ref.read(refreshTickProvider.notifier).state++;
+    _ensureCardsFocus();
   }
 
   void _flipTop() {
@@ -76,6 +87,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         showBack = true;
       }
     });
+    _ensureCardsFocus();
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {

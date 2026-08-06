@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -44,7 +45,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       }
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
-      error = e.toString();
+      error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -78,7 +79,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
         } catch (_) {}
       }
     } catch (e) {
-      setState(() => exportMsg = e.toString());
+      setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o plano.'));
     }
   }
 

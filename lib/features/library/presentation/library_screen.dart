@@ -67,7 +67,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         curation = cur;
       });
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -150,7 +150,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       });
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -623,7 +623,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -635,7 +635,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final path = (data as Map)['path']?.toString() ?? folder;
       setState(() => msg = 'Pasta aberta: $path');
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
   }
 
@@ -704,7 +704,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await apiClient.post('/api/library/open-path', {'path': map['path']});
       setState(() => msg = 'Abrindo PDF ${map['label'] ?? year}');
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
   }
 
@@ -720,7 +720,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         await apiClient.post('/api/library/open-path', {'path': path});
         setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
-        setState(() => msg = e.toString());
+        setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
       }
     }
   }
@@ -754,7 +754,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         if (go == true) await _importYear(next);
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -801,7 +801,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         );
       }
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Fetch PAES $year falhou',
@@ -821,7 +821,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = 'Classificação: $data');
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
@@ -834,7 +834,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = 'Syllabus: $data');
       await _load();
     } catch (e) {
-      setState(() => msg = e.toString());
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     } finally {
       setState(() => busy = false);
     }
