@@ -9,7 +9,7 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [x] [Fila / empty] | ilustração leve ou ícone maior quando fila vazia + CTA já visível acima | empty state menos “técnico”, mais acolhedor | S
 - [ ] [Sessão / teoria] | trechos do edital em cards com borda suave e contador “3 de 10” | leitura mais confortável em blocos longos | M
 - [ ] [Ficha / debrief sessão] | CTA **Ler teoria** no debrief inline (igual ficha) antes de Treinar | mesmo fluxo pós-erro em todos os pontos | S
-- [ ] [Theory sheet] | barra de progresso “Passo 1 de 2” no topo do sheet | reforça sequência li → treino sem ler parágrafo | S
+- [x] [Theory sheet] | barra de progresso “Passo 1 de 2” no topo do sheet | reforça sequência li → treino sem ler parágrafo | S
 - [ ] [Fila / lacunas] | badge “teoria lida” no tile quando mark-read true | evita reabrir sheet à toa | S
 - [ ] [Theory sheet] | animação suave ao marcar “li” (check + troca de CTA primário) | feedback imediato do próximo passo | S
 - [ ] [Biblioteca / Semana 1] | scroll automático ao painel 2024–26 quando `?semana1=1` na rota | onboarding cai direto no CTA certo | S
@@ -29,7 +29,10 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Ajustes / Sobre] | linha “Build Windows” quando launcher detecta exe empacotado | distingue dev vs Desktop | S
 - [x] [Ajustes / Sobre] | chip versão com ícone verified (build confiável) | versão escaneável sem parecer debug | S
 - [ ] [Pack / empacotar] | progresso visual no bat (passos 1/5 build, 2/5 copy…) | menos ansiedade no ship longo | M
-- [ ] [Theory sheet] | barra “Passo 1 de 2” no topo do sheet | reforça sequência li → treino | S
+- [x] [Theory sheet] | barra “Passo 1 de 2” no topo do sheet | reforça sequência li → treino | S
+- [ ] [Fila / lacunas] | dots de progresso no tile (1/2 lido, 2/2 treinado futuro) | estado visual sem abrir sheet | M
+- [ ] [Sessão / teoria inline] | mesma barra Passo 1/2 quando teoria abre dentro da sessão | consistência ficha/fila/sessão | S
+- [ ] [Theory sheet] | label “Ler” vs “Treinar” com ícones distintos nos passos | escaneabilidade rápida mobile | S
 - [ ] [Fila / lacunas] | subtitle “· li” no tile quando read=true (além do ícone) | reforço textual no mobile | S
 - [ ] [Ficha / Ler teoria] | ícone livro preenchido se tópico já lido (fetch reads no load) | estado consistente ficha+fila | S
 - [ ] [Theory sheet] | haptic leve ao marcar “li” (mobile/desktop) | confirmação tátil do progresso | S

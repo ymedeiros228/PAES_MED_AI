@@ -6064,6 +6064,16 @@ def main() -> int:
     else:
         ok("ciclo_hb_pack_dist_complete", True, "dist ausente (skip soft)")
 
+    # --- Ciclo HC: theory sheet passo 1/2 (fila vazia · IDEAS-UI) ---
+    ok(
+        "ciclo_hc_theory_step_bar",
+        "Passo 1 de 2" in theory_gt
+        and "Passo 2 de 2" in theory_gt
+        and "LinearProgressIndicator" in theory_gt
+        and "AnimatedSwitcher" in theory_gt,
+        "theory step bar",
+    )
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

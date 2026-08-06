@@ -64,6 +64,42 @@ Future<void> openTheoryReadSheet(
                       'Teoria · $subject · $topic',
                       style: Theme.of(ctx).textTheme.titleMedium,
                     ),
+                    const SizedBox(height: 10),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: Column(
+                        key: ValueKey<bool>(isRead),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                isRead ? 'Passo 2 de 2' : 'Passo 1 de 2',
+                                style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                isRead ? 'Treinar' : 'Ler teoria',
+                                style: Theme.of(ctx).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62),
+                                    ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: isRead ? 1.0 : 0.5,
+                              minHeight: 4,
+                              backgroundColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     if (isRead)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

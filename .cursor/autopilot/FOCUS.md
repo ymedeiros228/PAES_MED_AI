@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 8 concluído |
-| **Próximo** | fila operacional vazia — aguarda humano ou residual BLOCKED |
-| **Último feito** | Pack gates HB + ico fallback bat; smoke 718/718 |
+| **Agora** | — idle; ciclo 9 concluído |
+| **Próximo** | fila vazia — aguarda humano (residual F1/F3 ou nova QUEUE) |
+| **Último feito** | Theory sheet barra Passo 1/2; smoke 719/719 |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

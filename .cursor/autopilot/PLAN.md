@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 8
-modo: A (uso real) + gate pack P3
-item: ciclo_gu_pack_* mantidos + ciclo_hb_pack_* (fonte ico/launcher, dist hard)
-smoke: 718/718 OK
-nota: empacotar fallback ico runner; gate branding no dist; chip verified Sobre
+<!-- ciclo: 9
+modo: A (uso real)
+item: residual IDEAS-UI — theory sheet barra Passo 1/2 (fila vazia)
+smoke: 719/719 OK; ciclo_hc_theory_step_bar
+nota: LinearProgressIndicator + AnimatedSwitcher; sem nova feature inventada
 -->
 ```
 

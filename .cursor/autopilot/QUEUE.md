@@ -31,6 +31,10 @@ Prioridade: topo = primeiro.
 - ~~Teclado R/S/F5 em mais telas~~ (saturação GN–GQ)
 - ~~PDF inventado / multi-IA / force-push / redesign shell~~
 
+## Residual · fila vazia (IDEAS-UI modo A)
+
+- [x] Theory sheet: barra Passo 1/2 no topo + progresso visual (IDEAS-UI S)
+
 ## Como o AP usa
 
 1. Primeiro checkbox `[ ]` de P0; senão P1; senão P2…  
