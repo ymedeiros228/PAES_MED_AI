@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | HC Sessão sem jargão → HD ficha teoria→treino |
-| **Próximo** | Ship 1.0.0+12 + pack host |
-| **Último feito** | GY–HA F3 deep Tutor + 1.0.0+11 |
+| **Agora** | — idle pós HC–HD |
+| **Próximo** | Soft landing só se repro; senão QUEUE P2 |
+| **Último feito** | HC–HD Mode A + ship 1.0.0+12 |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 
