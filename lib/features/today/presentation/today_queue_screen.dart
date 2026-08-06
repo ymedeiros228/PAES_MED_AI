@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
+import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -502,11 +503,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   },
                 ),
 
-                FutureBuilder(
-                  future: apiClient.get('/api/essays/progress'),
-                  builder: (context, snap) {
-                    if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                    final prog = Map<String, dynamic>.from(snap.data as Map);
+                Consumer(
+                  builder: (context, ref, _) {
+                    final prog = ref.watch(essayProgressProvider).asData?.value;
+                    if (prog == null) return const SizedBox.shrink();
                     final count = prog['count'] as int? ?? 0;
                     final mission = prog['nextMission'];
                     if (count < 1 || mission is! Map) return const SizedBox.shrink();
