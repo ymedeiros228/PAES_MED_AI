@@ -47,3 +47,5 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DI: Tutor — `_loadSeedRead` + chip Material **Li** + `onMarkedRead`
 - [x] Ciclo DI: Aulas — `_addReads` batch + **Li** botões/subtítulo + `onMarkedRead`
 - [x] Versão **1.0.0+21** + smoke **602/602** + docs COMO/ROADMAP DH–DI
+- [x] Ciclo DJ: Sessão guiada — `_loadSessionReads` (meta/questões/cards) + **Li** teoria/debrief + `onMarkedRead`
+- [x] Versão **1.0.0+22** + smoke **608/608** + docs COMO/ROADMAP DI–DJ

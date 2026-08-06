@@ -214,6 +214,7 @@ flowchart TB
 | DF–DG | Banca Li batch +19 | `ciclo_df_*`…`ciclo_dg_*` | **Feito** |
 | DG–DH | Cards/Adaptativo Li +20 | `ciclo_dg_*`…`ciclo_dh_*` | **Feito** |
 | DH–DI | Ficha/Tutor/Aulas Li +21 | `ciclo_dh_*`…`ciclo_di_*` | **Feito** |
+| DI–DJ | Sessão Li batch +22 | `ciclo_di_*`…`ciclo_dj_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -229,5 +230,6 @@ flowchart TB
 - Rodada DF–DG: Banca Li batch (freq + co-ocorrência), 1.0.0+19.
 - Rodada DG–DH: Flashcards + Adaptativo Li batch, 1.0.0+20.
 - Rodada DH–DI: Ficha questão + Tutor + Aulas Li, 1.0.0+21.
+- Rodada DI–DJ: Sessão guiada Li batch, 1.0.0+22.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -74,7 +75,43 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   Map<String, dynamic>? pendingCheckpoint;
   /// Ciclo AI: painel final da sessão (após último bloco).
   bool sessionComplete = false;
-  bool theoryMarked = false;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadSessionReads() async {
+    final pairs = <(String, String)>[];
+    void add(String s, String t) {
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    final study = plan?['studyToday'] as Map?;
+    if (study != null) {
+      add(study['subject']?.toString() ?? '', study['topic']?.toString() ?? '');
+    }
+    for (final q in sessionQuestions) {
+      add(q['subject']?.toString() ?? '', q['topic']?.toString() ?? '');
+    }
+    for (final c in sessionCards) {
+      add(c['subject']?.toString() ?? '', c['topic']?.toString() ?? '');
+    }
+    if (pairs.isEmpty) return;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = {...theoryReadByKey, ...out});
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    if (subject.isEmpty || topic.isEmpty) return;
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -133,6 +170,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         plan = Map<String, dynamic>.from(data as Map);
         pendingCheckpoint = cp != null && cp['started'] == true ? cp : null;
       });
+      unawaited(_loadSessionReads());
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para montar a sessão. Tente de novo.'));
     }
@@ -276,6 +314,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       pendingErrorPick = false;
       errorType = 'conceito';
     });
+    unawaited(_loadSessionReads());
     qSw
       ..reset()
       ..start();
@@ -342,6 +381,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         cardsDone = 0;
         revisionUsingQuestions = false;
       });
+      unawaited(_loadSessionReads());
       return;
     }
     // Sem flashcards: praticar questões dos tópicos em revisão
@@ -835,7 +875,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     try {
       await apiClient.post('/api/study/mark-read', {'subject': s, 'topic': t});
       if (!mounted) return;
-      setState(() => theoryMarked = true);
+      setState(() => theoryReadByKey[theoryReadKey(s, t)] = true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Teoria marcada como lida (local · não banca).')),
       );
@@ -866,15 +906,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if (study == null) return;
     final s = study['subject']?.toString() ?? '';
     final t = study['topic']?.toString() ?? '';
-    if (s.isEmpty || t.isEmpty) return;
-    await TheoryTopicSheet.show(
-      context,
-      subject: s,
-      topic: t,
-      onMarkedRead: () {
-        if (mounted) setState(() => theoryMarked = true);
-      },
-    );
+    await _openTheory(s, t);
   }
 
   Widget _debriefForCurrent() {
@@ -894,6 +926,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
             child: const Text('Treinar este tópico'),
           ),
+          if (s.isNotEmpty && t.isNotEmpty)
+            TextButton(
+              onPressed: () => _openTheory(s, t),
+              child: Text(_isTheoryRead(s, t) ? 'Teoria local · Li' : 'Teoria local'),
+            ),
           TextButton(
             onPressed: _createCardFromCurrent,
             child: const Text('Criar card'),
@@ -948,7 +985,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Sessão completa — próximos passos'
                 : study == null
                     ? 'Gere um plano para calibrar a meta.'
-                    : 'Meta: ${study['subject']} · ${study['topic']}',
+                    : 'Meta: ${study['subject']} · ${study['topic']}'
+                        '${_isTheoryRead(study['subject']?.toString() ?? '', study['topic']?.toString() ?? '') ? ' · Li' : ''}',
             trailing: started
                 ? SurfacePanel(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1103,11 +1141,25 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 children: [
                   FilledButton.tonal(
                     onPressed: study == null ? null : _markTheoryRead,
-                    child: Text(theoryMarked ? 'Li · teoria' : 'Marquei como li'),
+                    child: Text(
+                      _isTheoryRead(
+                        study['subject']?.toString() ?? '',
+                        study['topic']?.toString() ?? '',
+                      )
+                          ? 'Li · teoria'
+                          : 'Marquei como li',
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: study == null ? null : _openTheoryMaterial,
-                    child: const Text('Material local'),
+                    child: Text(
+                      _isTheoryRead(
+                        study['subject']?.toString() ?? '',
+                        study['topic']?.toString() ?? '',
+                      )
+                          ? 'Material local · Li'
+                          : 'Material local',
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: study == null ? null : _goTutorForStudy,
@@ -1136,7 +1188,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
               Text(
-                'Questão ${qIndex + 1}/${sessionQuestions.length} · acertos $correctCount/${answeredIds.length}',
+                'Questão ${qIndex + 1}/${sessionQuestions.length} · acertos $correctCount/${answeredIds.length}'
+                '${_isTheoryRead(sessionQuestions[qIndex]['subject']?.toString() ?? '', sessionQuestions[qIndex]['topic']?.toString() ?? '') ? ' · Li' : ''}',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),

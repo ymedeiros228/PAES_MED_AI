@@ -699,6 +699,11 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Aulas: batch reads lista + **Li** em botões/subtítulo.
 4. **1.0.0+21** · smoke `ciclo_di_*` + suite + pack + push.
 
+## Sessão Li batch (Ciclo DJ)
+
+1. Sessão guiada: `_loadSessionReads` (meta + questões + cards) + **Li** fase teoria/debrief.
+2. **1.0.0+22** · smoke `ciclo_dj_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
