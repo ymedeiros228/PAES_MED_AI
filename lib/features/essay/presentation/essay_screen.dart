@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -26,6 +27,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
   List<Map<String, dynamic>> personas = [];
   String? personaId;
   bool busy = false;
+  String? setupError;
+
+  Future<void> _reloadSetup() async {
+    setState(() => setupError = null);
+    await Future.wait([_loadThemes(), _loadProgress(), _loadPersonas()]);
+  }
 
   @override
   void initState() {
@@ -44,11 +51,19 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
   Future<void> _loadThemes() async {
     try {
       final data = await apiClient.get('/api/essay/themes');
+      if (!mounted) return;
       setState(() {
         themes = (data as List).map((e) => e.toString()).toList();
         theme = themes.isNotEmpty ? themes.first : null;
       });
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        themes = [];
+        theme = null;
+        setupError = humanApiError(e, fallback: 'Temas indisponíveis — API offline?');
+      });
+    }
   }
 
   Future<void> _loadPersonas() async {
@@ -61,7 +76,13 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           .toList();
       if (!mounted) return;
       setState(() => personas = items);
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        personas = [];
+        setupError ??= humanApiError(e, fallback: 'Personas indisponíveis.');
+      });
+    }
   }
 
   Future<void> _loadProgress() async {
@@ -80,9 +101,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           personaId = suggested;
         }
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => progress = null);
+      setState(() {
+        progress = null;
+        setupError ??= humanApiError(e, fallback: 'Progresso indisponível.');
+      });
     }
   }
 
@@ -282,8 +306,27 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               const PageHeader(
                 eyebrow: 'Conteúdo',
                 title: 'Redação',
-                subtitle: 'Escreva e veja feedback local por eixos — rascunho offline, não nota oficial de banca',
+                subtitle: 'Escreva e corrija com Ctrl+Enter — feedback local por eixos, rascunho offline',
               ),
+              if (setupError != null) ...[
+                QuietEmpty(
+                  message: setupError!,
+                  action: Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: () => unawaited(_reloadSetup()),
+                        child: const Text('Tentar'),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/sessao'),
+                        child: const Text('Sessão'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               if (progress != null && count > 0) ...[
                 SectionLabel(
                   'Progresso local',
@@ -567,8 +610,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               SectionLabel('Histórico'),
               history.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => QuietEmpty(
-                  message: 'Histórico indisponível.',
+                error: (e, _) => QuietEmpty(
+                  message: humanApiError(e, fallback: 'Histórico indisponível.'),
                   action: TextButton(
                     onPressed: () => ref.read(refreshTickProvider.notifier).state++,
                     child: const Text('Tentar'),

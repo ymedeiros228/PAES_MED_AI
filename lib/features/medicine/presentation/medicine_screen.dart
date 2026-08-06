@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,26 +10,120 @@ import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Domínio: ranking para estudar. Ferramentas de curadoria ficam em Avançado.
-class MedicineScreen extends ConsumerWidget {
+class MedicineScreen extends ConsumerStatefulWidget {
   const MedicineScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MedicineScreen> createState() => _MedicineScreenState();
+}
+
+class _MedicineScreenState extends ConsumerState<MedicineScreen> {
+  int selected = 0;
+  final _focusNode = FocusNode();
+  List<Map<String, dynamic>> _rankItems = const [];
+  int _officialN = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  String _sessionPath(Map<String, dynamic> item, int officialN) {
+    final s = item['subject']?.toString() ?? '';
+    final t = item['topic']?.toString() ?? '';
+    final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
+    final years = item['years'] as List? ?? const [];
+    return '/sessao?examBoard=UEMA_PAES'
+        '&subject=${Uri.encodeComponent(s)}'
+        '&topic=${Uri.encodeComponent(t)}'
+        '&preferNatureza=${nat ? '1' : '0'}'
+        '${years.isNotEmpty ? '&year=${years.last}' : ''}'
+        '${officialN >= 10 ? '&preferOfficial=1' : ''}';
+  }
+
+  void _openSelected(int officialN) {
+    if (_rankItems.isEmpty) return;
+    final idx = selected.clamp(0, _rankItems.length - 1);
+    context.go(_sessionPath(_rankItems[idx], officialN));
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event, int officialN) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      ref.read(refreshTickProvider.notifier).state++;
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyS && _rankItems.isNotEmpty) {
+      _openSelected(officialN);
+      return KeyEventResult.handled;
+    }
+    if (_rankItems.isEmpty) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
+      setState(() => selected = (selected + 1).clamp(0, _rankItems.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
+      setState(() => selected = (selected - 1).clamp(0, _rankItems.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+      _openSelected(officialN);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(medicineProvider);
     final tick = ref.watch(refreshTickProvider);
-    return async.when(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: (node, event) => _onKey(node, event, _officialN),
+      child: async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => EmptyState(
         title: 'Domínio indisponível',
-        subtitle: 'Tente de novo em instantes.',
-        actionLabel: 'Tentar',
-        onAction: () => ref.read(refreshTickProvider.notifier).state++,
+        subtitle: humanApiError(e, fallback: 'Tente de novo em instantes.'),
+        action: Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            FilledButton(
+              onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+              child: const Text('Tentar de novo'),
+            ),
+            TextButton(
+              onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+              child: const Text('Sessão'),
+            ),
+          ],
+        ),
       ),
       data: (payload) {
         final items = (payload['items'] as List? ?? []);
         final basis = Map<String, dynamic>.from(payload['statsBasis'] as Map? ?? {});
         final curation = Map<String, dynamic>.from(payload['curation'] as Map? ?? {});
         final officialN = basis['officialCount'] as int? ?? 0;
+        _officialN = officialN;
+        _rankItems = [
+          for (final raw in items.take(24)) Map<String, dynamic>.from(raw as Map),
+        ];
+        if (selected >= _rankItems.length && _rankItems.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => selected = _rankItems.length - 1);
+          });
+        }
         final realN = curation['realCount'] as int? ?? 0;
         final realPct = curation['realPercent'];
         final crossN = curation['crossDomainCount'] as int? ?? 0;
@@ -44,7 +139,9 @@ class MedicineScreen extends ConsumerWidget {
                   PageHeader(
                     eyebrow: 'Analisar',
                     title: 'Domínio',
-                    subtitle: 'Onde vale focar · toque para abrir sessão no tópico',
+                    subtitle: items.isEmpty
+                        ? 'Onde vale focar · S sessão selecionado · R atualiza'
+                        : '${items.length} assunto(s) · ↑/↓ J/K · Enter/S sessão · R atualiza',
                   ),
 
                   if (officialN == 0)
@@ -91,17 +188,16 @@ class MedicineScreen extends ConsumerWidget {
                       ),
                     )
                   else
-                    for (final raw in items.take(24))
+                    for (var i = 0; i < _rankItems.length; i++)
                       Builder(
                         builder: (context) {
-                          final item = Map<String, dynamic>.from(raw as Map);
+                          final item = _rankItems[i];
                           final s = item['subject']?.toString() ?? '';
                           final t = item['topic']?.toString() ?? '';
                           final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
                           final status = item['curationStatus']?.toString() ?? '';
                           final curated = item['curated'] == true;
                           final dirty = item['crossDomain'] == true || status == 'sujo';
-                          // badges: curado / pendente (sujo sem alarde no título)
                           String? badge;
                           if (dirty) {
                             badge = 'revisar label';
@@ -118,20 +214,17 @@ class MedicineScreen extends ConsumerWidget {
                           final countHint = nOff != null
                               ? ' · $nOff na base'
                               : '';
-                          final sessao =
-                              '/sessao?examBoard=UEMA_PAES'
-                              '&subject=${Uri.encodeComponent(s)}'
-                              '&topic=${Uri.encodeComponent(t)}'
-                              '&preferNatureza=${nat ? '1' : '0'}'
-                              '${years.isNotEmpty ? '&year=${years.last}' : ''}'
-                              '${officialN >= 10 ? '&preferOfficial=1' : ''}';
+                          final sessao = _sessionPath(item, officialN);
                           return PlaylistTile(
                             title: s,
                             subtitle: '$t$countHint$yearHint',
                             badge: badge,
-                            active: curated,
+                            active: i == selected,
                             leadingIcon: Icons.play_circle_outline_rounded,
-                            onPlay: () => context.go(sessao),
+                            onPlay: () {
+                              setState(() => selected = i);
+                              context.go(sessao);
+                            },
                           );
                         },
                       ),
@@ -181,7 +274,20 @@ class MedicineScreen extends ConsumerWidget {
                                             );
                                             ref.read(refreshTickProvider.notifier).state++;
                                             ref.invalidate(medicineProvider);
-                                          } catch (_) {}
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    humanApiError(
+                                                      e,
+                                                      fallback: 'Não deu para aceitar o rascunho.',
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
                                         },
                                         child: const Text('Ok'),
                                       ),
@@ -363,6 +469,7 @@ class MedicineScreen extends ConsumerWidget {
           ],
         );
       },
+    ),
     );
   }
 }

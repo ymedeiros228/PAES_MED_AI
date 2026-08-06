@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,23 +26,65 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Map<String, dynamic>? curation;
   String? error;
   String? msg;
+  String? partialLoadNote;
   bool busy = false;
   final _searchCtrl = TextEditingController();
   List<Map<String, dynamic>> searchHits = [];
   String? searchNote;
+  String? searchHistoryNote;
   bool searching = false;
   String searchSourceKind = 'todos'; // todos | oficial | estudo
   List<Map<String, dynamic>> searchHistory = [];
+  int _hitSelected = 0;
+  final _focusNode = FocusNode();
+
+  bool _textFieldFocused() {
+    final primary = FocusManager.instance.primaryFocus;
+    return primary != null && primary.context?.widget is EditableText;
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event, int officialN) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      if (!busy) unawaited(_load());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyS && officialN >= 0) {
+      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+      return KeyEventResult.handled;
+    }
+    if (_textFieldFocused()) return KeyEventResult.ignored;
+    final hits = searchHits.take(12).toList();
+    if (hits.isEmpty) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
+      setState(() => _hitSelected = (_hitSelected + 1).clamp(0, hits.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
+      setState(() => _hitSelected = (_hitSelected - 1).clamp(0, hits.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+      unawaited(_openSearchHit(hits[_hitSelected.clamp(0, hits.length - 1)]));
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
     _load();
     _loadSearchHistory();
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -48,23 +93,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     setState(() {
       busy = true;
       error = null;
+      partialLoadNote = null;
     });
     try {
       final data = await apiClient.get('/api/library');
       Map<String, dynamic>? cov;
       Map<String, dynamic>? cur;
+      String? partialNote;
       try {
         final c = await apiClient.get('/api/edital/coverage');
         cov = Map<String, dynamic>.from(c as Map);
-      } catch (_) {}
+      } catch (e) {
+        partialNote = humanApiError(e, fallback: 'Cobertura do edital indisponível.');
+      }
       try {
         final inv = await apiClient.get('/api/curation/inventory');
         cur = Map<String, dynamic>.from(inv as Map);
-      } catch (_) {}
+      } catch (e) {
+        partialNote ??= humanApiError(e, fallback: 'Inventário de curadoria indisponível.');
+      }
       setState(() {
         library = Map<String, dynamic>.from(data as Map);
         coverage = cov;
         curation = cur;
+        partialLoadNote = partialNote;
       });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
@@ -415,7 +467,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       // Ciclo I: reclassificar Natureza 1x após commit
       try {
         await apiClient.post('/api/ingest/classify-pending', {});
-      } catch (_) {}
+      } catch (e) {
+        if (mounted) {
+          final note = humanApiError(e, fallback: 'Reclassificação Natureza não rodou.');
+          setState(() => msg = msg == null || msg!.isEmpty ? note : '${msg!} · $note');
+        }
+      }
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
@@ -538,7 +595,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         return false;
       }
       return choice == 'study';
-    } catch (_) {
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => msg = humanApiError(
+            e,
+            fallback: 'Verificação de parse indisponível — siga com cuidado.',
+          ),
+        );
+      }
       return true;
     }
   }
@@ -659,8 +724,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             .whereType<Map>()
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
+        searchHistoryNote = null;
       });
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        searchHistory = [];
+        searchHistoryNote = humanApiError(e, fallback: 'Histórico de buscas indisponível.');
+      });
+    }
   }
 
   Future<void> _runSearch() async {
@@ -669,6 +741,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() {
         searchHits = [];
         searchNote = null;
+        _hitSelected = 0;
       });
       return;
     }
@@ -691,6 +764,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
         searchNote = map['note']?.toString();
+        _hitSelected = 0;
       });
       await _loadSearchHistory();
     } catch (e) {
@@ -711,8 +785,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         setState(() => msg = map['note']?.toString() ?? 'Sem PDF deste ano no PC.');
         return;
       }
-      await apiClient.post('/api/library/open-path', {'path': map['path']});
-      setState(() => msg = 'Abrindo PDF ${map['label'] ?? year}');
+      final label = map['label']?.toString() ?? '$year';
+      final pdfPath = map['path']!.toString();
+      try {
+        await apiClient.post('/api/library/open-path', {'path': pdfPath});
+        setState(() => msg = 'Abrindo PDF $label');
+      } catch (e) {
+        setState(
+          () => msg =
+              '$label · ${humanApiError(e, fallback: 'PDF no PC mas pasta não abriu.')}',
+        );
+      }
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
     }
@@ -857,7 +940,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     if (error != null) {
       return EmptyState(
         title: 'Biblioteca indisponível',
-        subtitle: 'Reabra o app e tente de novo.',
+        subtitle: error!,
         action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
       );
     }
@@ -885,7 +968,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final pendingN = pending['pendingCount'] as int? ?? pendingItems.length;
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: (node, event) => _onKey(node, event, officialN),
+      child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -895,8 +981,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 eyebrow: 'Acervo',
                 title: 'Biblioteca',
                 subtitle: officialN > 0
-                    ? '$officialN oficiais · 2024–26 embaixo · study Natureza'
-                    : 'Monte as provas 2024–26 e estude Natureza',
+                    ? '$officialN oficiais · ↑/↓ J/K resultados · Enter abre · S sessão · R atualiza'
+                    : 'Monte 2024–26 · busca Enter · S sessão · R atualiza',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: busy ? null : _load,
@@ -905,6 +991,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       : const Icon(Icons.refresh_rounded),
                 ),
               ),
+
+              if (partialLoadNote != null && error == null) ...[
+                QuietEmpty(
+                  message: partialLoadNote!,
+                  action: TextButton(
+                    onPressed: busy ? null : _load,
+                    child: const Text('Tentar'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
 
               const SizedBox(height: 8),
               TextField(
@@ -947,6 +1044,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     ),
                 ],
               ),
+              if (searchHistoryNote != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  searchHistoryNote!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
+              ],
               if (searchHistory.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Wrap(
@@ -988,17 +1094,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
               if (searchHits.isNotEmpty) ...[
-                SectionLabel('Resultados', hint: '${searchHits.length} local'),
-                for (final hit in searchHits.take(12))
-                  PlaylistTile(
-                    title: hit['label']?.toString() ?? 'item',
-                    subtitle:
-                        '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
-                    badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
-                    leadingIcon: hit['kind'] == 'question'
-                        ? Icons.quiz_outlined
-                        : Icons.description_outlined,
-                    onPlay: () => _openSearchHit(hit),
+                SectionLabel('Resultados', hint: '↑/↓ J/K · Enter abre · ${searchHits.length} local'),
+                for (var i = 0; i < searchHits.take(12).length; i++)
+                  Builder(
+                    builder: (_) {
+                      final hit = searchHits[i];
+                      return PlaylistTile(
+                        title: hit['label']?.toString() ?? 'item',
+                        subtitle:
+                            '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
+                        badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
+                        active: i == _hitSelected,
+                        leadingIcon: hit['kind'] == 'question'
+                            ? Icons.quiz_outlined
+                            : Icons.description_outlined,
+                        onPlay: () {
+                          setState(() => _hitSelected = i);
+                          _openSearchHit(hit);
+                        },
+                      );
+                    },
                   ),
               ],
 
@@ -1035,7 +1150,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         ),
                         FilledButton.tonal(
                           onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-                          child: const Text('Estudar agora'),
+                          child: const Text('Estudar agora (S)'),
                         ),
                       ],
                     ),
@@ -1046,10 +1161,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SectionLabel('2024–26', hint: 'Toque Estudar quando estiver Pronto'),
               if (board.isEmpty)
                 QuietEmpty(
-                  message: 'Nenhum ano 2024–26 ainda — use Atualizar 2024–26.',
-                  action: TextButton(
-                    onPressed: busy ? null : _semana1Real,
-                    child: const Text('Atualizar 2024–26'),
+                  message: 'Nenhum ano 2024–26 ainda — use Atualizar 2024–26 ou vá direto à sessão.',
+                  action: Wrap(
+                    spacing: 8,
+                    children: [
+                      FilledButton(
+                        onPressed: busy ? null : _semana1Real,
+                        child: const Text('Atualizar 2024–26'),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                        child: const Text('Sessão'),
+                      ),
+                    ],
                   ),
                 )
               else
@@ -1297,6 +1421,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 }

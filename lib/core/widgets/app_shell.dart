@@ -88,6 +88,7 @@ class AppShell extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final themeNotifier = ref.read(themeModeProvider.notifier);
     final examDays = ref.watch(examDateProvider.notifier).daysUntilExam;
+    final examSyncPending = ref.watch(examDateProvider).syncError != null;
     final location = GoRouterState.of(context).uri.path;
     final dash = ref.watch(dashboardProvider);
     final officialCount = dash.maybeWhen(
@@ -148,7 +149,12 @@ class AppShell extends ConsumerWidget {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(12, 20, 12, 8),
                       children: [
-                        _BrandHeader(expanded: expanded, focus: focus, examDays: examDays),
+                        _BrandHeader(
+                          expanded: expanded,
+                          focus: focus,
+                          examDays: examDays,
+                          examSyncPending: examSyncPending,
+                        ),
                         const SizedBox(height: 18),
                         for (final group in activeGroups) ...[
                           if (expanded)
@@ -167,6 +173,7 @@ class AppShell extends ConsumerWidget {
                               item: item,
                               expanded: expanded,
                               selected: location == item.path || location.startsWith('${item.path}/'),
+                              badge: item.path == '/configuracoes' && examSyncPending,
                               onTap: () => context.go(item.path),
                             ),
                         ],
@@ -192,6 +199,16 @@ class AppShell extends ConsumerWidget {
                           active: themeMode != ThemeMode.system,
                           onTap: () => themeNotifier.cycle(),
                         ),
+                        if (expanded) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            'F foco · Ctrl+T tema',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: cs.onSurface.withOpacity(0.42),
+                                  fontSize: 11,
+                                ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -204,6 +221,7 @@ class AppShell extends ConsumerWidget {
               child: Column(
                 children: [
                   const BackendStatusBanner(),
+                  const ExamDateSyncBanner(),
                   Expanded(child: child),
                 ],
               ),
@@ -222,8 +240,31 @@ class AppShell extends ConsumerWidget {
 
             return Scaffold(
               appBar: AppBar(
-                title: Text(focus ? 'PAES · Foco' : 'PAES MED AI'),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(focus ? 'PAES · Foco' : 'PAES MED AI'),
+                    if (examSyncPending)
+                      Text(
+                        'Sync da prova pendente',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: cs.tertiary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                  ],
+                ),
                 actions: [
+                  if (examSyncPending)
+                    IconButton(
+                      tooltip: 'Sincronizar data da prova',
+                      onPressed: () => ref.read(examDateProvider.notifier).retrySync(),
+                      icon: Badge(
+                        smallSize: 8,
+                        child: const Icon(Icons.sync_problem_rounded),
+                      ),
+                    ),
                   IconButton(
                     tooltip: 'Tema (${themeNotifier.label}) · Ctrl+T',
                     onPressed: () => themeNotifier.cycle(),
@@ -239,21 +280,75 @@ class AppShell extends ConsumerWidget {
                     icon: const Icon(Icons.auto_awesome_rounded),
                   ),
                   PopupMenuButton<String>(
+                    tooltip: examSyncPending ? 'Menu · sync pendente' : 'Menu',
                     onSelected: context.go,
+                    icon: examSyncPending
+                        ? Badge(
+                            smallSize: 8,
+                            child: const Icon(Icons.menu_rounded),
+                          )
+                        : const Icon(Icons.menu_rounded),
                     itemBuilder: (_) => [
-                      for (final item in items) PopupMenuItem(value: item.path, child: Text(item.label)),
+                      for (final item in items)
+                        PopupMenuItem(
+                          value: item.path,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.path == '/configuracoes' && examSyncPending
+                                      ? '${item.label} · sync pendente'
+                                      : item.label,
+                                ),
+                              ),
+                              if (item.path == '/configuracoes' && examSyncPending)
+                                Icon(Icons.circle, size: 8, color: cs.tertiary),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ],
               ),
               body: body,
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: index.clamp(0, (items.length - 1).clamp(0, 4)),
-                onDestinationSelected: (value) =>
-                    context.go(items[value.clamp(0, items.length - 1)].path),
-                destinations: [
-                  for (final item in items.take(5))
-                    NavigationDestination(icon: Icon(item.icon), label: item.label),
+              bottomNavigationBar: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (examSyncPending)
+                    Material(
+                      color: cs.tertiaryContainer.withOpacity(0.85),
+                      child: SafeArea(
+                        top: false,
+                        child: ListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          leading: Icon(Icons.sync_problem_rounded, size: 18, color: cs.onTertiaryContainer),
+                          title: Text(
+                            'Data da prova não sincronizou',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: cs.onTertiaryContainer,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          trailing: TextButton(
+                            onPressed: () => context.go('/configuracoes'),
+                            child: const Text('Ajustes'),
+                          ),
+                        ),
+                      ),
+                    ),
+                  NavigationBar(
+                    selectedIndex: index.clamp(0, (items.length - 1).clamp(0, 4)),
+                    onDestinationSelected: (value) =>
+                        context.go(items[value.clamp(0, items.length - 1)].path),
+                    destinations: [
+                      for (final item in items.take(5))
+                        NavigationDestination(
+                          icon: Icon(item.icon),
+                          label: item.label,
+                        ),
+                    ],
+                  ),
                 ],
               ),
             );
@@ -269,11 +364,13 @@ class _BrandHeader extends StatelessWidget {
     required this.expanded,
     required this.focus,
     required this.examDays,
+    required this.examSyncPending,
   });
 
   final bool expanded;
   final bool focus;
   final int? examDays;
+  final bool examSyncPending;
 
   @override
   Widget build(BuildContext context) {
@@ -331,6 +428,24 @@ class _BrandHeader extends StatelessWidget {
               ),
             ],
           ),
+          if (examSyncPending) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.sync_problem_rounded, size: 14, color: cs.tertiary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Sync da prova pendente',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: cs.tertiary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (examDays != null) ...[
             const SizedBox(height: 12),
             Container(
@@ -358,12 +473,14 @@ class _NavTile extends StatefulWidget {
     required this.expanded,
     required this.selected,
     required this.onTap,
+    this.badge = false,
   });
 
   final _NavItem item;
   final bool expanded;
   final bool selected;
   final VoidCallback onTap;
+  final bool badge;
 
   @override
   State<_NavTile> createState() => _NavTileState();
@@ -405,10 +522,29 @@ class _NavTileState extends State<_NavTile> {
                   child: Row(
                     mainAxisAlignment: widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        widget.item.icon,
-                        size: 22,
-                        color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            widget.item.icon,
+                            size: 22,
+                            color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
+                          ),
+                          if (widget.badge)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: cs.tertiary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: cs.surface, width: 1),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       if (widget.expanded) ...[
                         const SizedBox(width: 12),

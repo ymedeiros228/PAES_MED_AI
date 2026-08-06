@@ -121,7 +121,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
             child: PageHeader(
               eyebrow: 'Ajuda',
               title: 'Tutor',
-              subtitle: 'Pergunte sobre o plano do dia, um tópico ou uma questão. A resposta usa a base local.',
+              subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
               trailing: IconButton(
                 tooltip: 'Limpar conversa',
                 onPressed: state.isLoading
@@ -131,6 +131,30 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
               ),
             ),
           ),
+          if (state.error != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+              child: QuietEmpty(
+                message: state.error!,
+                action: Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
+                      child: const Text('Limpar'),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/sessao'),
+                      child: const Text('Sessão'),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/biblioteca'),
+                      child: const Text('Biblioteca'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
@@ -198,6 +222,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                               ActionChip(
                                 label: const Text('Abrir sessão'),
                                 onPressed: () => context.go('/sessao'),
+                              ),
+                              ActionChip(
+                                label: const Text('Biblioteca'),
+                                onPressed: () => context.go('/biblioteca'),
                               ),
                             ],
                           ),
@@ -291,6 +319,16 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   }
 }
 
+String _citeLine(Map<String, dynamic> c) {
+  final type = c['type']?.toString() ?? 'fonte';
+  final year = c['year']?.toString();
+  final tag = year != null && year.isNotEmpty ? '[$type · $year]' : '[$type]';
+  final label = c['label'] ?? c['id'] ?? '—';
+  final snippet = c['snippet']?.toString();
+  if (snippet != null && snippet.isNotEmpty) return '$tag $label — $snippet';
+  return '$tag $label';
+}
+
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message});
 
@@ -337,7 +375,7 @@ class _MessageBubble extends StatelessWidget {
             if (message.citations.isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
-                'Fontes na base',
+                'Fontes na base (clique abre ficha/treino)',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
@@ -363,7 +401,7 @@ class _MessageBubble extends StatelessWidget {
                       }
                     },
                     child: Text(
-                      '• ${c['label'] ?? c['id']}${c['snippet'] != null ? ' — ${c['snippet']}' : ''}',
+                      '• ${_citeLine(c)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             decoration: TextDecoration.underline,

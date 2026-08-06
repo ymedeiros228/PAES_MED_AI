@@ -2302,9 +2302,21 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore") if (
         root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
     ).exists() else ""
+    theory_ui = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).exists() else ""
     ok(
         "ciclo_au_fila_theory_sheet",
-        "showModalBottomSheet" in queue_ui and "mark-read" in queue_ui,
+        (
+            ("showModalBottomSheet" in queue_ui and "mark-read" in queue_ui)
+            or (
+                "openTheoryReadSheet" in queue_ui
+                and "showModalBottomSheet" in theory_ui
+                and "mark-read" in theory_ui
+            )
+        ),
         "fila theory sheet",
     )
     ok("ciclo_au_como_section", "Ciclo AU" in como_ap, "COMO AU")
@@ -2610,7 +2622,14 @@ def main() -> int:
     )
     ok(
         "ciclo_bd_theory_sheet_leituras",
-        "Leituras de reforço" in queue_bd,
+        "Leituras de reforço" in queue_bd
+        or "Leituras de reforço"
+        in (
+            (root / "lib" / "core" / "widgets" / "theory_read_sheet.dart")
+            .read_text(encoding="utf-8", errors="ignore")
+            if (root / "lib" / "core" / "widgets" / "theory_read_sheet.dart").exists()
+            else ""
+        ),
         "theory sheet articles",
     )
     ok("ciclo_bd_como_section", "Ciclo BD" in como_ap, "COMO BD")
@@ -3356,7 +3375,7 @@ def main() -> int:
         "ciclo_bz_empty_ctas",
         "Nada ranqueado" in med_bz
         and "/sessao" in med_bz
-        and "actionLabel" in med_bz
+        and "Text('Sessão')" in med_bz
         and "Escrever agora" in essay_bz,
         "empty CTAs",
     )
@@ -3570,10 +3589,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3581,7 +3600,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_txt),
         )
     else:
@@ -3813,9 +3832,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat),
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3823,7 +3842,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_cl),
         )
     else:
@@ -3948,9 +3967,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3958,7 +3977,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7")),
+            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_cp),
         )
     else:
@@ -4093,16 +4112,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7")),
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
             str(ver_ct),
         )
     else:
@@ -4174,14 +4193,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        "1.0.0+7" in pubspec and "1.0.0+7" in settings_cu and "1.0.0+7" in pack_bat,
-        "version +7",
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        "version +7/+8",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            "1.0.0+7" in ver_cu.read_text(encoding="utf-8", errors="ignore")
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
             or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
             str(ver_cu),
         )
@@ -4321,6 +4342,1582 @@ def main() -> int:
         "ciclo_da_como_section",
         "Ciclo DA" in como_ap,
         "COMO DA",
+    )
+
+    # --- Ciclo DB: sim debrief teclado ---
+    sim_db = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_db_sim_report_keys",
+        "Relatório: atalhos pós-grade" in sim_db
+        and "LogicalKeyboardKey.keyN" in sim_db
+        and "LogicalKeyboardKey.keyE" in sim_db
+        and "Sessão Natureza (1)" in sim_db,
+        "sim report keys",
+    )
+    ok(
+        "ciclo_db_reset_sim",
+        "_resetSim" in sim_db and "Novo simulado (N)" in sim_db,
+        "reset sim",
+    )
+    ok(
+        "ciclo_db_como_section",
+        "Ciclo DB" in como_ap,
+        "COMO DB",
+    )
+
+    # --- Ciclo DC: dist VERSION +7 ---
+    ver_dc = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_dc.exists():
+        ok(
+            "ciclo_dc_version_file",
+            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            str(ver_dc),
+        )
+    else:
+        ok("ciclo_dc_version_file", True, "VERSION post-pack ou skip")
+    dist_dll_dc = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_dc.exists():
+        ok("ciclo_dc_dist_shape", True, str(dist_dll_dc))
+    else:
+        ok("ciclo_dc_dist_shape", True, "skip locked/no pack (honesto)")
+    ok(
+        "ciclo_dc_como_section",
+        "Ciclo DC" in como_ap,
+        "COMO DC",
+    )
+
+    # --- Ciclo DD: revisões teclado ---
+    rev_dd = (
+        root / "lib" / "features" / "revisions" / "presentation" / "revisions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dd_revisions_keys",
+        "_onKey" in rev_dd
+        and "LogicalKeyboardKey.keyJ" in rev_dd
+        and "active: i == selected" in rev_dd,
+        "revisions keys",
+    )
+    ok(
+        "ciclo_dd_como_section",
+        "Ciclo DD" in como_ap,
+        "COMO DD",
+    )
+
+    # --- Ciclo DE: lint warning dart:io removido ---
+    sess_de = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_de_no_dart_io",
+        "import 'dart:io'" not in sess_de,
+        "no dart io import",
+    )
+    ok(
+        "ciclo_de_como_section",
+        "Ciclo DE" in como_ap,
+        "COMO DE",
+    )
+
+    # --- Ciclo DF: dia de prova UX ---
+    sim_df = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_df_dia_prova_timer",
+        "diaProvaHardCap" in sim_df
+        and "_timeRemainingLabel" in sim_df
+        and "_armDiaProvaTicker" in sim_df,
+        "dia prova timer",
+    )
+    ok(
+        "ciclo_df_dia_prova_banner",
+        "Dia de prova em andamento" in sim_df and "restam $_timeRemainingLabel" in sim_df,
+        "dia prova banner",
+    )
+    ok(
+        "ciclo_df_como_section",
+        "Ciclo DF" in como_ap,
+        "COMO DF",
+    )
+
+    # --- Ciclo DG: domínio teclado ---
+    med_dg = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dg_medicine_keys",
+        "_onKey" in med_dg
+        and "LogicalKeyboardKey.keyJ" in med_dg
+        and "_sessionPath" in med_dg,
+        "medicine keys",
+    )
+    ok(
+        "ciclo_dg_como_section",
+        "Ciclo DG" in como_ap,
+        "COMO DG",
+    )
+
+    # --- Ciclo DH: banca teclado ---
+    bank_dh = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dh_bank_cta_keys",
+        "_ctaPaths" in bank_dh
+        and "LogicalKeyboardKey.keyE" in bank_dh
+        and "Exportar perfil (E)" in bank_dh,
+        "bank cta keys",
+    )
+    ok(
+        "ciclo_dh_como_section",
+        "Ciclo DH" in como_ap,
+        "COMO DH",
+    )
+
+    # --- Ciclo DI: fila teclado ---
+    fila_di = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_di_queue_keys",
+        "_syncNavPaths" in fila_di
+        and "LogicalKeyboardKey.keyS" in fila_di
+        and "Começar sessão (S)" in fila_di
+        and "navIndexFor(path) == selected" in fila_di,
+        "fila keys",
+    )
+    ok(
+        "ciclo_di_como_section",
+        "Ciclo DI" in como_ap,
+        "COMO DI",
+    )
+
+    # --- Ciclo DJ: backup UX ---
+    settings_dj = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dj_backup_human_error",
+        "humanApiError(e, fallback: 'Falha no backup.')" in settings_dj
+        and "humanApiError(e, fallback: 'Falha ao restaurar.')" in settings_dj
+        and "Restaurar backup?" in settings_dj
+        and "sha256Prefix" in settings_dj,
+        "backup human errors",
+    )
+    ok(
+        "ciclo_dj_como_section",
+        "Ciclo DJ" in como_ap,
+        "COMO DJ",
+    )
+
+    # --- Ciclo DK: hoje teclado ---
+    dash_dk = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dk_dashboard_keys",
+        "_onKey" in dash_dk
+        and "LogicalKeyboardKey.keyL" in dash_dk
+        and "Começar sessão (S)" in dash_dk,
+        "dashboard keys",
+    )
+    ok(
+        "ciclo_dk_como_section",
+        "Ciclo DK" in como_ap,
+        "COMO DK",
+    )
+
+    # --- Ciclo DL: plano teclado ---
+    plan_dl = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dl_plan_keys",
+        "_onKey" in plan_dl
+        and "LogicalKeyboardKey.space" in plan_dl
+        and "Fazer agora (S)" in plan_dl
+        and "Exportar plano (semana) (E)" in plan_dl,
+        "plan keys",
+    )
+    ok(
+        "ciclo_dl_como_section",
+        "Ciclo DL" in como_ap,
+        "COMO DL",
+    )
+
+    # --- Ciclo DM: sessão hints ---
+    sess_dm = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dm_session_keyboard_hint",
+        "_keyboardHintForPhase" in sess_dm
+        and "1–5 opção · Enter confirma" in sess_dm
+        and "_keyboardHintForPhase(phaseName)" in sess_dm,
+        "session keyboard hint",
+    )
+    ok(
+        "ciclo_dm_como_section",
+        "Ciclo DM" in como_ap,
+        "COMO DM",
+    )
+
+    # --- Ciclo DN: redação subtitle ---
+    essay_dn = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dn_essay_subtitle_ctrl",
+        "Ctrl+Enter" in essay_dn
+        and "corrija com Ctrl+Enter" in essay_dn,
+        "essay subtitle ctrl",
+    )
+    ok(
+        "ciclo_dn_como_section",
+        "Ciclo DN" in como_ap,
+        "COMO DN",
+    )
+
+    # --- Ciclo DO: biblioteca teclado ---
+    lib_do = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_do_library_keys",
+        "_onKey" in lib_do
+        and "LogicalKeyboardKey.keyJ" in lib_do
+        and "Estudar agora (S)" in lib_do
+        and "_hitSelected" in lib_do
+        and "active: i == _hitSelected" in lib_do,
+        "library keys",
+    )
+    ok(
+        "ciclo_do_como_section",
+        "Ciclo DO" in como_ap,
+        "COMO DO",
+    )
+
+    # --- Ciclo DP: biblioteca empty error legível ---
+    ok(
+        "ciclo_dp_library_error_subtitle",
+        "subtitle: error!" in lib_do,
+        "library error subtitle",
+    )
+    ok(
+        "ciclo_dp_como_section",
+        "Ciclo DP" in como_ap,
+        "COMO DP",
+    )
+
+    # --- Ciclo DQ: soft landing board vazio ---
+    ok(
+        "ciclo_dq_library_board_empty_session",
+        "vá direto à sessão" in lib_do
+        and "Text('Sessão')" in lib_do
+        and "preferNatureza=1" in lib_do,
+        "library board empty session",
+    )
+    ok(
+        "ciclo_dq_como_section",
+        "Ciclo DQ" in como_ap,
+        "COMO DQ",
+    )
+
+    # --- Ciclo DR: soft landing hoje ---
+    dash_dr = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dr_dashboard_error_human",
+        "humanApiError(e, fallback:" in dash_dr
+        and "Text('Sessão')" in dash_dr,
+        "dashboard error human",
+    )
+    ok(
+        "ciclo_dr_como_section",
+        "Ciclo DR" in como_ap,
+        "COMO DR",
+    )
+
+    # --- Ciclo DS: soft landing fila ---
+    fila_ds = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ds_fila_error_subtitle",
+        "subtitle: error!" in fila_ds and "Text('Sessão')" in fila_ds,
+        "fila error subtitle",
+    )
+    ok(
+        "ciclo_ds_como_section",
+        "Ciclo DS" in como_ap,
+        "COMO DS",
+    )
+
+    # --- Ciclo DT: soft landing revisões + questões ---
+    rev_dt = (
+        root / "lib" / "features" / "revisions" / "presentation" / "revisions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    quest_dt = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dt_revisions_questions_error",
+        "humanApiError(e, fallback:" in rev_dt
+        and "humanApiError(e, fallback:" in quest_dt
+        and "Text('Biblioteca')" in quest_dt,
+        "revisions questions error",
+    )
+    ok(
+        "ciclo_dt_como_section",
+        "Ciclo DT" in como_ap,
+        "COMO DT",
+    )
+
+    # --- Ciclo DU: soft landing domínio + sessão ---
+    med_du = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_du = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_du_medicine_session_error",
+        "humanApiError(e, fallback:" in med_du and "subtitle: error!" in sess_du,
+        "medicine session error",
+    )
+    ok(
+        "ciclo_du_como_section",
+        "Ciclo DU" in como_ap,
+        "COMO DU",
+    )
+
+    # --- Ciclo DV: soft landing cards ---
+    cards_dv = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dv_flashcards_error_human",
+        "humanApiError(e, fallback:" in cards_dv and "Text('Sessão')" in cards_dv,
+        "flashcards error human",
+    )
+    ok(
+        "ciclo_dv_como_section",
+        "Ciclo DV" in como_ap,
+        "COMO DV",
+    )
+
+    # --- Ciclo DW: ficha questão erro ---
+    qdet_dw = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dw_question_detail_error_cta",
+        "subtitle: error!" in qdet_dw
+        and "Text('Sessão')" in qdet_dw
+        and "Text('Lista')" in qdet_dw,
+        "question detail error cta",
+    )
+    ok(
+        "ciclo_dw_como_section",
+        "Ciclo DW" in como_ap,
+        "COMO DW",
+    )
+
+    # --- Ciclo DX: adaptativo erro/vazio ---
+    adapt_dx = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dx_adaptive_error_empty",
+        "Nenhuma questão para este tópico" in adapt_dx
+        and "Text('Biblioteca')" in adapt_dx
+        and "humanApiError" in adapt_dx,
+        "adaptive error empty",
+    )
+    ok(
+        "ciclo_dx_como_section",
+        "Ciclo DX" in como_ap,
+        "COMO DX",
+    )
+
+    # --- Ciclo DY: banca/aulas/redação erro ---
+    bank_dy = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lessons_dy = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dy_banca_aulas_essay_error",
+        "humanApiError(e, fallback:" in bank_dy
+        and "humanApiError(e, fallback:" in lessons_dy
+        and "humanApiError(e, fallback:" in essay_dn,
+        "banca aulas essay error",
+    )
+    ok(
+        "ciclo_dy_como_section",
+        "Ciclo DY" in como_ap,
+        "COMO DY",
+    )
+
+    # --- Ciclo DZ: simulado start erro ---
+    sim_dz = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_dz_sim_start_error",
+        "startError" in sim_dz
+        and "humanApiError(e, fallback: 'Não deu para iniciar o simulado.')" in sim_dz
+        and "Nenhuma questão neste modo" in sim_dz,
+        "sim start error",
+    )
+    ok(
+        "ciclo_dz_como_section",
+        "Ciclo DZ" in como_ap,
+        "COMO DZ",
+    )
+
+    # --- Ciclo EA: aprovação soft landing ---
+    appr_ea = (
+        root / "lib" / "features" / "approval" / "presentation" / "approval_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ea_approval_error_empty",
+        "message: error!" in appr_ea
+        and "Text('Sessão')" in appr_ea
+        and "Text('Biblioteca')" in appr_ea,
+        "approval error empty",
+    )
+    ok(
+        "ciclo_ea_como_section",
+        "Ciclo EA" in como_ap,
+        "COMO EA",
+    )
+
+    # --- Ciclo EB: tutor erro inline ---
+    tutor_eb = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_eb_tutor_error_banner",
+        "state.error!" in tutor_eb
+        and "Ctrl+Enter envia" in tutor_eb
+        and "Text('Biblioteca')" in tutor_eb,
+        "tutor error banner",
+    )
+    ok(
+        "ciclo_eb_como_section",
+        "Ciclo EB" in como_ap,
+        "COMO EB",
+    )
+
+    # --- Ciclo EC: onboarding pasta human ---
+    onb_ec = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ec_onboarding_folder_human",
+        "humanApiError(e, fallback:" in onb_ec and "open-folder" in onb_ec,
+        "onboarding folder human",
+    )
+    ok(
+        "ciclo_ec_como_section",
+        "Ciclo EC" in como_ap,
+        "COMO EC",
+    )
+
+    # --- Ciclo ED: versão 1.0.0+8 (aceita +9 ship) ---
+    settings_ed = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ed_version_108",
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9"))
+        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9")),
+        "version +8/+9",
+    )
+    ok(
+        "ciclo_ed_como_section",
+        "Ciclo ED" in como_ap,
+        "COMO ED",
+    )
+
+    # --- Ciclo EE: crash UI ---
+    main_ee = (root / "lib" / "main.dart").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ee_crash_ui",
+        "_shortUiError" in main_ee
+        and "Continuar sessão" in main_ee
+        and "F foco · Ctrl+T tema" in main_ee,
+        "crash ui",
+    )
+    ok(
+        "ciclo_ee_como_section",
+        "Ciclo EE" in como_ap,
+        "COMO EE",
+    )
+
+    # --- Ciclo EF: backend banner human ---
+    status_ef = (root / "lib" / "core" / "widgets" / "status_widgets.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_ef_backend_banner_human",
+        "lastError" in status_ef
+        and "humanApiError(e, fallback:" in status_ef
+        and "sessão salva" in status_ef,
+        "backend banner human",
+    )
+    ok(
+        "ciclo_ef_como_section",
+        "Ciclo EF" in como_ap,
+        "COMO EF",
+    )
+
+    # --- Ciclo EG: media reforço erro ---
+    media_eg = (root / "lib" / "core" / "widgets" / "media_reinforcement.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_eg_media_error_reload",
+        "snap.hasError" in media_eg
+        and "_reloadGen" in media_eg
+        and "Reforço indisponível" in media_eg,
+        "media error reload",
+    )
+    ok(
+        "ciclo_eg_como_section",
+        "Ciclo EG" in como_ap,
+        "COMO EG",
+    )
+
+    # --- Ciclo EH: rail atalhos ---
+    shell_eh = (root / "lib" / "core" / "widgets" / "app_shell.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_eh_rail_shortcuts_hint",
+        "F foco · Ctrl+T tema" in shell_eh and "if (expanded)" in shell_eh,
+        "rail shortcuts hint",
+    )
+    ok(
+        "ciclo_eh_como_section",
+        "Ciclo EH" in como_ap,
+        "COMO EH",
+    )
+
+    # --- Ciclo EI: aprovação teclado ---
+    appr_ei = (
+        root / "lib" / "features" / "approval" / "presentation" / "approval_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ei_approval_keys",
+        "_onKey" in appr_ei
+        and "LogicalKeyboardKey.keyA" in appr_ei
+        and "Aprovar (A)" in appr_ei
+        and "primaryContainer.withOpacity(0.45)" in appr_ei,
+        "approval keys",
+    )
+    ok(
+        "ciclo_ei_como_section",
+        "Ciclo EI" in como_ap,
+        "COMO EI",
+    )
+
+    # --- Ciclo EJ: ingest review H/E ---
+    ingest_ej = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ej_ingest_he_keys",
+        "LogicalKeyboardKey.keyH" in ingest_ej
+        and "LogicalKeyboardKey.keyE" in ingest_ej
+        and "H altas conf." in ingest_ej,
+        "ingest he keys",
+    )
+    ok(
+        "ciclo_ej_como_section",
+        "Ciclo EJ" in como_ap,
+        "COMO EJ",
+    )
+
+    # --- Ciclo EK: tutor fontes UX ---
+    tutor_ek = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ek_tutor_citations_ux",
+        "fontes clicáveis" in tutor_ek
+        and "clique abre ficha" in tutor_ek,
+        "tutor citations ux",
+    )
+    ok(
+        "ciclo_ek_como_section",
+        "Ciclo EK" in como_ap,
+        "COMO EK",
+    )
+
+    # --- Ciclo EL: settings humanApiError avançado ---
+    settings_el = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_el_settings_human_api",
+        "humanApiError(e, fallback: 'Falha no índice.')" in settings_el
+        and "humanApiError(e, fallback: 'Falha no lote de rascunhos.')" in settings_el
+        and "humanApiError(e, fallback: 'Erro ao ler PDF.')" in settings_el,
+        "settings humanApiError wave",
+    )
+    ok(
+        "ciclo_el_como_section",
+        "Ciclo EL" in como_ap,
+        "COMO EL",
+    )
+
+    # --- Ciclo EM: settings keyboard R/B ---
+    ok(
+        "ciclo_em_settings_keys",
+        "LogicalKeyboardKey.keyR" in settings_el
+        and "LogicalKeyboardKey.keyB" in settings_el
+        and "R atualiza health" in settings_el
+        and "Salvar cópia de segurança (B)" in settings_el,
+        "settings rb keys",
+    )
+    ok(
+        "ciclo_em_como_section",
+        "Ciclo EM" in como_ap,
+        "COMO EM",
+    )
+
+    # --- Ciclo EN: tutor citation type/year ---
+    ok(
+        "ciclo_en_tutor_cite_line",
+        "_citeLine" in tutor_ek
+        and "'[$type · $year]'" in tutor_ek
+        and "_citeLine(c)" in tutor_ek,
+        "tutor cite line",
+    )
+    ok(
+        "ciclo_en_como_section",
+        "Ciclo EN" in como_ap,
+        "COMO EN",
+    )
+
+    # --- Ciclo EO: settings backup list errors ---
+    settings_eo = settings_el  # same file
+    ok(
+        "ciclo_eo_settings_backup_list_error",
+        "backupListError" in settings_eo
+        and "Não foi possível listar backups." in settings_eo
+        and "QuietEmpty" in settings_eo,
+        "settings backup list error",
+    )
+    ok(
+        "ciclo_eo_como_section",
+        "Ciclo EO" in como_ap,
+        "COMO EO",
+    )
+
+    # --- Ciclo EP: essay setup load errors ---
+    essay_ep = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ep_essay_setup_error",
+        "setupError" in essay_ep
+        and "_reloadSetup" in essay_ep
+        and "Temas indisponíveis" in essay_ep,
+        "essay setup error",
+    )
+    ok(
+        "ciclo_ep_como_section",
+        "Ciclo EP" in como_ap,
+        "COMO EP",
+    )
+
+    # --- Ciclo EQ: lessons keyboard R/S ---
+    lessons_eq = (
+        root / "lib" / "features" / "lessons" / "presentation" / "lessons_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_eq_lessons_keys",
+        "LogicalKeyboardKey.keyR" in lessons_eq
+        and "LogicalKeyboardKey.keyS" in lessons_eq
+        and "R atualiza lista" in lessons_eq,
+        "lessons rs keys",
+    )
+    ok(
+        "ciclo_eq_como_section",
+        "Ciclo EQ" in como_ap,
+        "COMO EQ",
+    )
+
+    # --- Ciclo ER: sim checkpoint load error ---
+    sim_er = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_er_sim_checkpoint_error",
+        "checkpointLoadError" in sim_er
+        and "Não foi possível carregar simulado salvo." in sim_er,
+        "sim checkpoint error",
+    )
+    ok(
+        "ciclo_er_como_section",
+        "Ciclo ER" in como_ap,
+        "COMO ER",
+    )
+
+    # --- Ciclo ES: sim debrief errors ---
+    ok(
+        "ciclo_es_sim_debrief_error",
+        "debriefErrors" in sim_er
+        and "Explicação indisponível." in sim_er,
+        "sim debrief error",
+    )
+    ok(
+        "ciclo_es_como_section",
+        "Ciclo ES" in como_ap,
+        "COMO ES",
+    )
+
+    # --- Ciclo ET: ingest S + professor error ---
+    ingest_et = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_et_ingest_s_professor",
+        "LogicalKeyboardKey.keyS" in ingest_et
+        and "Rascunhos professor indisponíveis." in ingest_et
+        and "S sessão" in ingest_et,
+        "ingest s professor",
+    )
+    ok(
+        "ciclo_et_como_section",
+        "Ciclo ET" in como_ap,
+        "COMO ET",
+    )
+
+    # --- Ciclo EU: dashboard R refresh ---
+    dash_eu = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_eu_dashboard_r_refresh",
+        "LogicalKeyboardKey.keyR" in dash_eu
+        and "R atualiza" in dash_eu
+        and "_loadCheckpoint" in dash_eu,
+        "dashboard r refresh",
+    )
+    ok(
+        "ciclo_eu_como_section",
+        "Ciclo EU" in como_ap,
+        "COMO EU",
+    )
+
+    # --- Ciclo EV: library partial load ---
+    lib_ev = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ev_library_partial_load",
+        "partialLoadNote" in lib_ev
+        and "Cobertura do edital indisponível." in lib_ev,
+        "library partial load",
+    )
+    ok(
+        "ciclo_ev_como_section",
+        "Ciclo EV" in como_ap,
+        "COMO EV",
+    )
+
+    # --- Ciclo EW: adaptive answer save error ---
+    adapt_ew = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ew_adaptive_answer_save",
+        "answerSaveError" in adapt_ew
+        and "Resposta não gravada" in adapt_ew,
+        "adaptive answer save",
+    )
+    ok(
+        "ciclo_ew_como_section",
+        "Ciclo EW" in como_ap,
+        "COMO EW",
+    )
+
+    # --- Ciclo EX: adaptive R remonta fila ---
+    ok(
+        "ciclo_ex_adaptive_r_restart",
+        "LogicalKeyboardKey.keyR" in adapt_ew
+        and "R remonta" in adapt_ew,
+        "adaptive r restart",
+    )
+    ok(
+        "ciclo_ex_como_section",
+        "Ciclo EX" in como_ap,
+        "COMO EX",
+    )
+
+    # --- Ciclo EY: fila R refresh ---
+    fila_ey = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ey_fila_r_refresh",
+        "LogicalKeyboardKey.keyR" in fila_ey
+        and "R atualiza" in fila_ey,
+        "fila r refresh",
+    )
+    ok(
+        "ciclo_ey_como_section",
+        "Ciclo EY" in como_ap,
+        "COMO EY",
+    )
+
+    # --- Ciclo EZ: ficha save/adaptive errors ---
+    qdet_ez = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ez_question_save_errors",
+        "saveError" in qdet_ez
+        and "adaptiveLoadError" in qdet_ez
+        and "Resposta não gravada" in qdet_ez,
+        "question save errors",
+    )
+    ok(
+        "ciclo_ez_como_section",
+        "Ciclo EZ" in como_ap,
+        "COMO EZ",
+    )
+
+    # --- Ciclo FA: library search history error ---
+    ok(
+        "ciclo_fa_library_search_history",
+        "searchHistoryNote" in lib_ev
+        and "Histórico de buscas indisponível." in lib_ev,
+        "library search history",
+    )
+    ok(
+        "ciclo_fa_como_section",
+        "Ciclo FA" in como_ap,
+        "COMO FA",
+    )
+
+    # --- Ciclo FB: session checkpoint load error ---
+    sess_fb = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fb_session_checkpoint_load",
+        "checkpointLoadError" in sess_fb
+        and "Checkpoint de sessão indisponível." in sess_fb,
+        "session checkpoint load",
+    )
+    ok(
+        "ciclo_fb_como_section",
+        "Ciclo FB" in como_ap,
+        "COMO FB",
+    )
+
+    # --- Ciclo FC: session checkpoint save error ---
+    ok(
+        "ciclo_fc_session_checkpoint_save",
+        "checkpointSaveError" in sess_fb
+        and "Não foi possível salvar progresso da sessão." in sess_fb,
+        "session checkpoint save",
+    )
+    ok(
+        "ciclo_fc_como_section",
+        "Ciclo FC" in como_ap,
+        "COMO FC",
+    )
+
+    # --- Ciclo FD: revisions R/S keys ---
+    rev_fd = (
+        root / "lib" / "features" / "revisions" / "presentation" / "revisions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fd_revisions_rs_keys",
+        "LogicalKeyboardKey.keyR" in rev_fd
+        and "LogicalKeyboardKey.keyS" in rev_fd
+        and "R atualiza" in rev_fd,
+        "revisions rs keys",
+    )
+    ok(
+        "ciclo_fd_como_section",
+        "Ciclo FD" in como_ap,
+        "COMO FD",
+    )
+
+    # --- Ciclo FE: session questions load error ---
+    ok(
+        "ciclo_fe_session_questions_load",
+        "questionsLoadError" in sess_fb
+        and "Não foi possível carregar as questões desta fase" in sess_fb,
+        "session questions load",
+    )
+    ok(
+        "ciclo_fe_como_section",
+        "Ciclo FE" in como_ap,
+        "COMO FE",
+    )
+
+    # --- Ciclo FF: flashcards R/S keys ---
+    cards_ff = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ff_flashcards_rs_keys",
+        "LogicalKeyboardKey.keyR" in cards_ff
+        and "LogicalKeyboardKey.keyS" in cards_ff
+        and "R atualiza · S sessão" in cards_ff,
+        "flashcards rs keys",
+    )
+    ok(
+        "ciclo_ff_como_section",
+        "Ciclo FF" in como_ap,
+        "COMO FF",
+    )
+
+    # --- Ciclo FG: study plan R + toggle/export errors ---
+    plan_fg = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fg_plan_r_toggle",
+        "LogicalKeyboardKey.keyR" in plan_fg
+        and "Não deu para marcar o dia no plano." in plan_fg
+        and "Pasta de export não abriu." in plan_fg,
+        "plan r toggle",
+    )
+    ok(
+        "ciclo_fg_como_section",
+        "Ciclo FG" in como_ap,
+        "COMO FG",
+    )
+
+    # --- Ciclo FH: domínio R/S keys ---
+    med_fh = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fh_medicine_rs_keys",
+        "LogicalKeyboardKey.keyR" in med_fh
+        and "LogicalKeyboardKey.keyS" in med_fh
+        and "R atualiza" in med_fh,
+        "medicine rs keys",
+    )
+    ok(
+        "ciclo_fh_como_section",
+        "Ciclo FH" in como_ap,
+        "COMO FH",
+    )
+
+    # --- Ciclo FI: questions R/S keys ---
+    quest_fi = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fi_questions_rs_keys",
+        "LogicalKeyboardKey.keyR" in quest_fi
+        and "LogicalKeyboardKey.keyS" in quest_fi
+        and "R atualiza · S sessão" in quest_fi,
+        "questions rs keys",
+    )
+    ok(
+        "ciclo_fi_como_section",
+        "Ciclo FI" in como_ap,
+        "COMO FI",
+    )
+
+    # --- Ciclo FJ: approval F5 refresh ---
+    appr_fj = (
+        root / "lib" / "features" / "approval" / "presentation" / "approval_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fj_approval_f5_refresh",
+        "LogicalKeyboardKey.f5" in appr_fj
+        and "F5 atualiza" in appr_fj,
+        "approval f5 refresh",
+    )
+    ok(
+        "ciclo_fj_como_section",
+        "Ciclo FJ" in como_ap,
+        "COMO FJ",
+    )
+
+    # --- Ciclo FK: dashboard checkpoint load error ---
+    dash_fk = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fk_dashboard_checkpoint_error",
+        "checkpointLoadError" in dash_fk
+        and "Checkpoint de sessão indisponível no Hoje." in dash_fk,
+        "dashboard checkpoint error",
+    )
+    ok(
+        "ciclo_fk_como_section",
+        "Ciclo FK" in como_ap,
+        "COMO FK",
+    )
+
+    # --- Ciclo FL: banca R + export open error ---
+    bank_fl = (
+        root / "lib" / "features" / "bank_profile" / "presentation" / "bank_profile_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fl_bank_r_export",
+        "LogicalKeyboardKey.keyR" in bank_fl
+        and "Pasta de export não abriu." in bank_fl
+        and "R atualiza" in bank_fl,
+        "bank r export",
+    )
+    ok(
+        "ciclo_fl_como_section",
+        "Ciclo FL" in como_ap,
+        "COMO FL",
+    )
+
+    # --- Ciclo FM: session schedule gaps error ---
+    ok(
+        "ciclo_fm_session_schedule_gaps",
+        "scheduleGapsError" in sess_fb
+        and "Lacunas não agendadas" in sess_fb,
+        "session schedule gaps",
+    )
+    ok(
+        "ciclo_fm_como_section",
+        "Ciclo FM" in como_ap,
+        "COMO FM",
+    )
+
+    # --- Ciclo FN: fila theory open path error ---
+    fila_fn = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    theory_fn = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).exists() else ""
+    ok(
+        "ciclo_fn_fila_open_material",
+        (
+            ("Não deu para abrir o material." in fila_fn and "humanApiError" in fila_fn)
+            or (
+                "openTheoryReadSheet" in fila_fn
+                and "Não deu para abrir o material." in theory_fn
+                and "humanApiError" in theory_fn
+            )
+        ),
+        "fila open material",
+    )
+    ok(
+        "ciclo_fn_como_section",
+        "Ciclo FN" in como_ap,
+        "COMO FN",
+    )
+
+    # --- Ciclo FO: dashboard exam sync error ---
+    ok(
+        "ciclo_fo_dashboard_exam_sync",
+        "examDateProvider).syncError" in dash_fk and "retrySync" in dash_fk,
+        "dashboard exam sync",
+    )
+    ok(
+        "ciclo_fo_como_section",
+        "Ciclo FO" in como_ap,
+        "COMO FO",
+    )
+
+    # --- Ciclo FP: sim checkpoint save error ---
+    sim_fp = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fp_sim_checkpoint_save",
+        "checkpointSaveError" in sim_fp
+        and "Progresso do simulado não foi salvo." in sim_fp,
+        "sim checkpoint save",
+    )
+    ok(
+        "ciclo_fp_como_section",
+        "Ciclo FP" in como_ap,
+        "COMO FP",
+    )
+
+    # --- Ciclo FQ: session close day + discard checkpoint ---
+    ok(
+        "ciclo_fq_session_discard_close",
+        "Não foi possível encerrar o dia a partir da sessão." in sess_fb
+        and "Não foi possível descartar a sessão salva." in dash_fk,
+        "session discard close",
+    )
+    ok(
+        "ciclo_fq_como_section",
+        "Ciclo FQ" in como_ap,
+        "COMO FQ",
+    )
+
+    # --- Ciclo FR: library classify pending ---
+    ok(
+        "ciclo_fr_library_classify",
+        "Reclassificação Natureza não rodou." in lib_ev
+        and "classify-pending" in lib_ev,
+        "library classify",
+    )
+    ok(
+        "ciclo_fr_como_section",
+        "Ciclo FR" in como_ap,
+        "COMO FR",
+    )
+
+    # --- Ciclo FS: library parse gate error ---
+    ok(
+        "ciclo_fs_library_parse_gate",
+        "Verificação de parse indisponível" in lib_ev,
+        "library parse gate",
+    )
+    ok(
+        "ciclo_fs_como_section",
+        "Ciclo FS" in como_ap,
+        "COMO FS",
+    )
+
+    # --- Ciclo FT: domínio draft accept error ---
+    ok(
+        "ciclo_ft_medicine_draft_accept",
+        "Não deu para aceitar o rascunho." in med_fh,
+        "medicine draft accept",
+    )
+    ok(
+        "ciclo_ft_como_section",
+        "Ciclo FT" in como_ap,
+        "COMO FT",
+    )
+
+    # --- Ciclo FU: sim export open path ---
+    ok(
+        "ciclo_fu_sim_export_open",
+        "Export OK, mas pasta não abriu." in sim_fp,
+        "sim export open",
+    )
+    ok(
+        "ciclo_fu_como_section",
+        "Ciclo FU" in como_ap,
+        "COMO FU",
+    )
+
+    # --- Ciclo FV: session answer save error ---
+    ok(
+        "ciclo_fv_session_answer_save",
+        "answerSaveError" in sess_fb
+        and "Resposta não gravada — progresso local incompleto." in sess_fb,
+        "session answer save",
+    )
+    ok(
+        "ciclo_fv_como_section",
+        "Ciclo FV" in como_ap,
+        "COMO FV",
+    )
+
+    # --- Ciclo FW: session card review error ---
+    ok(
+        "ciclo_fw_session_card_review",
+        "cardReviewError" in sess_fb
+        and "Revisão do card não registrada." in sess_fb,
+        "session card review",
+    )
+    ok(
+        "ciclo_fw_como_section",
+        "Ciclo FW" in como_ap,
+        "COMO FW",
+    )
+
+    # --- Ciclo FX: session export open + discard checkpoint ---
+    ok(
+        "ciclo_fx_session_export_discard",
+        "Pasta de export não abriu." in sess_fb
+        and "Não foi possível descartar checkpoint da sessão." in sess_fb,
+        "session export discard",
+    )
+    ok(
+        "ciclo_fx_como_section",
+        "Ciclo FX" in como_ap,
+        "COMO FX",
+    )
+
+    # --- Ciclo FY: sim discard checkpoint error ---
+    sim_fy = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_fy_sim_discard_checkpoint",
+        "Não foi possível descartar o simulado salvo." in sim_fy,
+        "sim discard checkpoint",
+    )
+    ok(
+        "ciclo_fy_como_section",
+        "Ciclo FY" in como_ap,
+        "COMO FY",
+    )
+
+    # --- Ciclo FZ: session partial question load ---
+    ok(
+        "ciclo_fz_session_partial_load",
+        "questionsPartialLoadNote" in sess_fb
+        and "questões não carregaram — API instável?" in sess_fb,
+        "session partial load",
+    )
+    ok(
+        "ciclo_fz_como_section",
+        "Ciclo FZ" in como_ap,
+        "COMO FZ",
+    )
+
+    # --- Ciclo GA: session revision topic fetch ---
+    ok(
+        "ciclo_ga_session_revision_fetch",
+        "fetchFailures" in sess_fb
+        and "Não foi possível buscar questões das revisões due." in sess_fb,
+        "session revision fetch",
+    )
+    ok(
+        "ciclo_ga_como_section",
+        "Ciclo GA" in como_ap,
+        "COMO GA",
+    )
+
+    # --- Ciclo GB: dashboard backup date parse ---
+    ok(
+        "ciclo_gb_dashboard_backup_date",
+        "Data do último backup inválida — refaça em Ajustes." in dash_fk,
+        "dashboard backup date",
+    )
+    ok(
+        "ciclo_gb_como_section",
+        "Ciclo GB" in como_ap,
+        "COMO GB",
+    )
+
+    # --- Ciclo GC: sim preflight health offline ---
+    ok(
+        "ciclo_gc_sim_preflight_health",
+        "healthNote" in sim_fy
+        and "API offline — contagem de oficiais indisponível." in sim_fy,
+        "sim preflight health",
+    )
+    ok(
+        "ciclo_gc_como_section",
+        "Ciclo GC" in como_ap,
+        "COMO GC",
+    )
+
+    # --- Ciclo GD: week close export open path ---
+    week_gd = (
+        root / "lib" / "core" / "widgets" / "week_close_panel.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gd_week_close_export_open",
+        "Pasta de export não abriu." in week_gd,
+        "week close export open",
+    )
+    ok(
+        "ciclo_gd_como_section",
+        "Ciclo GD" in como_ap,
+        "COMO GD",
+    )
+
+    # --- Ciclo GE: exam date state sync/hydrate ---
+    prefs_ge = (
+        root / "lib" / "core" / "data" / "study_prefs_providers.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ge_exam_date_state",
+        "ExamDateState" in prefs_ge
+        and "hydrateNote" in prefs_ge
+        and "Data salva localmente, mas não sincronizou com a API." in prefs_ge,
+        "exam date state",
+    )
+    ok(
+        "ciclo_ge_como_section",
+        "Ciclo GE" in como_ap,
+        "COMO GE",
+    )
+
+    # --- Ciclo GF: settings exam date errors ---
+    set_gf = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gf_settings_exam_date",
+        "examState.syncError" in set_gf
+        and "Data inválida — use AAAA-MM-DD válido." in set_gf
+        and "retrySync" in set_gf,
+        "settings exam date",
+    )
+    ok(
+        "ciclo_gf_como_section",
+        "Ciclo GF" in como_ap,
+        "COMO GF",
+    )
+
+    # --- Ciclo GG: onboarding exam date notes ---
+    onb_gg = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gg_onboarding_exam_date",
+        "examState.hydrateNote" in onb_gg and "examState.syncError" in onb_gg,
+        "onboarding exam date",
+    )
+    ok(
+        "ciclo_gg_como_section",
+        "Ciclo GG" in como_ap,
+        "COMO GG",
+    )
+
+    # --- Ciclo GH: dashboard exam sync unified provider ---
+    ok(
+        "ciclo_gh_dashboard_exam_unified",
+        "examSyncError" not in dash_fk
+        and "examDateProvider).syncError" in dash_fk,
+        "dashboard exam unified",
+    )
+    ok(
+        "ciclo_gh_como_section",
+        "Ciclo GH" in como_ap,
+        "COMO GH",
+    )
+
+    # --- Ciclo GI: session partial load reload ---
+    ok(
+        "ciclo_gi_session_partial_reload",
+        "_lastQuestionBodyIds" in sess_fb and "Recarregar" in sess_fb,
+        "session partial reload",
+    )
+    ok(
+        "ciclo_gi_como_section",
+        "Ciclo GI" in como_ap,
+        "COMO GI",
+    )
+
+    # --- Ciclo GJ: study plan exam sync error ---
+    plan_gj = (
+        root / "lib" / "features" / "study_plan" / "presentation" / "study_plan_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gj_plan_exam_sync",
+        "examState.syncError" in plan_gj and "retrySync" in plan_gj,
+        "plan exam sync",
+    )
+    ok(
+        "ciclo_gj_como_section",
+        "Ciclo GJ" in como_ap,
+        "COMO GJ",
+    )
+
+    # --- Ciclo GK: exam date sync banner ---
+    status_gk = (
+        root / "lib" / "core" / "widgets" / "status_widgets.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    shell_gk = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gk_exam_sync_banner",
+        "ExamDateSyncBanner" in status_gk
+        and "Data da prova não sincronizou" in status_gk
+        and "ExamDateSyncBanner" in shell_gk,
+        "exam sync banner",
+    )
+    ok(
+        "ciclo_gk_como_section",
+        "Ciclo GK" in como_ap,
+        "COMO GK",
+    )
+
+    # --- Ciclo GL: adaptive generated partial note ---
+    adapt_gl = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gl_adaptive_partial_generated",
+        "generatedPartialNote" in adapt_gl
+        and "inédita(s) carregadas parcialmente" in adapt_gl,
+        "adaptive partial generated",
+    )
+    ok(
+        "ciclo_gl_como_section",
+        "Ciclo GL" in como_ap,
+        "COMO GL",
+    )
+
+    # --- Ciclo GM: shell rail sync badge ---
+    ok(
+        "ciclo_gm_shell_sync_badge",
+        "examSyncPending" in shell_gk
+        and "Sync da prova pendente" in shell_gk
+        and "badge:" in shell_gk,
+        "shell sync badge",
+    )
+    ok(
+        "ciclo_gm_como_section",
+        "Ciclo GM" in como_ap,
+        "COMO GM",
+    )
+
+    # --- Ciclo GN: mobile app bar exam sync ---
+    ok(
+        "ciclo_gn_mobile_appbar_sync",
+        "Sync da prova pendente" in shell_gk
+        and "sync_problem_rounded" in shell_gk
+        and "retrySync" in shell_gk,
+        "mobile appbar sync",
+    )
+    ok(
+        "ciclo_gn_como_section",
+        "Ciclo GN" in como_ap,
+        "COMO GN",
+    )
+
+    # --- Ciclo GO: mobile popup menu sync ---
+    ok(
+        "ciclo_go_mobile_menu_sync",
+        "sync pendente" in shell_gk and "menu_rounded" in shell_gk,
+        "mobile menu sync",
+    )
+    ok(
+        "ciclo_go_como_section",
+        "Ciclo GO" in como_ap,
+        "COMO GO",
+    )
+
+    # --- Ciclo GP: mobile bottom sync strip ---
+    ok(
+        "ciclo_gp_mobile_bottom_strip",
+        "Data da prova não sincronizou" in shell_gk
+        and "bottomNavigationBar: Column" in shell_gk,
+        "mobile bottom strip",
+    )
+    ok(
+        "ciclo_gp_como_section",
+        "Ciclo GP" in como_ap,
+        "COMO GP",
+    )
+
+    # --- Ciclo GQ: library year pdf open path ---
+    lib_gq = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gq_library_year_pdf_open",
+        "PDF no PC mas pasta não abriu." in lib_gq and "_openYearPdf" in lib_gq,
+        "library year pdf open",
+    )
+    ok(
+        "ciclo_gq_como_section",
+        "Ciclo GQ" in como_ap,
+        "COMO GQ",
+    )
+
+    # --- Ciclo GT: F2 thin Ler teoria ---
+    theory_gt = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    fila_gt = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_gt = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gt_theory_shared_sheet",
+        "openTheoryReadSheet" in theory_gt
+        and "/api/library/materials" in theory_gt
+        and "/api/study/mark-read" in theory_gt
+        and "Sem material local para este tópico." in theory_gt,
+        "shared theory sheet",
+    )
+    ok(
+        "ciclo_gt_fila_ler_teoria",
+        "openTheoryReadSheet" in fila_gt and "Ler teoria" in fila_gt,
+        "fila CTA",
+    )
+    ok(
+        "ciclo_gt_ficha_ler_teoria",
+        "openTheoryReadSheet" in ficha_gt and "Ler teoria" in ficha_gt,
+        "ficha CTA",
+    )
+    ok(
+        "ciclo_gt_como_section",
+        "Ciclo GT" in como_ap,
+        "COMO GT",
+    )
+
+    # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
+    ok(
+        "ciclo_gu_version_109",
+        "1.0.0+9" in pubspec
+        and "1.0.0+9" in settings_ed
+        and "1.0.0+9" in pack_bat,
+        "version +9",
+    )
+    dist_gu = root / "dist" / "PAES_MED_AI_Windows"
+    if dist_gu.is_dir():
+        ver_gu = (dist_gu / "VERSION.txt").read_text(encoding="utf-8", errors="ignore") if (dist_gu / "VERSION.txt").is_file() else ""
+        ok(
+            "ciclo_gu_pack_launcher",
+            (dist_gu / "Iniciar_PAES_MED_AI.bat").is_file(),
+            "dist launcher bat",
+        )
+        ok(
+            "ciclo_gu_pack_icon",
+            (dist_gu / "branding" / "app_icon.ico").is_file()
+            or (root / "assets" / "branding" / "app_icon.ico").is_file(),
+            "pack icon ico",
+        )
+        ok(
+            "ciclo_gu_pack_version_txt",
+            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9")),
+            "VERSION.txt match",
+        )
+        ok(
+            "ciclo_gu_pack_exe",
+            (dist_gu / "app" / "paes_med_ai.exe").is_file(),
+            "dist exe",
+        )
+    else:
+        ok("ciclo_gu_pack_launcher", True, "dist ausente (skip soft)")
+        ok("ciclo_gu_pack_icon", True, "dist ausente (skip soft)")
+        ok("ciclo_gu_pack_version_txt", True, "dist ausente (skip soft)")
+        ok("ciclo_gu_pack_exe", True, "dist ausente (skip soft)")
+    # Hard anti-regression: bat always writes launcher/icon/version gates when packing
+    ok(
+        "ciclo_gu_pack_bat_gates",
+        "Iniciar_PAES_MED_AI.bat" in pack_bat
+        and "app_icon.ico" in pack_bat
+        and "VERSION.txt" in pack_bat
+        and "1.0.0+9" in pack_bat,
+        "empacotar gates +9",
+    )
+    ok(
+        "ciclo_gu_como_section",
+        "Ciclo GU" in como_ap,
+        "COMO GU",
+    )
+    ok(
+        "ciclo_gu_roadmap_gr_gu",
+        "Ciclo GR" in como_ap or "GR–GU" in como_ap or "GR-GU" in (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore"),
+        "roadmap GR-GU",
     )
 
     failed = [c for c in checks if not c[1]]

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,8 +70,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   bool revisionUsingQuestions = false;
   bool restoring = false;
   Map<String, dynamic>? pendingCheckpoint;
+  String? checkpointLoadError;
+  String? checkpointSaveError;
+  String? questionsLoadError;
+  String? questionsPartialLoadNote;
+  List<String> _lastQuestionBodyIds = [];
   /// Ciclo AI: painel final da sessão (após último bloco).
   bool sessionComplete = false;
+  String? scheduleGapsError;
+  String? answerSaveError;
+  String? cardReviewError;
   @override
   void initState() {
     super.initState();
@@ -122,14 +129,18 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     try {
       final data = await apiClient.get(_planPath);
       Map<String, dynamic>? cp;
+      String? cpErr;
       try {
         final raw = await apiClient.get('/api/session/checkpoint');
         cp = (raw as Map)['checkpoint'] as Map<String, dynamic>?;
         if (cp != null) cp = Map<String, dynamic>.from(cp);
-      } catch (_) {}
+      } catch (e) {
+        cpErr = humanApiError(e, fallback: 'Checkpoint de sessão indisponível.');
+      }
       setState(() {
         plan = Map<String, dynamic>.from(data as Map);
         pendingCheckpoint = cp != null && cp['started'] == true ? cp : null;
+        checkpointLoadError = cpErr;
       });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para montar a sessão. Tente de novo.'));
@@ -157,7 +168,18 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         'questionIds': ids,
         'started': true,
       });
-    } catch (_) {}
+      if (mounted && checkpointSaveError != null) {
+        setState(() => checkpointSaveError = null);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(
+        () => checkpointSaveError = humanApiError(
+          e,
+          fallback: 'Não foi possível salvar progresso da sessão.',
+        ),
+      );
+    }
   }
 
   String _checkpointLabel(Map cp) {
@@ -187,8 +209,20 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   Future<void> _clearCheckpoint() async {
     try {
       await apiClient.delete('/api/session/checkpoint');
-    } catch (_) {}
-    setState(() => pendingCheckpoint = null);
+      setState(() {
+        pendingCheckpoint = null;
+        checkpointLoadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            humanApiError(e, fallback: 'Não foi possível descartar checkpoint da sessão.'),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _restoreCheckpoint() async {
@@ -260,11 +294,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
   Future<void> _loadQuestionBodies(List ids) async {
     final out = <Map<String, dynamic>>[];
-    for (final raw in ids.take(12)) {
+    var failed = 0;
+    final batch = ids.take(12).toList();
+    _lastQuestionBodyIds = batch.map((e) => e.toString()).toList();
+    for (final raw in batch) {
       try {
         final q = await apiClient.get('/api/questions/${raw.toString()}');
         out.add(Map<String, dynamic>.from(q as Map));
-      } catch (_) {}
+      } catch (_) {
+        failed++;
+      }
     }
     setState(() {
       sessionQuestions = out;
@@ -273,6 +312,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       revealed = false;
       pendingErrorPick = false;
       errorType = 'conceito';
+      questionsLoadError = out.isEmpty && batch.isNotEmpty
+          ? 'Não foi possível carregar as questões desta fase — API offline?'
+          : null;
+      questionsPartialLoadNote = failed > 0 && out.isNotEmpty
+          ? '$failed de ${batch.length} questões não carregaram — API instável?'
+          : null;
     });
     qSw
       ..reset()
@@ -296,6 +341,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     setState(() {
       started = true;
       sessionComplete = false;
+      scheduleGapsError = null;
       phaseIndex = 0;
       answeredIds.clear();
       sessionErrors.clear();
@@ -345,6 +391,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     // Sem flashcards: praticar questões dos tópicos em revisão
     final revs = (plan?['revisions'] as List? ?? plan?['phases']?['revisions'] as List? ?? []);
     final ids = <String>[];
+    var fetchFailures = 0;
     for (final raw in revs.take(4)) {
       final r = Map<String, dynamic>.from(raw as Map);
       final subject = r['subject']?.toString() ?? '';
@@ -359,7 +406,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           final id = (q as Map)['id']?.toString();
           if (id != null && id.isNotEmpty && !ids.contains(id)) ids.add(id);
         }
-      } catch (_) {}
+      } catch (_) {
+        fetchFailures++;
+      }
     }
     if (ids.isEmpty) {
       final study = plan?['studyToday'] as Map?;
@@ -373,12 +422,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             final id = (q as Map)['id']?.toString();
             if (id != null) ids.add(id);
           }
-        } catch (_) {}
+        } catch (_) {
+          fetchFailures++;
+        }
       }
     }
     setState(() {
       sessionCards = [];
       revisionUsingQuestions = true;
+      questionsLoadError = ids.isEmpty && fetchFailures > 0
+          ? 'Não foi possível buscar questões das revisões due.'
+          : null;
     });
     if (ids.isNotEmpty) await _loadQuestionBodies(ids);
   }
@@ -413,6 +467,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
   Future<void> _prepareSessionEnd() async {
     final gaps = _sessionGaps;
+    String? gapsErr;
     if (gaps.isNotEmpty) {
       try {
         await apiClient.post('/api/simulations/schedule-gaps', {
@@ -420,12 +475,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             for (final g in gaps) {'subject': g['subject'], 'topic': g['topic']},
           ],
         });
-      } catch (_) {}
+      } catch (e) {
+        gapsErr = humanApiError(e, fallback: 'Lacunas não agendadas — fila manual.');
+      }
     }
     if (!mounted) return;
     setState(() {
       started = false;
       sessionComplete = true;
+      scheduleGapsError = gapsErr;
     });
   }
 
@@ -433,8 +491,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     try {
       await apiClient.post('/api/study/day-close', {});
       ref.read(refreshTickProvider.notifier).state++;
-    } catch (_) {}
-    if (mounted) context.go('/dashboard');
+      if (mounted) context.go('/dashboard');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            humanApiError(e, fallback: 'Não foi possível encerrar o dia a partir da sessão.'),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _sessionEndPanel(BuildContext context) {
@@ -471,6 +538,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
           ],
           const SizedBox(height: 12),
+          if (scheduleGapsError != null) ...[
+            Text(scheduleGapsError!, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 8),
+          ],
           if (gaps.isEmpty)
             const Text('Sem misses neste bloco — siga a fila ou os cards due.')
           else ...[
@@ -530,38 +601,49 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   }
 
   Future<void> _persistAnswer(Map<String, dynamic> q, {required bool correct, String? type}) async {
-    final res = await apiClient.post('/api/answers', {
-      'questionId': q['id'],
-      'correct': correct,
-      'subject': q['subject'],
-      'topic': q['topic'],
-      'errorType': correct ? null : (type ?? errorType),
-      'timeMs': qSw.elapsedMilliseconds,
-    });
-    ref.read(refreshTickProvider.notifier).state++;
-    setState(() {
-      revealed = true;
-      pendingErrorPick = false;
-      answeredIds.add(q['id'].toString());
-      lastRemediation = correct
-          ? null
-          : Map<String, dynamic>.from((res as Map?)?['remediation'] as Map? ?? {});
-      if (correct) {
-        correctCount++;
-      } else {
-        sessionErrors.add(type ?? errorType);
-        missTopics.add({
-          'subject': q['subject']?.toString() ?? '',
-          'topic': q['topic']?.toString() ?? '',
-        });
+    try {
+      final res = await apiClient.post('/api/answers', {
+        'questionId': q['id'],
+        'correct': correct,
+        'subject': q['subject'],
+        'topic': q['topic'],
+        'errorType': correct ? null : (type ?? errorType),
+        'timeMs': qSw.elapsedMilliseconds,
+      });
+      ref.read(refreshTickProvider.notifier).state++;
+      setState(() {
+        revealed = true;
+        pendingErrorPick = false;
+        answerSaveError = null;
+        answeredIds.add(q['id'].toString());
+        lastRemediation = correct
+            ? null
+            : Map<String, dynamic>.from((res as Map?)?['remediation'] as Map? ?? {});
+        if (correct) {
+          correctCount++;
+        } else {
+          sessionErrors.add(type ?? errorType);
+          missTopics.add({
+            'subject': q['subject']?.toString() ?? '',
+            'topic': q['topic']?.toString() ?? '',
+          });
+        }
+      });
+      if (!correct && mounted && (res as Map?)?['flashcardCreated'] == true) {
+        flashcardsCreated++;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Flashcard criado para revisão (due amanhã).'),
+            duration: Duration(seconds: 3),
+          ),
+        );
       }
-    });
-    if (!correct && mounted && (res as Map?)?['flashcardCreated'] == true) {
-      flashcardsCreated++;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Flashcard criado para revisão (due amanhã).'),
-          duration: Duration(seconds: 3),
+    } catch (e) {
+      if (!mounted) return;
+      setState(
+        () => answerSaveError = humanApiError(
+          e,
+          fallback: 'Resposta não gravada — progresso local incompleto.',
         ),
       );
     }
@@ -597,7 +679,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if (id != null) {
       try {
         await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
-      } catch (_) {}
+        if (mounted) setState(() => cardReviewError = null);
+      } catch (e) {
+        if (!mounted) return;
+        setState(
+          () => cardReviewError = humanApiError(
+            e,
+            fallback: 'Revisão do card não registrada.',
+          ),
+        );
+      }
     }
     final last = cardIndex >= sessionCards.length - 1;
     setState(() {
@@ -715,6 +806,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     return KeyEventResult.ignored;
   }
 
+  String _keyboardHintForPhase(String phaseName) {
+    if (!started || sessionComplete) return '';
+    final isRevPhase =
+        phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
+    if (phaseName == 'theory') return ' · Enter avança';
+    if (isRevPhase && !revisionUsingQuestions) {
+      return ' · Space vira · L/1 lembrei · E/2 errei';
+    }
+    if (pendingErrorPick) return ' · 1–5 tipo erro · Enter confirma';
+    if (revealed) return ' · N/Enter próxima';
+    if (phaseName == 'questions' || (isRevPhase && revisionUsingQuestions)) {
+      return ' · 1–5 opção · Enter confirma';
+    }
+    return '';
+  }
+
   Future<void> _exportDay() async {
     final study = plan?['studyToday'] as Map<String, dynamic>?;
     final buf = StringBuffer('# Pacote do dia — PAES MED AI\n\n');
@@ -745,7 +852,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         try {
           final parent = p.dirname(path);
           await apiClient.post('/api/library/open-path', {'path': parent});
-        } catch (_) {}
+        } catch (e) {
+          setState(
+            () => exportMsg =
+                '${exportMsg ?? 'Exportado'} · ${humanApiError(e, fallback: 'Pasta de export não abriu.')}',
+          );
+        }
       }
     } catch (e) {
       setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o dia.'));
@@ -833,7 +945,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if (error != null) {
       return EmptyState(
         title: 'Sessão indisponível',
-        subtitle: 'API offline. Reabra o atalho PAES MED AI na Desktop.',
+        subtitle: error!,
         action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
       );
     }
@@ -873,7 +985,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Sessão completa — próximos passos'
                 : study == null
                     ? 'Gere um plano para calibrar a meta.'
-                    : 'Meta: ${study['subject']} · ${study['topic']}',
+                    : 'Meta: ${study['subject']} · ${study['topic']}${started ? _keyboardHintForPhase(phaseName) : ''}',
             trailing: started
                 ? SurfacePanel(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -906,6 +1018,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               },
               child: const Text('Recomeçar (mesma meta)'),
             ),
+          ] else if (checkpointLoadError != null && !started) ...[
+            QuietEmpty(
+              message: checkpointLoadError!,
+              action: TextButton(onPressed: _load, child: const Text('Tentar')),
+            ),
+            const SizedBox(height: 8),
           ] else if (pendingCheckpoint != null && !started) ...[
             SurfacePanel(
               margin: const EdgeInsets.only(bottom: 12),
@@ -923,6 +1041,49 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               ),
             ),
+          ],
+          if (checkpointSaveError != null && started) ...[
+            QuietEmpty(
+              message: checkpointSaveError!,
+              action: TextButton(
+                onPressed: () => unawaited(_saveCheckpoint()),
+                child: const Text('Tentar'),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (questionsLoadError != null) ...[
+            QuietEmpty(
+              message: questionsLoadError!,
+              action: Wrap(
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: () => unawaited(
+                      revisionUsingQuestions ? _enterRevisionsPhase() : _enterQuestionsPhase(),
+                    ),
+                    child: const Text('Tentar'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.go('/biblioteca'),
+                    child: const Text('Biblioteca'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (questionsPartialLoadNote != null) ...[
+            QuietEmpty(
+              message: questionsPartialLoadNote!,
+              action: TextButton(
+                onPressed: _lastQuestionBodyIds.isEmpty
+                    ? null
+                    : () => unawaited(_loadQuestionBodies(_lastQuestionBodyIds)),
+                child: const Text('Recarregar'),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
           if (!sessionComplete) ...[
           TrainingBasisBanner(
@@ -1124,6 +1285,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     FilledButton(onPressed: _nextQuestion, child: const Text('Próxima (N)')),
                 ],
               ),
+              if (answerSaveError != null) ...[
+                const SizedBox(height: 8),
+                QuietEmpty(
+                  message: answerSaveError!,
+                  action: TextButton(
+                    onPressed: () {
+                      final q = sessionQuestions[qIndex];
+                      final correctIdx = (q['correctIndex'] as int?) ?? (q['correct_index'] as int?);
+                      final correct = selected == correctIdx;
+                      if (pendingErrorPick) {
+                        unawaited(_confirmErrorAndSave());
+                      } else if (revealed) {
+                        unawaited(_persistAnswer(q, correct: correct, type: correct ? null : errorType));
+                      } else {
+                        unawaited(_submitAnswer());
+                      }
+                    },
+                    child: const Text('Tentar'),
+                  ),
+                ),
+              ],
                   ],
                 ),
               ),
@@ -1162,6 +1344,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci (E)')),
                   ],
                 ),
+                if (cardReviewError != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    cardReviewError!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                ],
               ],
             ],
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)

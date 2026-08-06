@@ -3,7 +3,13 @@
 Itens que o Auto-Pilot **não conseguiu** concluir sozinho.
 Formato: `- [ ] [TÍTULO] | por quê | onde | próxima ação`
 
-Sessão: 2026-08-06T01:04:22.847Z
+Sessão GR–GU (host)
 
-- [ ] flutter analyze local | `flutter` não está no PATH do shell do agente (só via empacotar.bat) | ambiente Windows | rodar `flutter analyze lib` manualmente ou adicionar Flutter ao PATH do host
-- [ ] dist pack 1.0.0+7 | `dist\PAES_MED_AI_Windows` em lock (explorer/processo); build exe OK mas rmdir falhou | empacotar_windows.bat | fechar app/explorer em dist\ e rerodar `empacotar_windows.bat`
+- [x] dist pack | Restored: Iniciar bat + branding/app_icon.ico + app/exe + VERSION.txt + Desktop .lnk | host xcopy restore
+- [ ] git no PATH do agente | `git.exe` ainda ausente no PATH padrão do shell do agente (Flutter build exige Git) | host | Instalar Git for Windows e garantir `git` no PATH do sistema
+- [x] flutter path documentado | usar `C:\Users\Yuri\flutter\bin` | scripts/host
+
+Checklist host residual (se push falhar no agente):
+1. Abrir terminal com Git no PATH: `git status` na raiz `PAES_MED_AI`
+2. Commit como **Yuri Medeiros** + push `origin/main` (sem force; sem `.env`/`dist`/`*.db`)
+3. Fechar PR #2 / branch autopilot se limpo e já em main

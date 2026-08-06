@@ -206,6 +206,104 @@ flowchart TB
 | CY | Questões teclado nav + páginas | `ciclo_cy_*` | **Feito** |
 | CZ | Tutor Ctrl+Enter envia | `ciclo_cz_*` | **Feito** |
 | DA | Onboarding ←/→/Enter | `ciclo_da_*` | **Feito** |
+| DB | Sim debrief teclado pós-grade | `ciclo_db_*` | **Feito** |
+| DC | Pack dist 1.0.0+7 | `ciclo_dc_*` | **Feito** |
+| DD | Revisões teclado nav + Enter | `ciclo_dd_*` | **Feito** |
+| DE | Lint: remove dart:io sessão | `ciclo_de_*` | **Feito** |
+| DF | Dia de prova timer + banner | `ciclo_df_*` | **Feito** |
+| DG | Domínio teclado nav + Enter | `ciclo_dg_*` | **Feito** |
+| DH | Banca CTAs 1–6 + E export | `ciclo_dh_*` | **Feito** |
+| DI | Fila teclado S/J/K/Enter + highlight | `ciclo_di_*` | **Feito** |
+| DJ | Backup/restore humanApiError + confirm | `ciclo_dj_*` | **Feito** |
+| DK | Hoje teclado S/L/Enter | `ciclo_dk_*` | **Feito** |
+| DL | Plano teclado S/J/K/Enter/Espaço/E | `ciclo_dl_*` | **Feito** |
+| DM | Sessão hints dinâmicos por fase | `ciclo_dm_*` | **Feito** |
+| DN | Redação subtitle Ctrl+Enter | `ciclo_dn_*` | **Feito** |
+| DO | Biblioteca teclado busca + S/R | `ciclo_do_*` | **Feito** |
+| DP | Biblioteca EmptyState erro legível | `ciclo_dp_*` | **Feito** |
+| DQ | Soft landing grid vazio + Sessão | `ciclo_dq_*` | **Feito** |
+| DR | Soft landing Dashboard erro + Sessão | `ciclo_dr_*` | **Feito** |
+| DS | Soft landing Fila erro legível | `ciclo_ds_*` | **Feito** |
+| DT | Soft landing Revisões/Questões | `ciclo_dt_*` | **Feito** |
+| DU | Soft landing Domínio/Sessão guiada | `ciclo_du_*` | **Feito** |
+| DV | Soft landing Cards erro | `ciclo_dv_*` | **Feito** |
+| DW | Soft landing Ficha questão | `ciclo_dw_*` | **Feito** |
+| DX | Soft landing Adaptativo vazio/erro | `ciclo_dx_*` | **Feito** |
+| DY | Soft landing Banca/Aulas/Redação | `ciclo_dy_*` | **Feito** |
+| DZ | Soft landing Sim start erro | `ciclo_dz_*` | **Feito** |
+| EA | Soft landing Aprovação | `ciclo_ea_*` | **Feito** |
+| EB | Tutor erro inline + Ctrl+Enter | `ciclo_eb_*` | **Feito** |
+| EC | Onboarding pasta humanApiError | `ciclo_ec_*` | **Feito** |
+| ED | Versão **1.0.0+8** | `ciclo_ed_*` | **Feito** |
+| EE | Crash UI amigável | `ciclo_ee_*` | **Feito** |
+| EF | Banner offline humanApiError | `ciclo_ef_*` | **Feito** |
+| EG | MediaReinforcement erro/reload | `ciclo_eg_*` | **Feito** |
+| EH | Rail hints F/Ctrl+T | `ciclo_eh_*` | **Feito** |
+| EI | Aprovação teclado A/R/O | `ciclo_ei_*` | **Feito** |
+| EJ | Ingest review H/E keys | `ciclo_ej_*` | **Feito** |
+| EK | Tutor fontes clicáveis UX | `ciclo_ek_*` | **Feito** |
+| EL | Settings humanApiError avançado | `ciclo_el_*` | **Feito** |
+| EM | Settings teclado R/B backup | `ciclo_em_*` | **Feito** |
+| EN | Tutor citações tipo/ano | `ciclo_en_*` | **Feito** |
+| EO | Settings backup list error UX | `ciclo_eo_*` | **Feito** |
+| EP | Redação setup load errors | `ciclo_ep_*` | **Feito** |
+| EQ | Aulas teclado R/S | `ciclo_eq_*` | **Feito** |
+| ER | Sim checkpoint load error | `ciclo_er_*` | **Feito** |
+| ES | Sim debrief errors | `ciclo_es_*` | **Feito** |
+| ET | Ingest S + professor error | `ciclo_et_*` | **Feito** |
+| EU | Dashboard R refresh | `ciclo_eu_*` | **Feito** |
+| EV | Biblioteca partial load | `ciclo_ev_*` | **Feito** |
+| EW | Adaptativo answer save error | `ciclo_ew_*` | **Feito** |
+| EX | Adaptativo R remonta fila | `ciclo_ex_*` | **Feito** |
+| EY | Fila R refresh | `ciclo_ey_*` | **Feito** |
+| EZ | Ficha save/adaptive errors | `ciclo_ez_*` | **Feito** |
+| FA | Biblioteca search history error | `ciclo_fa_*` | **Feito** |
+| FB | Sessão checkpoint load error | `ciclo_fb_*` | **Feito** |
+| FC | Sessão checkpoint save error | `ciclo_fc_*` | **Feito** |
+| FD | Revisões teclado R/S | `ciclo_fd_*` | **Feito** |
+| FE | Sessão questions load error | `ciclo_fe_*` | **Feito** |
+| FF | Cards teclado R/S | `ciclo_ff_*` | **Feito** |
+| FG | Plano R + toggle/export errors | `ciclo_fg_*` | **Feito** |
+| FH | Domínio teclado R/S | `ciclo_fh_*` | **Feito** |
+| FI | Questões teclado R/S | `ciclo_fi_*` | **Feito** |
+| FJ | Aprovação F5 refresh | `ciclo_fj_*` | **Feito** |
+| FK | Hoje checkpoint load error | `ciclo_fk_*` | **Feito** |
+| FL | Banca R + export open error | `ciclo_fl_*` | **Feito** |
+| FM | Sessão schedule gaps error | `ciclo_fm_*` | **Feito** |
+| FN | Fila teoria open material | `ciclo_fn_*` | **Feito** |
+| FO | Hoje exam sync error | `ciclo_fo_*` | **Feito** |
+| FP | Sim checkpoint save error | `ciclo_fp_*` | **Feito** |
+| FQ | Sessão/discard close errors | `ciclo_fq_*` | **Feito** |
+| FR | Biblioteca classify pending | `ciclo_fr_*` | **Feito** |
+| FS | Biblioteca parse gate error | `ciclo_fs_*` | **Feito** |
+| FT | Domínio draft accept error | `ciclo_ft_*` | **Feito** |
+| FU | Sim export open path | `ciclo_fu_*` | **Feito** |
+| FV | Sessão answer save error | `ciclo_fv_*` | **Feito** |
+| FW | Sessão card review error | `ciclo_fw_*` | **Feito** |
+| FX | Sessão export open + discard checkpoint | `ciclo_fx_*` | **Feito** |
+| FY | Sim discard checkpoint error | `ciclo_fy_*` | **Feito** |
+| FZ | Sessão partial question load | `ciclo_fz_*` | **Feito** |
+| GA | Sessão revision topic fetch | `ciclo_ga_*` | **Feito** |
+| GB | Hoje backup date parse | `ciclo_gb_*` | **Feito** |
+| GC | Sim preflight health offline | `ciclo_gc_*` | **Feito** |
+| GD | Fecho semana export open | `ciclo_gd_*` | **Feito** |
+| GE | Exam-date sync/hydrate state | `ciclo_ge_*` | **Feito** |
+| GF | Ajustes exam-date errors | `ciclo_gf_*` | **Feito** |
+| GG | Onboarding exam-date notes | `ciclo_gg_*` | **Feito** |
+| GH | Hoje exam sync unificado | `ciclo_gh_*` | **Feito** |
+| GI | Sessão partial load reload | `ciclo_gi_*` | **Feito** |
+| GJ | Plano exam sync error | `ciclo_gj_*` | **Feito** |
+| GK | Shell exam sync banner | `ciclo_gk_*` | **Feito** |
+| GL | Adaptativo inéditas parciais | `ciclo_gl_*` | **Feito** |
+| GM | Shell rail sync badge | `ciclo_gm_*` | **Feito** |
+| GN | Mobile AppBar exam sync | `ciclo_gn_*` | **Feito** |
+| GO | Mobile menu sync badge | `ciclo_go_*` | **Feito** |
+| GP | Mobile bottom sync strip | `ciclo_gp_*` | **Feito** |
+| GQ | Biblioteca year PDF open | `ciclo_gq_*` | **Feito** |
+| GR | Pack Desktop + ícone | pack host | **Feito** |
+| GS | Git host + suite / BLOCKED | host | **Feito** |
+| GT | F2 thin Ler teoria (Fila+ficha) | `ciclo_gt_*` | **Feito** |
+| GU | Pack smoke gate + **1.0.0+9** | `ciclo_gu_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -213,8 +311,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CY–DA)
+## Estado (atualizado pós GR–GU)
 
-- Rodada CY–DA: teclado em Questões, Tutor Ctrl+Enter, onboarding ←/→/Enter; **1.0.0+7** mantida.
-- Residual: repack dist +7, flutter analyze no PATH do agente.
-- Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).
+- Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
+- GN–GQ: mobile sync UX + biblioteca PDF ano open — **Feito**.
+- Residual curto: F3/F1 deep (inventário UEMA completo) TBD; stop micro-ciclos de teclado.
+- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: se agente sem `git`, commit/push na máquina.

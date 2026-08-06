@@ -38,7 +38,14 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
       if (dir.isNotEmpty) {
         try {
           await apiClient.post('/api/library/open-path', {'path': dir});
-        } catch (_) {}
+        } catch (e) {
+          if (!mounted) return;
+          setState(
+            () => exportMsg =
+                '${path.isNotEmpty ? path : (map['filename']?.toString() ?? 'exportado')} · '
+                '${humanApiError(e, fallback: 'Pasta de export não abriu.')}',
+          );
+        }
       }
       if (!mounted) return;
       setState(() {

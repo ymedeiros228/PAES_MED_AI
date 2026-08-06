@@ -11,6 +11,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../domain/question.dart';
 
@@ -43,6 +44,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   final focusNode = FocusNode();
   Map<String, dynamic>? professorDraft;
   bool professorBusy = false;
+  String? saveError;
+  String? adaptiveLoadError;
 
   @override
   void initState() {
@@ -144,30 +147,47 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   Future<void> _persist({required bool correct}) async {
     final q = question;
     if (q == null || selected == null) return;
-    await apiClient.post('/api/answers', {
-      'questionId': q.id,
-      'correct': correct,
-      'subject': q.subject,
-      'topic': q.topic,
-      'errorType': correct ? null : errorType,
-      'timeMs': stopwatch.elapsedMilliseconds,
-    });
-    ref.read(refreshTickProvider.notifier).state++;
-    setState(() {
-      revealed = true;
-      pendingErrorPick = false;
-    });
-    if (!correct) {
-      try {
-        final data = await apiClient.post('/api/training/adaptive', {
-          'subject': q.subject,
-          'topic': q.topic,
-          'nSimilar': 2,
-          'nHarder': 0,
-          'nGenerated': 0,
-        });
-        setState(() => adaptive = Map<String, dynamic>.from(data as Map));
-      } catch (_) {}
+    try {
+      await apiClient.post('/api/answers', {
+        'questionId': q.id,
+        'correct': correct,
+        'subject': q.subject,
+        'topic': q.topic,
+        'errorType': correct ? null : errorType,
+        'timeMs': stopwatch.elapsedMilliseconds,
+      });
+      ref.read(refreshTickProvider.notifier).state++;
+      setState(() {
+        revealed = true;
+        pendingErrorPick = false;
+        saveError = null;
+      });
+      if (!correct) {
+        try {
+          final data = await apiClient.post('/api/training/adaptive', {
+            'subject': q.subject,
+            'topic': q.topic,
+            'nSimilar': 2,
+            'nHarder': 0,
+            'nGenerated': 0,
+          });
+          setState(() {
+            adaptive = Map<String, dynamic>.from(data as Map);
+            adaptiveLoadError = null;
+          });
+        } catch (e) {
+          setState(
+            () => adaptiveLoadError = humanApiError(
+              e,
+              fallback: 'Sugestões adaptativas indisponíveis.',
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(
+        () => saveError = humanApiError(e, fallback: 'Resposta não gravada — tente de novo.'),
+      );
     }
   }
 
@@ -297,8 +317,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         child: EmptyState(
           title: 'Não deu para abrir a ficha',
           subtitle: error!,
-          action: Column(
-            mainAxisSize: MainAxisSize.min,
+          action: Wrap(
+            spacing: 8,
+            alignment: WrapAlignment.center,
             children: [
               FilledButton(
                 onPressed: () {
@@ -307,10 +328,13 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 },
                 child: const Text('Tentar'),
               ),
-              const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.go('/questoes'),
-                child: const Text('Voltar à lista'),
+                child: const Text('Lista'),
+              ),
+              TextButton(
+                onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                child: const Text('Sessão'),
               ),
             ],
           ),
@@ -334,6 +358,16 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           'Atalhos: 1–5 · Enter · N (após revelar)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
         ),
+        if (saveError != null) ...[
+          const SizedBox(height: 8),
+          QuietEmpty(
+            message: saveError!,
+            action: TextButton(
+              onPressed: () => setState(() => saveError = null),
+              child: const Text('Ok'),
+            ),
+          ),
+        ],
         if (q.sourcePdf != null && q.sourcePdf!.isNotEmpty)
           Align(
             alignment: Alignment.centerLeft,
@@ -444,6 +478,14 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   child: const Text('Treinar este tópico'),
                 ),
                 TextButton(
+                  onPressed: () => openTheoryReadSheet(
+                    context,
+                    subject: q.subject,
+                    topic: q.topic,
+                  ),
+                  child: const Text('Ler teoria'),
+                ),
+                TextButton(
                   onPressed: () {
                     final stmt = q.statement;
                     final seed = stmt.length > 240 ? '${stmt.substring(0, 240)}…' : stmt;
@@ -514,6 +556,16 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   const SizedBox(height: 8),
                   FilledButton(onPressed: professorBusy ? null : _acceptProfessor, child: const Text('Aceitar')),
                 ],
+              ),
+            ),
+          ],
+          if (adaptiveLoadError != null) ...[
+            const SizedBox(height: 8),
+            QuietEmpty(
+              message: adaptiveLoadError!,
+              action: TextButton(
+                onPressed: () => setState(() => adaptiveLoadError = null),
+                child: const Text('Ok'),
               ),
             ),
           ],

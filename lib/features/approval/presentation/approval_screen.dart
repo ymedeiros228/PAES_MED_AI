@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,11 +22,58 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
   List<Map<String, dynamic>> items = [];
   String? error;
   bool loading = true;
+  int selected = 0;
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
     _load();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.f5) {
+      unawaited(_load());
+      return KeyEventResult.handled;
+    }
+    if (items.isEmpty || error != null) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
+      setState(() => selected = (selected + 1).clamp(0, items.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
+      setState(() => selected = (selected - 1).clamp(0, items.length - 1));
+      return KeyEventResult.handled;
+    }
+    final q = items[selected.clamp(0, items.length - 1)];
+    final id = q['id']?.toString() ?? '';
+    if (id.isEmpty) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.keyA) {
+      _decide(id, true);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR) {
+      _decide(id, false);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter ||
+        key == LogicalKeyboardKey.keyO) {
+      context.go('/questoes/$id');
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _load() async {
@@ -35,6 +85,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
       final data = await apiClient.get('/api/approval/pending', {'limit': '80'});
       setState(() {
         items = (data as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        if (selected >= items.length && items.isNotEmpty) selected = items.length - 1;
       });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a fila de aprovação.'));
@@ -59,7 +110,10 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -68,7 +122,9 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
               PageHeader(
                 eyebrow: 'Avançado',
                 title: 'Aprovar',
-                subtitle: 'Itens gerados só entram em simulado sério depois de aprovados',
+                subtitle: items.isEmpty
+                    ? 'Itens gerados só entram em simulado sério depois de aprovados'
+                    : '${items.length} pendente(s) · ↑/↓ J/K · A aprovar · R rejeitar · F5 atualiza · Enter/O abrir',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: loading ? null : _load,
@@ -78,19 +134,47 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
               if (loading) const LinearProgressIndicator(),
               if (error != null)
                 QuietEmpty(
-                  message: 'Não deu para carregar a fila.',
-                  action: TextButton(onPressed: _load, child: const Text('Tentar')),
+                  message: error!,
+                  action: Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton(onPressed: _load, child: const Text('Tentar')),
+                      TextButton(
+                        onPressed: () => context.go('/biblioteca'),
+                        child: const Text('Biblioteca'),
+                      ),
+                    ],
+                  ),
                 ),
               if (!loading && error == null && items.isEmpty)
                 EmptyState(
                   title: 'Fila limpa',
                   subtitle: 'Nenhuma questão pendente de aprovação.',
-                  actionLabel: 'Biblioteca',
-                  onAction: () => context.go('/biblioteca'),
+                  action: Wrap(
+                    spacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      FilledButton(
+                        onPressed: () => context.go('/biblioteca'),
+                        child: const Text('Biblioteca'),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                        child: const Text('Sessão'),
+                      ),
+                    ],
+                  ),
                 ),
-              for (final q in items)
-                SurfacePanel(
+              for (var i = 0; i < items.length; i++)
+                Builder(
+                  builder: (_) {
+                    final q = items[i];
+                    final active = i == selected;
+                    return SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 10),
+                  color: active
+                      ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.45)
+                      : null,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -110,26 +194,38 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                         runSpacing: 8,
                         children: [
                           FilledButton(
-                            onPressed: () => _decide(q['id'].toString(), true),
-                            child: const Text('Aprovar'),
+                            onPressed: () {
+                              setState(() => selected = i);
+                              _decide(q['id'].toString(), true);
+                            },
+                            child: const Text('Aprovar (A)'),
                           ),
                           OutlinedButton(
-                            onPressed: () => _decide(q['id'].toString(), false),
-                            child: const Text('Rejeitar'),
+                            onPressed: () {
+                              setState(() => selected = i);
+                              _decide(q['id'].toString(), false);
+                            },
+                            child: const Text('Rejeitar (R)'),
                           ),
                           TextButton(
-                            onPressed: () => context.go('/questoes/${q['id']}'),
-                            child: const Text('Abrir'),
+                            onPressed: () {
+                              setState(() => selected = i);
+                              context.go('/questoes/${q['id']}');
+                            },
+                            child: const Text('Abrir (O)'),
                           ),
                         ],
                       ),
                     ],
                   ),
+                );
+                  },
                 ),
             ],
           ),
         ),
       ],
+    ),
     );
   }
 }

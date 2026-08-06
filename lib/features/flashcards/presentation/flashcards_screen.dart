@@ -107,6 +107,19 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null && primary.context?.widget is EditableText) {
+      return KeyEventResult.ignored;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.keyR ||
+        event.logicalKey == LogicalKeyboardKey.f5) {
+      ref.read(refreshTickProvider.notifier).state++;
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.keyS) {
+      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+      return KeyEventResult.handled;
+    }
     if (event.logicalKey == LogicalKeyboardKey.space) {
       _flipTop();
       return KeyEventResult.handled;
@@ -150,10 +163,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                   eyebrow: 'Estudar',
                   title: 'Cards',
                   subtitle: axesOnly
-                      ? 'Só cards de eixos · Space vira · L/1 lembrei · E/2 esqueci'
+                      ? 'Só eixos · Space vira · L/1 · E/2 · R atualiza · S sessão'
                       : dueOnly
-                          ? 'Só due · Space vira · L/1 lembrei · E/2 esqueci'
-                          : 'Todos · Space vira · L/1 lembrei · E/2 esqueci',
+                          ? 'Só due · Space vira · L/1 · E/2 · R atualiza · S sessão'
+                          : 'Todos · Space vira · L/1 · E/2 · R atualiza · S sessão',
                   trailing: Wrap(
                     spacing: 4,
                     children: [
@@ -180,11 +193,20 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 ),
                 async.when(
                   loading: () => const LinearProgressIndicator(),
-                  error: (_, __) => QuietEmpty(
-                    message: 'Não deu para carregar os cards.',
-                    action: TextButton(
-                      onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                      child: const Text('Tentar'),
+                  error: (e, _) => QuietEmpty(
+                    message: humanApiError(e, fallback: 'Não deu para carregar os cards.'),
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                          child: const Text('Tentar'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/sessao'),
+                          child: const Text('Sessão'),
+                        ),
+                      ],
                     ),
                   ),
                   data: (items) {

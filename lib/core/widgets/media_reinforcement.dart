@@ -5,7 +5,7 @@ import '../data/api_error.dart';
 import 'ui_kit.dart';
 
 /// Reforço unificado vídeo + leitura (BG) — não é edital/banca UEMA.
-class MediaReinforcement extends StatelessWidget {
+class MediaReinforcement extends StatefulWidget {
   const MediaReinforcement({
     required this.subject,
     required this.topic,
@@ -19,11 +19,18 @@ class MediaReinforcement extends StatelessWidget {
   final bool compact;
   final String heading;
 
+  @override
+  State<MediaReinforcement> createState() => _MediaReinforcementState();
+}
+
+class _MediaReinforcementState extends State<MediaReinforcement> {
+  int _reloadGen = 0;
+
   Future<Map<String, dynamic>> _loadBoth() async {
     final results = await Future.wait([
-      apiClient.get('/api/media/videos', {'subject': subject, 'topic': topic}),
-      apiClient.get('/api/media/articles', {'subject': subject, 'topic': topic}),
-      apiClient.get('/api/media/reads', {'subject': subject, 'topic': topic}),
+      apiClient.get('/api/media/videos', {'subject': widget.subject, 'topic': widget.topic}),
+      apiClient.get('/api/media/articles', {'subject': widget.subject, 'topic': widget.topic}),
+      apiClient.get('/api/media/reads', {'subject': widget.subject, 'topic': widget.topic}),
     ]);
     return {
       'videos': results[0] is Map ? Map<String, dynamic>.from(results[0] as Map) : <String, dynamic>{},
@@ -43,8 +50,8 @@ class MediaReinforcement extends StatelessWidget {
       await apiClient.post('/api/media/open', {
         'url': url,
         'kind': kind,
-        'subject': subject,
-        'topic': topic,
+        'subject': widget.subject,
+        'topic': widget.topic,
         if (title != null && title.isNotEmpty) 'title': title,
       });
     } catch (e) {
@@ -64,8 +71,8 @@ class MediaReinforcement extends StatelessWidget {
     try {
       await apiClient.post('/api/media/mark-read', {
         'url': url,
-        'subject': subject,
-        'topic': topic,
+        'subject': widget.subject,
+        'topic': widget.topic,
         if (title != null && title.isNotEmpty) 'title': title,
       });
       if (!context.mounted) return;
@@ -103,7 +110,7 @@ class MediaReinforcement extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            isVideo ? 'Mais vídeos · $subject · $topic' : 'Mais leituras · $subject · $topic',
+            isVideo ? 'Mais vídeos · ${widget.subject} · ${widget.topic}' : 'Mais leituras · ${widget.subject} · ${widget.topic}',
             style: Theme.of(ctx).textTheme.titleSmall,
           ),
           if (disclaimer != null && disclaimer.isNotEmpty)
@@ -178,7 +185,7 @@ class MediaReinforcement extends StatelessWidget {
       'não é banca',
     ].where((s) => s.isNotEmpty).join(' · ');
 
-    if (compact) {
+    if (widget.compact) {
       return Padding(
         padding: const EdgeInsets.only(top: 8),
         child: OutlinedButton.icon(
@@ -234,11 +241,21 @@ class MediaReinforcement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (subject.isEmpty || topic.isEmpty) return const SizedBox.shrink();
+    if (widget.subject.isEmpty || widget.topic.isEmpty) return const SizedBox.shrink();
 
     return FutureBuilder<Map<String, dynamic>>(
+      key: ValueKey(_reloadGen),
       future: _loadBoth(),
       builder: (context, snap) {
+        if (snap.hasError) {
+          return QuietEmpty(
+            message: humanApiError(snap.error!, fallback: 'Reforço indisponível agora.'),
+            action: TextButton(
+              onPressed: () => setState(() => _reloadGen++),
+              child: const Text('Tentar'),
+            ),
+          );
+        }
         if (!snap.hasData) return const SizedBox.shrink();
         final data = snap.data!;
         final videos = data['videos'] as Map<String, dynamic>? ?? {};
@@ -252,9 +269,9 @@ class MediaReinforcement extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!compact)
+            if (!widget.compact)
               SectionLabel(
-                heading,
+                widget.heading,
                 hint: 'catálogo local · não é edital UEMA',
               ),
             _lane(context: context, kind: 'video', map: videos, readUrls: readUrls),

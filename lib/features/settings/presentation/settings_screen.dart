@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,14 +26,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Map<String, dynamic>? health;
   Map<String, dynamic>? lastBackup;
   String? msg;
+  String? backupListError;
   String kind = 'prova';
   late final TextEditingController examCtrl;
   List<dynamic> backups = [];
+  final _focusNode = FocusNode();
+
+  bool _textFieldFocused() {
+    final primary = FocusManager.instance.primaryFocus;
+    return primary != null && primary.context?.widget is EditableText;
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent || _textFieldFocused()) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      _health();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyB) {
+      _backup();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   @override
   void initState() {
     super.initState();
-    examCtrl = TextEditingController(text: ref.read(examDateProvider));
+    examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
     _health();
     _backups();
     _lastBackup();
@@ -38,6 +65,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   void dispose() {
+    _focusNode.dispose();
     examCtrl.dispose();
     super.dispose();
   }
@@ -54,16 +82,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _backups() async {
     try {
       final data = await apiClient.get('/api/backups');
-      setState(() => backups = data as List);
-    } catch (_) {}
+      setState(() {
+        backups = data as List;
+        backupListError = null;
+      });
+    } catch (e) {
+      setState(() {
+        backups = [];
+        backupListError = humanApiError(e, fallback: 'Não foi possível listar backups.');
+      });
+    }
   }
 
   Future<void> _lastBackup() async {
     try {
       final data = await apiClient.get('/api/backup/last');
-      setState(() => lastBackup = Map<String, dynamic>.from(data as Map));
-    } catch (_) {
-      setState(() => lastBackup = null);
+      setState(() {
+        lastBackup = Map<String, dynamic>.from(data as Map);
+      });
+    } catch (e) {
+      setState(() {
+        lastBackup = null;
+        backupListError ??= humanApiError(e, fallback: 'Status do último backup indisponível.');
+      });
     }
   }
 
@@ -86,7 +127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await _backups();
       await _lastBackup();
     } catch (e) {
-      setState(() => msg = 'Falha no backup.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no backup.'));
     }
   }
 
@@ -96,7 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       setState(() => msg = 'Restaurado.');
     } catch (e) {
-      setState(() => msg = 'Falha ao restaurar.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha ao restaurar.'));
     }
   }
 
@@ -105,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await apiClient.post('/api/rag/reindex', {});
       setState(() => msg = 'Índice atualizado.');
     } catch (e) {
-      setState(() => msg = 'Falha no índice.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no índice.'));
     }
   }
 
@@ -114,7 +155,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final data = await apiClient.post('/api/professor/batch-fill', {'limit': 40});
       setState(() => msg = 'Rascunhos: ${(data as Map)['updated'] ?? 0}');
     } catch (e) {
-      setState(() => msg = 'Falha no lote.');
+      setState(() => msg = humanApiError(e, fallback: 'Falha no lote de rascunhos.'));
     }
   }
 
@@ -159,20 +200,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
       setState(() => msg = 'Sem questões — use a Biblioteca.');
     } catch (e) {
-      setState(() => msg = 'Erro ao ler PDF.');
+      setState(() => msg = humanApiError(e, fallback: 'Erro ao ler PDF.'));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final focus = ref.watch(focusModeProvider);
-    final exam = ref.watch(examDateProvider);
+    final examState = ref.watch(examDateProvider);
+    final exam = examState.date;
     if (examCtrl.text != exam && exam.isNotEmpty && !examCtrl.selection.isValid) {
       examCtrl.text = exam;
     }
     final online = health?['status'] == 'ok';
 
-    return ListView(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -181,7 +226,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               PageHeader(
                 eyebrow: 'Conta',
                 title: 'Ajustes',
-                subtitle: 'Preferências do dia a dia',
+                subtitle: 'Preferências · R atualiza health · B backup',
               ),
 
               SectionLabel('Sobre'),
@@ -191,7 +236,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PAES MED AI · 1.0.0+7',
+                      'PAES MED AI · 1.0.0+9',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
@@ -248,6 +293,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
                               ),
+                        ),
+                      ),
+                    ],
+                    if (exam.isNotEmpty &&
+                        RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(exam) &&
+                        ref.watch(examDateProvider.notifier).daysUntilExam == null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Data inválida — use AAAA-MM-DD válido.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                      ),
+                    ],
+                    if (examState.hydrateNote != null && exam.isEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        examState.hydrateNote!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
+                      ),
+                    ],
+                    if (examState.syncError != null) ...[
+                      const SizedBox(height: 8),
+                      QuietEmpty(
+                        message: examState.syncError!,
+                        action: TextButton(
+                          onPressed: () => unawaited(ref.read(examDateProvider.notifier).retrySync()),
+                          child: const Text('Sincronizar'),
                         ),
                       ),
                     ],
@@ -315,8 +390,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     FilledButton.tonal(
                       onPressed: _backup,
-                      child: const Text('Salvar cópia de segurança'),
+                      child: const Text('Salvar cópia de segurança (B)'),
                     ),
+                    if (backupListError != null) ...[
+                      const SizedBox(height: 8),
+                      QuietEmpty(
+                        message: backupListError!,
+                        action: TextButton(
+                          onPressed: () {
+                            _backups();
+                            _lastBackup();
+                          },
+                          child: const Text('Tentar'),
+                        ),
+                      ),
+                    ],
                     if (lastBackup != null) ...[
                       const SizedBox(height: 8),
                       ListTile(
@@ -358,11 +446,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           trailing: TextButton(
                             onPressed: () async {
                               final name = b['name']?.toString() ?? '';
+                              final verify = b['verify'] is Map ? Map<String, dynamic>.from(b['verify'] as Map) : null;
+                              final sha = verify?['sha256Prefix']?.toString() ?? '';
                               final ok = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: const Text('Restaurar?'),
-                                  content: const Text('Substitui o progresso atual por esta cópia.'),
+                                  title: const Text('Restaurar backup?'),
+                                  content: Text(
+                                    'Substitui o progresso atual por:\n\n$name'
+                                    '${sha.isNotEmpty ? '\n\nVerify: $sha' : ''}'
+                                    '\n\nSó confirme se tiver certeza.',
+                                  ),
                                   actions: [
                                     TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                                     FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
@@ -585,6 +679,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 }

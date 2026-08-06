@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,22 +20,77 @@ class BankProfileScreen extends ConsumerStatefulWidget {
 
 class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
   String? exportMsg;
+  final _focusNode = FocusNode();
+  List<String> _ctaPaths = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyE) {
+      unawaited(_export());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      ref.read(refreshTickProvider.notifier).state++;
+      return KeyEventResult.handled;
+    }
+    const digitKeys = [
+      LogicalKeyboardKey.digit1,
+      LogicalKeyboardKey.digit2,
+      LogicalKeyboardKey.digit3,
+      LogicalKeyboardKey.digit4,
+      LogicalKeyboardKey.digit5,
+      LogicalKeyboardKey.digit6,
+    ];
+    const numpadKeys = [
+      LogicalKeyboardKey.numpad1,
+      LogicalKeyboardKey.numpad2,
+      LogicalKeyboardKey.numpad3,
+      LogicalKeyboardKey.numpad4,
+      LogicalKeyboardKey.numpad5,
+      LogicalKeyboardKey.numpad6,
+    ];
+    for (var i = 0; i < 6; i++) {
+      if ((key == digitKeys[i] || key == numpadKeys[i]) && i < _ctaPaths.length) {
+        context.go(_ctaPaths[i]);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
 
   Future<void> _export() async {
     try {
       final data = await apiClient.post('/api/stats/bank-profile/export', {});
       final map = Map<String, dynamic>.from(data as Map);
       final path = map['path']?.toString() ?? '';
+      var msg = 'Arquivo salvo${path.isNotEmpty ? ': $path' : ''}';
       if (path.isNotEmpty) {
         final sep = path.contains('\\') ? '\\' : '/';
         final i = path.lastIndexOf(sep);
         if (i > 0) {
           try {
             await apiClient.post('/api/library/open-path', {'path': path.substring(0, i)});
-          } catch (_) {}
+          } catch (e) {
+            msg = '$msg · ${humanApiError(e, fallback: 'Pasta de export não abriu.')}';
+          }
         }
       }
-      setState(() => exportMsg = 'Arquivo salvo${path.isNotEmpty ? ': $path' : ''}');
+      setState(() => exportMsg = msg);
     } catch (e) {
       setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o perfil de banca.'));
     }
@@ -44,7 +102,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
     final freq = ref.watch(frequencyProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -53,7 +114,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               PageHeader(
                 eyebrow: 'Analisar',
                 title: 'Banca',
-                subtitle: 'O que a base local sugere — estimativa, não previsão oficial',
+                subtitle: 'Estimativa local · CTAs 1–6 · E exporta · R atualiza',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: () => ref.read(refreshTickProvider.notifier).state++,
@@ -74,11 +135,20 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               ),
               profile.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => QuietEmpty(
-                  message: 'Perfil da banca indisponível.',
-                  action: TextButton(
-                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                    child: const Text('Tentar'),
+                error: (e, _) => QuietEmpty(
+                  message: humanApiError(e, fallback: 'Perfil da banca indisponível.'),
+                  action: Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                        child: const Text('Tentar'),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/sessao'),
+                        child: const Text('Sessão'),
+                      ),
+                    ],
                   ),
                 ),
                 data: (data) {
@@ -91,6 +161,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                   final co = (data['cooccurrence'] as List? ?? data['correlations'] as List? ?? []);
                   final total = data['totalQuestions'];
                   final ctas = data['studyCtas'] as List? ?? [];
+                  _ctaPaths = [
+                    for (final raw in ctas.take(6))
+                      (Map<String, dynamic>.from(raw as Map)['path']?.toString() ?? '/sessao'),
+                  ];
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -119,13 +193,13 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            for (final raw in ctas.take(6))
+                            for (var i = 0; i < ctas.length && i < 6; i++)
                               Builder(
                                 builder: (_) {
-                                  final c = Map<String, dynamic>.from(raw as Map);
+                                  final c = Map<String, dynamic>.from(ctas[i] as Map);
                                   return FilledButton.tonal(
                                     onPressed: () => context.go(c['path']?.toString() ?? '/sessao'),
-                                    child: Text(c['label']?.toString() ?? 'Estudar'),
+                                    child: Text('${i + 1}) ${c['label']?.toString() ?? 'Estudar'}'),
                                   );
                                 },
                               ),
@@ -217,7 +291,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           OutlinedButton.icon(
                             onPressed: _export,
                             icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('Exportar perfil (MD)'),
+                            label: const Text('Exportar perfil (E)'),
                           ),
                           if (exportMsg != null)
                             Text(exportMsg!, style: Theme.of(context).textTheme.bodySmall),
@@ -230,8 +304,8 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               SectionLabel('Frequência no tempo'),
               freq.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, __) => QuietEmpty(
-                  message: 'Frequência indisponível.',
+                error: (e, _) => QuietEmpty(
+                  message: humanApiError(e, fallback: 'Frequência indisponível.'),
                   action: TextButton(
                     onPressed: () => ref.read(refreshTickProvider.notifier).state++,
                     child: const Text('Tentar'),
@@ -270,6 +344,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 

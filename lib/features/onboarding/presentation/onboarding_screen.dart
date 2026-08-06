@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app.dart';
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/study_prefs_providers.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -26,7 +27,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    examCtrl = TextEditingController(text: ref.read(examDateProvider));
+    examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -81,8 +82,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       final data = await apiClient.post('/api/library/open-folder', {'folder': folder});
       setState(() => folderMsg = 'Aberta: ${(data as Map)['path']}');
-    } catch (_) {
-      setState(() => folderMsg = 'Pasta indisponível agora. Depois: Ajustes ou Biblioteca.');
+    } catch (e) {
+      setState(
+        () => folderMsg = humanApiError(e, fallback: 'Pasta indisponível — use Biblioteca depois.'),
+      );
     }
   }
 
@@ -102,6 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final examState = ref.watch(examDateProvider);
 
     final titles = ['Bem-vindo', 'Data da prova', 'Provas no PC', 'Seu dia a dia'];
     final bodies = [
@@ -153,6 +157,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
+                if (examState.hydrateNote != null && examCtrl.text.trim().isEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    examState.hydrateNote!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.tertiary),
+                  ),
+                ],
+                if (examState.syncError != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    examState.syncError!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.error),
+                  ),
+                ],
               ],
               if (step == 2) ...[
                 const SizedBox(height: 16),

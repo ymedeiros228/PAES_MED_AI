@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +26,70 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   bool loading = false;
   String? exportMsg;
   bool weekOnly = true;
+  int selected = 0;
+  String _todaySessionPath = '/sessao';
+  final _focusNode = FocusNode();
+
+  String _sessionPathFor(Map<String, dynamic> item) {
+    final subject = item['subject']?.toString() ?? '';
+    final topic = item['topic']?.toString() ?? '';
+    final nat = const {'Biologia', 'Química', 'Física'}.contains(subject);
+    return '/sessao?examBoard=UEMA_PAES'
+        '&subject=${Uri.encodeComponent(subject)}'
+        '&topic=${Uri.encodeComponent(topic)}'
+        '&preferNatureza=${nat ? '1' : '0'}';
+  }
+
+  List<Map<String, dynamic>> _visibleItems() {
+    final visible = weekOnly ? plan.take(7).toList() : plan;
+    return visible.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  void _syncSelection() {
+    final items = _visibleItems();
+    if (items.isEmpty) {
+      selected = 0;
+      return;
+    }
+    if (selected >= items.length) selected = items.length - 1;
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final items = _visibleItems();
+    if (key == LogicalKeyboardKey.keyS) {
+      context.go(_todaySessionPath);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      unawaited(_load());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyE && plan.isNotEmpty) {
+      unawaited(_exportWeek());
+      return KeyEventResult.handled;
+    }
+    if (items.isEmpty) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
+      setState(() => selected = (selected + 1).clamp(0, items.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
+      setState(() => selected = (selected - 1).clamp(0, items.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+      context.go(_sessionPathFor(items[selected.clamp(0, items.length - 1)]));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.space) {
+      final item = items[selected.clamp(0, items.length - 1)];
+      unawaited(_toggleDone(item, item['done'] != true));
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   Future<void> _load({bool regenerate = false}) async {
     setState(() {
@@ -30,7 +97,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       error = null;
     });
     try {
-      final exam = ref.read(examDateProvider);
+      final exam = ref.read(examDateProvider).date;
       final until = ref.read(examDateProvider.notifier).daysUntilExam;
       if (until != null && until > 0 && until < 180) {
         days = until;
@@ -52,12 +119,20 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   }
 
   Future<void> _toggleDone(Map<String, dynamic> item, bool done) async {
-    await apiClient.post('/api/plans/done', {
-      'days': days,
-      'day': item['day'],
-      'done': done,
-    });
-    await _load();
+    try {
+      await apiClient.post('/api/plans/done', {
+        'days': days,
+        'day': item['day'],
+        'done': done,
+      });
+      await _load();
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => exportMsg = humanApiError(e, fallback: 'Não deu para marcar o dia no plano.'),
+        );
+      }
+    }
   }
 
   Future<void> _exportMarkdown(String markdown, String filename) async {
@@ -76,7 +151,14 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ? parent.substring(0, parent.lastIndexOf('/'))
               : path;
           await apiClient.post('/api/library/open-path', {'path': dir});
-        } catch (_) {}
+        } catch (e) {
+          if (mounted) {
+            setState(
+              () => exportMsg =
+                  '${exportMsg ?? 'Exportado'} · ${humanApiError(e, fallback: 'Pasta de export não abriu.')}',
+            );
+          }
+        }
       }
     } catch (e) {
       setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o plano.'));
@@ -86,7 +168,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   Future<void> _exportWeek() async {
     final week = plan.take(7).toList();
     final buf = StringBuffer('# Plano da semana — PAES MED AI\n\n');
-    final exam = ref.read(examDateProvider);
+    final exam = ref.read(examDateProvider).date;
     if (exam.isNotEmpty) buf.writeln('Prova: $exam\n');
     buf.writeln('Estimativas de incidência ≠ garantia.\n');
     for (final raw in week) {
@@ -101,7 +183,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   Future<void> _exportMonth() async {
     final month = plan.take(30).toList();
     final buf = StringBuffer('# Plano do mês — PAES MED AI\n\n');
-    final exam = ref.read(examDateProvider);
+    final exam = ref.read(examDateProvider).date;
     if (exam.isNotEmpty) buf.writeln('Prova: $exam\n');
     buf.writeln('Estimativas ≠ garantia.\n');
     for (final raw in month) {
@@ -115,19 +197,33 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
     _load();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final until = ref.watch(examDateProvider.notifier).daysUntilExam;
-    final exam = ref.watch(examDateProvider);
+    final examState = ref.watch(examDateProvider);
+    final exam = examState.date;
     final cs = Theme.of(context).colorScheme;
-    final visible = weekOnly ? plan.take(7).toList() : plan;
+    final visible = _visibleItems();
+    _syncSelection();
     final doneN = plan.where((e) => (e as Map)['done'] == true).length;
     final progress = plan.isEmpty ? 0.0 : doneN / plan.length;
 
-    return ListView(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -137,13 +233,33 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 eyebrow: 'Planejar',
                 title: 'Plano de estudos',
                 subtitle: until == null
-                    ? 'Defina a data da prova em Ajustes para calibrar o ritmo.'
-                    : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'}. Incidência + erros recentes.',
+                    ? 'Defina a data da prova em Ajustes · S hoje · R atualiza · ↑/↓ Enter · Espaço marca'
+                    : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'} · S hoje · R atualiza · ↑/↓ Enter · E export',
                 trailing: FilledButton.tonal(
                   onPressed: loading ? null : () => _load(regenerate: true),
                   child: const Text('Regenerar'),
                 ),
               ),
+
+              if (examState.syncError != null) ...[
+                QuietEmpty(
+                  message: examState.syncError!,
+                  action: Wrap(
+                    spacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: () => unawaited(ref.read(examDateProvider.notifier).retrySync()),
+                        child: const Text('Sincronizar'),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/configuracoes'),
+                        child: const Text('Ajustes'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -209,11 +325,14 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   FilterChip(
                     label: Text(weekOnly ? 'Só semana' : 'Plano completo'),
                     selected: weekOnly,
-                    onSelected: (v) => setState(() => weekOnly = v),
+                    onSelected: (v) => setState(() {
+                      weekOnly = v;
+                      selected = 0;
+                    }),
                   ),
                   OutlinedButton(
                     onPressed: plan.isEmpty ? null : _exportWeek,
-                    child: const Text('Exportar plano (semana)'),
+                    child: const Text('Exportar plano (semana) (E)'),
                   ),
                   OutlinedButton(
                     onPressed: plan.isEmpty ? null : _exportMonth,
@@ -247,6 +366,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   final hot = (dash['errorHotTopics'] as List? ?? []).take(3).toList();
                   final routine = Map<String, dynamic>.from(dash['dailyRoutine'] as Map? ?? {});
                   final sessionPath = routine['sessionPath']?.toString() ?? '/sessao';
+                  if (sessionPath != _todaySessionPath) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() => _todaySessionPath = sessionPath);
+                    });
+                  }
                   final rSubj = routine['subject']?.toString() ?? '';
                   final rTopic = routine['topic']?.toString() ?? '';
                   return Column(
@@ -265,7 +389,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               ),
                               FilledButton(
                                 onPressed: () => context.go(sessionPath),
-                                child: const Text('Fazer agora'),
+                                child: const Text('Fazer agora (S)'),
                               ),
                             ],
                           ),
@@ -315,7 +439,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
 
               SectionLabel(
                 weekOnly ? 'Próximos 7 dias' : 'Cronograma ($days dias)',
-                hint: 'Toque o dia para marcar · “Play” abre sessão no tópico',
+                hint: '↑/↓ J/K · Enter sessão · Espaço marca feito · Play no ícone',
               ),
 
               if (!loading && plan.isEmpty)
@@ -327,19 +451,21 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   ),
                 ),
 
-              for (final raw in visible)
+              for (var i = 0; i < visible.length; i++)
                 Builder(
                   builder: (context) {
-                    final item = Map<String, dynamic>.from(raw as Map);
+                    final item = visible[i];
+                    final active = i == selected;
                     final done = item['done'] == true;
                     final fromErrors = item['fromErrors'] == true ||
                         (item['reason']?.toString().contains('Erro recente') ?? false);
                     final subject = item['subject']?.toString() ?? '';
                     final topic = item['topic']?.toString() ?? '';
-                    final nat = const {'Biologia', 'Química', 'Física'}.contains(subject);
                     return SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 8),
-                      color: done
+                      color: active
+                          ? cs.primaryContainer.withOpacity(0.55)
+                          : done
                           ? cs.primaryContainer.withOpacity(0.25)
                           : fromErrors
                               ? cs.tertiaryContainer.withOpacity(0.4)
@@ -399,12 +525,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                           ),
                           IconButton(
                             tooltip: 'Sessão neste tópico',
-                            onPressed: () => context.go(
-                              '/sessao?examBoard=UEMA_PAES'
-                              '&subject=${Uri.encodeComponent(subject)}'
-                              '&topic=${Uri.encodeComponent(topic)}'
-                              '&preferNatureza=${nat ? '1' : '0'}',
-                            ),
+                            onPressed: () {
+                              setState(() => selected = i);
+                              context.go(_sessionPathFor(item));
+                            },
                             icon: Icon(Icons.play_circle_fill_rounded, color: cs.primary),
                           ),
                         ],
@@ -424,6 +548,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 }

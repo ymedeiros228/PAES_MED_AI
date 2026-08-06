@@ -37,9 +37,15 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   final sw = Stopwatch();
   Timer? ticker;
   bool examLocked = false;
+  Duration? diaProvaHardCap;
   bool preflightDone = false;
   bool running = false;
   Map<String, dynamic>? pendingSimCheckpoint;
+  String? startError;
+  String? checkpointLoadError;
+  String? checkpointSaveError;
+  /// Erros ao carregar explicação pós-sim por questão.
+  final Map<String, String> debriefErrors = {};
   /// Ciclo BS: teclado 1–5 / Enter na sessão em andamento.
   final FocusNode sessionFocus = FocusNode();
   int keyboardQi = 0;
@@ -87,10 +93,38 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     final isEnter = event.logicalKey == LogicalKeyboardKey.enter ||
         event.logicalKey == LogicalKeyboardKey.numpadEnter;
 
-    // Relatório: Enter → Hoje
+    // Relatório: atalhos pós-grade (Ciclo DB)
     if (report != null) {
       if (isEnter) {
         context.go('/dashboard');
+        return KeyEventResult.handled;
+      }
+      final gaps = (report!['gaps'] as List? ?? []);
+      if (event.logicalKey == LogicalKeyboardKey.digit1 ||
+          event.logicalKey == LogicalKeyboardKey.numpad1) {
+        context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.digit2 ||
+          event.logicalKey == LogicalKeyboardKey.numpad2) {
+        if (gaps.isNotEmpty) {
+          unawaited(_remediateGaps());
+        } else {
+          context.go('/fila');
+        }
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.digit3 ||
+          event.logicalKey == LogicalKeyboardKey.numpad3) {
+        context.go('/redacao');
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyE) {
+        unawaited(_exportReport());
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyN) {
+        unawaited(_resetSim());
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -188,10 +222,24 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       if (cp is Map && cp['started'] == true) {
         final qs = cp['questions'] as List? ?? [];
         if (qs.isNotEmpty && mounted) {
-          setState(() => pendingSimCheckpoint = Map<String, dynamic>.from(cp));
+          setState(() {
+            pendingSimCheckpoint = Map<String, dynamic>.from(cp);
+            checkpointLoadError = null;
+          });
         }
+      } else if (mounted) {
+        setState(() => checkpointLoadError = null);
       }
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        pendingSimCheckpoint = null;
+        checkpointLoadError = humanApiError(
+          e,
+          fallback: 'Não foi possível carregar simulado salvo.',
+        );
+      });
+    }
   }
 
   Future<void> _saveSimCheckpoint() async {
@@ -222,14 +270,51 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         'warning': lastSimMeta?['warning'],
         'started': true,
       });
-    } catch (_) {}
+      if (mounted) setState(() => checkpointSaveError = null);
+    } catch (e) {
+      if (!mounted) return;
+      setState(
+        () => checkpointSaveError = humanApiError(
+          e,
+          fallback: 'Progresso do simulado não foi salvo.',
+        ),
+      );
+    }
   }
 
   Future<void> _clearSimCheckpoint() async {
     try {
       await apiClient.delete('/api/sim/checkpoint');
-    } catch (_) {}
-    if (mounted) setState(() => pendingSimCheckpoint = null);
+      if (mounted) {
+        setState(() => pendingSimCheckpoint = null);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            humanApiError(e, fallback: 'Não foi possível descartar o simulado salvo.'),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _resetSim() async {
+    await _clearSimCheckpoint();
+    if (!mounted) return;
+    setState(() {
+      questions = [];
+      report = null;
+      lastSimMeta = null;
+      debriefById.clear();
+      debriefLoading.clear();
+      running = false;
+      answers.clear();
+      errorTypes.clear();
+      keyboardQi = 0;
+      diaProvaHardCap = null;
+    });
   }
 
   Future<void> _exportReport() async {
@@ -282,7 +367,16 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       if (dir.isNotEmpty) {
         try {
           await apiClient.post('/api/library/open-path', {'path': dir});
-        } catch (_) {}
+        } catch (e) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                humanApiError(e, fallback: 'Export OK, mas pasta não abriu.'),
+              ),
+            ),
+          );
+        }
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -340,29 +434,23 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       sw
         ..reset()
         ..start();
-      if (elapsed > 0) {
-        // approximate elapsed by starting earlier is hard; just display from 0 + note
-      }
     });
-    final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
-    ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      if (hardCap != null && sw.elapsed >= hardCap && report == null) {
-        _grade();
-        return;
-      }
-      setState(() {});
-      unawaited(_saveSimCheckpoint());
-    });
+    _armDiaProvaTicker();
     _requestSessionFocus();
   }
 
   Future<bool> _preflightDiaProva() async {
     Map<String, dynamic> basis = {};
+    String? healthNote;
     try {
       final h = await apiClient.get('/health');
       basis = Map<String, dynamic>.from(h as Map);
-    } catch (_) {}
+    } catch (e) {
+      healthNote = humanApiError(
+        e,
+        fallback: 'API offline — contagem de oficiais indisponível.',
+      );
+    }
     final n = basis['officialCount'] as int? ?? 0;
     final mins = (limit * 1.5).ceil().clamp(15, 90);
     if (!mounted) return false;
@@ -371,10 +459,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Pronto para o dia de prova?'),
         content: Text(
-          n < 10
+          '${healthNote != null ? '$healthNote\n\n' : ''}'
+          '${n < 10
               ? 'Há poucas oficiais na base ($n). Este modo NÃO inventa prova UEMA — sem acervo sério, a base de treino fica rotulada como treino.\n\n'
                   'Tempo estimado: ~$mins min.\nResolução só ao finalizar.'
-              : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado neste pack.',
+              : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado neste pack.'}',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
@@ -390,43 +479,48 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       final ok = await _preflightDiaProva();
       if (!ok) return;
     }
-    final data = await apiClient.post('/api/simulations', {
-      'mode': mode,
-      'subject': subject,
-      'limit': limit,
-    });
-    final map = Map<String, dynamic>.from(data as Map);
-    ticker?.cancel();
-    setState(() {
-      lastSimMeta = map;
-      questions = map['questions'] as List<dynamic>? ?? [];
-      answers.clear();
-      errorTypes.clear();
-      debriefById.clear();
-      debriefLoading.clear();
-      report = null;
-      running = true;
-      keyboardQi = 0;
-      examLocked = mode == 'dia_prova';
-      preflightDone = mode == 'dia_prova';
-      sw
-        ..reset()
-        ..start();
-    });
-    final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
-    ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      if (hardCap != null && sw.elapsed >= hardCap && report == null) {
-        _grade();
+    setState(() => startError = null);
+    try {
+      final data = await apiClient.post('/api/simulations', {
+        'mode': mode,
+        'subject': subject,
+        'limit': limit,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final qs = map['questions'] as List<dynamic>? ?? [];
+      if (qs.isEmpty) {
+        setState(() {
+          startError = 'Nenhuma questão neste modo — monte o acervo na Biblioteca.';
+          running = false;
+        });
         return;
       }
-      setState(() {});
-      if (sw.elapsed.inSeconds % 5 == 0) {
-        unawaited(_saveSimCheckpoint());
-      }
-    });
-    unawaited(_saveSimCheckpoint());
-    _requestSessionFocus();
+      ticker?.cancel();
+      setState(() {
+        lastSimMeta = map;
+        questions = qs;
+        answers.clear();
+        errorTypes.clear();
+        debriefById.clear();
+        debriefLoading.clear();
+        report = null;
+        running = true;
+        keyboardQi = 0;
+        examLocked = mode == 'dia_prova';
+        preflightDone = mode == 'dia_prova';
+        sw
+          ..reset()
+          ..start();
+      });
+      _armDiaProvaTicker();
+      unawaited(_saveSimCheckpoint());
+      _requestSessionFocus();
+    } catch (e) {
+      setState(() {
+        startError = humanApiError(e, fallback: 'Não deu para iniciar o simulado.');
+        running = false;
+      });
+    }
   }
 
   Future<void> _grade() async {
@@ -447,6 +541,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       report = Map<String, dynamic>.from(data as Map);
       running = false;
       examLocked = false;
+      diaProvaHardCap = null;
     });
     for (final raw in (report?['results'] as List? ?? [])) {
       final r = Map<String, dynamic>.from(raw as Map);
@@ -480,9 +575,14 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       setState(() {
         debriefById[id] = Map<String, dynamic>.from(data as Map);
         debriefLoading.remove(id);
+        debriefErrors.remove(id);
       });
-    } catch (_) {
-      if (mounted) setState(() => debriefLoading.remove(id));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        debriefLoading.remove(id);
+        debriefErrors[id] = humanApiError(e, fallback: 'Explicação indisponível.');
+      });
     }
   }
 
@@ -495,6 +595,22 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       );
     }
     if (q == null) {
+      final err = debriefErrors[questionId];
+      if (err != null) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(err, style: Theme.of(context).textTheme.bodySmall),
+            TextButton(
+              onPressed: () {
+                setState(() => debriefErrors.remove(questionId));
+                _ensureDebrief(questionId);
+              },
+              child: const Text('Tentar'),
+            ),
+          ],
+        );
+      }
       return TextButton(
         onPressed: () => _ensureDebrief(questionId),
         child: const Text('Carregar explicação'),
@@ -554,6 +670,35 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     return '${e.inMinutes.toString().padLeft(2, '0')}:${(e.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 
+  Duration _diaProvaHardCapForLimit(int n) =>
+      Duration(minutes: (n * 1.5).ceil().clamp(15, 90));
+
+  String get _timeRemainingLabel {
+    final cap = diaProvaHardCap;
+    if (cap == null) return '';
+    final left = cap - sw.elapsed;
+    if (!left.isNegative && left.inSeconds <= 0) return '00:00';
+    final safe = left.isNegative ? Duration.zero : left;
+    return '${safe.inMinutes.toString().padLeft(2, '0')}:${(safe.inSeconds % 60).toString().padLeft(2, '0')}';
+  }
+
+  void _armDiaProvaTicker() {
+    ticker?.cancel();
+    diaProvaHardCap = mode == 'dia_prova' ? _diaProvaHardCapForLimit(limit) : null;
+    ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final cap = diaProvaHardCap;
+      if (cap != null && sw.elapsed >= cap && report == null) {
+        _grade();
+        return;
+      }
+      setState(() {});
+      if (sw.elapsed.inSeconds % 5 == 0) {
+        unawaited(_saveSimCheckpoint());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -580,19 +725,35 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 title: 'Simulados',
                 subtitle: inSession
                     ? (report != null
-                        ? 'Resultado deste bloco'
-                        : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
+                        ? 'Enter Hoje · 1 Natureza · 2 Fila · 3 Redação · E export · N novo'
+                        : examLocked
+                            ? 'Dia de prova · restam $_timeRemainingLabel · 1–5 · Enter avança · gabarito no fim'
+                            : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
                     : 'Escolha um modo e faça um bloco como no dia da prova',
                 trailing: inSession && report == null
                     ? SurfacePanel(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         color: examLocked ? cs.tertiaryContainer.withOpacity(0.55) : null,
-                        child: Text(
-                          _clock,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontFeatures: const [FontFeature.tabularFigures()],
-                                fontWeight: FontWeight.w800,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _clock,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                            if (examLocked && diaProvaHardCap != null)
+                              Text(
+                                '−$_timeRemainingLabel',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: cs.onSurface.withOpacity(0.65),
+                                      fontFeatures: const [FontFeature.tabularFigures()],
+                                    ),
                               ),
+                          ],
                         ),
                       )
                     : null,
@@ -625,6 +786,35 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ),
 
               if (!inSession) ...[
+                if (checkpointLoadError != null)
+                  QuietEmpty(
+                    message: checkpointLoadError!,
+                    action: TextButton(
+                      onPressed: _loadSimCheckpoint,
+                      child: const Text('Tentar'),
+                    ),
+                  ),
+                if (startError != null)
+                  QuietEmpty(
+                    message: startError!,
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () => setState(() => startError = null),
+                          child: const Text('Ok'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/biblioteca'),
+                          child: const Text('Biblioteca'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                          child: const Text('Sessão'),
+                        ),
+                      ],
+                    ),
+                  ),
                 if (pendingSimCheckpoint != null)
                   SurfacePanel(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -730,6 +920,17 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ),
               ],
 
+              if (running && checkpointSaveError != null) ...[
+                QuietEmpty(
+                  message: checkpointSaveError!,
+                  action: TextButton(
+                    onPressed: _saveSimCheckpoint,
+                    child: const Text('Tentar'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+
               if (running && report == null && !examLocked) ...[
                 SectionLabel('Se errar, marque o tipo', hint: 'Padrão para o bloco inteiro'),
                 Wrap(
@@ -748,8 +949,31 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               ],
 
               if (examLocked && report == null)
-                QuietEmpty(
-                  message: 'Modo dia de prova: resposta livre agora; revisão só no fim.',
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: cs.tertiaryContainer.withOpacity(0.45),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dia de prova em andamento',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Respostas: ${answers.length}/${questions.length} · tempo $_clock'
+                        '${diaProvaHardCap != null ? ' · restam $_timeRemainingLabel' : ''}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: cs.onSurface.withOpacity(0.65),
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
 
               for (var qi = 0; qi < questions.length; qi++)
@@ -937,44 +1161,33 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   children: [
                     FilledButton.tonal(
                       onPressed: _exportReport,
-                      child: const Text('Exportar relatório'),
+                      child: const Text('Exportar relatório (E)'),
                     ),
                     if ((report!['gaps'] as List? ?? []).isNotEmpty)
                       FilledButton(
                         onPressed: _remediateGaps,
-                        child: const Text('Mandar lacunas para a fila'),
+                        child: const Text('Mandar lacunas para a fila (2)'),
                       )
                     else
                       FilledButton(
                         onPressed: () => context.go('/fila'),
-                        child: const Text('Ir à fila'),
+                        child: const Text('Ir à fila (2)'),
                       ),
                     FilledButton.tonal(
                       onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-                      child: const Text('Sessão Natureza'),
+                      child: const Text('Sessão Natureza (1)'),
                     ),
                     FilledButton.tonal(
                       onPressed: () => context.go('/redacao'),
-                      child: const Text('Redação'),
+                      child: const Text('Redação (3)'),
                     ),
                     FilledButton.tonal(
                       onPressed: () => context.go('/dashboard'),
-                      child: const Text('Voltar ao Hoje'),
+                      child: const Text('Voltar ao Hoje (Enter)'),
                     ),
                     OutlinedButton(
-                      onPressed: () {
-                        unawaited(_clearSimCheckpoint());
-                        setState(() {
-                          questions = [];
-                          report = null;
-                          lastSimMeta = null;
-                          debriefById.clear();
-                          debriefLoading.clear();
-                          running = false;
-                          answers.clear();
-                        });
-                      },
-                      child: const Text('Novo simulado'),
+                      onPressed: _resetSim,
+                      child: const Text('Novo simulado (N)'),
                     ),
                   ],
                 ),

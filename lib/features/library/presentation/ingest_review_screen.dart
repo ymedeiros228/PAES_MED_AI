@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,6 +126,24 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         return KeyEventResult.handled;
       }
     }
+    if (key == LogicalKeyboardKey.keyH && !busy && questions.isNotEmpty) {
+      unawaited(_commit(highConfidenceOnly: true));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyE) {
+      unawaited(_editMeta());
+      return KeyEventResult.handled;
+    }
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null && primary.context?.widget is EditableText) {
+      return KeyEventResult.ignored;
+    }
+    if (key == LogicalKeyboardKey.keyS) {
+      context.go(
+        '/sessao?examBoard=UEMA_PAES&year=${widget.args.year}&preferNatureza=1',
+      );
+      return KeyEventResult.handled;
+    }
     return KeyEventResult.ignored;
   }
 
@@ -248,7 +268,13 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       if (choice == 'professor') {
         try {
           await apiClient.post('/api/professor/batch-fill', {'limit': 30, 'preferUema': true});
-        } catch (_) {}
+        } catch (e) {
+          if (mounted) {
+            setState(
+              () => msg = humanApiError(e, fallback: 'Rascunhos professor indisponíveis.'),
+            );
+          }
+        }
       }
       if (highConfidenceOnly) {
         setState(() => msg = toast);
@@ -437,7 +463,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Teclado: ←/J anterior · →/K próxima · 1–5 gabarito',
+                        'Teclado: ←/J anterior · →/K próxima · 1–5 gabarito · H altas conf. · E editar · S sessão',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
                             ),

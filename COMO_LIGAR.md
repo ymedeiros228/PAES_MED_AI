@@ -638,6 +638,502 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. **←** volta · **→** ou **Enter** avança (ignora quando cursor no campo de data).
 2. Smoke: `ciclo_da_*` + push.
 
+## Sim debrief teclado (Ciclo DB)
+
+1. Pós-grade: **Enter** Hoje · **1** Natureza · **2** Fila/lacunas · **3** Redação · **E** export · **N** novo.
+2. Smoke: `ciclo_db_*` + push.
+
+## Pack dist +7 (Ciclo DC)
+
+1. `empacotar_windows.bat` com **1.0.0+7** em `dist\VERSION.txt`.
+2. Smoke: `ciclo_dc_*` + push.
+
+## Revisões teclado (Ciclo DD)
+
+1. Lista: **↑/↓** ou **J/K** · **Enter** abre adaptativo do item.
+2. Smoke: `ciclo_dd_*` + push.
+
+## Lint sessão (Ciclo DE)
+
+1. Remove `dart:io` não usado em `guided_session_screen.dart` (flutter analyze warning).
+2. Smoke: `ciclo_de_*` + push.
+
+## Dia de prova UX (Ciclo DF)
+
+1. Cronômetro + **restam MM:SS** no header · banner de progresso · auto-grade no tempo.
+2. Smoke: `ciclo_df_*` + push.
+
+## Domínio teclado (Ciclo DG)
+
+1. Ranking: **↑/↓ J/K** · **Enter** abre sessão no tópico.
+2. Smoke: `ciclo_dg_*` + push.
+
+## Banca teclado (Ciclo DH)
+
+1. CTAs numerados **1–6** · **E** exporta perfil MD.
+2. Smoke: `ciclo_dh_*` + push.
+
+## Fila teclado (Ciclo DI)
+
+1. **S** sessão · **↑/↓ J/K** navega itens · **Enter** abre selecionado.
+2. Smoke: `ciclo_di_*` + push.
+
+## Backup UX (Ciclo DJ)
+
+1. Ajustes → Backup/Restaurar: erros legíveis (`humanApiError`) · confirm com nome + verify SHA.
+2. Smoke: `ciclo_dj_*` + push.
+
+## Hoje teclado (Ciclo DK)
+
+1. Dashboard: **S** sessão · **L** fila · **Enter** sessão.
+2. Smoke: `ciclo_dk_*` + push.
+
+## Plano teclado (Ciclo DL)
+
+1. Cronograma: **S** hoje · **↑/↓ J/K** dias · **Enter** sessão · **Espaço** marca · **E** export semana.
+2. Smoke: `ciclo_dl_*` + push.
+
+## Sessão hints (Ciclo DM)
+
+1. Sessão guiada: subtitle dinâmico com atalhos da fase (1–5, Enter, Space, N…).
+2. Smoke: `ciclo_dm_*` + push.
+
+## Redação subtitle (Ciclo DN)
+
+1. PageHeader menciona **Ctrl+Enter** para corrigir.
+2. Smoke: `ciclo_dn_*` + push.
+
+## Biblioteca teclado (Ciclo DO)
+
+1. Busca: **Enter** busca · resultados **↑/↓ J/K** · **Enter** abre · **S** sessão · **R** atualiza.
+2. Smoke: `ciclo_do_*` + push.
+
+## Biblioteca erro legível (Ciclo DP)
+
+1. EmptyState offline mostra `humanApiError` no subtitle (não mensagem genérica).
+2. Smoke: `ciclo_dp_*` + push.
+
+## Soft landing acervo (Ciclo DQ)
+
+1. Grid 2024–26 vazio: CTA **Atualizar** + **Sessão** (não trava o aluno).
+2. Smoke: `ciclo_dq_*` + push.
+
+## Soft landing Hoje (Ciclo DR)
+
+1. Dashboard offline: `humanApiError` + **Tentar** + **Sessão**.
+2. Smoke: `ciclo_dr_*` + push.
+
+## Soft landing Fila (Ciclo DS)
+
+1. Fila offline: erro legível + **Sessão** fallback.
+2. Smoke: `ciclo_ds_*` + push.
+
+## Soft landing Revisões/Questões (Ciclo DT)
+
+1. Erro API legível · Questões com CTA **Biblioteca**.
+2. Smoke: `ciclo_dt_*` + push.
+
+## Soft landing Domínio/Sessão (Ciclo DU)
+
+1. Domínio `humanApiError` + Sessão · Sessão guiada mostra `error!`.
+2. Smoke: `ciclo_du_*` + push.
+
+## Soft landing Cards (Ciclo DV)
+
+1. Cards erro legível + **Tentar** + **Sessão**.
+2. Smoke: `ciclo_dv_*` + push.
+
+## Soft landing Ficha (Ciclo DW)
+
+1. Questão individual offline: `error!` + **Tentar** + **Lista** + **Sessão**.
+2. Smoke: `ciclo_dw_*` + push.
+
+## Soft landing Adaptativo (Ciclo DX)
+
+1. Treino vazio/erro: mensagem clara + **Biblioteca** + **Sessão**.
+2. Smoke: `ciclo_dx_*` + push.
+
+## Soft landing Banca/Aulas/Redação (Ciclo DY)
+
+1. Erros API legíveis (`humanApiError`) nas listas secundárias.
+2. Smoke: `ciclo_dy_*` + push.
+
+## Soft landing Simulados (Ciclo DZ)
+
+1. Falha ao iniciar sim: `startError` + **Biblioteca** + **Sessão**.
+2. Smoke: `ciclo_dz_*` + push.
+
+## Soft landing Aprovação (Ciclo EA)
+
+1. Erro legível + CTAs **Biblioteca**; fila vazia com **Sessão**.
+2. Smoke: `ciclo_ea_*` + push.
+
+## Tutor erro inline (Ciclo EB)
+
+1. Banner com `state.error` + **Sessão**/**Biblioteca** · subtitle **Ctrl+Enter**.
+2. Smoke: `ciclo_eb_*` + push.
+
+## Onboarding pasta (Ciclo EC)
+
+1. Abrir pasta no onboarding: `humanApiError` se API falhar.
+2. Smoke: `ciclo_ec_*` + push.
+
+## Versão 1.0.0+8 (Ciclo ED)
+
+1. `pubspec.yaml`, Ajustes e `empacotar_windows.bat` alinhados em **+8**.
+2. Smoke: `ciclo_ed_*` + push.
+
+## Crash UI (Ciclo EE)
+
+1. `ErrorWidget` trunca stack · hints Hoje/sessão · F/Ctrl+T.
+2. Smoke: `ciclo_ee_*` + push.
+
+## Banner offline (Ciclo EF)
+
+1. `BackendStatusBanner` mostra `humanApiError` + hint sessão salva.
+2. Smoke: `ciclo_ef_*` + push.
+
+## Reforço mídia (Ciclo EG)
+
+1. `MediaReinforcement` erro legível + **Tentar** (reload).
+2. Smoke: `ciclo_eg_*` + push.
+
+## Rail atalhos (Ciclo EH)
+
+1. Rail expandido: hint **F foco · Ctrl+T tema**.
+2. Smoke: `ciclo_eh_*` + push.
+
+## Aprovação teclado (Ciclo EI)
+
+1. **↑/↓ J/K** · **A** aprovar · **R** rejeitar · **Enter/O** abrir ficha.
+2. Smoke: `ciclo_ei_*` + push.
+
+## Ingest review H/E (Ciclo EJ)
+
+1. **H** commit altas conf. · **E** editar meta · hint no painel.
+2. Smoke: `ciclo_ej_*` + push.
+
+## Tutor fontes (Ciclo EK)
+
+1. Subtitle + label **fontes clicáveis** na resposta.
+2. Smoke: `ciclo_ek_*` + push.
+
+## Ajustes avançado erros (Ciclo EL)
+
+1. Reindex, lote professor e ingest PDF: `humanApiError` (não mensagem genérica).
+2. Smoke: `ciclo_el_*`.
+
+## Ajustes teclado (Ciclo EM)
+
+1. **R** / **F5** atualiza health · **B** backup rápido (fora de campos de texto).
+2. Hints no header e botão **Salvar cópia (B)**.
+3. Smoke: `ciclo_em_*`.
+
+## Tutor citações (Ciclo EN)
+
+1. Chips de fonte com tag `[tipo · ano]` + label/snippet.
+2. Smoke: `ciclo_en_*`.
+
+## Backup lista (Ciclo EO)
+
+1. Falha ao listar backups/último OK: `backupListError` + **Tentar** (não silencioso).
+2. Smoke: `ciclo_eo_*`.
+
+## Redação setup (Ciclo EP)
+
+1. Temas/personas/progresso offline: banner `setupError` + **Tentar** / **Sessão**.
+2. Smoke: `ciclo_ep_*`.
+
+## Aulas teclado (Ciclo EQ)
+
+1. **R**/F5 atualiza lista · **S** sessão (fora de campos de texto).
+2. Smoke: `ciclo_eq_*`.
+
+## Sim checkpoint (Ciclo ER)
+
+1. Falha ao carregar sim salvo: `checkpointLoadError` + **Tentar**.
+2. Smoke: `ciclo_er_*`.
+
+## Sim debrief (Ciclo ES)
+
+1. Explicação pós-sim offline: `debriefErrors` + **Tentar** por questão.
+2. Smoke: `ciclo_es_*`.
+
+## Ingest review (Ciclo ET)
+
+1. **S** sessão · erro legível no lote professor pós-commit.
+2. Smoke: `ciclo_et_*`.
+
+## Dashboard refresh (Ciclo EU)
+
+1. **R**/F5 atualiza Hoje + recarrega checkpoint de sessão.
+2. Smoke: `ciclo_eu_*`.
+
+## Biblioteca parcial (Ciclo EV)
+
+1. Biblioteca carrega mesmo se cobertura/curadoria falharem — `partialLoadNote` + **Tentar**.
+2. Smoke: `ciclo_ev_*`.
+
+## Adaptativo resposta (Ciclo EW)
+
+1. Falha ao gravar resposta: `answerSaveError` + **Tentar** (não silencioso).
+2. Smoke: `ciclo_ew_*`.
+
+## Adaptativo teclado (Ciclo EX)
+
+1. **R**/F5 remonta fila (fora de campos de texto).
+2. Smoke: `ciclo_ex_*`.
+
+## Fila refresh (Ciclo EY)
+
+1. **R**/F5 recarrega `/api/today` · hint no header.
+2. Smoke: `ciclo_ey_*`.
+
+## Ficha questão save (Ciclo EZ)
+
+1. Falha ao gravar resposta ou sugestões adaptativas: `saveError` / `adaptiveLoadError`.
+2. Smoke: `ciclo_ez_*`.
+
+## Biblioteca buscas (Ciclo FA)
+
+1. Histórico de buscas offline: `searchHistoryNote` legível.
+2. Smoke: `ciclo_fa_*`.
+
+## Sessão checkpoint load (Ciclo FB)
+
+1. Falha ao ler checkpoint salvo: `checkpointLoadError` + **Tentar**.
+2. Smoke: `ciclo_fb_*`.
+
+## Sessão checkpoint save (Ciclo FC)
+
+1. Falha ao salvar progresso: `checkpointSaveError` + **Tentar** durante sessão.
+2. Smoke: `ciclo_fc_*`.
+
+## Revisões teclado (Ciclo FD)
+
+1. **R**/F5 atualiza · **S** sessão.
+2. Smoke: `ciclo_fd_*`.
+
+## Sessão questões fase (Ciclo FE)
+
+1. Fase sem questões carregadas: `questionsLoadError` + **Tentar** / **Biblioteca**.
+2. Smoke: `ciclo_fe_*`.
+
+## Cards teclado (Ciclo FF)
+
+1. **R**/F5 atualiza · **S** sessão (fora de campos de texto).
+2. Smoke: `ciclo_ff_*`.
+
+## Plano estudos (Ciclo FG)
+
+1. **R**/F5 recarrega plano · erro legível ao marcar dia/export abrir pasta.
+2. Smoke: `ciclo_fg_*`.
+
+## Domínio teclado (Ciclo FH)
+
+1. **R**/F5 ranking · **S** sessão no item selecionado.
+2. Smoke: `ciclo_fh_*`.
+
+## Questões teclado (Ciclo FI)
+
+1. **R**/F5 atualiza lista · **S** sessão.
+2. Smoke: `ciclo_fi_*`.
+
+## Aprovação F5 (Ciclo FJ)
+
+1. **F5** recarrega pendentes (R continua rejeitar).
+2. Smoke: `ciclo_fj_*`.
+
+## Hoje checkpoint (Ciclo FK)
+
+1. Falha ao ler checkpoint no Dashboard: `checkpointLoadError` + **Tentar**.
+2. Smoke: `ciclo_fk_*`.
+
+## Banca export (Ciclo FL)
+
+1. **R**/F5 atualiza · erro legível ao abrir pasta pós-export MD.
+2. Smoke: `ciclo_fl_*`.
+
+## Sessão lacunas (Ciclo FM)
+
+1. Falha ao agendar lacunas no fim: `scheduleGapsError` no painel final.
+2. Smoke: `ciclo_fm_*`.
+
+## Fila teoria (Ciclo FN)
+
+1. Abrir material na sheet de teoria: `humanApiError` se path e pasta falharem.
+2. Smoke: `ciclo_fn_*`.
+
+## Hoje exam sync (Ciclo FO)
+
+1. Falha ao sincronizar data da prova: `examSyncError` + **Tentar**.
+2. Smoke: `ciclo_fo_*`.
+
+## Sim save progress (Ciclo FP)
+
+1. Falha ao salvar checkpoint durante sim: `checkpointSaveError` + **Tentar**.
+2. Smoke: `ciclo_fp_*`.
+
+## Sessão/discard close (Ciclo FQ)
+
+1. Erros legíveis ao descartar checkpoint (Hoje) ou encerrar dia (Sessão).
+2. Smoke: `ciclo_fq_*`.
+
+## Biblioteca classify (Ciclo FR)
+
+1. Falha pós-commit Semana 1 em `classify-pending`: nota legível em `msg`.
+2. Smoke: `ciclo_fr_*`.
+
+## Biblioteca parse gate (Ciclo FS)
+
+1. Falha em `parse-gate` antes de estudar: `humanApiError` em `msg`.
+2. Smoke: `ciclo_fs_*`.
+
+## Domínio rascunho (Ciclo FT)
+
+1. Falha ao aceitar rascunho professor: SnackBar legível.
+2. Smoke: `ciclo_ft_*`.
+
+## Sim export pasta (Ciclo FU)
+
+1. Export MD OK mas pasta não abre: SnackBar legível.
+2. Smoke: `ciclo_fu_*`.
+
+## Sessão resposta e cards (Ciclo FV)
+
+1. Falha ao gravar resposta: `answerSaveError` + Tentar (não avança silencioso).
+2. Smoke: `ciclo_fv_*`.
+
+## Sessão revisão card (Ciclo FW)
+
+1. Falha POST `/api/flashcards/{id}/review`: texto legível abaixo dos botões.
+2. Smoke: `ciclo_fw_*`.
+
+## Sessão export e descartar (Ciclo FX)
+
+1. Export do dia OK mas pasta não abre: mensagem no pacote.
+2. Descartar checkpoint da sessão falha: SnackBar legível.
+3. Smoke: `ciclo_fx_*`.
+
+## Sim descartar checkpoint (Ciclo FY)
+
+1. Descartar simulado salvo falha: SnackBar legível (não limpa UI silencioso).
+2. Smoke: `ciclo_fy_*`.
+
+## Sessão carga parcial (Ciclo FZ)
+
+1. Algumas questões falham no GET individual: nota `questionsPartialLoadNote` (não some silencioso).
+2. Smoke: `ciclo_fz_*`.
+
+## Sessão revisões due (Ciclo GA)
+
+1. Busca por tópico falha: `questionsLoadError` + Tentar (revisões ou questões).
+2. Smoke: `ciclo_ga_*`.
+
+## Hoje backup data (Ciclo GB)
+
+1. Data do último backup inválida → aviso legível + CTA Ajustes.
+2. Smoke: `ciclo_gb_*`.
+
+## Sim preflight health (Ciclo GC)
+
+1. `/health` offline no dia de prova: aviso no diálogo preflight.
+2. Smoke: `ciclo_gc_*`.
+
+## Fecho semana export (Ciclo GD)
+
+1. Export semana OK mas pasta não abre: nota legível em `exportMsg`.
+2. Smoke: `ciclo_gd_*`.
+
+## Exam-date estado (Ciclo GE)
+
+1. Provider `ExamDateState`: `syncError` + `hydrateNote` legíveis (não `catch (_) {}` mudo).
+2. Smoke: `ciclo_ge_*`.
+
+## Ajustes data prova (Ciclo GF)
+
+1. Sync falhou → QuietEmpty + Sincronizar; data inválida → aviso.
+2. Smoke: `ciclo_gf_*`.
+
+## Onboarding data prova (Ciclo GG)
+
+1. Hydrate/sync offline → texto legível no passo da data.
+2. Smoke: `ciclo_gg_*`.
+
+## Hoje exam sync unificado (Ciclo GH)
+
+1. Hoje usa `examDateProvider.syncError` + `retrySync` (sem estado duplicado).
+2. Smoke: `ciclo_gh_*`.
+
+## Sessão recarga parcial (Ciclo GI)
+
+1. Carga parcial de questões → QuietEmpty + **Recarregar** (`_lastQuestionBodyIds`).
+2. Smoke: `ciclo_gi_*`.
+
+## Plano exam sync (Ciclo GJ)
+
+1. Plano mostra erro de sync da data + Sincronizar / Ajustes.
+2. Smoke: `ciclo_gj_*`.
+
+## Shell exam sync banner (Ciclo GK)
+
+1. `ExamDateSyncBanner` global quando sync da data falha + botão Sync.
+2. Smoke: `ciclo_gk_*`.
+
+## Adaptativo inéditas parciais (Ciclo GL)
+
+1. GET completo falha em inédita → `generatedPartialNote` legível.
+2. Smoke: `ciclo_gl_*`.
+
+## Shell rail sync badge (Ciclo GM)
+
+1. Rail: “Sync da prova pendente” no header + bolinha em Ajustes.
+2. Smoke: `ciclo_gm_*`.
+
+## Mobile sync AppBar (Ciclo GN)
+
+1. Layout estreito: subtítulo + botão sync no AppBar.
+2. Smoke: `ciclo_gn_*`.
+
+## Mobile menu sync (Ciclo GO)
+
+1. Menu hamburger com badge + “Ajustes · sync pendente”.
+2. Smoke: `ciclo_go_*`.
+
+## Mobile sync strip (Ciclo GP)
+
+1. Faixa compacta acima do bottom nav → Ajustes.
+2. Smoke: `ciclo_gp_*`.
+
+## Biblioteca PDF ano (Ciclo GQ)
+
+1. PDF existe no PC mas open-path falha → msg legível por ano.
+2. Smoke: `ciclo_gq_*`.
+
+## Pack Desktop + ícone (Ciclo GR)
+
+1. Pack canônico em `dist\PAES_MED_AI_Windows`: `Iniciar_PAES_MED_AI.bat`, `app\`, `branding\app_icon.ico`, `VERSION.txt`.
+2. Atalho Desktop **PAES MED AI.lnk** → bat + `IconLocation` do ico.
+3. Se `rmdir` falhar por lock: xcopy `app\` + restaurar launcher/ico/VERSION.
+
+## Host git + suite (Ciclo GS)
+
+1. Git no PATH do host (agente sem git = commit/PR no host).
+2. Smoke suite no host após green; push `main` sem force.
+3. Ver `.cursor/autopilot/BLOCKED.md` checklist residual.
+
+## Ler teoria do tópico (Ciclo GT)
+
+1. Fila e ficha → **Ler teoria** abre sheet local (`GET /api/library/materials` + mark-read).
+2. Empty: “Sem material local…” + CTA Biblioteca (não inventa PDF).
+3. Smoke: `ciclo_gt_*`.
+
+## Pack gate + 1.0.0+9 (Ciclo GU)
+
+1. Smoke `ciclo_gu_pack_*` exige launcher/ico/VERSION se `dist` existir; bat com **1.0.0+9**.
+2. Sobre / pubspec / VERSION = **1.0.0+9**.
+3. Stop micro-teclas; ship pack OK.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

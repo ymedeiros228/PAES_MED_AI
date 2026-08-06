@@ -1,16 +1,10 @@
-# Auto-Pilot — FEITO
+# Auto-Pilot — DONE
 
-Sessão: 2026-08-06T01:04:22.847Z
-Projeto: PAES_MED_AI
+## GR–GU (2026-08-05)
 
-- [x] Ciclo CU: erros humanos onda 4 — `humanApiError` em Ajustes/health, Aulas, ingest review, Cards, Biblioteca commits/fetch, Tutor IA
-- [x] Ciclo CU: versão 1.0.0+7 (pubspec, Ajustes, empacotar_windows.bat) + smoke `ciclo_cu_*`
-- [x] Ciclo CV: Aulas Ctrl+Enter/Cmd+Enter estrutura legenda ≥80 chars + smoke `ciclo_cv_*`
-- [x] Ciclo CW: ingest review teclado ←/J · →/K · 1–5 gabarito + nav por filtro visível + smoke `ciclo_cw_*`
-- [x] Ciclo CX: Ajustes offline exibe `health['error']` humanizado + smoke `ciclo_cx_*`
-- [x] Ciclo CY: Questões teclado ↑/↓ J/K · Enter abre · [/] P/N páginas + highlight `active` + smoke `ciclo_cy_*`
-- [x] Ciclo CZ: Tutor IA Ctrl+Enter envia (multiline) + smoke `ciclo_cz_*`
-- [x] Ciclo DA: Onboarding ←/→/Enter avança (safe com EditableText) + smoke `ciclo_da_*`
-- [x] Smoke suite ciclo 2: **505/505** OK (baseline ciclo 1: 498)
-- [x] COMO_LIGAR.md e ROADMAP_FUTURO.md atualizados (CU–DA)
-- [x] Flutter build windows release OK (42s); pack dist bloqueado por lock de pasta
+- **GR**: dist com launcher, ico, exe, VERSION; atalho Desktop restaurado.
+- **GS**: BLOCKED/STATUS atualizados; residual host = Git no PATH do agente.
+- **GT**: `openTheoryReadSheet` shared; Fila + ficha **Ler teoria**.
+- **GU**: smoke `ciclo_gt_*` / `ciclo_gu_pack_*`; bump **1.0.0+9**; ROADMAP/COMO.
+
+**Stop micro-teclas; ship pack OK.**

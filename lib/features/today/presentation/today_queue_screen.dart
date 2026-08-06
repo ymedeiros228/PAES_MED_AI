@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
 
@@ -21,11 +23,104 @@ class TodayQueueScreen extends ConsumerStatefulWidget {
 class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   Map<String, dynamic>? queue;
   String? error;
+  int selected = 0;
+  final _focusNode = FocusNode();
+  List<String> _navPaths = const [];
+  String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
     _load();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _syncNavPaths(Map<String, dynamic> q, String sessionPath) {
+    _sessionPath = sessionPath;
+    final paths = <String>[sessionPath];
+    final openGaps = q['openGaps'] is Map ? q['openGaps'] as Map : null;
+    for (final raw in (openGaps?['items'] as List? ?? const []).take(6)) {
+      if (raw is! Map) continue;
+      final s = raw['subject']?.toString() ?? '';
+      final t = raw['topic']?.toString() ?? '';
+      if (s.isNotEmpty || t.isNotEmpty) {
+        paths.add(
+          '/adaptativo?subject=${Uri.encodeComponent(s)}&topic=${Uri.encodeComponent(t)}',
+        );
+      }
+    }
+    if (((q['axisCardsDue'] as int?) ?? 0) > 0 ||
+        ((q['axisCardsCreatedToday'] as int?) ?? 0) > 0) {
+      paths.add('/flashcards?due=1');
+    }
+    for (final r in (q['revisions'] as List? ?? const []).take(8)) {
+      if (r is! Map) continue;
+      paths.add(
+        '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
+        '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}',
+      );
+    }
+    if ((q['flashcards'] as List? ?? const []).isNotEmpty) {
+      paths.add('/flashcards?due=1');
+    }
+    final study = q['studyToday'] as Map<String, dynamic>?;
+    if (study != null) {
+      final s = study['subject']?.toString() ?? '';
+      final t = study['topic']?.toString() ?? '';
+      if (s.isNotEmpty || t.isNotEmpty) paths.add(_sessionFor(s, t));
+    }
+    for (final raw in (q['medicineTop'] as List? ?? const []).take(5)) {
+      if (raw is! Map) continue;
+      final key = raw['key']?.toString() ?? '';
+      final parts = key.split('::');
+      final s = parts.isNotEmpty ? parts[0] : '';
+      final t = parts.length > 1 ? parts[1] : '';
+      if (s.isNotEmpty || t.isNotEmpty) paths.add(_sessionFor(s, t));
+    }
+    _navPaths = paths;
+    if (selected >= _navPaths.length && _navPaths.isNotEmpty) {
+      selected = _navPaths.length - 1;
+    }
+  }
+
+  void _openSelected() {
+    if (_navPaths.isEmpty) return;
+    context.go(_navPaths[selected.clamp(0, _navPaths.length - 1)]);
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyS) {
+      context.go(_sessionPath);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      unawaited(_load());
+      return KeyEventResult.handled;
+    }
+    if (_navPaths.isEmpty) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
+      setState(() => selected = (selected + 1).clamp(0, _navPaths.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
+      setState(() => selected = (selected - 1).clamp(0, _navPaths.length - 1));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+      _openSelected();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _load() async {
@@ -77,255 +172,12 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   }
 
   Future<void> _openTheory(String subject, String topic) async {
-    try {
-      final matFuture = apiClient.get(
-        '/api/library/materials',
-        {'subject': subject, 'topic': topic},
-      );
-      final readFuture = apiClient.get(
-        '/api/study/reads',
-        {'subject': subject, 'topic': topic},
-      );
-      final artFuture = apiClient.get(
-        '/api/media/articles',
-        {'subject': subject, 'topic': topic},
-      );
-      final matRaw = await matFuture;
-      final readRaw = await readFuture;
-      final artRaw = await artFuture;
-      if (!mounted) return;
-      final map = Map<String, dynamic>.from(matRaw as Map);
-      final readMap = Map<String, dynamic>.from(readRaw as Map);
-      final artMap = Map<String, dynamic>.from(artRaw as Map);
-      final items = (map['items'] as List? ?? []).whereType<Map>().toList();
-      final articles = (artMap['items'] as List? ?? []).whereType<Map>().toList();
-      final note = map['note']?.toString();
-      final artDisclaimer = artMap['disclaimer']?.toString();
-      var isRead = readMap['read'] == true;
-
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        builder: (ctx) {
-          return StatefulBuilder(
-            builder: (ctx, setModal) {
-              return DraggableScrollableSheet(
-                expand: false,
-                initialChildSize: 0.55,
-                minChildSize: 0.35,
-                maxChildSize: 0.9,
-                builder: (_, scroll) {
-                  return ListView(
-                    controller: scroll,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                    children: [
-                      Text(
-                        'Teoria · $subject · $topic',
-                        style: Theme.of(ctx).textTheme.titleMedium,
-                      ),
-                      if (isRead)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            'Marcado como li${readMap['at'] != null ? ' · ${readMap['at']}' : ''}',
-                            style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                                  color: Theme.of(ctx).colorScheme.primary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                        ),
-                      if (note != null && note.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(note, style: Theme.of(ctx).textTheme.bodySmall),
-                      ],
-                      if (items.isEmpty) ...[
-                        const SizedBox(height: 16),
-                        QuietEmpty(
-                          message: note ?? 'Sem material local para este tópico.',
-                          action: TextButton(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              context.go('/biblioteca');
-                            },
-                            child: const Text('Biblioteca'),
-                          ),
-                        ),
-                      ] else ...[
-                        const SizedBox(height: 12),
-                        for (final raw in items.take(8))
-                          Builder(
-                            builder: (_) {
-                              final it = Map<String, dynamic>.from(raw);
-                              final path = it['path']?.toString() ?? '';
-                              final snippet = it['snippet']?.toString() ?? '';
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(it['label']?.toString() ?? it['kind']?.toString() ?? 'item'),
-                                subtitle: snippet.isNotEmpty
-                                    ? Text(
-                                        snippet.length > 200 ? '${snippet.substring(0, 200)}…' : snippet,
-                                      )
-                                    : Text(path.isNotEmpty ? path : (it['kind']?.toString() ?? '')),
-                                trailing: path.isNotEmpty
-                                    ? IconButton(
-                                        tooltip: 'Abrir',
-                                        icon: const Icon(Icons.open_in_new_rounded),
-                                        onPressed: () async {
-                                          try {
-                                            await apiClient.post('/api/library/open-path', {'path': path});
-                                          } catch (_) {
-                                            await apiClient.post(
-                                              '/api/library/open-folder',
-                                              {'folder': it['folder'] ?? 'edital'},
-                                            );
-                                          }
-                                        },
-                                      )
-                                    : null,
-                              );
-                            },
-                          ),
-                      ],
-                      if (articles.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Text('Leituras de reforço', style: Theme.of(ctx).textTheme.titleSmall),
-                        if (artDisclaimer != null)
-                          Text(artDisclaimer, style: Theme.of(ctx).textTheme.bodySmall),
-                        for (final raw in articles.take(5))
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text((raw as Map)['title']?.toString() ?? 'Leitura'),
-                            subtitle: Text(raw['source']?.toString() ?? raw['channel']?.toString() ?? ''),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: 'Marquei como lido',
-                                  icon: const Icon(Icons.check_circle_outline, size: 20),
-                                  onPressed: () async {
-                                    final u = raw['url']?.toString() ?? '';
-                                    if (u.isEmpty) return;
-                                    try {
-                                      await apiClient.post('/api/media/mark-read', {
-                                        'url': u,
-                                        'subject': subject,
-                                        'topic': topic,
-                                        'title': raw['title']?.toString(),
-                                      });
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Marcado como lido (local).')),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              humanApiError(e, fallback: 'Não deu para marcar como lido.'),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  },
-                                ),
-                                const Icon(Icons.open_in_new_rounded, size: 18),
-                              ],
-                            ),
-                            onTap: () async {
-                              final u = raw['url']?.toString() ?? '';
-                              if (u.isEmpty) return;
-                              try {
-                                await apiClient.post('/api/media/open', {
-                                  'url': u,
-                                  'kind': 'article',
-                                  'subject': subject,
-                                  'topic': topic,
-                                  'title': raw['title']?.toString(),
-                                });
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        humanApiError(e, fallback: 'Não deu para abrir o material.'),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                          ),
-                      ],
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          FilledButton(
-                            onPressed: () async {
-                              try {
-                                final r = await apiClient.post('/api/study/mark-read', {
-                                  'subject': subject,
-                                  'topic': topic,
-                                });
-                                final m = Map<String, dynamic>.from(r as Map);
-                                setModal(() {
-                                  isRead = true;
-                                  readMap['at'] = m['at'];
-                                  readMap['read'] = true;
-                                });
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Marcado como li (local).')),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        humanApiError(e, fallback: 'Não deu para marcar como lido.'),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            child: Text(isRead ? 'Li de novo' : 'Marquei como li'),
-                          ),
-                          FilledButton.tonal(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              context.go(_sessionFor(subject, topic));
-                            },
-                            child: const Text('Treinar tópico'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              context.go('/biblioteca');
-                            },
-                            child: const Text('Biblioteca'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir a leitura.'))),
-      );
-    }
+    await openTheoryReadSheet(
+      context,
+      subject: subject,
+      topic: topic,
+      trainSessionPath: _sessionFor(subject, topic),
+    );
   }
 
   String _sessionFor(String s, String t) {
@@ -341,8 +193,18 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     if (error != null) {
       return EmptyState(
         title: 'Fila indisponível',
-        subtitle: 'Reabra o app pelo atalho da área de trabalho.',
-        action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+        subtitle: error!,
+        action: Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+            TextButton(
+              onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+              child: const Text('Sessão'),
+            ),
+          ],
+        ),
       );
     }
     if (queue == null) return const Center(child: CircularProgressIndicator());
@@ -372,7 +234,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ((queue!['axisCardsDue'] as int?) ?? 0) > 0 ||
         ((queue!['axisCardsCreatedToday'] as int?) ?? 0) > 0;
 
-    return RefreshIndicator(
+    _syncNavPaths(queue!, sessionPath);
+
+    int navIndexFor(String path) => _navPaths.indexOf(path);
+
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -384,7 +253,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 PageHeader(
                   eyebrow: 'Estudar',
                   title: 'Fila',
-                  subtitle: coach ?? 'O que fazer a seguir · cerca de $minutes min',
+                  subtitle: coach != null
+                      ? '$coach · S sessão · R atualiza · ↑/↓ J/K · Enter item'
+                      : 'O que fazer a seguir · ~$minutes min · S sessão · R atualiza · ↑/↓ Enter',
                   trailing: IconButton(
                     tooltip: 'Atualizar',
                     onPressed: _load,
@@ -395,7 +266,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 FilledButton.icon(
                   onPressed: () => context.go(sessionPath),
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Começar sessão'),
+                  label: const Text('Começar sessão (S)'),
                 ),
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
@@ -434,9 +305,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     title: coachSubject,
                     subtitle: coachTopic,
                     badge: 'oficial',
-                    active: true,
+                    active: navIndexFor(sessionPath) == selected,
                     leadingIcon: Icons.menu_book_rounded,
-                    onPlay: () => context.go(sessionPath),
+                    onPlay: () {
+                      final i = navIndexFor(sessionPath);
+                      if (i >= 0) setState(() => selected = i);
+                      context.go(sessionPath);
+                    },
                   ),
                 ],
 
@@ -459,15 +334,20 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final g = Map<String, dynamic>.from(raw as Map);
                         final s = g['subject']?.toString() ?? '';
                         final t = g['topic']?.toString() ?? '';
+                        final path =
+                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
+                            '&topic=${Uri.encodeComponent(t)}';
                         return PlaylistTile(
                           title: s,
                           subtitle: t,
                           badge: 'retomar',
+                          active: navIndexFor(path) == selected,
                           leadingIcon: Icons.flag_rounded,
-                          onPlay: () => context.go(
-                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
-                            '&topic=${Uri.encodeComponent(t)}',
-                          ),
+                          onPlay: () {
+                            final i = navIndexFor(path);
+                            if (i >= 0) setState(() => selected = i);
+                            context.go(path);
+                          },
                           secondary: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -537,42 +417,70 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         return '$neu card(s) dos eixos (ainda sem revisão)';
                       }(),
                       badge: 'eixos',
+                      active: navIndexFor('/flashcards?due=1') == selected,
                       leadingIcon: Icons.style_outlined,
-                      onPlay: () => context.go('/flashcards?due=1'),
+                      onPlay: () {
+                        const path = '/flashcards?due=1';
+                        final i = navIndexFor(path);
+                        if (i >= 0) setState(() => selected = i);
+                        context.go(path);
+                      },
                     ),
                   for (final r in revisions.take(8))
-                    PlaylistTile(
-                      title: '${(r as Map)['subject']}',
-                      subtitle: '${r['topic']}',
-                      badge: 'revisão',
-                      leadingIcon: Icons.replay_rounded,
-                      onPlay: () => context.go(
-                        '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
-                        '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}',
-                      ),
+                    Builder(
+                      builder: (_) {
+                        final path =
+                            '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
+                            '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}';
+                        return PlaylistTile(
+                          title: '${(r as Map)['subject']}',
+                          subtitle: '${r['topic']}',
+                          badge: 'revisão',
+                          active: navIndexFor(path) == selected,
+                          leadingIcon: Icons.replay_rounded,
+                          onPlay: () {
+                            final i = navIndexFor(path);
+                            if (i >= 0) setState(() => selected = i);
+                            context.go(path);
+                          },
+                        );
+                      },
                     ),
                   if (cards.isNotEmpty)
                     PlaylistTile(
                       title: '${cards.length} flashcards',
                       subtitle: 'Revisão rápida',
                       badge: 'cards',
+                      active: navIndexFor('/flashcards?due=1') == selected,
                       leadingIcon: Icons.style_rounded,
-                      onPlay: () => context.go('/flashcards?due=1'),
+                      onPlay: () {
+                        const path = '/flashcards?due=1';
+                        final i = navIndexFor(path);
+                        if (i >= 0) setState(() => selected = i);
+                        context.go(path);
+                      },
                     ),
                 ],
 
                 if (study != null) ...[
                   SectionLabel('Meta de hoje'),
-                  PlaylistTile(
-                    title: '${study['subject']}',
-                    subtitle: '${study['topic']}',
-                    badge: 'hoje',
-                    active: true,
-                    leadingIcon: Icons.wb_sunny_outlined,
-                    onPlay: () {
+                  Builder(
+                    builder: (_) {
                       final s = study['subject']?.toString() ?? '';
                       final t = study['topic']?.toString() ?? '';
-                      context.go(_sessionFor(s, t));
+                      final path = _sessionFor(s, t);
+                      return PlaylistTile(
+                        title: '${study['subject']}',
+                        subtitle: '${study['topic']}',
+                        badge: 'hoje',
+                        active: navIndexFor(path) == selected,
+                        leadingIcon: Icons.wb_sunny_outlined,
+                        onPlay: () {
+                          final i = navIndexFor(path);
+                          if (i >= 0) setState(() => selected = i);
+                          context.go(path);
+                        },
+                      );
                     },
                   ),
                 ],
@@ -627,11 +535,17 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final parts = key.split('::');
                         final s = parts.isNotEmpty ? parts[0] : '';
                         final t = parts.length > 1 ? parts[1] : '';
+                        final path = _sessionFor(s, t);
                         return PlaylistTile(
                           title: s.isEmpty ? key : s,
                           subtitle: t,
+                          active: navIndexFor(path) == selected,
                           leadingIcon: Icons.local_hospital_outlined,
-                          onPlay: () => context.go(_sessionFor(s, t)),
+                          onPlay: () {
+                            final i = navIndexFor(path);
+                            if (i >= 0) setState(() => selected = i);
+                            context.go(path);
+                          },
                         );
                       },
                     ),
@@ -665,6 +579,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

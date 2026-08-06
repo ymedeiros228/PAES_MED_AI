@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/api_client.dart';
+import '../data/api_error.dart';
+import '../data/study_prefs_providers.dart';
 
 /// Banner mínimo: só alerta se backend morto. Sucesso = linha discreta ou nada.
 class BackendStatusBanner extends ConsumerStatefulWidget {
@@ -13,6 +15,7 @@ class BackendStatusBanner extends ConsumerStatefulWidget {
 
 class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   bool? online;
+  String? lastError;
 
   @override
   void initState() {
@@ -23,9 +26,17 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   Future<void> _check() async {
     try {
       await apiClient.get('/health');
-      if (mounted) setState(() => online = true);
-    } catch (_) {
-      if (mounted) setState(() => online = false);
+      if (mounted) setState(() {
+        online = true;
+        lastError = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          online = false;
+          lastError = humanApiError(e, fallback: 'API local offline.');
+        });
+      }
     }
   }
 
@@ -47,7 +58,8 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
               style: TextStyle(color: cs.onErrorContainer, fontWeight: FontWeight.w700),
             ),
             subtitle: Text(
-              'Feche e abra de novo pelo ícone PAES MED AI na área de trabalho.',
+              lastError ??
+                  'Feche e abra de novo pelo ícone PAES MED AI · Hoje pode ter sessão salva.',
               style: TextStyle(color: cs.onErrorContainer.withOpacity(0.9), fontSize: 12),
             ),
             trailing: FilledButton(
@@ -62,6 +74,40 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
       minHeight: 2,
       color: cs.primary,
       backgroundColor: cs.surfaceContainerHighest,
+    );
+  }
+}
+
+/// Data da prova salva localmente mas não sincronizou com a API (Ciclo GK).
+class ExamDateSyncBanner extends ConsumerWidget {
+  const ExamDateSyncBanner({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final syncError = ref.watch(examDateProvider).syncError;
+    if (syncError == null) return const SizedBox.shrink();
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.tertiaryContainer,
+      child: SafeArea(
+        bottom: false,
+        child: ListTile(
+          dense: true,
+          leading: Icon(Icons.sync_problem_rounded, color: cs.onTertiaryContainer),
+          title: Text(
+            'Data da prova não sincronizou',
+            style: TextStyle(color: cs.onTertiaryContainer, fontWeight: FontWeight.w700),
+          ),
+          subtitle: Text(
+            syncError,
+            style: TextStyle(color: cs.onTertiaryContainer.withOpacity(0.9), fontSize: 12),
+          ),
+          trailing: TextButton(
+            onPressed: () => ref.read(examDateProvider.notifier).retrySync(),
+            child: const Text('Sync'),
+          ),
+        ),
+      ),
     );
   }
 }

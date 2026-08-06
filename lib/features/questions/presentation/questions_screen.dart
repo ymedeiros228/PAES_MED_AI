@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
@@ -140,6 +141,14 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
       _prevPage();
       return KeyEventResult.handled;
     }
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      ref.read(refreshTickProvider.notifier).state++;
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyS) {
+      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+      return KeyEventResult.handled;
+    }
     return KeyEventResult.ignored;
   }
 
@@ -161,7 +170,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 PageHeader(
                   eyebrow: 'Banco',
                   title: 'Questões',
-                  subtitle: '↑/↓ ou J/K · Enter abre · [/] páginas · ou use a Sessão para o bloco do dia',
+                  subtitle: '↑/↓ J/K · Enter abre · [/] páginas · R atualiza · S sessão',
                   trailing: FilledButton.tonal(
                     onPressed: () => context.go('/sessao'),
                     child: const Text('Sessão'),
@@ -267,12 +276,22 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
           Expanded(
             child: async.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => EmptyState(
+              error: (e, _) => EmptyState(
                 title: 'Não foi possível carregar',
-                subtitle: 'Reabra o app e tente de novo.',
-                action: FilledButton(
-                  onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                  child: const Text('Tentar de novo'),
+                subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
+                action: Wrap(
+                  spacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    FilledButton(
+                      onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                      child: const Text('Tentar de novo'),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/biblioteca'),
+                      child: const Text('Biblioteca'),
+                    ),
+                  ],
                 ),
               ),
               data: (items) {

@@ -39,6 +39,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   bool autoStarted = false;
   bool finished = false;
   bool pendingErrorPick = false;
+  String? answerSaveError;
+  String? generatedPartialNote;
 
   static const _errorTypes = [
     'conceito',
@@ -92,6 +94,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     setState(() {
       loading = true;
       error = null;
+      answerSaveError = null;
+      generatedPartialNote = null;
       index = 0;
       selected = null;
       revealed = false;
@@ -113,6 +117,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       final generated = (map['generated'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
       final generatedFull = <Map<String, dynamic>>[];
+      var partialGenerated = 0;
       for (final g in generated) {
         final id = g['id']?.toString();
         if (id == null) continue;
@@ -120,6 +125,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
           final full = await apiClient.get('/api/questions/$id');
           generatedFull.add({...Map<String, dynamic>.from(full as Map), '_phase': 'inédita'});
         } catch (_) {
+          partialGenerated++;
           generatedFull.add({...g, '_phase': 'inédita'});
         }
       }
@@ -131,6 +137,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
           ...harder.map((q) => {...q, '_phase': 'difícil'}),
           ...generatedFull,
         ];
+        generatedPartialNote = partialGenerated > 0
+            ? '$partialGenerated inédita(s) carregadas parcialmente — API instável?'
+            : null;
+        if (queue.isEmpty) {
+          error =
+              'Nenhuma questão para este tópico — importe na Biblioteca ou escolha outro assunto.';
+        }
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) focusNode.requestFocus();
@@ -157,7 +170,16 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
         'timeMs': null,
       });
       ref.read(refreshTickProvider.notifier).state++;
-    } catch (_) {}
+      if (mounted) setState(() => answerSaveError = null);
+    } catch (e) {
+      if (!mounted) return;
+      setState(
+        () => answerSaveError = humanApiError(
+          e,
+          fallback: 'Resposta não gravada — progresso local pode estar incompleto.',
+        ),
+      );
+    }
   }
 
   Future<void> _submit() async {
@@ -205,7 +227,17 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent || queue.isEmpty || finished) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final primary = FocusManager.instance.primaryFocus;
+    final inField = primary != null && primary.context?.widget is EditableText;
+    if ((event.logicalKey == LogicalKeyboardKey.keyR ||
+            event.logicalKey == LogicalKeyboardKey.f5) &&
+        !inField &&
+        !loading) {
+      unawaited(_start());
+      return KeyEventResult.handled;
+    }
+    if (queue.isEmpty || finished) return KeyEventResult.ignored;
 
     final digitMap = {
       LogicalKeyboardKey.digit1: 0,
@@ -283,10 +315,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   eyebrow: 'Conteúdo',
                   title: 'Treino',
                   subtitle: finished
-                      ? 'Fila concluída · $correctCount/$answeredCount'
+                      ? 'Fila concluída · $correctCount/$answeredCount · R remonta fila'
                       : inQueue
-                          ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length}'
-                          : 'Semelhantes → mais difíceis (sem questões inventadas)',
+                          ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length} · R remonta'
+                          : 'Semelhantes → mais difíceis · R monta fila',
                   trailing: (inQueue || finished)
                       ? TextButton(
                           onPressed: () => setState(() {
@@ -298,6 +330,23 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         )
                       : null,
                 ),
+                if (generatedPartialNote != null) ...[
+                  Text(
+                    generatedPartialNote!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.tertiary),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (answerSaveError != null) ...[
+                  QuietEmpty(
+                    message: answerSaveError!,
+                    action: TextButton(
+                      onPressed: loading ? null : () => unawaited(_start()),
+                      child: const Text('Tentar'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (finished) ...[
                   SurfacePanel(
                     child: Column(
@@ -396,9 +445,22 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     const SizedBox(height: 8),
                     QuietEmpty(
                       message: error!,
-                      action: TextButton(
-                        onPressed: loading || topic.isEmpty ? null : _start,
-                        child: const Text('Tentar'),
+                      action: Wrap(
+                        spacing: 8,
+                        children: [
+                          TextButton(
+                            onPressed: loading || topic.isEmpty ? null : _start,
+                            child: const Text('Tentar'),
+                          ),
+                          TextButton(
+                            onPressed: () => context.go('/biblioteca'),
+                            child: const Text('Biblioteca'),
+                          ),
+                          TextButton(
+                            onPressed: () => context.go('/sessao'),
+                            child: const Text('Sessão'),
+                          ),
+                        ],
                       ),
                     ),
                   ],

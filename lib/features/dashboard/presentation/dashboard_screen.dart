@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,23 +25,49 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Map<String, dynamic>? checkpoint;
+  String? checkpointLoadError;
   bool showFirstRunCoach = false;
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _loadCheckpoint();
     _loadFirstRunCoach();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncExamDate());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+      final exam = ref.read(examDateProvider).date;
+      if (exam.isNotEmpty) {
+        unawaited(ref.read(examDateProvider.notifier).retrySync());
+      }
+    });
   }
 
-  Future<void> _syncExamDate() async {
-    final exam = ref.read(examDateProvider);
-    if (exam.isEmpty) return;
-    try {
-      await apiClient.post('/api/study/exam-date', {'examDate': exam});
-      if (mounted) ref.read(refreshTickProvider.notifier).state++;
-    } catch (_) {}
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event, String sessionPath, String closePath) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.keyS ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      context.go(sessionPath);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyL) {
+      context.go(closePath);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
+      ref.read(refreshTickProvider.notifier).state++;
+      _loadCheckpoint();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _loadFirstRunCoach() async {
@@ -60,20 +87,44 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final raw = await apiClient.get('/api/session/checkpoint');
       final cp = (raw as Map)['checkpoint'];
       if (cp is Map && cp['started'] == true) {
-        setState(() => checkpoint = Map<String, dynamic>.from(cp));
+        setState(() {
+          checkpoint = Map<String, dynamic>.from(cp);
+          checkpointLoadError = null;
+        });
       } else {
-        setState(() => checkpoint = null);
+        setState(() {
+          checkpoint = null;
+          checkpointLoadError = null;
+        });
       }
-    } catch (_) {
-      setState(() => checkpoint = null);
+    } catch (e) {
+      setState(() {
+        checkpoint = null;
+        checkpointLoadError = humanApiError(
+          e,
+          fallback: 'Checkpoint de sessão indisponível no Hoje.',
+        );
+      });
     }
   }
 
   Future<void> _discardCheckpoint() async {
     try {
       await apiClient.delete('/api/session/checkpoint');
-    } catch (_) {}
-    setState(() => checkpoint = null);
+      setState(() {
+        checkpoint = null;
+        checkpointLoadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            humanApiError(e, fallback: 'Não foi possível descartar a sessão salva.'),
+          ),
+        ),
+      );
+    }
   }
 
   String _checkpointShort(Map<String, dynamic> cp) {
@@ -127,17 +178,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(dashboardProvider);
     final examDaysLocal = ref.watch(examDateProvider.notifier).daysUntilExam;
-    final exam = ref.watch(examDateProvider);
+    final exam = ref.watch(examDateProvider).date;
     final focus = ref.watch(focusModeProvider);
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => EmptyState(
         title: 'Não foi possível carregar',
-        subtitle: 'Reabra pelo ícone PAES MED AI na área de trabalho.',
-        action: FilledButton(
-          onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-          child: const Text('Tentar de novo'),
+        subtitle: humanApiError(e, fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
+        action: Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            FilledButton(
+              onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+              child: const Text('Tentar de novo'),
+            ),
+            TextButton(
+              onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+              child: const Text('Sessão'),
+            ),
+          ],
         ),
       ),
       data: (data) {
@@ -180,7 +241,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
 
-        return CustomScrollView(
+        return Focus(
+          focusNode: _focusNode,
+          onKeyEvent: (node, event) => _onKey(node, event, sessionPath, closePath),
+          child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: Container(
@@ -239,8 +303,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onPressed: () => context.go(sessionPath),
                           child: Text(
                             checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)}'
-                                : 'Começar sessão',
+                                ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
+                                : 'Começar sessão (S)',
                           ),
                         ),
                         if (checkpoint != null)
@@ -258,9 +322,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             side: const BorderSide(color: Colors.white70),
                           ),
                           onPressed: () => context.go(closePath),
-                          child: Text(closeLabel),
+                          child: Text('$closeLabel (L)'),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'S sessão · L fila · R atualiza · Enter',
+                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 12),
                     ),
                   ],
                 ),
@@ -277,6 +346,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (checkpointLoadError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: QuietEmpty(
+                                message: checkpointLoadError!,
+                                action: TextButton(
+                                  onPressed: _loadCheckpoint,
+                                  child: const Text('Tentar'),
+                                ),
+                              ),
+                            ),
+                          if (ref.watch(examDateProvider).syncError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: QuietEmpty(
+                                message: ref.watch(examDateProvider).syncError!,
+                                action: TextButton(
+                                  onPressed: () => unawaited(
+                                    ref.read(examDateProvider.notifier).retrySync(),
+                                  ),
+                                  child: const Text('Tentar'),
+                                ),
+                              ),
+                            ),
                           if (showFirstRunCoach && officialN == 0)
                             SurfacePanel(
                               margin: const EdgeInsets.only(bottom: 16),
@@ -490,7 +583,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                         if (DateTime.now().difference(when).inDays > 7) {
                                           staleMsg = 'Último backup há mais de 7 dias ($at).';
                                         }
-                                      } catch (_) {}
+                                      } catch (_) {
+                                        staleMsg = 'Data do último backup inválida — refaça em Ajustes.';
+                                      }
                                     }
                                   }
                                   if (staleMsg == null) return const SizedBox.shrink();
@@ -748,6 +843,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
           ],
+        ),
         );
       },
     );
