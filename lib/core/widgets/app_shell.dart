@@ -54,6 +54,8 @@ class AppShell extends ConsumerWidget {
   }
 
   List<_NavGroup> _groups({required int officialCount}) {
+    // Rail enxuta: só o fluxo principal de estudo + acervo. Rotas secundárias
+    // (Domínio, Banca, Aulas, Treino, Redação) vivem em Ajustes → Avançado.
     return [
       const _NavGroup('Estudar', [
         _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
@@ -65,16 +67,9 @@ class AppShell extends ConsumerWidget {
         _NavItem('/flashcards', 'Cards', Icons.style_rounded),
         _NavItem('/tutor', 'Tutor', Icons.auto_awesome_rounded),
       ]),
-      const _NavGroup('Analisar', [
-        _NavItem('/medicina', 'Domínio', Icons.local_hospital_rounded),
-        _NavItem('/banca', 'Banca', Icons.analytics_rounded),
-        _NavItem('/revisoes', 'Revisões', Icons.replay_circle_filled_rounded),
-      ]),
-      const _NavGroup('Conteúdo', [
+      const _NavGroup('Acervo', [
         _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
-        _NavItem('/aulas', 'Aulas', Icons.video_library_rounded),
-        _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),
-        _NavItem('/adaptativo', 'Treino', Icons.psychology_rounded),
+        _NavItem('/revisoes', 'Revisões', Icons.replay_circle_filled_rounded),
       ]),
       const _NavGroup('Conta', [
         _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
