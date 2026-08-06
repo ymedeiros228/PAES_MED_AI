@@ -2,7 +2,7 @@
 
 > **Fonte de verdade da direção.**  
 > Leia isto no início de **cada** ciclo, **antes** de STATUS/DONE.  
-> Atualizado: 2026-08-06 · produto **1.0.0+9**
+> Atualizado: 2026-08-06 · produto **1.0.0+11** (alvo Mode A **+12**)
 
 ---
 
@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: n/a (template)
+<!-- ciclo: HC–HD Mode A
 modo: A
-item: —
-smoke: —
-nota: —
+item: Sessão sem jargão + ficha teoria→treino
+smoke: ciclo_hc_* / ciclo_hd_*
+nota: ship alvo 1.0.0+12; PR #3 fechado
 -->
 ```
 
@@ -123,4 +123,5 @@ nota: —
 |------|--------|------|
 | 2026-08 pré | Microciclos teclado/erros/sync | E/A mistura (autopilot OK) |
 | 2026-08-05/06 | GR–GU pack + F2 teoria + 1.0.0+9 | C + B thin → ship |
-| 2026-08-06+ | Pós-ship | **A** default |
+| 2026-08-06 | F1 GV–GW + F3 GY–HA → 1.0.0+11 | B/F3 → ship |
+| 2026-08-06+ | Pós-F3 · Mode A HC–HD | **A** default |

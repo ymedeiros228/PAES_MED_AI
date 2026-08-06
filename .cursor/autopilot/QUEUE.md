@@ -11,25 +11,27 @@ Prioridade: topo = primeiro.
 
 ## P1 · Uso real (modo A) — default
 
-- [ ] Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
-- [ ] Ficha pós-erro: path “li teoria → treino” ainda confuso em algum fluxo (validar ao vivo; só se sim)
-- [ ] Soft landing primeiro uso se onboarding + Semana 1 quebrar após +9 (só se repro)
+- [x] Sessão empties/erros jargão → HC (em andamento nesta branch)
+- [x] Ficha pós-erro “li teoria → treino” → HD (em andamento nesta branch)
+- [ ] Soft landing primeiro uso se onboarding + Semana 1 quebrar (só se repro)
 
 ## P2 · Material / F2–F3 thin (modo B)
 
 - [ ] Gaps na Fila sem material: empty + Biblioteca deve bastar; auditar 1 disciplina fraca real
 - [ ] open-path / PDF ano: mensagens honestas se caminho sumir (já parcialmente GQ — só regressão)
-- [ ] mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional
+- [x] mark-read / “Ler teoria” ficha+fila: GT feito; HD alinha path ficha
 
 ## P3 · Ship / gate (modo C ou D)
 
-- [ ] Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N)
+- [ ] Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N) → **1.0.0+12**
 - [ ] Manter `ciclo_gu_pack_*` se dist existir
 
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~ (saturação GN–GQ)
 - ~~PDF inventado / multi-IA / force-push / redesign shell~~
+- ~~F4 thin vídeos~~ (já Feito — MediaReinforcement)
+- ~~Reabrir F3 Tutor nestes ciclos~~
 
 ## Como o AP usa
 
@@ -39,5 +41,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- RODADA GR–GU fechou pack + F2 thin + 1.0.0+9 — **não** reabrir como se não tivesse shipado.  
-- Autopilot micro-ciclos **estavam certos**; esta fila evita **só** o looping de tecla sem valor.
+- F3 (GY–HA) + 1.0.0+11 shipados na tip; PR #3 fechado (superseded pelo #4 / Mode A).  
+- Esta fila evita looping de tecla sem valor.

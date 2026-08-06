@@ -10,7 +10,7 @@ Ler **depois** de [PLAN.md](PLAN.md).
 | **Modo** | **A · Uso real** |
 | **Secundário** | B · Material thin (só se fila A vazia) |
 | **Evitar** | Micro-teclas R/S por tela; redesign; PDF inventado |
-| **Versão alvo** | manter **1.0.0+9** estável até próximo ship real |
+| **Versão alvo** | **1.0.0+12** (Mode A HC–HD) |
 
 ## Quem mexe no quê
 
@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; aguarda relançar Auto-Pilot ou item em QUEUE |
-| **Próximo** | 1 residual de uso (A) ou F2 material thin se gap real |
-| **Último feito** | GR–GU: pack + Ler teoria + gates + ship + fix compile |
+| **Agora** | HC Sessão sem jargão → HD ficha teoria→treino |
+| **Próximo** | Ship 1.0.0+12 + pack host |
+| **Último feito** | GY–HA F3 deep Tutor + 1.0.0+11 |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

@@ -1,23 +1,22 @@
 # Auto-Pilot — STATUS
 
-## Cloud Agent — F3 deep GY–HA (ship 1.0.0+11)
+## Cloud Agent — Mode A HC–HD (ship 1.0.0+12)
 
 | | |
 |---|---|
-| **Estado** | DONE (product) / host pack residual |
+| **Estado** | IN_PROGRESS |
 | **Projeto** | PAES_MED_AI |
-| **Ciclo** | GY–HA (+ HB ship) |
-| **Versão** | 1.0.0+11 |
-| **Branch** | `cursor/f3-deep-tutor-2d73` |
+| **Ciclo** | HC–HD (Mode A) |
+| **Versão alvo** | 1.0.0+12 |
+| **Branch** | `cursor/mode-a-uso-real-2d73` |
 | **Atualizado** | 2026-08-06 |
 
-### Missão (encerrada)
+### Missão
 
-F3 deep: grounding por pergunta, `/api/tutor/ask`, UI block+chips, `preferOfficial` + Natureza.
+Sessão sem jargão (HC) + ficha “Ler teoria → treinar” alinhada (HD).
 
-### Host Windows
+### Host Windows (após ship)
 
-1. `git pull origin main` (após merge PR)
+1. Merge PR → `git pull origin main`
 2. Fechar app + explorer em `dist\`
-3. `empacotar_windows.bat` → **1.0.0+11**
-4. Smoke local
+3. `empacotar_windows.bat` → **1.0.0+12**

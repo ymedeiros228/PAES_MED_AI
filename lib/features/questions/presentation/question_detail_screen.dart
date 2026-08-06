@@ -470,20 +470,25 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                TextButton(
-                  onPressed: () => context.go(
-                    '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
-                    '&topic=${Uri.encodeComponent(q.topic)}',
-                  ),
-                  child: const Text('Treinar este tópico'),
-                ),
-                TextButton(
+                FilledButton.tonal(
                   onPressed: () => openTheoryReadSheet(
                     context,
                     subject: q.subject,
                     topic: q.topic,
+                    trainSessionPath:
+                        '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+                        '&subject=${Uri.encodeComponent(q.subject)}'
+                        '&topic=${Uri.encodeComponent(q.topic)}',
                   ),
                   child: const Text('Ler teoria'),
+                ),
+                TextButton(
+                  onPressed: () => context.go(
+                    '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+                    '&subject=${Uri.encodeComponent(q.subject)}'
+                    '&topic=${Uri.encodeComponent(q.topic)}',
+                  ),
+                  child: const Text('Treinar tópico'),
                 ),
                 TextButton(
                   onPressed: () {

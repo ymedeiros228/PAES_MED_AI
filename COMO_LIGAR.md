@@ -1175,6 +1175,23 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+11**; F3 deep fechado.
 2. Host: `empacotar_windows.bat` após merge.
 
+## Sessão sem jargão (Ciclo HC)
+
+1. Empties/erros da Sessão em português claro (sem “API offline?”, “due”, “Sync syllabus”).
+2. Cada empty com **1 CTA** (Biblioteca / Carregar revisões / Tentar de novo).
+3. Smoke: `ciclo_hc_*`.
+
+## Ficha teoria → treino (Ciclo HD)
+
+1. Pós-erro: **Ler teoria** primeiro (com `trainSessionPath` → `/sessao?...`), depois **Treinar tópico**.
+2. Sheet: hint “ler teoria → treinar na sessão”.
+3. Smoke: `ciclo_hd_*`.
+
+## Pack gate + 1.0.0+12 (Ciclo HE ship)
+
+1. Bump **1.0.0+12**; Mode A HC–HD.
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

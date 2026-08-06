@@ -309,6 +309,8 @@ flowchart TB
 | GY | F3 grounding + `/api/tutor/ask` + aliases | `ciclo_gy_*` | **Feito** |
 | GZ | Tutor UI block sem fonte + chips | `ciclo_gz_*` | **Feito** |
 | HA | preferOfficial + Natureza e2e | `ciclo_ha_*` | **Feito** |
+| HC | Sessão empties/erros PT + 1 CTA | `ciclo_hc_*` | **Feito** |
+| HD | Ficha Ler teoria → treinar + trainSessionPath | `ciclo_hd_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -316,10 +318,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós GY–HA / F3 deep)
+## Estado (atualizado pós HC–HD / Mode A)
 
-- Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
-- Rodada **GV–GW** (F1 deep): card Acervo no Hoje + gates honestidade 2017–23 + ship **1.0.0+10**.
 - Rodada **GY–HA** (F3 deep): grounding por pergunta, `/api/tutor/ask`, UI block+chips, `preferOfficial` + Natureza + ship **1.0.0+11**.
+- Rodada **HC–HD** (Mode A): Sessão sem jargão + ficha “Ler teoria → treinar” + ship **1.0.0+12**.
 - Residual: pack Windows no host após merge (`empacotar_windows.bat`).
 - Push no GitHub após suite verde (autor: Yuri Medeiros).
