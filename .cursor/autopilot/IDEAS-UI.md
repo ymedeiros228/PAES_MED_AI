@@ -26,6 +26,10 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Ship / bump] | script ou doc 1-pager “bump +N” listando 4 arquivos | evita esquecer bat ao shippar | S
 - [ ] [Ajustes / Sobre] | link “Notas desta versão” colapsável (CHANGELOG thin) | contexto do build sem poluir | M
 - [ ] [Pack / dist] | badge “Desktop build” no Sobre quando VERSION.txt detectado | usuário sabe se está no exe | M
+- [ ] [Ajustes / Sobre] | linha “Build Windows” quando launcher detecta exe empacotado | distingue dev vs Desktop | S
+- [x] [Ajustes / Sobre] | chip versão com ícone verified (build confiável) | versão escaneável sem parecer debug | S
+- [ ] [Pack / empacotar] | progresso visual no bat (passos 1/5 build, 2/5 copy…) | menos ansiedade no ship longo | M
+- [ ] [Theory sheet] | barra “Passo 1 de 2” no topo do sheet | reforça sequência li → treino | S
 - [ ] [Fila / lacunas] | subtitle “· li” no tile quando read=true (além do ícone) | reforço textual no mobile | S
 - [ ] [Ficha / Ler teoria] | ícone livro preenchido se tópico já lido (fetch reads no load) | estado consistente ficha+fila | S
 - [ ] [Theory sheet] | haptic leve ao marcar “li” (mobile/desktop) | confirmação tátil do progresso | S

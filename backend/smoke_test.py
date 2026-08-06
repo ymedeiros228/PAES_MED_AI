@@ -6020,6 +6020,50 @@ def main() -> int:
         f"version {pubspec_ver or '?'}",
     )
 
+    # --- Ciclo HB: pack source + dist hard quando existir ---
+    launcher_src_hb = root / "PAES_MED_AI_Iniciar.bat"
+    launcher_txt_hb = (
+        launcher_src_hb.read_text(encoding="utf-8", errors="ignore")
+        if launcher_src_hb.is_file()
+        else ""
+    )
+    icon_assets_hb = (root / "assets" / "branding" / "app_icon.ico").is_file()
+    icon_runner_hb = (root / "windows" / "runner" / "resources" / "app_icon.ico").is_file()
+    ok(
+        "ciclo_hb_pack_launcher_source",
+        launcher_src_hb.is_file()
+        and "empacotar_windows.bat" in launcher_txt_hb
+        and "health" in launcher_txt_hb.lower()
+        and "paes_med_ai.exe" in launcher_txt_hb
+        and "PAES_MED_AI_Iniciar.bat" in pack_bat,
+        "launcher fonte",
+    )
+    ok(
+        "ciclo_hb_pack_icon_source",
+        icon_assets_hb or icon_runner_hb,
+        "ico fonte",
+    )
+    ok(
+        "ciclo_hb_pack_bat_copy_gates",
+        "PAES_MED_AI_Iniciar.bat" in pack_bat
+        and "Iniciar_PAES_MED_AI.bat" in pack_bat
+        and "branding\\app_icon.ico" in pack_bat.replace("/", "\\")
+        and "windows\\runner\\resources\\app_icon.ico" in pack_bat.replace("/", "\\"),
+        "bat copy ico+launcher",
+    )
+    if dist_gu.is_dir():
+        ok(
+            "ciclo_hb_pack_dist_complete",
+            (dist_gu / "Iniciar_PAES_MED_AI.bat").is_file()
+            and (dist_gu / "branding" / "app_icon.ico").is_file()
+            and (dist_gu / "app" / "paes_med_ai.exe").is_file()
+            and (dist_gu / "VERSION.txt").is_file()
+            and pubspec_ver in (dist_gu / "VERSION.txt").read_text(encoding="utf-8", errors="ignore"),
+            "dist hard",
+        )
+    else:
+        ok("ciclo_hb_pack_dist_complete", True, "dist ausente (skip soft)")
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

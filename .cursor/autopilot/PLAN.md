@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 7
-modo: C thin (sem bump)
-item: versão +9 alinhada — pubspec/Sobre/bat/app_version
-smoke: 714/714 OK; ciclo_ha_version_triple_lock
-nota: sem bump (+9 FOCUS); chip Sobre; version_in_ui smoke helper
+<!-- ciclo: 8
+modo: A (uso real) + gate pack P3
+item: ciclo_gu_pack_* mantidos + ciclo_hb_pack_* (fonte ico/launcher, dist hard)
+smoke: 718/718 OK
+nota: empacotar fallback ico runner; gate branding no dist; chip verified Sobre
 -->
 ```
 

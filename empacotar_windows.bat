@@ -59,7 +59,11 @@ if not exist "%OUT%\app\flutter_windows.dll" (
 xcopy /e /i /y "data\edital" "%OUT%\data\edital\"
 xcopy /e /i /y "data\inventory" "%OUT%\data\inventory\"
 if exist "data\media" xcopy /e /i /y "data\media" "%OUT%\data\media\"
-if exist "assets\branding\app_icon.ico" copy /y "assets\branding\app_icon.ico" "%OUT%\branding\" >nul
+if exist "assets\branding\app_icon.ico" (
+  copy /y "assets\branding\app_icon.ico" "%OUT%\branding\" >nul
+) else if exist "windows\runner\resources\app_icon.ico" (
+  copy /y "windows\runner\resources\app_icon.ico" "%OUT%\branding\app_icon.ico" >nul
+)
 
 REM Copia todos os .py do backend (exceto __pycache__)
 for %%F in (backend\*.py) do copy /y "%%F" "%OUT%\backend\" >nul
@@ -109,6 +113,10 @@ if not exist "%OUT%\Iniciar_PAES_MED_AI.bat" (
   echo ERRO: launcher ausente no dist.
   goto :erro
 )
+if not exist "%OUT%\branding\app_icon.ico" (
+  echo ERRO: branding\app_icon.ico ausente no pacote.
+  goto :erro
+)
 
 REM Ciclo CE: carimbo de versão visível no pacote
 echo 1.0.0+9> "%OUT%\VERSION.txt"
@@ -118,7 +126,7 @@ if not exist "%OUT%\VERSION.txt" (
 )
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$ws = New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $lnk=Join-Path $d 'PAES MED AI.lnk'; $s=$ws.CreateShortcut($lnk); $s.TargetPath=(Resolve-Path '%CD%\%OUT%\Iniciar_PAES_MED_AI.bat').Path; $s.WorkingDirectory=(Resolve-Path '%CD%\%OUT%').Path; $ico=Join-Path '%CD%' 'assets\branding\app_icon.ico'; if (Test-Path $ico) { $s.IconLocation=$ico }; $s.Description='PAES MED AI'; $s.Save(); Write-Host \"Atalho: $lnk\""
+  "$ws = New-Object -ComObject WScript.Shell; $d=[Environment]::GetFolderPath('Desktop'); $lnk=Join-Path $d 'PAES MED AI.lnk'; $s=$ws.CreateShortcut($lnk); $s.TargetPath=(Resolve-Path '%CD%\%OUT%\Iniciar_PAES_MED_AI.bat').Path; $s.WorkingDirectory=(Resolve-Path '%CD%\%OUT%').Path; $ico=Join-Path '%CD%' '%OUT%\branding\app_icon.ico'; if (Test-Path $ico) { $s.IconLocation=$ico }; $s.Description='PAES MED AI'; $s.Save(); Write-Host \"Atalho: $lnk\""
 
 exit /b 0
 

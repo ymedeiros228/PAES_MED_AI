@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 7 concluído |
-| **Próximo** | P3: manter ciclo_gu_pack_* (dist ausente — skip) ou fila vazia P1 |
-| **Último feito** | Versão +9 triple-lock; sem bump; Sobre com chip versão |
+| **Agora** | — idle; ciclo 8 concluído |
+| **Próximo** | fila operacional vazia — aguarda humano ou residual BLOCKED |
+| **Último feito** | Pack gates HB + ico fallback bat; smoke 718/718 |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 
