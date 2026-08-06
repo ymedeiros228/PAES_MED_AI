@@ -739,6 +739,25 @@ def topic_read_status(subject: str | None = None, topic: str | None = None) -> d
     return {"ok": True, "count": len(items), "items": items[:80]}
 
 
+def topic_read_batch(items: list[dict[str, str]]) -> dict[str, Any]:
+    """Consulta mark-read local em lote (Ciclo DD) — reduz N GETs no plano/fila."""
+    data = _settings_get("study_reads", {}) or {}
+    if not isinstance(data, dict):
+        data = {}
+    out: list[dict[str, Any]] = []
+    for raw in items[:60]:
+        subj = (raw.get("subject") or "").strip()
+        top = (raw.get("topic") or "").strip()
+        if not subj or not top:
+            continue
+        key = _topic_read_key(subj, top)
+        at = data.get(key)
+        out.append(
+            {"subject": subj, "topic": top, "read": bool(at), "at": at, "key": key},
+        )
+    return {"ok": True, "count": len(out), "items": out}
+
+
 def resolve_prova_pdf(year: int | None) -> Path | None:
     """Resolve PDF de prova no disco para o ano — None se não existir (Ciclo AV)."""
     if year is None:

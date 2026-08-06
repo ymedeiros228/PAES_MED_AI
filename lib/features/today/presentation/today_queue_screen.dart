@@ -22,6 +22,65 @@ class TodayQueueScreen extends ConsumerStatefulWidget {
 class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   Map<String, dynamic>? queue;
   String? error;
+  Map<String, bool> theoryReadByKey = {};
+
+  String _readKey(String subject, String topic) => '$subject|$topic';
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[_readKey(subject, topic)] == true;
+
+  Future<void> _loadTheoryReads(Map<String, dynamic> q) async {
+    final pairs = <String, (String, String)>{};
+    void add(String s, String t) {
+      if (s.isEmpty || t.isEmpty) return;
+      pairs[_readKey(s, t)] = (s, t);
+    }
+
+    final openGaps = q['openGaps'] is Map ? q['openGaps'] as Map : null;
+    for (final raw in openGaps?['items'] as List? ?? const []) {
+      final g = Map<String, dynamic>.from(raw as Map);
+      add(g['subject']?.toString() ?? '', g['topic']?.toString() ?? '');
+    }
+    final study = q['studyToday'] as Map?;
+    if (study != null) {
+      add(study['subject']?.toString() ?? '', study['topic']?.toString() ?? '');
+    }
+    final routine = Map<String, dynamic>.from(q['dailyRoutine'] as Map? ?? {});
+    add(routine['subject']?.toString() ?? '', routine['topic']?.toString() ?? '');
+    for (final r in q['revisions'] as List? ?? const []) {
+      final m = Map<String, dynamic>.from(r as Map);
+      add(m['subject']?.toString() ?? '', m['topic']?.toString() ?? '');
+    }
+    for (final raw in q['medicineTop'] as List? ?? const []) {
+      final c = Map<String, dynamic>.from(raw as Map);
+      final key = c['key']?.toString() ?? '';
+      final parts = key.split('::');
+      if (parts.isNotEmpty) {
+        add(parts[0], parts.length > 1 ? parts.sublist(1).join('::') : '');
+      }
+    }
+
+    if (pairs.isEmpty) {
+      if (mounted) setState(() => theoryReadByKey = {});
+      return;
+    }
+    try {
+      final data = await apiClient.post('/api/study/reads/batch', {
+        'items': pairs.values.map((p) => {'subject': p.$1, 'topic': p.$2}).toList(),
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final out = <String, bool>{};
+      for (final raw in map['items'] as List? ?? const []) {
+        final it = Map<String, dynamic>.from(raw as Map);
+        final s = it['subject']?.toString() ?? '';
+        final t = it['topic']?.toString() ?? '';
+        if (s.isNotEmpty && t.isNotEmpty) out[_readKey(s, t)] = it['read'] == true;
+      }
+      if (mounted) setState(() => theoryReadByKey = out);
+    } catch (_) {
+      if (mounted) setState(() => theoryReadByKey = {});
+    }
+  }
 
   @override
   void initState() {
@@ -32,10 +91,12 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   Future<void> _load() async {
     try {
       final data = await apiClient.get('/api/today');
+      final q = Map<String, dynamic>.from(data as Map);
       setState(() {
-        queue = Map<String, dynamic>.from(data as Map);
+        queue = q;
         error = null;
       });
+      await _loadTheoryReads(q);
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a fila. Tente de novo.'));
     }
@@ -78,7 +139,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   }
 
   Future<void> _openTheory(String subject, String topic) async {
-    await TheoryTopicSheet.show(context, subject: subject, topic: topic);
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[_readKey(subject, topic)] = true);
+      },
+    );
   }
 
   String _sessionFor(String s, String t) => TheoryTopicSheet.sessionPathFor(s, t);
@@ -180,10 +248,15 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   PlaylistTile(
                     title: coachSubject,
                     subtitle: coachTopic,
-                    badge: 'oficial',
+                    badge: _isTheoryRead(coachSubject, coachTopic) ? 'Li' : 'oficial',
                     active: true,
                     leadingIcon: Icons.menu_book_rounded,
                     onPlay: () => context.go(sessionPath),
+                    secondary: IconButton(
+                      tooltip: 'Teoria local',
+                      icon: const Icon(Icons.menu_book_outlined),
+                      onPressed: () => _openTheory(coachSubject, coachTopic),
+                    ),
                   ),
                 ],
 
@@ -209,7 +282,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         return PlaylistTile(
                           title: s,
                           subtitle: t,
-                          badge: 'retomar',
+                          badge: _isTheoryRead(s, t) ? 'Li' : 'retomar',
                           leadingIcon: Icons.flag_rounded,
                           onPlay: () => context.go(
                             '/adaptativo?subject=${Uri.encodeComponent(s)}'
@@ -218,25 +291,18 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           secondary: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              FutureBuilder(
-                                future: apiClient.get(
-                                  '/api/study/reads',
-                                  {'subject': s, 'topic': t},
+                              IconButton(
+                                tooltip: _isTheoryRead(s, t) ? 'Teoria (li)' : 'Ler teoria',
+                                icon: Icon(
+                                  _isTheoryRead(s, t)
+                                      ? Icons.menu_book_rounded
+                                      : Icons.menu_book_outlined,
+                                  size: 20,
+                                  color: _isTheoryRead(s, t)
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
                                 ),
-                                builder: (context, snap) {
-                                  final read = snap.hasData &&
-                                      (snap.data is Map) &&
-                                      (snap.data as Map)['read'] == true;
-                                  return IconButton(
-                                    tooltip: read ? 'Teoria (li)' : 'Ler teoria',
-                                    icon: Icon(
-                                      read ? Icons.menu_book_rounded : Icons.menu_book_outlined,
-                                      size: 20,
-                                      color: read ? Theme.of(context).colorScheme.primary : null,
-                                    ),
-                                    onPressed: () => _openTheory(s, t),
-                                  );
-                                },
+                                onPressed: () => _openTheory(s, t),
                               ),
                               IconButton(
                                 tooltip: 'Perguntar ao tutor',
@@ -296,15 +362,29 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       onPlay: () => context.go('/flashcards?due=1'),
                     ),
                   for (final r in revisions.take(8))
-                    PlaylistTile(
-                      title: '${(r as Map)['subject']}',
-                      subtitle: '${r['topic']}',
-                      badge: 'revisão',
-                      leadingIcon: Icons.replay_rounded,
-                      onPlay: () => context.go(
-                        '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
-                        '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}',
-                      ),
+                    Builder(
+                      builder: (_) {
+                        final m = Map<String, dynamic>.from(r as Map);
+                        final s = m['subject']?.toString() ?? '';
+                        final t = m['topic']?.toString() ?? '';
+                        return PlaylistTile(
+                          title: s,
+                          subtitle: t,
+                          badge: _isTheoryRead(s, t) ? 'Li' : 'revisão',
+                          leadingIcon: Icons.replay_rounded,
+                          onPlay: () => context.go(
+                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
+                            '&topic=${Uri.encodeComponent(t)}',
+                          ),
+                          secondary: s.isNotEmpty && t.isNotEmpty
+                              ? IconButton(
+                                  tooltip: 'Teoria local',
+                                  icon: const Icon(Icons.menu_book_outlined, size: 20),
+                                  onPressed: () => _openTheory(s, t),
+                                )
+                              : null,
+                        );
+                      },
                     ),
                   if (cards.isNotEmpty)
                     PlaylistTile(
@@ -318,43 +398,37 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
                 if (study != null) ...[
                   SectionLabel('Meta de hoje'),
-                  PlaylistTile(
-                    title: '${study['subject']}',
-                    subtitle: '${study['topic']}',
-                    badge: 'hoje',
-                    active: true,
-                    leadingIcon: Icons.wb_sunny_outlined,
-                    onPlay: () {
+                  Builder(
+                    builder: (_) {
                       final s = study['subject']?.toString() ?? '';
                       final t = study['topic']?.toString() ?? '';
-                      context.go(_sessionFor(s, t));
+                      return PlaylistTile(
+                        title: s,
+                        subtitle: t,
+                        badge: _isTheoryRead(s, t) ? 'Li' : 'hoje',
+                        active: true,
+                        leadingIcon: Icons.wb_sunny_outlined,
+                        onPlay: () => context.go(_sessionFor(s, t)),
+                        secondary: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: 'Ler teoria',
+                              icon: const Icon(Icons.menu_book_outlined, size: 20),
+                              onPressed: s.isNotEmpty && t.isNotEmpty ? () => _openTheory(s, t) : null,
+                            ),
+                            IconButton(
+                              tooltip: 'Tutor',
+                              icon: const Icon(Icons.psychology_outlined, size: 20),
+                              onPressed: () => context.go(
+                                '/tutor?subject=${Uri.encodeComponent(s)}'
+                                '&topic=${Uri.encodeComponent(t)}',
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     },
-                    secondary: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          tooltip: 'Ler teoria',
-                          icon: const Icon(Icons.menu_book_outlined, size: 20),
-                          onPressed: () {
-                            final s = study['subject']?.toString() ?? '';
-                            final t = study['topic']?.toString() ?? '';
-                            if (s.isNotEmpty && t.isNotEmpty) _openTheory(s, t);
-                          },
-                        ),
-                        IconButton(
-                          tooltip: 'Tutor',
-                          icon: const Icon(Icons.psychology_outlined, size: 20),
-                          onPressed: () {
-                            final s = study['subject']?.toString() ?? '';
-                            final t = study['topic']?.toString() ?? '';
-                            context.go(
-                              '/tutor?subject=${Uri.encodeComponent(s)}'
-                              '&topic=${Uri.encodeComponent(t)}',
-                            );
-                          },
-                        ),
-                      ],
-                    ),
                   ),
                 ],
 
@@ -411,8 +485,16 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         return PlaylistTile(
                           title: s.isEmpty ? key : s,
                           subtitle: t,
+                          badge: _isTheoryRead(s, t) ? 'Li' : null,
                           leadingIcon: Icons.local_hospital_outlined,
                           onPlay: () => context.go(_sessionFor(s, t)),
+                          secondary: s.isNotEmpty && t.isNotEmpty
+                              ? IconButton(
+                                  tooltip: 'Teoria local',
+                                  icon: const Icon(Icons.menu_book_outlined),
+                                  onPressed: () => _openTheory(s, t),
+                                )
+                              : null,
                         );
                       },
                     ),

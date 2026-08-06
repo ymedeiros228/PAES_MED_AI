@@ -208,6 +208,7 @@ flowchart TB
 | CZ–DA | Adaptativo/Cards teoria · Tutor chip material local +13 | `ciclo_cz_*`…`ciclo_da_*` | **Feito** |
 | DA–DB | Domínio/Banca/Hoje teoria coach +14 | `ciclo_da_*`…`ciclo_db_*` | **Feito** |
 | DB–DC | Heatmap clicável · Plano Li teoria +15 | `ciclo_db_*`…`ciclo_dc_*` | **Feito** |
+| DC–DD | reads batch API · Fila badge Li +16 | `ciclo_dc_*`…`ciclo_dd_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -215,9 +216,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós DB–DC)
+## Estado (atualizado pós DC–DD)
 
-- Rodada DA–DB: teoria Domínio/Banca/Hoje (coach do dia), 1.0.0+14.
 - Rodada DB–DC: heatmap Banca clicável, Plano badge Li teoria, 1.0.0+15.
+- Rodada DC–DD: API reads batch, Fila badge Li, plano batch, 1.0.0+16.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

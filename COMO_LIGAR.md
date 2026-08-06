@@ -662,6 +662,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Plano: badge **Li · teoria** por dia quando `/api/study/reads` · sync via `onMarkedRead`.
 3. **1.0.0+15** · smoke `ciclo_dc_*` + suite + pack + push.
 
+## Fila Li + reads batch (Ciclo DD)
+
+1. API `POST /api/study/reads/batch` — consulta mark-read em lote (plano/fila).
+2. Fila: badge **Li** + batch no load · sync via `onMarkedRead`.
+3. Plano migrado para batch (menos N GETs).
+4. **1.0.0+16** · smoke `ciclo_dd_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

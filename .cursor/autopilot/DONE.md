@@ -28,3 +28,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DC: Banca — heatmap **clicável** (`_onHeatCellTap` → teoria ou sessão)
 - [x] Ciclo DC: Plano — badge **Li · teoria** via `_loadTheoryReads` + `onMarkedRead`
 - [x] Versão **1.0.0+15** + smoke **558/558** + docs COMO/ROADMAP DB–DC
+- [x] Ciclo DD: API `POST /api/study/reads/batch` + `topic_read_batch` (backend)
+- [x] Ciclo DD: Fila — badge **Li** em lacunas/meta/revisões/domínio + batch load + `onMarkedRead`
+- [x] Ciclo DD: Plano migrado para reads batch (1 POST vs N GETs)
+- [x] Versão **1.0.0+16** + smoke **567/567** + docs COMO/ROADMAP DC–DD

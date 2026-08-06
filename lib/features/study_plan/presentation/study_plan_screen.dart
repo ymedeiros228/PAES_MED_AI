@@ -42,15 +42,22 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       if (mounted) setState(() => theoryReadByKey = {});
       return;
     }
-    final entries = await Future.wait(pairs.map((p) async {
-      try {
-        final r = await apiClient.get('/api/study/reads', {'subject': p.$1, 'topic': p.$2});
-        return MapEntry('${p.$1}|${p.$2}', (r as Map)['read'] == true);
-      } catch (_) {
-        return MapEntry('${p.$1}|${p.$2}', false);
+    try {
+      final data = await apiClient.post('/api/study/reads/batch', {
+        'items': pairs.map((p) => {'subject': p.$1, 'topic': p.$2}).toList(),
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final out = <String, bool>{};
+      for (final raw in map['items'] as List? ?? const []) {
+        final it = Map<String, dynamic>.from(raw as Map);
+        final s = it['subject']?.toString() ?? '';
+        final t = it['topic']?.toString() ?? '';
+        if (s.isNotEmpty && t.isNotEmpty) out['$s|$t'] = it['read'] == true;
       }
-    }));
-    if (mounted) setState(() => theoryReadByKey = Map.fromEntries(entries));
+      if (mounted) setState(() => theoryReadByKey = out);
+    } catch (_) {
+      if (mounted) setState(() => theoryReadByKey = {});
+    }
   }
 
   Future<void> _load({bool regenerate = false}) async {

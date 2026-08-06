@@ -49,6 +49,7 @@ from services_core import (
     topic_cooccurrence,
     topic_frequency,
     topic_read_status,
+    topic_read_batch,
     year_pdf_info,
 )
 from services_extra import (
@@ -519,6 +520,21 @@ def api_study_mark_read(payload: MarkReadPayload) -> dict[str, Any]:
 @app.get("/api/study/reads")
 def api_study_reads(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
     return topic_read_status(subject, topic)
+
+
+class ReadBatchItem(BaseModel):
+    subject: str = Field(min_length=1, max_length=120)
+    topic: str = Field(min_length=1, max_length=200)
+
+
+class ReadBatchPayload(BaseModel):
+    items: list[ReadBatchItem] = Field(default_factory=list, max_length=60)
+
+
+@app.post("/api/study/reads/batch")
+def api_study_reads_batch(payload: ReadBatchPayload) -> dict[str, Any]:
+    raw = [{"subject": i.subject, "topic": i.topic} for i in payload.items]
+    return topic_read_batch(raw)
 
 
 @app.get("/api/study/calendar")
