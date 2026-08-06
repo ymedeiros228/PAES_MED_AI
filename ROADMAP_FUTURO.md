@@ -217,6 +217,7 @@ flowchart TB
 | DI–DJ | Sessão Li batch +22 | `ciclo_di_*`…`ciclo_dj_*` | **Feito** |
 | DJ–DK | Biblioteca/Simulados Li +23 | `ciclo_dj_*`…`ciclo_dk_*` | **Feito** |
 | DK–DL | Questões/Aprovar Li +24 | `ciclo_dk_*`…`ciclo_dl_*` | **Feito** |
+| DL–DM | Redação/Fila Li +25 | `ciclo_dl_*`…`ciclo_dm_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -235,5 +236,6 @@ flowchart TB
 - Rodada DI–DJ: Sessão guiada Li batch, 1.0.0+22.
 - Rodada DJ–DK: Biblioteca busca + Simulados Li, 1.0.0+23.
 - Rodada DK–DL: Lista Questões + Aprovar Li, 1.0.0+24.
+- Rodada DL–DM: Redação + Fila missão Li, 1.0.0+25.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).
