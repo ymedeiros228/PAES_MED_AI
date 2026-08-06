@@ -10,3 +10,5 @@
 - **HG**: Fila vazia sem oficiais → Semana 1; copy “para revisar” (sem due).
 - **HH ship**: **1.0.0+13**.
 - PR #4 fechado (superseded).
+
+- **HI–HK / HL ship**: Tutor prosa + Fontes rodapé; ficha/debrief limpos; identidade Hoje/Fila/Tutor; **1.0.0+14**.

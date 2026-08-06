@@ -923,9 +923,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
         '&subject=${Uri.encodeComponent(s)}'
         '&topic=${Uri.encodeComponent(t)}';
+    final yearRaw = q['year'];
+    final year = yearRaw is int
+        ? yearRaw
+        : int.tryParse(yearRaw?.toString() ?? '');
     return ResolutionDebrief(
       question: q,
       professor: _professor,
+      pdfYear: year,
+      pdfAvailable: false,
       trailing: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -1181,19 +1187,40 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                 )
               else
-                for (final s in snippets.take(10))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 2, right: 8),
-                          child: Icon(Icons.menu_book_outlined, size: 18),
+                for (final raw in snippets.take(10))
+                  Builder(
+                    builder: (_) {
+                      final text = raw.toString().trim();
+                      if (text.isEmpty) return const SizedBox.shrink();
+                      final low = text.toLowerCase();
+                      if (low.startsWith('id=') ||
+                          text.contains('/data/') ||
+                          text.startsWith('http') ||
+                          RegExp(r'\b[a-z]{2,6}-\d{4}-\d+\b').hasMatch(low)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 2, right: 8),
+                              child: Icon(Icons.menu_book_outlined, size: 18),
+                            ),
+                            Expanded(
+                              child: SelectableText(
+                                text,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(height: 1.45),
+                              ),
+                            ),
+                          ],
                         ),
-                        Expanded(child: SelectableText(s)),
-                      ],
-                    ),
+                      );
+                    },
                   ),
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
               if (study != null)

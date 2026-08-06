@@ -1209,6 +1209,30 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+13**.
 2. Host: `empacotar_windows.bat` após merge.
 
+## Tutor prosa limpa (Ciclo HI)
+
+1. Offline: resposta em prosa (assunto/tópico), sem `Questão bio-` / ids / URLs no corpo.
+2. IDs só em `citations[]`; UI: bloco **Fontes** depois do texto.
+3. Prompt online: não colar ids/URLs no corpo.
+4. Smoke: `ciclo_hi_*`.
+
+## Ficha / debrief limpos (Ciclo HJ)
+
+1. Debrief: explicação no corpo; rodapé **Fonte** (banca / PDF) quieto.
+2. Ficha: enunciado limpo; PDF abaixo da resolução.
+3. Smoke: `ciclo_hj_*`.
+
+## Identidade visual core (Ciclo HK)
+
+1. Tema: Georgia + Segoe UI Variable; navy/teal; hero Hoje com marca dominante.
+2. Fila / Tutor / Ficha: hierarquia limpa + motion leve.
+3. Smoke: `ciclo_hk_*`.
+
+## Pack gate + 1.0.0+14 (Ciclo HL ship)
+
+1. Bump **1.0.0+14** (qualidade IA + visual).
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

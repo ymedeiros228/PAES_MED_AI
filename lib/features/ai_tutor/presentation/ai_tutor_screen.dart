@@ -119,9 +119,9 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
             child: PageHeader(
-              eyebrow: 'Ajuda',
+              eyebrow: 'PAES MED',
               title: 'Tutor',
-              subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
+              subtitle: 'Pergunte com base local · fontes clicáveis no rodapé · clique abre ficha',
               trailing: IconButton(
                 tooltip: 'Limpar conversa',
                 onPressed: state.isLoading
@@ -356,7 +356,18 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Align(
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, 8 * (1 - t)),
+          child: child,
+        ),
+      ),
+      child: Align(
       alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 720),
@@ -390,12 +401,21 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             ],
-            SelectableText(message.content),
+            SelectableText(
+              message.content,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+            ),
             if (message.citations.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Divider(height: 1, color: scheme.outlineVariant.withOpacity(0.6)),
               const SizedBox(height: 10),
               Text(
-                'Fontes na base (chip · clique abre ficha/treino)',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                'Fontes',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -409,7 +429,10 @@ class _MessageBubble extends StatelessWidget {
                         size: 16,
                         color: scheme.primary,
                       ),
-                      label: Text(_citeLine(c)),
+                      label: Text(
+                        _citeLine(c),
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
                       onPressed: () {
                         final type = (c['type'] ?? c['refType'])?.toString();
                         final id = (c['id'] ?? c['refId'])?.toString();
@@ -433,6 +456,7 @@ class _MessageBubble extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

@@ -247,91 +247,107 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 360),
-                padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.heroGradient(Theme.of(context).brightness),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 520),
+                curve: Curves.easeOutCubic,
+                builder: (context, t, child) => Opacity(
+                  opacity: t,
+                  child: Transform.translate(
+                    offset: Offset(0, 12 * (1 - t)),
+                    child: child,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PAES MED AI',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: Colors.white,
-                            fontSize: 34,
-                          ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      (countdown['label']?.toString().isNotEmpty == true)
-                          ? countdown['label'].toString()
-                          : examDays == null
-                              ? 'Medicina · UEMA'
-                              : examDays >= 0
-                                  ? '$examDays dias para a prova'
-                                  : 'Prova na conta',
-                      style: TextStyle(color: Colors.white.withOpacity(0.78), fontSize: 15),
-                    ),
-                    const SizedBox(height: 22),
-                    Text(
-                      coachLine,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            height: 1.25,
-                          ),
-                    ),
-                    if (progress.isNotEmpty) ...[
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 380),
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(28, 40, 28, 32),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.heroGradient(Theme.of(context).brightness),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PAES MED AI',
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                              color: Colors.white,
+                              fontSize: 42,
+                              height: 1.05,
+                            ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        coachLine,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.white.withOpacity(0.92),
+                              height: 1.35,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
                       const SizedBox(height: 8),
                       Text(
-                        progress,
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+                        (countdown['label']?.toString().isNotEmpty == true)
+                            ? countdown['label'].toString()
+                            : examDays == null
+                                ? 'Medicina · UEMA'
+                                : examDays >= 0
+                                    ? '$examDays dias para a prova'
+                                    : 'Prova na conta',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.62),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppTheme.navy,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                            ),
+                            onPressed: () => context.go(sessionPath),
+                            child: Text(
+                              checkpoint != null
+                                  ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
+                                  : 'Começar sessão (S)',
+                            ),
+                          ),
+                          if (checkpoint != null)
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Colors.white70),
+                              ),
+                              onPressed: _discardCheckpoint,
+                              child: const Text('Recomeçar'),
+                            ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white.withOpacity(0.85),
+                            ),
+                            onPressed: () => context.go(closePath),
+                            child: Text('$closeLabel (L)'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'S sessão · L fila · R atualiza',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 22),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppTheme.navy,
-                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                          ),
-                          onPressed: () => context.go(sessionPath),
-                          child: Text(
-                            checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
-                                : 'Começar sessão (S)',
-                          ),
-                        ),
-                        if (checkpoint != null)
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white70),
-                            ),
-                            onPressed: _discardCheckpoint,
-                            child: const Text('Recomeçar'),
-                          ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          onPressed: () => context.go(closePath),
-                          child: Text('$closeLabel (L)'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'S sessão · L fila · R atualiza · Enter',
-                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 12),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

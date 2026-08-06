@@ -777,7 +777,8 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         f"MODO_RAG: {rag_mode}\n\n"
         f"REGRAS: Só use o CONTEXTO. Se faltar fonte, diga que não tem base local — "
         f"não invente % de cobrança UEMA nem resolução de prova ausente. "
-        f"Cite ids de questões do contexto quando falar de itens.\n\n"
+        f"NÃO escreva ids de questão, paths ou URLs no corpo da resposta; "
+        f"as fontes vão só no schema citations. Fale de assunto/tópico/ano em prosa.\n\n"
         f"CONTEXTO DA BASE LOCAL:\n{context}\n\n"
         f"PERGUNTA DO ALUNO:\n{payload.message}"
     )
@@ -792,8 +793,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     client = _openai_client()
     if client is None:
         basis = stats_basis()
-        hot = dash.get("errorHotTopics") or []
-        # GY: score pela pergunta (+ boost coach / Natureza), não só tópico do dia
+        # Score pela pergunta; resposta em prosa limpa (HI) — ids só em citations
         pool = score_questions_for_query(
             payload.message,
             prefer_official=prefer_official,
@@ -803,11 +803,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             limit=12,
         )
         grounded_cites: list[dict[str, Any]] = []
-        lines: list[str] = [
-            f"Tutor offline · pergunta alinhada à base"
-            + (f" · coach: {coach_subject} · {coach_topic}" if coach_subject else ""),
-            "",
-        ]
+        prose_bits: list[str] = []
         grounded = 0
         for q in pool[:8]:
             res = (q.get("resolution") or "").strip()
@@ -816,19 +812,43 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             qid = q.get("id")
             if not qid:
                 continue
-            lines.append(f"• Questão {qid} ({q.get('year') or '—'}):")
-            for ln in res.splitlines()[:4]:
-                if ln.strip():
-                    lines.append(f"  {ln.strip()[:200]}")
+            subj = (q.get("subject") or "Assunto").strip()
+            topic = (q.get("topic") or "tópico").strip()
+            year = q.get("year")
+            year_bit = f" (prova {year})" if year else ""
+            # Limpa prefixos técnicos da resolução para o aluno
+            clean_lines: list[str] = []
+            for ln in res.splitlines():
+                t = ln.strip()
+                if not t or t == "—":
+                    continue
+                low = t.lower()
+                if low.startswith("[rascunho") or "não é resolução oficial" in low:
+                    continue
+                if t.startswith("id=") or "/data/" in t or t.startswith("http"):
+                    continue
+                clean_lines.append(t)
+                if len(clean_lines) >= 3:
+                    break
+            if not clean_lines:
+                continue
+            if grounded == 0:
+                prose_bits.append(
+                    f"Sobre {subj} · {topic}{year_bit}, a base local aponta o seguinte:"
+                )
+            else:
+                prose_bits.append(f"Outro ponto do mesmo eixo{year_bit}:")
+            prose_bits.append(" ".join(clean_lines))
             grounded_cites.append(
                 normalize_citation(
                     {
                         "type": "question",
                         "id": qid,
-                        "label": f"{q.get('subject')} · {q.get('topic')} ({q.get('year')})",
+                        "label": f"{subj} · {topic} ({year or '—'})",
                         "snippet": (q.get("statement") or "")[:140],
-                        "subject": q.get("subject"),
-                        "topic": q.get("topic"),
+                        "subject": subj,
+                        "topic": topic,
+                        "year": year,
                         "official": is_official_source(q.get("source"), q.get("generated")),
                     }
                 )
@@ -838,13 +858,11 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                 break
         if not grounded:
             for cite in q_cites[:3]:
-                label = cite.get("label") or cite.get("type") or "fonte"
-                snippet = (cite.get("snippet") or "")[:180]
-                if snippet:
-                    lines.append(f"• {label}: {snippet}")
-                else:
-                    lines.append(f"• {label}")
                 grounded_cites.append(normalize_citation(cite))
+                snip = (cite.get("snippet") or "").strip()
+                label = cite.get("label") or "a base"
+                if snip and "http" not in snip and "/data/" not in snip:
+                    prose_bits.append(f"Com base em {label}: {snip}")
         seen_ids = {c.get("id") or c.get("refId") for c in grounded_cites}
         for cite in q_cites:
             cid = cite.get("id") or cite.get("refId")
@@ -855,16 +873,11 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         has_local_off = bool(
             [c for c in grounded_cites if (c.get("type") or c.get("refType")) == "question"]
         )
-        if hot and has_local_off:
-            h0 = hot[0]
-            lines.append("")
-            lines.append(f"Lacuna quente: {h0.get('key')} ({h0.get('misses')} miss(es)).")
-        if not has_local_off:
+        if not has_local_off or not prose_bits:
             answer = (
                 "Sem base local para esta pergunta.\n\n"
-                "Não há trechos de questões/resoluções na base alinhados ao pedido. "
-                "Abra Biblioteca (2024–26) ou a Fila com preferNatureza=1 — o tutor não inventa cobranca UEMA.\n\n"
-                f"Próximo passo: {session_path}"
+                "Não há trechos de questões ou resoluções alinhados ao pedido. "
+                "Abra a Biblioteca (provas 2024–26) ou a Fila — o tutor não inventa cobrança UEMA."
             )
             return ChatResponse(
                 answer=answer,
@@ -876,16 +889,14 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                 uncited=True,
                 preferOfficial=prefer_official,
             )
-        lines.append("")
-        lines.append(f"Próximo passo: sessão em {session_path}")
-        lines.append("Pergunta: qual distrator você eliminaria primeiro e por quê?")
-        lines.append("")
-        lines.append(
-            "[Aviso] Offline grounded na base local. Não inventa % de cobrança UEMA."
-            + ("" if basis.get("basis") == "oficial" else " Stats ainda em treino.")
-            + " Configure OPENAI_API_KEY para diálogo completo."
-        )
-        answer = "\n".join(lines)
+        prose_bits.append("")
+        prose_bits.append("Qual distrator você eliminaria primeiro e por quê?")
+        if basis.get("basis") != "oficial":
+            prose_bits.append("")
+            prose_bits.append(
+                "Aviso: a base ainda mistura treino — não inventa % de cobrança oficial."
+            )
+        answer = "\n".join(prose_bits)
         return ChatResponse(
             answer=answer,
             model=f"offline-grounded-{rag_mode}",

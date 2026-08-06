@@ -252,17 +252,42 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                PageHeader(
-                  eyebrow: 'Estudar',
-                  title: 'Fila',
-                  subtitle: coach != null
-                      ? '$coach · S sessão · R atualiza · ↑/↓ J/K · Enter item'
-                      : 'O que fazer a seguir · ~$minutes min · S sessão · R atualiza · ↑/↓ Enter',
-                  trailing: IconButton(
-                    tooltip: 'Atualizar',
-                    onPressed: _load,
-                    icon: const Icon(Icons.refresh_rounded),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 480),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, t, child) => Opacity(
+                    opacity: t,
+                    child: Transform.translate(
+                      offset: Offset(0, 10 * (1 - t)),
+                      child: child,
                     ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'PAES MED',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              letterSpacing: 1.6,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      PageHeader(
+                        title: 'Fila',
+                        subtitle: coach != null
+                            ? '$coach · S sessão · R atualiza'
+                            : 'O próximo passo do dia · ~$minutes min · R atualiza',
+                        trailing: IconButton(
+                          tooltip: 'Atualizar',
+                          onPressed: _load,
+                          icon: const Icon(Icons.refresh_rounded),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 FilledButton.icon(

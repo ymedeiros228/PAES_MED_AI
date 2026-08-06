@@ -313,6 +313,9 @@ flowchart TB
 | HD | Ficha Ler teoria → treinar + trainSessionPath | `ciclo_hd_*` | **Feito** |
 | HF | First-run CTA Semana 1 | `ciclo_hf_*` | **Feito** |
 | HG | Fila empty → Biblioteca + PT sem due | `ciclo_hg_*` | **Feito** |
+| HI | Tutor prosa limpa + Fontes rodapé | `ciclo_hi_*` | **Feito** |
+| HJ | Ficha/debrief sem lixo técnico | `ciclo_hj_*` | **Feito** |
+| HK | Identidade visual core (Hoje/Fila/…) | `ciclo_hk_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -320,9 +323,10 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HF–HG / Mode A)
+## Estado (atualizado pós HI–HK / qualidade)
 
 - Rodada **HC–HD** (Mode A): Sessão sem jargão + ficha “Ler teoria → treinar” + ship **1.0.0+12**.
 - Rodada **HF–HG** (Mode A): first-run Semana 1 + Fila vazia → Biblioteca + ship **1.0.0+13**.
+- Rodada **HI–HK** (qualidade): Tutor prosa limpa + ficha sem lixo técnico + identidade visual + ship **1.0.0+14**.
 - Residual: pack Windows no host após merge (`empacotar_windows.bat`).
 - Push no GitHub após suite verde (autor: Yuri Medeiros).
