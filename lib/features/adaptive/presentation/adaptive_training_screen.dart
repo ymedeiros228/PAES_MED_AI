@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +38,15 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   String errorType = 'conceito';
   bool autoStarted = false;
   bool finished = false;
+  bool pendingErrorPick = false;
+
+  static const _errorTypes = [
+    'conceito',
+    'interpretacao',
+    'calculo',
+    'distracao',
+    'tempo',
+  ];
 
   static const _errorLabels = {
     'conceito': 'Conceito',
@@ -131,33 +142,54 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     }
   }
 
+  Future<void> _postAnswer({required bool correct}) async {
+    final q = queue[index];
+    final correctIndex = (q['correctIndex'] as num?)?.toInt();
+    final id = q['id']?.toString();
+    if (id == null || correctIndex == null) return;
+    try {
+      await apiClient.post('/api/answers', {
+        'questionId': id,
+        'correct': correct,
+        'subject': q['subject'] ?? subject,
+        'topic': q['topic'] ?? topic,
+        'errorType': correct ? null : errorType,
+        'timeMs': null,
+      });
+      ref.read(refreshTickProvider.notifier).state++;
+    } catch (_) {}
+  }
+
   Future<void> _submit() async {
     if (selected == null || queue.isEmpty || revealed) return;
     final q = queue[index];
     final correctIndex = (q['correctIndex'] as num?)?.toInt();
     final correct = correctIndex != null && selected == correctIndex;
-    setState(() {
-      revealed = true;
-      answeredCount++;
-      if (correct) correctCount++;
-    });
-    final id = q['id']?.toString();
-    if (id != null && correctIndex != null) {
-      try {
-        await apiClient.post('/api/answers', {
-          'questionId': id,
-          'correct': correct,
-          'subject': q['subject'] ?? subject,
-          'topic': q['topic'] ?? topic,
-          'errorType': correct ? null : errorType,
-          'timeMs': null,
-        });
-        ref.read(refreshTickProvider.notifier).state++;
-      } catch (_) {}
+    if (correct) {
+      setState(() {
+        revealed = true;
+        answeredCount++;
+        correctCount++;
+        pendingErrorPick = false;
+      });
+      await _postAnswer(correct: true);
+    } else {
+      setState(() {
+        revealed = true;
+        answeredCount++;
+        pendingErrorPick = true;
+      });
     }
   }
 
+  Future<void> _confirmErrorAndSave() async {
+    if (!pendingErrorPick) return;
+    setState(() => pendingErrorPick = false);
+    await _postAnswer(correct: false);
+  }
+
   void _next() {
+    if (pendingErrorPick) return;
     if (index >= queue.length - 1) {
       setState(() => finished = true);
       return;
@@ -166,22 +198,16 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       index++;
       selected = null;
       revealed = false;
+      pendingErrorPick = false;
+      errorType = 'conceito';
     });
     focusNode.requestFocus();
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent || queue.isEmpty || finished) return KeyEventResult.ignored;
-    if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN ||
-          event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        _next();
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-    final keys = {
+
+    final digitMap = {
       LogicalKeyboardKey.digit1: 0,
       LogicalKeyboardKey.digit2: 1,
       LogicalKeyboardKey.digit3: 2,
@@ -193,7 +219,33 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       LogicalKeyboardKey.numpad4: 3,
       LogicalKeyboardKey.numpad5: 4,
     };
-    final opt = keys[event.logicalKey];
+
+    // Após miss: 1–5 tipo de erro; Enter confirma e grava; N avança depois
+    if (pendingErrorPick) {
+      final ei = digitMap[event.logicalKey];
+      if (ei != null && ei < _errorTypes.length) {
+        setState(() => errorType = _errorTypes[ei]);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        unawaited(_confirmErrorAndSave());
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    if (revealed) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN ||
+          event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+        _next();
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    final opt = digitMap[event.logicalKey];
     if (opt != null) {
       final opts = (queue[index]['options'] as List? ?? []);
       if (opt < opts.length) {
@@ -204,7 +256,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     if ((event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
         selected != null) {
-      _submit();
+      unawaited(_submit());
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -294,12 +346,16 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                         ),
                                       ),
                                     );
-                                  } catch (e) {
-                                    if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('$e')),
-                                    );
-                                  }
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            humanApiError(e, fallback: 'Não deu para criar o card.'),
+                                          ),
+                                        ),
+                                      );
+                                    }
                                 },
                                 child: const Text('Marcar recuperada'),
                               ),
@@ -431,6 +487,27 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               color: selected == correctIndex ? Colors.green : cs.error,
                             ),
                           ),
+                          if (pendingErrorPick) ...[
+                            const SizedBox(height: 8),
+                            Text('Tipo de erro (1–5):', style: Theme.of(context).textTheme.bodySmall),
+                            Wrap(
+                              spacing: 6,
+                              children: [
+                                for (final e in _errorLabels.entries)
+                                  ChoiceChip(
+                                    label: Text(e.value),
+                                    selected: errorType == e.key,
+                                    onSelected: (_) => setState(() => errorType = e.key),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            FilledButton(
+                              onPressed: () => unawaited(_confirmErrorAndSave()),
+                              child: const Text('Registrar tipo e continuar'),
+                            ),
+                          ],
+                          if (!pendingErrorPick) ...[
                           const SizedBox(height: 10),
                           ResolutionDebrief(
                             question: q,
@@ -466,7 +543,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                     } catch (e) {
                                       if (!mounted) return;
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('$e')),
+                                        SnackBar(
+                                          content: Text(
+                                            humanApiError(e, fallback: 'Não deu para criar o card.'),
+                                          ),
+                                        ),
                                       );
                                     }
                                   },
@@ -475,6 +556,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               ],
                             ),
                           ),
+                          ],
                         ],
                         const SizedBox(height: 12),
                         Wrap(
@@ -486,7 +568,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               child: const Text('Confirmar'),
                             ),
                             FilledButton.tonal(
-                              onPressed: revealed ? _next : null,
+                              onPressed: revealed && !pendingErrorPick ? _next : null,
                               child: Text(index >= queue.length - 1 ? 'Concluir' : 'Próxima'),
                             ),
                             TextButton(
@@ -496,6 +578,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                         index--;
                                         selected = null;
                                         revealed = false;
+                                        pendingErrorPick = false;
                                       }),
                               child: const Text('Anterior'),
                             ),
@@ -503,7 +586,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Atalhos: 1–5 opção · Enter/numpad confirma · N/Enter próxima',
+                          pendingErrorPick
+                              ? 'Atalhos: 1–5 tipo de erro · Enter registra'
+                              : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: cs.onSurface.withOpacity(0.45),
                               ),

@@ -158,7 +158,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       final data = await apiClient.post('/api/professor/generate', {'questionId': q.id});
       setState(() => professorDraft = Map<String, dynamic>.from(data as Map));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para gerar o rascunho.'))),
+        );
+      }
     } finally {
       setState(() => professorBusy = false);
     }
@@ -184,7 +188,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modo professor salvo.')));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para salvar o professor.'))),
+        );
+      }
     } finally {
       setState(() => professorBusy = false);
     }
@@ -202,7 +210,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar cards.'))),
+        );
+      }
     }
   }
 
@@ -220,7 +232,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       });
       setState(() => adaptive = Map<String, dynamic>.from(data as Map));
     } catch (e) {
-      setState(() => adaptive = {'error': e.toString()});
+      setState(() => adaptive = {
+            'error': humanApiError(e, fallback: 'Não deu para montar o treino. Tente de novo.'),
+          });
     } finally {
       setState(() => adaptiveLoading = false);
     }
@@ -248,7 +262,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir o PDF.'))),
+        );
       }
     }
   }

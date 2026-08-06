@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
+import '../data/api_error.dart';
 import 'ui_kit.dart';
 
 /// Fecho da semana — payload `weekClose` de dashboard/today (Ciclo AM).
@@ -58,7 +59,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        exportMsg = e.toString();
+        exportMsg = humanApiError(e, fallback: 'Não deu para exportar a semana.');
         exportBusy = false;
       });
     }
@@ -161,7 +162,11 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                                 } catch (e) {
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('$e')),
+                                    SnackBar(
+                                      content: Text(
+                                        humanApiError(e, fallback: 'Não deu para marcar a lacuna.'),
+                                      ),
+                                    ),
                                   );
                                 }
                               },

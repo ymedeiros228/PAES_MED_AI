@@ -560,6 +560,28 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Grupos Mídia · Oficina · Índices · Paths; Recalcular base; versão **1.0.0+4**.
 2. Smoke `ciclo_cl_*` + suite + pack + push.
 
+## Erros humanos onda 2 (Ciclo CM)
+
+1. `humanApiError` em Fila, sessão export/card, sim export/lacunas, redação grade, week-close.
+2. Smoke: `ciclo_cm_*` + push.
+
+## Teclado sim completo (Ciclo CN)
+
+1. Sim em run: ←/Backspace volta · →/Space avança · 1–5 opção ou tipo de erro se já respondeu · Enter grade no fim.
+2. Smoke: `ciclo_cn_*` + push.
+
+## Adaptive + redação teclas (Ciclo CO)
+
+1. Adaptativo: pós-miss 1–5 tipo de erro · Enter registra (`pendingErrorPick`).
+2. Redação: Ctrl+Enter / Cmd+Enter corrige.
+3. Smoke: `ciclo_co_*` + push.
+
+## Hoje path + ship (Ciclo CP)
+
+1. Continuar/Começar usam `sessionPath` com board/natureza.
+2. Cards checklist aguarda dados antes de “em dia”.
+3. Versão **1.0.0+5** · smoke `ciclo_cp_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

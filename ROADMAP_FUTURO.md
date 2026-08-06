@@ -197,6 +197,7 @@ flowchart TB
 | CA–CD | Teclado estudo · empties CTA · foco + redação · gaps recover | `ciclo_ca_*`…`ciclo_cd_*` | **Feito** |
 | CE–CH | Versão +3/pack · theory/foco-safe · checkpoint UX · exam hydrate | `ciclo_ce_*`…`ciclo_ch_*` | **Feito** |
 | CI–CL | Rev+quest keys · erros humanos · first-run · Avançado +4 | `ciclo_ci_*`…`ciclo_cl_*` | **Feito** |
+| CM–CP | Erros onda 2 · sim keys · adaptive/essay keys · Hoje path +5 | `ciclo_cm_*`…`ciclo_cp_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -204,8 +205,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CI–CL)
+## Estado (atualizado pós CM–CP)
 
-- Fios AQ…CH fechados; rodada CI–CL: teclado revisão-questões, erros PT, onboarding→Hoje, Avançado escaneável, 1.0.0+4.
+- Fios AQ…CL fechados; rodada CM–CP: erros Fila/Sessão/Sim/Redação, sim teclado completo, adaptive error-pick, Hoje Continuar com sessionPath, 1.0.0+5.
 - Residual próximo TBD.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

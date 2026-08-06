@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
@@ -84,6 +85,30 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
     if (!running || report != null || questions.isEmpty) return KeyEventResult.ignored;
 
+    final qi = keyboardQi.clamp(0, questions.length - 1);
+    final q = Map<String, dynamic>.from(questions[qi] as Map);
+    final id = q['id']?.toString() ?? '';
+    final opts = (q['options'] as List? ?? []);
+    final answered = id.isNotEmpty && answers.containsKey(id);
+
+    // ← / Backspace: item anterior
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
+        event.logicalKey == LogicalKeyboardKey.backspace) {
+      if (keyboardQi > 0) {
+        setState(() => keyboardQi = keyboardQi - 1);
+      }
+      return KeyEventResult.handled;
+    }
+
+    // → / Space: próximo item (sem revelar gabarito)
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
+        event.logicalKey == LogicalKeyboardKey.space) {
+      if (keyboardQi < questions.length - 1) {
+        setState(() => keyboardQi = keyboardQi + 1);
+      }
+      return KeyEventResult.handled;
+    }
+
     final keys = <LogicalKeyboardKey, int>{
       LogicalKeyboardKey.digit1: 0,
       LogicalKeyboardKey.digit2: 1,
@@ -97,39 +122,36 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       LogicalKeyboardKey.numpad5: 4,
     };
     final opt = keys[event.logicalKey];
-    if (opt != null) {
-      final qi = keyboardQi.clamp(0, questions.length - 1);
-      final q = Map<String, dynamic>.from(questions[qi] as Map);
-      final id = q['id']?.toString() ?? '';
-      final opts = (q['options'] as List? ?? []);
-      if (id.isEmpty || opt >= opts.length) return KeyEventResult.handled;
-      setState(() {
-        answers[id] = opt;
-        if (!examLocked) errorTypes.putIfAbsent(id, () => defaultErrorType);
-      });
-      unawaited(_saveSimCheckpoint());
+    if (opt != null && id.isNotEmpty) {
+      // Sem resposta: 1–5 marca opção. Com resposta e !examLocked: 1–5 tipo de erro.
+      if (!answered) {
+        if (opt >= opts.length) return KeyEventResult.handled;
+        setState(() {
+          answers[id] = opt;
+          if (!examLocked) errorTypes.putIfAbsent(id, () => defaultErrorType);
+        });
+        unawaited(_saveSimCheckpoint());
+        return KeyEventResult.handled;
+      }
+      if (!examLocked) {
+        const errKeys = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
+        if (opt < errKeys.length) {
+          setState(() => errorTypes[id] = errKeys[opt]);
+          unawaited(_saveSimCheckpoint());
+        }
+        return KeyEventResult.handled;
+      }
       return KeyEventResult.handled;
     }
 
     if (event.logicalKey == LogicalKeyboardKey.enter ||
         event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-      final qi = keyboardQi.clamp(0, questions.length - 1);
-      final q = Map<String, dynamic>.from(questions[qi] as Map);
-      final id = q['id']?.toString() ?? '';
       if (id.isNotEmpty && answers.containsKey(id)) {
         if (qi < questions.length - 1) {
           setState(() => keyboardQi = qi + 1);
         } else if (answers.length >= questions.length) {
           unawaited(_grade());
         }
-      }
-      return KeyEventResult.handled;
-    }
-
-    // Space: avança o foco do teclado sem revelar gabarito (dia de prova intacto).
-    if (event.logicalKey == LogicalKeyboardKey.space) {
-      if (keyboardQi < questions.length - 1) {
-        setState(() => keyboardQi = keyboardQi + 1);
       }
       return KeyEventResult.handled;
     }
@@ -246,7 +268,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para exportar o simulado.'))),
+      );
     }
   }
 
@@ -497,7 +521,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       context.go(cta);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para agendar as lacunas.'))),
+      );
     }
   }
 

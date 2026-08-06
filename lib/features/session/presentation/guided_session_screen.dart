@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
@@ -747,7 +748,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         } catch (_) {}
       }
     } catch (e) {
-      setState(() => exportMsg = e.toString());
+      setState(() => exportMsg = humanApiError(e, fallback: 'Não deu para exportar o dia.'));
     }
   }
 
@@ -795,7 +796,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar o card.'))),
+      );
     }
   }
 

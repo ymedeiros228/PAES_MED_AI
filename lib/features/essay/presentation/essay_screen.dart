@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -112,7 +116,9 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       setState(() => last = Map<String, dynamic>.from(data as Map));
       await _loadProgress();
     } catch (e) {
-      setState(() => last = {'error': e.toString()});
+      setState(() => last = {
+            'error': humanApiError(e, fallback: 'Não deu para corrigir a redação. Tente de novo.'),
+          });
     } finally {
       setState(() => busy = false);
     }
@@ -247,7 +253,27 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     final count = progress?['count'] as int? ?? 0;
     final streak = progress?['streakDays'] as int? ?? 0;
 
-    return ListView(
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+          if (!busy && textCtrl.text.trim().length >= 50) {
+            unawaited(_grade());
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
+          if (!busy && textCtrl.text.trim().length >= 50) {
+            unawaited(_grade());
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true): () {
+          if (!busy && textCtrl.text.trim().length >= 50) {
+            unawaited(_grade());
+          }
+        },
+      },
+      child: Focus(
+        autofocus: false,
+        child: ListView(
       children: [
         PageBody(
           child: Column(
@@ -462,7 +488,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               FilledButton.icon(
                 onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
                 icon: const Icon(Icons.rate_review_outlined),
-                label: Text(busy ? 'Corrigindo…' : 'Corrigir'),
+                label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
               ),
               if (textCtrl.text.trim().isNotEmpty && textCtrl.text.trim().length < 50)
                 Padding(
@@ -617,6 +643,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           ),
         ),
       ],
+        ),
+      ),
     );
   }
 }

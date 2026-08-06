@@ -230,9 +230,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             foregroundColor: AppTheme.navy,
                             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
                           ),
-                          onPressed: () => context.go(
-                            checkpoint != null ? '/sessao' : sessionPath,
-                          ),
+                          onPressed: () => context.go(sessionPath),
                           child: Text(
                             checkpoint != null
                                 ? 'Continuar · ${_checkpointShort(checkpoint!)}'
@@ -314,7 +312,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           FutureBuilder(
                             future: dueCardsFuture,
                             builder: (context, snap) {
-                              final list = snap.hasData && snap.data is List ? snap.data as List : const [];
+                              if (!snap.hasData) {
+                                return _CheckRow(
+                                  done: false,
+                                  label: 'Cards do dia…',
+                                  actionLabel: null,
+                                  onAction: null,
+                                );
+                              }
+                              final list = snap.data is List ? snap.data as List : const [];
                               final n = list.length;
                               final done = n == 0 || checklist['cards'] == true;
                               return _CheckRow(

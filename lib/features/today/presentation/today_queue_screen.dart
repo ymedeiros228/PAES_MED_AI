@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/api_error.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -35,7 +36,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         error = null;
       });
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a fila. Tente de novo.'));
     }
   }
 
@@ -52,7 +53,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       await _load();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a lacuna.'))),
+      );
     }
   }
 
@@ -67,7 +70,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       await _load();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não foi possível fechar a semana.'))),
+      );
     }
   }
 
@@ -215,8 +220,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(content: Text('$e')));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              humanApiError(e, fallback: 'Não deu para marcar como lido.'),
+                                            ),
+                                          ),
+                                        );
                                       }
                                     }
                                   },
@@ -237,7 +247,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                 });
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        humanApiError(e, fallback: 'Não deu para abrir o material.'),
+                                      ),
+                                    ),
+                                  );
                                 }
                               }
                             },
@@ -268,7 +284,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                 }
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        humanApiError(e, fallback: 'Não deu para marcar como lido.'),
+                                      ),
+                                    ),
+                                  );
                                 }
                               }
                             },
@@ -300,7 +322,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir a leitura.'))),
+      );
     }
   }
 

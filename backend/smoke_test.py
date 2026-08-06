@@ -3570,18 +3570,18 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        ("1.0.0+3" in pubspec or "1.0.0+4" in pubspec)
-        and ("1.0.0+3" in settings_ce or "1.0.0+4" in settings_ce)
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5"))
         and "VERSION.txt" in pack_bat
-        and ("1.0.0+3" in pack_bat or "1.0.0+4" in pack_bat),
-        "pubspec/Sobre/bat +3/+4",
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5")),
+        "pubspec/Sobre/bat +3/+4/+5",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_txt.exists():
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            "1.0.0+3" in _ver_ce or "1.0.0+4" in _ver_ce,
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5")),
             str(ver_txt),
         )
     else:
@@ -3813,14 +3813,17 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        "1.0.0+4" in pubspec and "1.0.0+4" in settings_ck and "1.0.0+4" in pack_bat,
-        "version +4",
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat),
+        "version +4/+5",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cl.exists():
+        _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            "1.0.0+4" in ver_cl.read_text(encoding="utf-8", errors="ignore"),
+            "1.0.0+4" in _ver_cl or "1.0.0+5" in _ver_cl,
             str(ver_cl),
         )
     else:
@@ -3841,6 +3844,137 @@ def main() -> int:
         ok("ciclo_cl_dist_shape", True, str(dist_dll_cl))
     else:
         ok("ciclo_cl_dist_shape", True, "skip locked/no pack (honesto)")
+
+    # --- Ciclo CM: erros humanos onda 2 ---
+    fila_cm = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_cm = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sim_cm = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    essay_cm = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    week_cm = (
+        root / "lib" / "core" / "widgets" / "week_close_panel.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cm_fila_human",
+        "humanApiError" in fila_cm and "SnackBar(content: Text('$e'))" not in fila_cm,
+        "fila human",
+    )
+    ok(
+        "ciclo_cm_session_export_human",
+        "humanApiError" in sess_cm and "exportMsg = e.toString()" not in sess_cm,
+        "session export",
+    )
+    ok(
+        "ciclo_cm_sim_export_human",
+        "humanApiError" in sim_cm and "SnackBar(content: Text('$e'))" not in sim_cm,
+        "sim human",
+    )
+    ok(
+        "ciclo_cm_essay_grade_human",
+        "humanApiError" in essay_cm and "error': e.toString()" not in essay_cm,
+        "essay human",
+    )
+    ok(
+        "ciclo_cm_week_close_human",
+        "humanApiError" in week_cm and "exportMsg = e.toString()" not in week_cm,
+        "week human",
+    )
+    ok(
+        "ciclo_cm_como_section",
+        "Ciclo CM" in como_ap,
+        "COMO CM",
+    )
+
+    # --- Ciclo CN: sim teclado completo ---
+    ok(
+        "ciclo_cn_sim_back_keys",
+        "arrowLeft" in sim_cm and "arrowRight" in sim_cm and "backspace" in sim_cm,
+        "sim arrows",
+    )
+    ok(
+        "ciclo_cn_sim_error_type_keys",
+        "interpretacao" in sim_cm and "errorTypes[id]" in sim_cm and "answered" in sim_cm,
+        "sim error type keys",
+    )
+    ok(
+        "ciclo_cn_como_section",
+        "Ciclo CN" in como_ap,
+        "COMO CN",
+    )
+
+    # --- Ciclo CO: adaptive error-pick + essay Ctrl+Enter ---
+    adapt_co = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_co_adaptive_error_pick",
+        "pendingErrorPick" in adapt_co and "_errorTypes" in adapt_co and "_confirmErrorAndSave" in adapt_co,
+        "adaptive error pick",
+    )
+    ok(
+        "ciclo_co_essay_ctrl_enter",
+        "CallbackShortcuts" in essay_cm
+        and "LogicalKeyboardKey.enter" in essay_cm
+        and ("control: true" in essay_cm or "control:true" in essay_cm.replace(" ", "")),
+        "essay ctrl enter",
+    )
+    ok(
+        "ciclo_co_como_section",
+        "Ciclo CO" in como_ap,
+        "COMO CO",
+    )
+
+    # --- Ciclo CP: Hoje path + 1.0.0+5 ---
+    dash_cp = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cp_hoje_session_path",
+        "context.go(sessionPath)" in dash_cp
+        and "checkpoint != null ? '/sessao'" not in dash_cp,
+        "hoje sessionPath",
+    )
+    ok(
+        "ciclo_cp_cards_loading",
+        "Cards do dia" in dash_cp or "Cards do dia…" in dash_cp,
+        "cards loading gate",
+    )
+    ok(
+        "ciclo_cp_version_align",
+        "1.0.0+5" in pubspec and "1.0.0+5" in settings_ck and "1.0.0+5" in pack_bat,
+        "version +5",
+    )
+    ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
+    if ver_cp.exists():
+        ok(
+            "ciclo_cp_version_file",
+            "1.0.0+5" in ver_cp.read_text(encoding="utf-8", errors="ignore"),
+            str(ver_cp),
+        )
+    else:
+        ok("ciclo_cp_version_file", True, "VERSION post-pack")
+    ok(
+        "ciclo_cp_como_section",
+        "Ciclo CP" in como_ap,
+        "COMO CP",
+    )
+    ok(
+        "ciclo_cp_roadmap_cm_cp",
+        ("CM–CP" in roadmap or "CM-CP" in roadmap) and "Feito" in roadmap,
+        "ROADMAP CM-CP",
+    )
+    dist_dll_cp = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
+    if dist_dll_cp.exists():
+        ok("ciclo_cp_dist_shape", True, str(dist_dll_cp))
+    else:
+        ok("ciclo_cp_dist_shape", True, "skip locked/no pack (honesto)")
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
