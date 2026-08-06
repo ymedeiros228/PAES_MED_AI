@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 2
+<!-- ciclo: 3
 modo: A
-item: Ficha pós-erro — path li teoria → treino adaptativo
-smoke: flutter analyze OK; ciclo_gv_theory_li_treino_path
-nota: theory sheet passos 1/2; default /adaptativo; ficha+fila trainPath
+item: Soft landing onboarding + Semana 1 pós-+9
+smoke: flutter analyze OK; ciclo_gw_first_run_semana1
+nota: coach Biblioteca+Hoje; onboarding Semana 1 primário; playbook CTA Abrir provas
 -->
 ```
 

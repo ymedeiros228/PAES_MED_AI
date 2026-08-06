@@ -12,3 +12,7 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Theory sheet] | barra de progresso “Passo 1 de 2” no topo do sheet | reforça sequência li → treino sem ler parágrafo | S
 - [ ] [Fila / lacunas] | badge “teoria lida” no tile quando mark-read true | evita reabrir sheet à toa | S
 - [ ] [Theory sheet] | animação suave ao marcar “li” (check + troca de CTA primário) | feedback imediato do próximo passo | S
+- [ ] [Biblioteca / Semana 1] | scroll automático ao painel 2024–26 quando `?semana1=1` na rota | onboarding cai direto no CTA certo | S
+- [ ] [Onboarding / passo 3] | preview mini do painel Biblioteca (mock) antes de ir | reduz surpresa na primeira tela real | M
+- [ ] [Hoje / coach] | dismiss automático só após Semana 1 OK, não só officialN>0 | coach some no momento certo | S
+- [x] [Biblioteca / first-run] | banner Bem-vindo + painel Semana 1 destacado | guia quem veio do onboarding direto à Biblioteca | S

@@ -13,7 +13,7 @@ Prioridade: topo = primeiro.
 
 - [x] Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
 - [x] Ficha pós-erro: path “li teoria → treino” ainda confuso em algum fluxo (validar ao vivo; só se sim)
-- [ ] Soft landing primeiro uso se onboarding + Semana 1 quebrar após +9 (só se repro)
+- [x] Soft landing primeiro uso se onboarding + Semana 1 quebrar após +9 (só se repro)
 
 ## P2 · Material / F2–F3 thin (modo B)
 

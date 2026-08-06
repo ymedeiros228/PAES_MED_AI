@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -37,6 +38,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   List<Map<String, dynamic>> searchHistory = [];
   int _hitSelected = 0;
   final _focusNode = FocusNode();
+  bool showFirstRunCoach = false;
 
   bool _textFieldFocused() {
     final primary = FocusManager.instance.primaryFocus;
@@ -80,6 +82,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     });
     _load();
     _loadSearchHistory();
+    _loadFirstRunCoach();
+  }
+
+  Future<void> _loadFirstRunCoach() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => showFirstRunCoach = prefs.getBool('first_run_coach_pending') ?? false);
+  }
+
+  Future<void> _dismissFirstRunCoach() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('first_run_coach_pending', false);
+    if (mounted) setState(() => showFirstRunCoach = false);
   }
 
   @override
@@ -354,15 +369,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         title: Text(title),
         content: Text(body),
         actions: [
+          if (canCommitDisk)
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, 'disk'),
+              child: const Text('Gravar PDFs do PC'),
+            )
+          else
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, 'provas'),
+              child: const Text('Abrir provas'),
+            ),
           if (portal != null && portal.isNotEmpty)
             TextButton(onPressed: () => Navigator.pop(ctx, 'portal'), child: const Text('Portal')),
-          TextButton(onPressed: () => Navigator.pop(ctx, 'provas'), child: const Text('Abrir provas')),
           TextButton(onPressed: () => Navigator.pop(ctx, 'gabaritos'), child: const Text('Abrir gabaritos')),
-          if (canCommitDisk)
-            TextButton(onPressed: () => Navigator.pop(ctx, 'disk'), child: const Text('Commitar disco')),
           if (year != null)
             TextButton(onPressed: () => Navigator.pop(ctx, 'retry'), child: const Text('Tentar de novo')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, 'ok'), child: const Text('OK')),
+          TextButton(onPressed: () => Navigator.pop(ctx, 'ok'), child: const Text('Fechar')),
         ],
       ),
     );
@@ -433,6 +455,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = map['message']?.toString() ?? body);
 
       if (!mounted) return;
+      if (inserted > 0) await _dismissFirstRunCoach();
       if (empty && inserted == 0) {
         final portals = (map['portals'] as List? ?? []);
         final portal = portals.isNotEmpty
@@ -992,6 +1015,37 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
               ),
 
+              if (showFirstRunCoach && officialN == 0) ...[
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: cs.primaryContainer.withOpacity(0.55),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Bem-vindo — Semana 1', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
+                        'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: busy ? null : () => unawaited(_semana1Real()),
+                            icon: const Icon(Icons.download_rounded, size: 18),
+                            label: const Text('Atualizar 2024–26'),
+                          ),
+                          TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               if (partialLoadNote != null && error == null) ...[
                 QuietEmpty(
                   message: partialLoadNote!,
@@ -1119,7 +1173,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
-                color: cs.primaryContainer.withOpacity(0.4),
+                color: cs.primaryContainer.withOpacity(showFirstRunCoach && officialN == 0 ? 0.65 : 0.4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

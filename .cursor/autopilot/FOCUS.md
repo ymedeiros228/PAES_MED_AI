@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 2 concluído |
-| **Próximo** | Soft landing primeiro uso (onboarding + Semana 1) — só se repro |
-| **Último feito** | Ficha/Fila: li teoria → treino adaptativo com passos claros |
+| **Agora** | — idle; ciclo 3 concluído |
+| **Próximo** | P2: gaps Fila sem material — empty + Biblioteca |
+| **Último feito** | Soft landing primeiro uso: onboarding → Semana 1 na Biblioteca |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 
