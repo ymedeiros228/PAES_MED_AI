@@ -1310,10 +1310,73 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ],
                 if (!pendingErrorPick && lastRemediation != null && lastRemediation!.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Text(lastRemediation!['title']?.toString() ?? 'Remediação', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    lastRemediation!['title']?.toString() ?? 'Remediação',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if ((lastRemediation!['diagnosis']?.toString() ?? '').isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        lastRemediation!['diagnosis'].toString(),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  if ((lastRemediation!['teachFocus']?.toString() ?? '').isNotEmpty)
+                    Text(
+                      'Foque no eixo «${lastRemediation!['teachFocus']}».',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   for (final s in (lastRemediation!['steps'] as List? ?? []))
                     Text('• $s'),
-                  Text(lastRemediation!['practiceHint']?.toString() ?? '', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    lastRemediation!['practiceHint']?.toString() ?? '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if ((lastRemediation!['cta'] as Map?)?['path'] != null)
+                        FilledButton.tonal(
+                          onPressed: () {
+                            final path = (lastRemediation!['cta'] as Map)['path'].toString();
+                            context.go(path);
+                          },
+                          child: Text(
+                            (lastRemediation!['cta'] as Map)['label']?.toString() ??
+                                'Treinar remediação',
+                          ),
+                        ),
+                      if ((lastRemediation!['ctaTutor'] as Map?)?['path'] != null)
+                        TextButton(
+                          onPressed: () {
+                            final path =
+                                (lastRemediation!['ctaTutor'] as Map)['path'].toString();
+                            context.go(path);
+                          },
+                          child: Text(
+                            (lastRemediation!['ctaTutor'] as Map)['label']?.toString() ??
+                                'Pedir aula ao tutor',
+                          ),
+                        ),
+                      if ((lastRemediation!['ctaTheory'] as Map?) != null)
+                        TextButton(
+                          onPressed: () {
+                            final t = lastRemediation!['ctaTheory'] as Map;
+                            openTheoryReadSheet(
+                              context,
+                              subject: t['subject']?.toString() ?? '',
+                              topic: t['topic']?.toString() ?? '',
+                              trainSessionPath:
+                                  (lastRemediation!['cta'] as Map?)?['path']?.toString(),
+                            );
+                          },
+                          child: const Text('Ler teoria'),
+                        ),
+                    ],
+                  ),
                 ],
               ],
               const SizedBox(height: 8),

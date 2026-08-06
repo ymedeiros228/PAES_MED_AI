@@ -15,11 +15,13 @@ class AiTutorScreen extends ConsumerStatefulWidget {
     this.seedSubject,
     this.seedTopic,
     this.seedQuery,
+    this.seedErrorType,
   });
 
   final String? seedSubject;
   final String? seedTopic;
   final String? seedQuery;
+  final String? seedErrorType;
 
   @override
   ConsumerState<AiTutorScreen> createState() => _AiTutorScreenState();
@@ -56,15 +58,28 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     final sub = widget.seedSubject?.trim() ?? '';
     final top = widget.seedTopic?.trim() ?? '';
     final q = widget.seedQuery?.trim() ?? '';
-    if (sub.isEmpty && top.isEmpty && q.isEmpty) {
+    final err = widget.seedErrorType?.trim() ?? '';
+    if (sub.isEmpty && top.isEmpty && q.isEmpty && err.isEmpty) {
       _seedApplied = true;
       return;
+    }
+    if (err.isNotEmpty) {
+      ref.read(aiTutorControllerProvider.notifier).setErrorContext(
+            errorType: err,
+            subject: sub.isEmpty ? null : sub,
+            topic: top.isEmpty ? null : top,
+          );
     }
     final buf = StringBuffer();
     if (sub.isNotEmpty || top.isNotEmpty) {
       buf.write('Sobre ${sub.isEmpty ? '—' : sub}');
       if (top.isNotEmpty) buf.write(' · $top');
       buf.writeln('.');
+    }
+    if (err.isNotEmpty) {
+      buf.writeln(
+        'Errei por $err. Me ensine o ponto certo e o próximo passo — sem entregar só o gabarito.',
+      );
     }
     if (q.isNotEmpty) {
       buf.writeln('Questão (trecho): $q');

@@ -13,7 +13,7 @@ from typing import Any
 
 from db import connect, loads_json
 from services_core import list_questions, stats_basis
-from services_extra import generate_similar_question_stub
+from services_extra import generate_similar_question_stub, remediation_for
 
 INTERVALS = [1, 3, 7, 15, 30, 60, 120]
 
@@ -237,6 +237,21 @@ def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: i
         "preferOfficial": official_first,
         "boostedByErrors": boosted,
         "dominantErrorType": dominant_error,
+        "teachOpener": (
+            remediation_for(dominant_error, subject, topic).get("diagnosis")
+            if dominant_error
+            else None
+        ),
+        "teachFocus": (
+            remediation_for(dominant_error, subject, topic).get("teachFocus")
+            if dominant_error
+            else None
+        ),
+        "practiceHint": (
+            remediation_for(dominant_error, subject, topic).get("practiceHint")
+            if dominant_error
+            else None
+        ),
         "note": "Inéditas marcadas generated=true — revise antes de simulado sério.",
         "counts": {"similar": len(similar), "harder": len(harder), "generated": len(generated)},
     }

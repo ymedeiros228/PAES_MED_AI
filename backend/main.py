@@ -56,6 +56,7 @@ from services_extra import (
     accept_professor_draft,
     build_rag_context,
     build_rag_context_with_citations,
+    build_offline_tutor_lesson,
     clear_session_checkpoint,
     clear_sim_checkpoint,
     complete_revision,
@@ -178,6 +179,12 @@ class ChatRequest(BaseModel):
         default=None,
         description="Se true, prioriza questões oficiais; default = officialUnlocked",
     )
+    errorType: str | None = Field(
+        default=None,
+        description="conceito|interpretacao|calculo|distracao|tempo — calibra a aula",
+    )
+    subject: str | None = Field(default=None, max_length=120)
+    topic: str | None = Field(default=None, max_length=200)
 
 
 class ChatResponse(BaseModel):
@@ -779,6 +786,25 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         f"não invente % de cobrança UEMA nem resolução de prova ausente. "
         f"NÃO escreva ids de questão, paths ou URLs no corpo da resposta; "
         f"as fontes vão só no schema citations. Fale de assunto/tópico/ano em prosa.\n\n"
+    )
+    if payload.errorType:
+        rem_hint = remediation_for(
+            payload.errorType,
+            payload.subject or "",
+            payload.topic or "",
+        )
+        user_content += (
+            f"CONTEXTO_DE_ERRO: tipo={rem_hint.get('errorType')} "
+            f"({rem_hint.get('errorLabel')}); eixo={rem_hint.get('teachFocus')}; "
+            f"diagnóstico={rem_hint.get('diagnosis')}; "
+            f"1º passo={((rem_hint.get('steps') or [''])[0])}. "
+            f"Calibre a aula neste eixo — não invente incidência UEMA.\n\n"
+        )
+    if payload.subject or payload.topic:
+        user_content += (
+            f"ASSUNTO_FOCO: {payload.subject or '—'} · {payload.topic or '—'}\n\n"
+        )
+    user_content += (
         f"CONTEXTO DA BASE LOCAL:\n{context}\n\n"
         f"PERGUNTA DO ALUNO:\n{payload.message}"
     )
@@ -793,12 +819,12 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     client = _openai_client()
     if client is None:
         basis = stats_basis()
-        # Score pela pergunta; resposta em prosa limpa (HI) — ids só em citations
+        # HM: lição offline estruturada — socrático → conceito → diagnóstico → verificação
         pool = score_questions_for_query(
             payload.message,
             prefer_official=prefer_official,
-            coach_subject=coach_subject,
-            coach_topic=coach_topic,
+            coach_subject=coach_subject or payload.subject,
+            coach_topic=coach_topic or payload.topic,
             natureza_bias=natureza_bias,
             limit=12,
         )
@@ -812,33 +838,22 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             qid = q.get("id")
             if not qid:
                 continue
-            subj = (q.get("subject") or "Assunto").strip()
-            topic = (q.get("topic") or "tópico").strip()
+            subj = (q.get("subject") or payload.subject or "Assunto").strip()
+            topic = (q.get("topic") or payload.topic or "tópico").strip()
             year = q.get("year")
-            year_bit = f" (prova {year})" if year else ""
-            # Limpa prefixos técnicos da resolução para o aluno
-            clean_lines: list[str] = []
-            for ln in res.splitlines():
-                t = ln.strip()
-                if not t or t == "—":
-                    continue
-                low = t.lower()
-                if low.startswith("[rascunho") or "não é resolução oficial" in low:
-                    continue
-                if t.startswith("id=") or "/data/" in t or t.startswith("http"):
-                    continue
-                clean_lines.append(t)
-                if len(clean_lines) >= 3:
-                    break
-            if not clean_lines:
+            lesson = build_offline_tutor_lesson(
+                subject=subj,
+                topic=topic,
+                year=year,
+                resolution=res,
+                statement=(q.get("statement") or ""),
+                error_type=payload.errorType,
+                basis_oficial=basis.get("basis") == "oficial",
+                is_first=(grounded == 0),
+            )
+            if not lesson:
                 continue
-            if grounded == 0:
-                prose_bits.append(
-                    f"Sobre {subj} · {topic}{year_bit}, a base local aponta o seguinte:"
-                )
-            else:
-                prose_bits.append(f"Outro ponto do mesmo eixo{year_bit}:")
-            prose_bits.append(" ".join(clean_lines))
+            prose_bits.extend(lesson)
             grounded_cites.append(
                 normalize_citation(
                     {
@@ -863,6 +878,17 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                 label = cite.get("label") or "a base"
                 if snip and "http" not in snip and "/data/" not in snip:
                     prose_bits.append(f"Com base em {label}: {snip}")
+            if payload.errorType and not prose_bits:
+                rem = remediation_for(
+                    payload.errorType,
+                    payload.subject or "",
+                    payload.topic or "",
+                )
+                prose_bits = [
+                    rem.get("socraticSeed") or "O que a banca pede neste tópico?",
+                    rem.get("diagnosis") or "",
+                    f"Próximo passo: {(rem.get('steps') or ['Revise o tópico.'])[0]}",
+                ]
         seen_ids = {c.get("id") or c.get("refId") for c in grounded_cites}
         for cite in q_cites:
             cid = cite.get("id") or cite.get("refId")
@@ -889,17 +915,10 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
                 uncited=True,
                 preferOfficial=prefer_official,
             )
-        prose_bits.append("")
-        prose_bits.append("Qual distrator você eliminaria primeiro e por quê?")
-        if basis.get("basis") != "oficial":
-            prose_bits.append("")
-            prose_bits.append(
-                "Aviso: a base ainda mistura treino — não inventa % de cobrança oficial."
-            )
         answer = "\n".join(prose_bits)
         return ChatResponse(
             answer=answer,
-            model=f"offline-grounded-{rag_mode}",
+            model=f"offline-teach-{rag_mode}",
             usedRag=True,
             citations=grounded_cites[:8],
             ragMode=rag_mode,

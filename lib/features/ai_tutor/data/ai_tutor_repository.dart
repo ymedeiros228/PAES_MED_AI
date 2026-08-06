@@ -35,6 +35,9 @@ class AiTutorRepository {
     required List<ChatMessage> history,
     String style = 'professor',
     bool? preferOfficial,
+    String? errorType,
+    String? subject,
+    String? topic,
   }) async {
     try {
       final body = <String, dynamic>{
@@ -44,6 +47,15 @@ class AiTutorRepository {
       };
       if (preferOfficial != null) {
         body['preferOfficial'] = preferOfficial;
+      }
+      if (errorType != null && errorType.isNotEmpty) {
+        body['errorType'] = errorType;
+      }
+      if (subject != null && subject.isNotEmpty) {
+        body['subject'] = subject;
+      }
+      if (topic != null && topic.isNotEmpty) {
+        body['topic'] = topic;
       }
       // F3: alias /api/tutor/ask (mesmo contrato de /api/chat)
       final data = await apiClient.post('/api/tutor/ask', body);

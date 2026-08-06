@@ -1233,6 +1233,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Bump **1.0.0+14** (qualidade IA + visual).
 2. Host: `empacotar_windows.bat` após merge.
 
+## Tutor didático offline (Ciclo HM)
+
+1. `build_offline_tutor_lesson`: socrático → conceito → diagnóstico → verificação.
+2. Prompt online com MISSÃO de ensinar + `errorType` no `/api/chat`.
+3. Smoke: `ciclo_hm_*`.
+
+## Miss → remediação acionável (Ciclo HN)
+
+1. `remediation_for` devolve `diagnosis`, `teachFocus`, `cta`, `ctaTutor`, `ctaTheory`.
+2. Sessão: CTAs Treinar remediação / Pedir aula ao tutor / Ler teoria.
+3. Smoke: `ciclo_hn_*`.
+
+## Contexto de erro no Tutor + Adaptive (Ciclo HO)
+
+1. `/tutor?errorType=` calibra a aula; ficha passa errorType após miss.
+2. Adaptive mostra `teachOpener` do tipo dominante.
+3. Smoke: `ciclo_ho_*`.
+
+## Pack gate + 1.0.0+15 (Ciclo HP ship)
+
+1. Bump **1.0.0+15** (gênio em ensinar — pedagogia amarrada).
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

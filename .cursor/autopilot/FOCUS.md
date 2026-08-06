@@ -7,12 +7,12 @@ Atualizado: 2026-08-06
 | Campo | Valor |
 |-------|--------|
 | **Modo** | **A · Uso real** |
-| **Versão alvo** | **1.0.0+14** |
+| **Versão alvo** | **1.0.0+15** |
 
 ## Agora
 
 | | |
 |---|---|
-| **Agora** | — idle pós HF–HG |
+| **Agora** | — idle pós HM–HO (gênio ensinar) |
 | **Próximo** | Pack host / soft landing só se repro |
-| **Último feito** | HF–HG Semana 1 + Fila + ship 1.0.0+14 |
+| **Último feito** | HM–HO gênio ensinar + ship 1.0.0+15 |

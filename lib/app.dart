@@ -117,6 +117,7 @@ final appRouter = GoRouter(
               seedSubject: q['subject'],
               seedTopic: q['topic'],
               seedQuery: q['q'],
+              seedErrorType: q['errorType'],
             );
           },
         ),

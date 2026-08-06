@@ -337,6 +337,35 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   ),
                   const SizedBox(height: 8),
                 ],
+                if (meta != null &&
+                    (meta!['teachOpener']?.toString().isNotEmpty == true ||
+                        meta!['practiceHint']?.toString().isNotEmpty == true)) ...[
+                  SurfacePanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Como treinar este erro',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        if (meta!['teachOpener'] != null) ...[
+                          const SizedBox(height: 6),
+                          Text(meta!['teachOpener'].toString()),
+                        ],
+                        if (meta!['practiceHint'] != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            meta!['practiceHint'].toString(),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (answerSaveError != null) ...[
                   QuietEmpty(
                     message: answerSaveError!,

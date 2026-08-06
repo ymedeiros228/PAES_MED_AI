@@ -495,6 +495,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       if (q.subject.isNotEmpty) 'subject': q.subject,
                       if (q.topic.isNotEmpty) 'topic': q.topic,
                       if (seed.isNotEmpty) 'q': seed,
+                      if (revealed && selected != q.correctIndex) 'errorType': errorType,
                     };
                     final qs = qp.entries
                         .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')

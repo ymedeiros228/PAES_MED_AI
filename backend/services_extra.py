@@ -23,6 +23,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Faça 2–3 questões fáceis/médias do mesmo tópico.",
         ],
         "practiceHint": "Priorize questões de conceito (definição/classificação).",
+        "axisFocus": "conceito",
+        "diagnosis": "O erro costuma ser falha de definição ou classificação — volte ao conceito antes de marcar.",
+        "socraticSeed": "Em uma frase, o que este tópico exige que você saiba definir?",
     },
     "interpretacao": {
         "title": "Remediação — interpretação",
@@ -32,6 +35,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Elimine 2 alternativas e justifique por que caem.",
         ],
         "practiceHint": "Treine enunciados longos do mesmo assunto.",
+        "axisFocus": "comando",
+        "diagnosis": "O erro costuma ser ler o comando errado ou cair no distrator — releia o que a banca pede.",
+        "socraticSeed": "Qual é o verbo de comando do enunciado e o que ele exige exatamente?",
     },
     "calculo": {
         "title": "Remediação — cálculo",
@@ -41,6 +47,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Refaça 2 exercícios numéricos parecidos.",
         ],
         "practiceHint": "Foque itens com números/gráficos do tópico.",
+        "axisFocus": "gabarito",
+        "diagnosis": "O erro costuma ser conta/unidade — refaça no papel e cheque a ordem de grandeza.",
+        "socraticSeed": "Quais dados numéricos entram na conta e qual unidade o gabarito exige?",
     },
     "distracao": {
         "title": "Remediação — distração",
@@ -50,6 +59,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Próxima questão: ritual de 5s de foco antes de ler.",
         ],
         "practiceHint": "Simulado curto (5 Q) com timer leve.",
+        "axisFocus": "distrator",
+        "diagnosis": "O erro costuma ser pressa ou marcar outra letra — ritual de foco antes da próxima.",
+        "socraticSeed": "O que você marcou e o que o enunciado pedia de fato?",
     },
     "tempo": {
         "title": "Remediação — tempo",
@@ -59,7 +71,19 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Treine 5 questões em bloco cronometrado.",
         ],
         "practiceHint": "Bloco cronometrado do mesmo tópico.",
+        "axisFocus": "comando",
+        "diagnosis": "O erro costuma ser pressão de tempo — limite 2 min e avance com chute informado se travar.",
+        "socraticSeed": "Em 30 segundos, qual atalho elimina duas alternativas claramente erradas?",
     },
+}
+
+
+_ERROR_LABEL_PT = {
+    "conceito": "conceito",
+    "interpretacao": "interpretação",
+    "calculo": "cálculo",
+    "distracao": "distração",
+    "tempo": "tempo",
 }
 
 
@@ -67,19 +91,149 @@ def remediation_for(error_type: str | None, subject: str = "", topic: str = "") 
     key = (error_type or "conceito").strip().lower()
     recipe = dict(REMEDIATION_RECIPES.get(key) or REMEDIATION_RECIPES["conceito"])
     recipe["errorType"] = key
+    recipe["errorLabel"] = _ERROR_LABEL_PT.get(key, key)
     recipe["subject"] = subject
     recipe["topic"] = topic
+    recipe["teachFocus"] = recipe.get("axisFocus") or "conceito"
     recipe["cta"] = {
-        "path": f"/adaptativo?subject={subject}&topic={topic}" if subject else "/adaptativo",
+        "path": (
+            f"/adaptativo?subject={subject}&topic={topic}"
+            if subject
+            else "/adaptativo"
+        ),
         "label": "Treinar remediação",
     }
+    # Micro-path: teoria → adaptativo (F2 accept, sem tela nova)
+    if subject and topic:
+        recipe["ctaTheory"] = {
+            "label": "Ler teoria",
+            "subject": subject,
+            "topic": topic,
+        }
+        recipe["ctaTutor"] = {
+            "path": (
+                f"/tutor?subject={subject}&topic={topic}"
+                f"&errorType={key}"
+                f"&q={_url_quote(f'Errei por {_ERROR_LABEL_PT.get(key, key)} em {topic}. Me ensine o ponto certo.')}"
+            ),
+            "label": "Pedir aula ao tutor",
+        }
     return recipe
 
 
-def build_rag_context(query: str, limit: int = 8) -> str:
-    """Recupera trechos da base local relevantes à pergunta (RAG simples por palavras)."""
-    context, _ = build_rag_context_with_citations(query, limit)
-    return context
+def _url_quote(s: str) -> str:
+    from urllib.parse import quote
+
+    return quote(s, safe="")
+
+
+def clean_resolution_lines(resolution: str, limit: int = 3) -> list[str]:
+    """Trechos de resolução sem meta técnica (ids/paths/http)."""
+    clean_lines: list[str] = []
+    for ln in (resolution or "").splitlines():
+        t = ln.strip()
+        if not t or t == "—":
+            continue
+        low = t.lower()
+        if low.startswith("[rascunho") or "não é resolução oficial" in low:
+            continue
+        if t.startswith("id=") or "/data/" in t or t.startswith("http"):
+            continue
+        clean_lines.append(t)
+        if len(clean_lines) >= limit:
+            break
+    return clean_lines
+
+
+def build_offline_tutor_lesson(
+    *,
+    subject: str,
+    topic: str,
+    year: Any = None,
+    resolution: str = "",
+    statement: str = "",
+    error_type: str | None = None,
+    basis_oficial: bool = False,
+    is_first: bool = True,
+) -> list[str]:
+    """
+    Lição offline estruturada (HM): socrático → conceito → (diagnóstico) → verificação.
+    Sem ids/paths/URLs no corpo.
+    """
+    bits: list[str] = []
+    rem = remediation_for(error_type, subject, topic) if error_type else None
+    year_bit = f" (prova {year})" if year else ""
+    clean = clean_resolution_lines(resolution, limit=3)
+    stmt = (statement or "").strip()
+    # Socrático: pergunta do errorType ou do enunciado
+    if rem and rem.get("socraticSeed"):
+        ask = rem["socraticSeed"]
+    elif stmt and len(stmt) > 40:
+        ask = "Antes do gabarito: o que o enunciado pede de fato — qual o comando?"
+    else:
+        ask = f"Antes de memorizar: o que você precisa saber sobre {topic}?"
+    if is_first:
+        bits.append(f"Vamos estudar {subject} · {topic}{year_bit}.")
+        bits.append(ask)
+    else:
+        bits.append(f"Outro ângulo do mesmo eixo{year_bit}:")
+        bits.append(ask)
+    if clean:
+        bits.append("")
+        bits.append("Ponto da base local:")
+        bits.append(" ".join(clean))
+    if rem:
+        bits.append("")
+        bits.append(
+            f"Como o erro foi de {rem.get('errorLabel', 'conceito')}: {rem.get('diagnosis', '')}"
+        )
+        focus = rem.get("teachFocus") or rem.get("axisFocus")
+        if focus:
+            bits.append(f"Foque no eixo «{focus}» da explicação.")
+        steps = rem.get("steps") or []
+        if steps:
+            bits.append("")
+            bits.append(f"Próximo passo: {steps[0]}")
+        hint = rem.get("practiceHint")
+        if hint:
+            bits.append(f"Depois: {hint}")
+    if is_first:
+        bits.append("")
+        bits.append(
+            rem.get("socraticSeed")
+            if rem and rem.get("socraticSeed") and rem["socraticSeed"] != ask
+            else "Verificação: qual distrator você eliminaria primeiro e por quê?"
+        )
+    if is_first and not basis_oficial:
+        bits.append("")
+        bits.append(
+            "Aviso: a base ainda mistura treino — não inventa % de cobrança oficial."
+        )
+    return bits
+
+
+TUTOR_SYSTEM = """
+Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
+Responda em português do Brasil, em prosa clara para o aluno.
+
+MISSÃO: ensinar como um professor excelente — diagnosticar a falha, explicar o ponto certo,
+guiar o próximo passo. Não despeje texto; conduza o aprendizado.
+
+REGRAS OBRIGATÓRIAS:
+1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
+2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
+3. Estrutura da resposta (nessa ordem):
+   (a) 1 pergunta socrática OU diagnóstico curto do tipo de erro (se informado);
+   (b) 2–4 frases com o conceito/comando certo, com base no contexto;
+   (c) 1 próximo passo concreto (releitura, eliminação, cálculo, treino);
+   (d) UMA pergunta de verificação no final.
+4. Nunca entregue só o gabarito. Ensine o raciocínio.
+5. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
+6. NÃO cole no texto da resposta: ids de questão (ex. bio-2017-01), paths de arquivo, URLs, nem rótulos técnicos.
+   As fontes estruturadas vão no schema citations (fora do texto). No corpo, fale só de assunto/tópico/ano em linguagem natural.
+7. Se o aluno informar errorType (conceito/interpretação/cálculo/distração/tempo), priorize o eixo didático correspondente
+   (conceito; comando+distrator; conta/unidade; foco; ritmo) e cite a remediação em 1 passo.
+""".strip()
 
 
 def normalize_citation(cite: dict[str, Any]) -> dict[str, Any]:
@@ -277,19 +431,10 @@ def build_rag_context_with_citations(
     return "\n\n".join(chunks), citations[:12]
 
 
-TUTOR_SYSTEM = """
-Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
-Responda em português do Brasil, em prosa clara para o aluno.
-
-REGRAS OBRIGATÓRIAS:
-1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
-2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
-3. Nunca entregue a resposta pronta de imediato. Faça perguntas socráticas, use analogias e explique como professor.
-4. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
-5. NÃO cole no texto da resposta: ids de questão (ex. bio-2017-01), paths de arquivo, URLs, nem rótulos técnicos.
-   As fontes estruturadas vão no schema citations (fora do texto). No corpo, fale só de assunto/tópico/ano em linguagem natural.
-6. Ao final, faça UMA pergunta de verificação.
-""".strip()
+def build_rag_context(query: str, limit: int = 8) -> str:
+    """Recupera trechos da base local relevantes à pergunta (RAG simples por palavras)."""
+    context, _ = build_rag_context_with_citations(query, limit)
+    return context
 
 
 def record_answer(
