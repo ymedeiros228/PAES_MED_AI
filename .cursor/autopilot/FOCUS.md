@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 9 concluído |
-| **Próximo** | fila vazia — aguarda humano (residual F1/F3 ou nova QUEUE) |
-| **Último feito** | Theory sheet barra Passo 1/2; smoke 719/719 |
+| **Agora** | — idle; ciclo 10 concluído |
+| **Próximo** | fila vazia — aguarda humano |
+| **Último feito** | Fila lacunas chip sem teoria + estado lido; smoke 720/720 |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

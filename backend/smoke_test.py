@@ -6074,6 +6074,24 @@ def main() -> int:
         "theory step bar",
     )
 
+    # --- Ciclo HD: fila lacunas teoria lida + chip sem teoria (IDEAS-UI) ---
+    fila_hd = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ui_kit_hd = (
+        root / "lib" / "core" / "widgets" / "ui_kit.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hd_fila_gap_read_chip",
+        "gapNoMaterialN" in fila_hd
+        and "sem teoria" in fila_hd
+        and "teoria lida" in fila_hd
+        and "· li" in fila_hd
+        and "chip:" in fila_hd
+        and "this.chip" in ui_kit_hd,
+        "fila gap read chip",
+    )
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

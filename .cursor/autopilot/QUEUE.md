@@ -34,6 +34,7 @@ Prioridade: topo = primeiro.
 ## Residual · fila vazia (IDEAS-UI modo A)
 
 - [x] Theory sheet: barra Passo 1/2 no topo + progresso visual (IDEAS-UI S)
+- [x] Fila lacunas: chip “N sem teoria” + badge/subtitle “teoria lida” / “· li” (IDEAS-UI S)
 
 ## Como o AP usa
 

@@ -88,9 +88,10 @@ class PageHeader extends StatelessWidget {
 }
 
 class SectionLabel extends StatelessWidget {
-  const SectionLabel(this.label, {this.hint, super.key});
+  const SectionLabel(this.label, {this.hint, this.chip, super.key});
   final String label;
   final String? hint;
+  final String? chip;
 
   @override
   Widget build(BuildContext context) {
@@ -100,18 +101,43 @@ class SectionLabel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
+              ),
+              if (chip != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: cs.tertiaryContainer,
+                  ),
+                  child: Text(
+                    chip!,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onTertiaryContainer,
+                        ),
+                  ),
+                ),
+            ],
           ),
           if (hint != null)
-            Text(
-              hint!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.onSurface.withOpacity(0.55),
-                  ),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                hint!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurface.withOpacity(0.55),
+                    ),
+              ),
             ),
         ],
       ),

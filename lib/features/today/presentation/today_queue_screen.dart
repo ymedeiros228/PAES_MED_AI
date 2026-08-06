@@ -220,6 +220,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     final openGaps = queue!['openGaps'] is Map ? queue!['openGaps'] as Map : null;
     final gapItems = openGaps?['items'] as List? ?? const [];
     final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
+    final gapNoMaterialN = gapItems.where((raw) {
+      if (raw is! Map) return false;
+      return raw['hasLocalMaterial'] == false;
+    }).length;
     final medicineTop = queue!['medicineTop'] as List? ?? const [];
     final routine = Map<String, dynamic>.from(queue!['dailyRoutine'] as Map? ?? {});
     final sessionPath = routine['sessionPath']?.toString() ??
@@ -340,7 +344,11 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 ],
 
                 if (gapN > 0) ...[
-                  SectionLabel('Lacunas', hint: 'Erros recentes a retomar'),
+                  SectionLabel(
+                    'Lacunas',
+                    hint: 'Erros recentes a retomar',
+                    chip: gapNoMaterialN > 0 ? '$gapNoMaterialN sem teoria' : null,
+                  ),
                   for (final raw in gapItems.take(6))
                     Builder(
                       builder: (_) {
@@ -351,43 +359,53 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final path =
                             '/adaptativo?subject=${Uri.encodeComponent(s)}'
                             '&topic=${Uri.encodeComponent(t)}';
-                        return PlaylistTile(
-                          title: s,
-                          subtitle: hasMaterial
-                              ? t
-                              : '$t · sem material local',
-                          badge: hasMaterial ? 'retomar' : 'sem teoria',
-                          active: navIndexFor(path) == selected,
-                          leadingIcon: hasMaterial ? Icons.flag_rounded : Icons.folder_off_outlined,
-                          onPlay: () {
-                            final i = navIndexFor(path);
-                            if (i >= 0) setState(() => selected = i);
-                            context.go(path);
-                          },
-                          secondary: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (!hasMaterial)
-                                IconButton(
-                                  tooltip: 'Biblioteca — acervo 2024–26',
-                                  icon: Icon(
-                                    Icons.library_books_outlined,
-                                    size: 20,
-                                    color: Theme.of(context).colorScheme.tertiary,
-                                  ),
-                                  onPressed: () => context.go('/biblioteca'),
-                                ),
-                              FutureBuilder(
-                                key: ValueKey('read-$s-$t-$_readRefreshTick'),
-                                future: apiClient.get(
-                                  '/api/study/reads',
-                                  {'subject': s, 'topic': t},
-                                ),
-                                builder: (context, snap) {
-                                  final read = snap.hasData &&
-                                      (snap.data is Map) &&
-                                      (snap.data as Map)['read'] == true;
-                                  return IconButton(
+                        return FutureBuilder(
+                          key: ValueKey('gap-tile-$s-$t-$_readRefreshTick'),
+                          future: apiClient.get(
+                            '/api/study/reads',
+                            {'subject': s, 'topic': t},
+                          ),
+                          builder: (context, snap) {
+                            final read = snap.hasData &&
+                                (snap.data is Map) &&
+                                (snap.data as Map)['read'] == true;
+                            final subtitle = !hasMaterial
+                                ? '$t · sem material local'
+                                : read
+                                    ? '$t · li'
+                                    : t;
+                            final badge = !hasMaterial
+                                ? 'sem teoria'
+                                : read
+                                    ? 'teoria lida'
+                                    : 'retomar';
+                            return PlaylistTile(
+                              title: s,
+                              subtitle: subtitle,
+                              badge: badge,
+                              active: navIndexFor(path) == selected,
+                              leadingIcon: hasMaterial
+                                  ? (read ? Icons.menu_book_rounded : Icons.flag_rounded)
+                                  : Icons.folder_off_outlined,
+                              onPlay: () {
+                                final i = navIndexFor(path);
+                                if (i >= 0) setState(() => selected = i);
+                                context.go(path);
+                              },
+                              secondary: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (!hasMaterial)
+                                    IconButton(
+                                      tooltip: 'Biblioteca — acervo 2024–26',
+                                      icon: Icon(
+                                        Icons.library_books_outlined,
+                                        size: 20,
+                                        color: Theme.of(context).colorScheme.tertiary,
+                                      ),
+                                      onPressed: () => context.go('/biblioteca'),
+                                    ),
+                                  IconButton(
                                     tooltip: read ? 'Teoria lida' : 'Ler teoria',
                                     icon: Icon(
                                       read ? Icons.menu_book_rounded : Icons.menu_book_outlined,
@@ -395,23 +413,23 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                       color: read ? Theme.of(context).colorScheme.primary : null,
                                     ),
                                     onPressed: () => _openTheory(s, t),
-                                  );
-                                },
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Sessão longa',
+                                    icon: const Icon(Icons.timer_outlined, size: 20),
+                                    onPressed: () => context.go(_sessionFor(s, t)),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Marcar recuperada',
+                                    icon: const Icon(Icons.check_circle_outline, size: 20),
+                                    onPressed: s.isEmpty || t.isEmpty
+                                        ? null
+                                        : () => _recoverGap(s, t),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                tooltip: 'Sessão longa',
-                                icon: const Icon(Icons.timer_outlined, size: 20),
-                                onPressed: () => context.go(_sessionFor(s, t)),
-                              ),
-                              IconButton(
-                                tooltip: 'Marcar recuperada',
-                                icon: const Icon(Icons.check_circle_outline, size: 20),
-                                onPressed: s.isEmpty || t.isEmpty
-                                    ? null
-                                    : () => _recoverGap(s, t),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
                     ),

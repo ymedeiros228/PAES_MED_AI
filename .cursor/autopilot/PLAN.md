@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 9
+<!-- ciclo: 10
 modo: A (uso real)
-item: residual IDEAS-UI — theory sheet barra Passo 1/2 (fila vazia)
-smoke: 719/719 OK; ciclo_hc_theory_step_bar
-nota: LinearProgressIndicator + AnimatedSwitcher; sem nova feature inventada
+item: residual IDEAS-UI — fila lacunas chip sem teoria + estado lido
+smoke: 720/720 OK; ciclo_hd_fila_gap_read_chip
+nota: SectionLabel.chip; badge teoria lida + subtitle · li
 -->
 ```
 
