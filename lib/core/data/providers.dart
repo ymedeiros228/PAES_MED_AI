@@ -62,6 +62,13 @@ final flashcardsProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async
   return await apiClient.get('/api/flashcards', {'dueOnly': 'true'}) as List<dynamic>;
 });
 
+/// Último backup verificado (para o aviso de backup obsoleto no Dashboard).
+final lastBackupProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  ref.watch(refreshTickProvider);
+  final data = await apiClient.get('/api/backup/last');
+  return Map<String, dynamic>.from(data as Map);
+});
+
 final flashcardsAllProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
   ref.watch(refreshTickProvider);
   return await apiClient.get('/api/flashcards') as List<dynamic>;
