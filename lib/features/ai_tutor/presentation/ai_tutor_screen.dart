@@ -6,6 +6,7 @@ import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -33,6 +34,18 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   bool _healthLoaded = false;
   int? _localMaterialCount;
   bool _materialChecked = false;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadSeedRead() async {
+    final sub = widget.seedSubject?.trim() ?? '';
+    final top = widget.seedTopic?.trim() ?? '';
+    if (sub.isEmpty || top.isEmpty) return;
+    final out = await fetchTheoryReadMap([(sub, top)]);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
 
   static const _styles = <(String, String)>[
     ('professor', 'Professor'),
@@ -50,6 +63,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     super.initState();
     _loadHealth();
     _loadMaterialHint();
+    _loadSeedRead();
     WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
   }
 
@@ -83,7 +97,24 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     final sub = widget.seedSubject?.trim() ?? '';
     final top = widget.seedTopic?.trim() ?? '';
     if (sub.isEmpty || top.isEmpty) return;
-    TheoryTopicSheet.show(context, subject: sub, topic: top);
+    TheoryTopicSheet.show(
+      context,
+      subject: sub,
+      topic: top,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(sub, top)] = true);
+      },
+    );
+  }
+
+  String get _materialChipLabel {
+    final sub = widget.seedSubject?.trim() ?? '';
+    final top = widget.seedTopic?.trim() ?? '';
+    final n = _localMaterialCount ?? 0;
+    if (sub.isNotEmpty && top.isNotEmpty && _isTheoryRead(sub, top)) {
+      return n > 0 ? 'Material local ($n) · Li' : 'Teoria local · Li';
+    }
+    return n > 0 ? 'Material local ($n)' : 'Teoria local';
   }
 
   Future<void> _loadHealth() async {
@@ -225,7 +256,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                 alignment: Alignment.centerLeft,
                 child: ActionChip(
                   avatar: const Icon(Icons.menu_book_outlined, size: 18),
-                  label: Text('Material local ($_localMaterialCount)'),
+                  label: Text(_materialChipLabel),
                   onPressed: _openLocalMaterial,
                 ),
               ),
@@ -303,11 +334,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                               if (widget.seedSubject?.trim().isNotEmpty == true &&
                                   widget.seedTopic?.trim().isNotEmpty == true)
                                 ActionChip(
-                                  label: Text(
-                                    (_localMaterialCount ?? 0) > 0
-                                        ? 'Material local ($_localMaterialCount)'
-                                        : 'Teoria local',
-                                  ),
+                                  label: Text(_materialChipLabel),
                                   onPressed: _openLocalMaterial,
                                 ),
                             ],

@@ -1,4 +1,6 @@
-﻿import 'package:file_picker/file_picker.dart';
+﻿import 'dart:async';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -24,6 +27,24 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   String? status;
   bool busy = false;
   Map<String, dynamic>? lastLesson;
+  Map<String, bool> theoryReadByKey = {};
+  final Set<(String, String)> _readPairs = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _addReads(Iterable<(String, String)> pairs) async {
+    final before = _readPairs.length;
+    for (final p in pairs) {
+      if (p.$1.isNotEmpty && p.$2.isNotEmpty) _readPairs.add(p);
+    }
+    if (_readPairs.length == before) return;
+    final out = await fetchTheoryReadMap(_readPairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  String _theoryButtonLabel(String subject, String topic) =>
+      _isTheoryRead(subject, topic) ? 'Teoria local · Li' : 'Teoria local';
 
   @override
   void dispose() {
@@ -36,7 +57,14 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
 
   Future<void> _openTheory(String subject, String topic) async {
     if (subject.isEmpty || topic.isEmpty) return;
-    await TheoryTopicSheet.show(context, subject: subject, topic: topic);
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
   }
 
   Future<void> _submitText() async {
@@ -57,6 +85,9 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         status = 'Aula salva · ${lastLesson!['subject']} / ${lastLesson!['topic']}';
         transcriptCtrl.clear();
       });
+      final s = lastLesson!['subject']?.toString() ?? '';
+      final t = lastLesson!['topic']?.toString() ?? '';
+      if (s.isNotEmpty && t.isNotEmpty) unawaited(_addReads([(s, t)]));
     } catch (e) {
       setState(() => status = humanApiError(e, fallback: 'Não deu para salvar a aula. Tente de novo.'));
     } finally {
@@ -216,7 +247,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                               lastLesson!['subject']?.toString() ?? '',
                               lastLesson!['topic']?.toString() ?? '',
                             ),
-                            child: const Text('Teoria local'),
+                            child: Text(_theoryButtonLabel(
+                              lastLesson!['subject']?.toString() ?? '',
+                              lastLesson!['topic']?.toString() ?? '',
+                            )),
                           ),
                         ],
                       ),
@@ -244,16 +278,30 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ),
                     );
                   }
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final pairs = <(String, String)>[];
+                    for (final raw in items) {
+                      final item = Map<String, dynamic>.from(raw as Map);
+                      final s = item['subject']?.toString() ?? '';
+                      final t = item['topic']?.toString() ?? '';
+                      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+                    }
+                    _addReads(pairs);
+                  });
                   return Column(
                     children: [
                       for (final raw in items)
                         Builder(
                           builder: (_) {
                             final item = Map<String, dynamic>.from(raw as Map);
+                            final s = item['subject']?.toString() ?? '';
+                            final t = item['topic']?.toString() ?? '';
                             return ExpansionTile(
                               tilePadding: EdgeInsets.zero,
                               title: Text(item['title']?.toString() ?? 'Aula'),
-                              subtitle: Text('${item['subject']} · ${item['topic']}'),
+                              subtitle: Text(
+                                '$s · $t${_isTheoryRead(s, t) ? ' · Li' : ''}',
+                              ),
                               children: [
                                 Align(
                                   alignment: Alignment.centerLeft,
@@ -281,11 +329,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                               child: const Text('Estudar'),
                                             ),
                                             OutlinedButton(
-                                              onPressed: () => _openTheory(
-                                                item['subject']?.toString() ?? '',
-                                                item['topic']?.toString() ?? '',
-                                              ),
-                                              child: const Text('Teoria local'),
+                                              onPressed: () => _openTheory(s, t),
+                                              child: Text(_theoryButtonLabel(s, t)),
                                             ),
                                           ],
                                         ),

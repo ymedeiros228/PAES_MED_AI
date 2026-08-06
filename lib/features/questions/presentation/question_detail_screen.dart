@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -44,6 +45,27 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   final focusNode = FocusNode();
   Map<String, dynamic>? professorDraft;
   bool professorBusy = false;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadQuestionRead(String subject, String topic) async {
+    if (subject.isEmpty || topic.isEmpty) return;
+    final out = await fetchTheoryReadMap([(subject, topic)]);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -117,7 +139,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   Future<void> _load() async {
     try {
       final data = await apiClient.get('/api/questions/${widget.questionId}');
-      setState(() => question = Question.fromJson(Map<String, dynamic>.from(data as Map)));
+      final q = Question.fromJson(Map<String, dynamic>.from(data as Map));
+      setState(() => question = q);
+      if (q.subject.isNotEmpty && q.topic.isNotEmpty) {
+        unawaited(_loadQuestionRead(q.subject, q.topic));
+      }
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para abrir a ficha. Tente de novo.'));
     }
@@ -330,7 +356,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     final questionPane = ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('${q.subject} · ${q.topic} · ${q.year}', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          '${q.subject} · ${q.topic} · ${q.year}'
+          '${_isTheoryRead(q.subject, q.topic) ? ' · Li' : ''}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         Text(
           'Atalhos: 1–5 · Enter · N (após revelar)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
@@ -462,12 +492,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 ),
                 if (q.subject.isNotEmpty && q.topic.isNotEmpty)
                   TextButton(
-                    onPressed: () => TheoryTopicSheet.show(
-                      context,
-                      subject: q.subject,
-                      topic: q.topic,
+                    onPressed: () => _openTheory(q.subject, q.topic),
+                    child: Text(
+                      _isTheoryRead(q.subject, q.topic) ? 'Teoria local · Li' : 'Teoria local',
                     ),
-                    child: const Text('Teoria local'),
                   ),
                 TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar card')),
               ],

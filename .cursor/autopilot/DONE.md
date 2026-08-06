@@ -43,3 +43,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DH: Flashcards — batch reads + chip **Li** + `_openTheory`/`onMarkedRead`
 - [x] Ciclo DH: Adaptativo — `_loadQueueReads` + indicador **Li** (preflight, questão, debrief, fim)
 - [x] Versão **1.0.0+20** + smoke **594/594** + docs COMO/ROADMAP DG–DH
+- [x] Ciclo DI: Ficha questão — `_loadQuestionRead` + **Li** título/debrief + `onMarkedRead`
+- [x] Ciclo DI: Tutor — `_loadSeedRead` + chip Material **Li** + `onMarkedRead`
+- [x] Ciclo DI: Aulas — `_addReads` batch + **Li** botões/subtítulo + `onMarkedRead`
+- [x] Versão **1.0.0+21** + smoke **602/602** + docs COMO/ROADMAP DH–DI

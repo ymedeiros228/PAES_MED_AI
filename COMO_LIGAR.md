@@ -692,6 +692,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Adaptativo: batch reads da fila + indicador **Li** (preflight, questão, debrief, fim).
 3. **1.0.0+20** · smoke `ciclo_dh_*` + suite + pack + push.
 
+## Ficha/Tutor/Aulas Li (Ciclo DI)
+
+1. Ficha questão: read batch do tópico + **Li** no título/debrief.
+2. Tutor: `_loadSeedRead` + chip Material **Li** + `onMarkedRead`.
+3. Aulas: batch reads lista + **Li** em botões/subtítulo.
+4. **1.0.0+21** · smoke `ciclo_di_*` + suite + pack + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
