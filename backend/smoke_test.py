@@ -3589,10 +3589,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3600,7 +3600,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
             str(ver_txt),
         )
     else:
@@ -3832,9 +3832,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat),
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec         or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3842,7 +3842,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
             str(ver_cl),
         )
     else:
@@ -3967,9 +3967,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3977,7 +3977,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
             str(ver_cp),
         )
     else:
@@ -4112,16 +4112,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
             str(ver_ct),
         )
     else:
@@ -4193,16 +4193,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
         "version +7/+8",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
             or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
             str(ver_cu),
         )
@@ -4372,7 +4372,7 @@ def main() -> int:
     if ver_dc.exists():
         ok(
             "ciclo_dc_version_file",
-            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
             str(ver_dc),
         )
     else:
@@ -4835,9 +4835,9 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ed_version_108",
-        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10")),
         "version +8/+9",
     )
     ok(
@@ -5863,13 +5863,13 @@ def main() -> int:
         "COMO GT",
     )
 
-    # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
+    # --- Ciclo GU: pack gate + versão 1.0.0+9 (histórico; atual +10 em GX) ---
     ok(
         "ciclo_gu_version_109",
-        "1.0.0+9" in pubspec
-        and "1.0.0+9" in settings_ed
-        and "1.0.0+9" in pack_bat,
-        "version +9",
+        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10"))
+        and any(v in settings_ed for v in ("1.0.0+9", "1.0.0+10"))
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10")),
+        "version +9/+10",
     )
     dist_gu = root / "dist" / "PAES_MED_AI_Windows"
     if dist_gu.is_dir():
@@ -5887,7 +5887,7 @@ def main() -> int:
         )
         ok(
             "ciclo_gu_pack_version_txt",
-            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9")),
+            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10")),
             "VERSION.txt match",
         )
         ok(
@@ -5906,8 +5906,8 @@ def main() -> int:
         "Iniciar_PAES_MED_AI.bat" in pack_bat
         and "app_icon.ico" in pack_bat
         and "VERSION.txt" in pack_bat
-        and "1.0.0+9" in pack_bat,
-        "empacotar gates +9",
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10")),
+        "empacotar gates +9/+10",
     )
     ok(
         "ciclo_gu_como_section",
@@ -5918,6 +5918,108 @@ def main() -> int:
         "ciclo_gu_roadmap_gr_gu",
         "Ciclo GR" in como_ap or "GR–GU" in como_ap or "GR-GU" in (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore"),
         "roadmap GR-GU",
+    )
+
+    # --- Ciclo GV: dashboard acervo summary (F1 deep) ---
+    from acervo_fetch import acervo_dashboard_summary, acervo_year_grid
+
+    dash_gv = client.get("/api/dashboard").json()
+    acervo_gv = dash_gv.get("acervoSummary") or {}
+    ok(
+        "ciclo_gv_dashboard_acervo_summary",
+        isinstance(acervo_gv, dict)
+        and "completeOnDisk" in acervo_gv
+        and "needsManualHistoric" in acervo_gv
+        and "label" in acervo_gv
+        and acervo_gv.get("ctaPath") == "/biblioteca",
+        str(acervo_gv)[:200],
+    )
+    summary_fn = acervo_dashboard_summary()
+    ok(
+        "ciclo_gv_summary_fn_shape",
+        summary_fn.get("historicRange") == "2017–23"
+        and isinstance(summary_fn.get("completeOnDisk"), int)
+        and isinstance(summary_fn.get("needsManualHistoric"), int),
+        str(summary_fn)[:160],
+    )
+    dash_ui_gv = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gv_dashboard_card",
+        "acervoSummary" in dash_ui_gv
+        and "Acervo UEMA" in dash_ui_gv
+        and "Abrir Biblioteca" in dash_ui_gv,
+        "dashboard acervo card",
+    )
+    ok(
+        "ciclo_gv_como_section",
+        "Ciclo GV" in como_ap,
+        "COMO GV (pending until doc update)",
+    )
+
+    # --- Ciclo GW: honestidade 2017–23 + dry-run fetch ---
+    grid_gw = acervo_year_grid(min_year=2017, max_year=2026)
+    honest_gw = True
+    for row in grid_gw:
+        on_disk = row.get("onDisk") or {}
+        has_pair = bool(on_disk.get("hasProva") and on_disk.get("hasGabarito"))
+        committed = int(row.get("committedCount") or 0)
+        if row.get("uiStatus") == "committed" and not has_pair and committed <= 0:
+            honest_gw = False
+            break
+    ok("ciclo_gw_grid_no_false_committed", honest_gw, f"rows={len(grid_gw)}")
+    historic_empty = [
+        int(r["year"])
+        for r in grid_gw
+        if 2017 <= int(r["year"]) <= 2023
+        and not ((r.get("onDisk") or {}).get("hasProva") and (r.get("onDisk") or {}).get("hasGabarito"))
+        and int(r.get("committedCount") or 0) == 0
+    ]
+    ok(
+        "ciclo_gw_historic_needs_manual",
+        len(historic_empty) >= 1,
+        str(historic_empty),
+    )
+    r_gw = client.post("/api/acervo/fetch-available", json={"dryRun": True})
+    ok(
+        "ciclo_gw_fetch_available_dry",
+        r_gw.status_code == 200
+        and isinstance(r_gw.json(), dict)
+        and ("dryRun" in r_gw.json() or "items" in r_gw.json() or "years" in r_gw.json()),
+        str(r_gw.json())[:160],
+    )
+    inv_readme = (root / "data" / "inventory" / "README_INVENTARIO.md").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_gw_inventory_readme",
+        "2017" in inv_readme and "2023" in inv_readme and "manual" in inv_readme.lower(),
+        "inventory readme",
+    )
+    ok(
+        "ciclo_gw_como_section",
+        "Ciclo GW" in como_ap,
+        "COMO GW (pending until doc update)",
+    )
+    ok(
+        "ciclo_gw_roadmap_gv_gw",
+        "GV | Dashboard acervo summary" in roadmap and "GW | Gate honestidade" in roadmap,
+        "roadmap GV-GW",
+    )
+
+    # --- Ciclo GX ship: versão 1.0.0+10 ---
+    ok(
+        "ciclo_gx_version_110",
+        "1.0.0+10" in pubspec
+        and "1.0.0+10" in settings_ed
+        and "1.0.0+10" in pack_bat,
+        "version +10",
+    )
+    ok(
+        "ciclo_gx_como_section",
+        "Ciclo GV" in como_ap and "Ciclo GW" in como_ap and "1.0.0+10" in como_ap,
+        "COMO GV-GW-GX",
     )
 
     failed = [c for c in checks if not c[1]]

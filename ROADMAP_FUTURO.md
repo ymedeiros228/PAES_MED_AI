@@ -304,6 +304,8 @@ flowchart TB
 | GS | Git host + suite / BLOCKED | host | **Feito** |
 | GT | F2 thin Ler teoria (Fila+ficha) | `ciclo_gt_*` | **Feito** |
 | GU | Pack smoke gate + **1.0.0+9** | `ciclo_gu_*` | **Feito** |
+| GV | Dashboard acervo summary (F1 deep) | `ciclo_gv_*` | **Feito** |
+| GW | Gate honestidade 2017–23 + dry-run fetch | `ciclo_gw_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -311,9 +313,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós GR–GU)
+## Estado (atualizado pós GV–GW)
 
 - Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
-- GN–GQ: mobile sync UX + biblioteca PDF ano open — **Feito**.
-- Residual curto: F3/F1 deep (inventário UEMA completo) TBD; stop micro-ciclos de teclado.
-- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: se agente sem `git`, commit/push na máquina.
+- Rodada **GV–GW** (F1 deep): card Acervo no Hoje + gates honestidade 2017–23 + ship **1.0.0+10**.
+- Residual: F3 deep (Tutor citações mais rígidas) TBD; pack Windows no host após merge.
+- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: `empacotar_windows.bat` se `dist` desatualizado.

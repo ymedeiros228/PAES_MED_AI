@@ -1,15 +1,21 @@
 # Auto-Pilot — DONE
 
-## GR–GU (2026-08-05/06)
+## GR–GU (2026-08-05)
 
-- **GR**: pack Desktop canônico (bat + ico + exe + VERSION) + atalho.
-- **GS**: MinGit host, land em `main`, smoke 708.
-- **GT**: `openTheoryReadSheet` + CTA **Ler teoria** (Fila + ficha).
-- **GU**: smoke `ciclo_gu_pack_*`, versão **1.0.0+9**, push; fix compile Windows release.
+- **GR**: dist com launcher, ico, exe, VERSION; atalho Desktop restaurado.
+- **GS**: BLOCKED/STATUS atualizados; residual host = Git no PATH do agente.
+- **GT**: `openTheoryReadSheet` shared; Fila + ficha **Ler teoria**.
+- **GU**: smoke `ciclo_gt_*` / `ciclo_gu_pack_*`; bump **1.0.0+9**; ROADMAP/COMO.
+- Fix compile Windows (`6f61f73`): theory sheet, Fila unawaited, ingest meta.
 
-## Nota
+**Stop micro-teclas; ship pack OK.**
 
-Autopilot micro-ciclos GN–GQ (e anteriores) estavam **certos**.  
-GR–GU = ship de residual real (pack/git/F2), não substituir toda a missão do Auto-Pilot.
+## GV–GW (2026-08-06)
 
-**Pack rule:** nunca deixar dist só com `app\` sem launcher/ico.
+- **GV**: `acervoSummary` no `/api/dashboard`; card **Acervo UEMA** no Hoje + smoke `ciclo_gv_*`.
+- **GW**: gate `acervo_year_grid` honesto 2017–23; dry-run fetch; inventário README; smoke `ciclo_gw_*`.
+- **GX ship**: bump **1.0.0+10**; COMO/ROADMAP; PR #3.
+
+## Host long-run
+
+- Autopilot `PLAN.md` / `FOCUS.md` / `QUEUE.md` para foco calibrado.

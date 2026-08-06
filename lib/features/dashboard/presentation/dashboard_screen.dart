@@ -445,6 +445,65 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             onAction: dayClosed ? null : _closeDay,
                           ),
 
+                          Builder(
+                            builder: (_) {
+                              final acervo = Map<String, dynamic>.from(
+                                data['acervoSummary'] as Map? ?? const {},
+                              );
+                              if (acervo.isEmpty) return const SizedBox.shrink();
+                              final label = acervo['label']?.toString();
+                              if (label == null || label.isEmpty) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                                child: SurfacePanel(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.folder_special_outlined,
+                                            size: 20,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Acervo UEMA',
+                                              style: Theme.of(context).textTheme.titleSmall,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        label,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                      if (acervo['disclaimer']?.toString().isNotEmpty == true) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          acervo['disclaimer'].toString(),
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: TextButton(
+                                          onPressed: () => context.go(
+                                            acervo['ctaPath']?.toString() ?? '/biblioteca',
+                                          ),
+                                          child: const Text('Abrir Biblioteca'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
                           const SizedBox(height: 8),
                           SectionLabel('Agora', hint: 'próximo passo · espelha Fila'),
                           if (gapN > 0)

@@ -541,6 +541,37 @@ def acervo_year_grid(*, min_year: int = 2017, max_year: int = 2026) -> list[dict
     return grid
 
 
+def acervo_dashboard_summary(*, min_year: int = 2017, max_year: int = 2026) -> dict[str, Any]:
+    """Resumo honesto para Hoje: anos no disco vs histórico 2017–23 sem PDF."""
+    grid = acervo_year_grid(min_year=min_year, max_year=max_year)
+    complete_on_disk = 0
+    needs_manual_historic = 0
+    committed_years = 0
+    for row in grid:
+        year = int(row["year"])
+        on_disk = row.get("onDisk") or {}
+        has_pair = bool(on_disk.get("hasProva") and on_disk.get("hasGabarito"))
+        committed = int(row.get("committedCount") or 0)
+        if has_pair:
+            complete_on_disk += 1
+        if committed > 0:
+            committed_years += 1
+        if 2017 <= year <= 2023 and not has_pair and committed == 0:
+            needs_manual_historic += 1
+    return {
+        "completeOnDisk": complete_on_disk,
+        "needsManualHistoric": needs_manual_historic,
+        "committedYears": committed_years,
+        "historicRange": "2017–23",
+        "label": (
+            f"{complete_on_disk} ano(s) completos no disco · "
+            f"{needs_manual_historic} precisam manual (2017–23)"
+        ),
+        "disclaimer": "Só conta PDF prova+gabarito no disco ou oficiais commitados — sem inventar cobertura.",
+        "ctaPath": "/biblioteca",
+    }
+
+
 def bootstrap_and_commit_available(
     *,
     dry_run: bool = False,

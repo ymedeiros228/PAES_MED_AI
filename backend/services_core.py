@@ -2276,6 +2276,22 @@ def dashboard_stats() -> dict[str, Any]:
         readiness=readiness,
     )
 
+    acervo_summary: dict[str, Any] = {
+        "completeOnDisk": 0,
+        "needsManualHistoric": 7,
+        "committedYears": 0,
+        "historicRange": "2017–23",
+        "label": "Acervo indisponível — abra Biblioteca.",
+        "disclaimer": "Resumo do acervo local.",
+        "ctaPath": "/biblioteca",
+    }
+    try:
+        from acervo_fetch import acervo_dashboard_summary
+
+        acervo_summary = acervo_dashboard_summary()
+    except Exception:  # noqa: BLE001
+        pass
+
     return {
         "totalAnswered": total,
         "accuracy": round(accuracy, 4),
@@ -2317,6 +2333,7 @@ def dashboard_stats() -> dict[str, Any]:
         "flashcardsDueCount": due_cards,
         "axisCardsDue": int(axis_stats.get("axisCardsDue") or 0),
         "axisCardsCreatedToday": int(axis_stats.get("axisCardsCreatedToday") or 0),
+        "acervoSummary": acervo_summary,
         "disclaimer": "Métricas derivadas apenas do histórico local do aluno e da base de questões.",
     }
 

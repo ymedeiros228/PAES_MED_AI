@@ -1134,6 +1134,24 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Sobre / pubspec / VERSION = **1.0.0+9**.
 3. Stop micro-teclas; ship pack OK.
 
+## Acervo no Hoje (Ciclo GV)
+
+1. Dashboard → card **Acervo UEMA**: `GET /api/dashboard` → `acervoSummary` (anos no disco · manual 2017–23).
+2. CTA **Abrir Biblioteca** — sem inventar cobertura histórica.
+3. Smoke: `ciclo_gv_*`.
+
+## Honestidade 2017–23 (Ciclo GW)
+
+1. `acervo_year_grid`: ano sem PDF no disco **nunca** `uiStatus=committed` sem `committedCount`.
+2. Dry-run `POST /api/acervo/fetch-available` com `dryRun: true` — só shape, não baixa.
+3. Inventário: [`data/inventory/README_INVENTARIO.md`](data/inventory/README_INVENTARIO.md).
+4. Smoke: `ciclo_gw_*`.
+
+## Pack gate + 1.0.0+10 (Ciclo GX ship)
+
+1. Bump **1.0.0+10** (pubspec, Ajustes, `empacotar_windows.bat`).
+2. Host Windows: fechar app, `empacotar_windows.bat`, smoke local.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
