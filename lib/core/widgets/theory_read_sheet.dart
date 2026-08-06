@@ -66,13 +66,27 @@ Future<void> openTheoryReadSheet(
                     ),
                     if (isRead)
                       Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          'Marcado como li${readMap['at'] != null ? ' · ${readMap['at']}' : ''}',
-                          style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                                color: Theme.of(ctx).colorScheme.primary,
-                                fontWeight: FontWeight.w700,
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 16,
+                              color: Theme.of(ctx).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                readMap['at'] != null
+                                    ? 'Marcado como lido · ${readMap['at']}'
+                                    : 'Marcado como lido',
+                                style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
+                                      color: Theme.of(ctx).colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                               ),
+                            ),
+                          ],
                         ),
                       ),
                     if (note != null && note.isNotEmpty) ...[

@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 5
+<!-- ciclo: 6
 modo: B thin
-item: open-path / PDF ano — mensagens honestas se caminho sumir
-smoke: 710/712 OK; ciclo_gy_open_path_honest
-nota: humanOpenPathError; year_pdf path.exists; QuietEmpty+Abrir provas
+item: mark-read / Ler teoria ficha+fila — smoke + refresh pós-clique
+smoke: 713/713 OK; ciclo_gz_mark_read_ficha_fila
+nota: _readRefreshTick fila; fix regress GT+FX; polish check lido no sheet
 -->
 ```
 

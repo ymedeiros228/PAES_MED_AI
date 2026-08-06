@@ -19,7 +19,7 @@ Prioridade: topo = primeiro.
 
 - [x] Gaps na Fila sem material: empty + Biblioteca deve bastar; auditar 1 disciplina fraca real
 - [x] open-path / PDF ano: mensagens honestas se caminho sumir (já parcialmente GQ — só regressão)
-- [ ] mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional
+- [x] mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional
 
 ## P3 · Ship / gate (modo C ou D)
 

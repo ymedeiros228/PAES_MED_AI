@@ -26,6 +26,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   Map<String, dynamic>? queue;
   String? error;
   int selected = 0;
+  int _readRefreshTick = 0;
   final _focusNode = FocusNode();
   List<String> _navPaths = const [];
   String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
@@ -181,6 +182,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       trainPath: '/adaptativo?subject=${Uri.encodeComponent(subject)}'
           '&topic=${Uri.encodeComponent(topic)}',
     );
+    if (mounted) setState(() => _readRefreshTick++);
   }
 
   String _sessionFor(String s, String t) {
@@ -376,6 +378,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                   onPressed: () => context.go('/biblioteca'),
                                 ),
                               FutureBuilder(
+                                key: ValueKey('read-$s-$t-$_readRefreshTick'),
                                 future: apiClient.get(
                                   '/api/study/reads',
                                   {'subject': s, 'topic': t},
@@ -385,7 +388,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                       (snap.data is Map) &&
                                       (snap.data as Map)['read'] == true;
                                   return IconButton(
-                                    tooltip: read ? 'Teoria (li)' : 'Ler teoria',
+                                    tooltip: read ? 'Teoria lida' : 'Ler teoria',
                                     icon: Icon(
                                       read ? Icons.menu_book_rounded : Icons.menu_book_outlined,
                                       size: 20,

@@ -21,6 +21,10 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Theory sheet] | empty mostra qual pasta abrir (edital vs provas) conforme note da API | menos adivinhação pós-lacuna | S
 - [ ] [Fila / lacunas] | chip contador “N sem teoria” ao lado do SectionLabel | escaneabilidade rápida | S
 - [x] [Biblioteca / msg erro PDF] | QuietEmpty com CTA Abrir provas quando open-path falha | 1 ação clara pós-erro de caminho | S
+- [x] [Theory sheet / lido] | row check “Marcado como lido” no topo do sheet | feedback visual imediato pós mark-read | S
+- [ ] [Fila / lacunas] | subtitle “· li” no tile quando read=true (além do ícone) | reforço textual no mobile | S
+- [ ] [Ficha / Ler teoria] | ícone livro preenchido se tópico já lido (fetch reads no load) | estado consistente ficha+fila | S
+- [ ] [Theory sheet] | haptic leve ao marcar “li” (mobile/desktop) | confirmação tátil do progresso | S
 - [ ] [Biblioteca / ano] | botão PDF desabilitado + tooltip quando hasProva stale mas arquivo sumiu | evita clique falso positivo | S
 - [ ] [Ficha / PDF] | link “Onde colocar o PDF” abre pasta provas se sourcePdf null | fecha loop sem jargão | S
 - [ ] [Global / open-path] | toast único padronizado (ícone + 2 linhas) em todas as telas | consistência visual | M

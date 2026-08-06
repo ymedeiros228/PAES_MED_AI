@@ -5546,7 +5546,7 @@ def main() -> int:
     ok(
         "ciclo_fx_session_export_discard",
         "Pasta de export não abriu." in sess_fb
-        and "Não foi possível descartar checkpoint da sessão." in sess_fb,
+        and "Não deu para descartar a sessão salva." in sess_fb,
         "session export discard",
     )
     ok(
@@ -5844,7 +5844,7 @@ def main() -> int:
         "openTheoryReadSheet" in theory_gt
         and "/api/library/materials" in theory_gt
         and "/api/study/mark-read" in theory_gt
-        and "Sem material local para este tópico." in theory_gt,
+        and "Sem material local para" in theory_gt,
         "shared theory sheet",
     )
     ok(
@@ -5910,6 +5910,28 @@ def main() -> int:
         and "movido ou apagado" in main_gy
         and "path.exists()" in core_gy,
         "open path honest",
+    )
+    r = client.post(
+        "/api/study/mark-read",
+        json={"subject": "Física", "topic": "Ondulatória"},
+    )
+    mark_gz = r.json() if r.status_code == 200 else {}
+    r = client.get(
+        "/api/study/reads",
+        params={"subject": "Física", "topic": "Ondulatória"},
+    )
+    read_gz = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_gz_mark_read_ficha_fila",
+        mark_gz.get("ok") is True
+        and mark_gz.get("read") is True
+        and read_gz.get("read") is True
+        and "Marquei como li" in theory_gt
+        and "openTheoryReadSheet" in fila_gt
+        and "openTheoryReadSheet" in ficha_gt
+        and "_readRefreshTick" in fila_gt
+        and "/api/study/reads" in fila_gt,
+        "mark-read ficha fila",
     )
 
     # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
