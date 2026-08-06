@@ -14,6 +14,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
+import '../dashboard_view.dart';
 
 /// Hoje: hero com coach do dia + checklist + prontidão/semana (Ciclo C/F).
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -127,19 +128,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  String _checkpointShort(Map<String, dynamic> cp) {
-    final phase = cp['phaseName']?.toString() ?? '';
-    final phaseLabel = switch (phase) {
-      'theory' => 'Teoria',
-      'questions' => 'Questões',
-      'revisions' || 'review' || 'cards' => 'Revisão',
-      _ => phase.isEmpty ? 'Sessão' : phase,
-    };
-    final q = (cp['qIndex'] as num?)?.toInt();
-    if (phase == 'questions' && q != null) return '$phaseLabel · item ${q + 1}';
-    return phaseLabel;
-  }
-
   Future<void> _closeDay() async {
     try {
       final data = await apiClient.post('/api/study/day-close', {});
@@ -237,7 +225,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
         final hot = (data['errorHotTopics'] as List? ?? []).take(2).toList();
-        final dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
 
@@ -303,7 +290,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onPressed: () => context.go(sessionPath),
                           child: Text(
                             checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
+                                ? 'Continuar · ${checkpointShortLabel(checkpoint!)} (S)'
                                 : 'Começar sessão (S)',
                           ),
                         ),
@@ -401,6 +388,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
+                          SectionLabel('Seu ritmo'),
+                          StatsStrip(
+                            items: [
+                              ('${data['streakDays'] ?? 0}', 'dias seguidos'),
+                              ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
+                              ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
                           _CheckRow(
                             done: checklist['session'] == true,
@@ -408,24 +404,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             actionLabel: 'Sessão',
                             onAction: () => context.go(sessionPath),
                           ),
-                          FutureBuilder(
-                            future: dueCardsFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData) {
-                                return _CheckRow(
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final due = ref.watch(flashcardsProvider);
+                              final list = due.asData?.value;
+                              if (list == null) {
+                                return const _CheckRow(
                                   done: false,
                                   label: 'Cards do dia…',
-                                  actionLabel: null,
-                                  onAction: null,
                                 );
                               }
-                              final list = snap.data is List ? snap.data as List : const [];
                               final n = list.length;
-                              final done = n == 0 || checklist['cards'] == true;
+                              final row = cardsChecklist(n, checklist['cards'] == true);
                               return _CheckRow(
-                                done: done,
-                                label: n == 0 ? 'Cards em dia' : '$n card(s) para revisar',
-                                actionLabel: n == 0 ? null : 'Cards',
+                                done: row.done,
+                                label: row.label,
+                                actionLabel: row.actionLabel,
                                 onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
                               );
                             },
@@ -563,28 +557,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   );
                                 },
                               ),
-                              FutureBuilder(
-                                future: apiClient.get('/api/backup/last'),
-                                builder: (context, snap) {
-                                  if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                                  final last = Map<String, dynamic>.from(snap.data as Map);
-                                  final hasOk = last['ok'] == true;
-                                  String? staleMsg;
-                                  if (!hasOk) {
-                                    staleMsg = 'Nenhum backup verificado — salve em Ajustes.';
-                                  } else {
-                                    final at = last['at']?.toString() ?? '';
-                                    if (at.isNotEmpty) {
-                                      try {
-                                        final when = DateTime.parse(at);
-                                        if (DateTime.now().difference(when).inDays > 7) {
-                                          staleMsg = 'Último backup há mais de 7 dias ($at).';
-                                        }
-                                      } catch (_) {
-                                        staleMsg = 'Data do último backup inválida — refaça em Ajustes.';
-                                      }
-                                    }
-                                  }
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final last = ref.watch(lastBackupProvider).asData?.value;
+                                  final staleMsg = backupStaleMessage(last, DateTime.now());
                                   if (staleMsg == null) return const SizedBox.shrink();
                                   return Padding(
                                     padding: const EdgeInsets.only(top: 12),
@@ -777,15 +753,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     child: const Text('Ajustes'),
                                   ),
                                 ),
-                              const SizedBox(height: 8),
-                              SectionLabel('Seu ritmo'),
-                              StatsStrip(
-                                items: [
-                                  ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                                  ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                                  ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                                ],
-                              ),
                               if (!focus) ...[
                                 SectionLabel('Explorar'),
                                 Wrap(
