@@ -55,3 +55,7 @@ Projeto: PAES_MED_AI
 - [x] Ciclo DL: Lista Questões — batch reads + badge **Li** + ícone teoria + filtro ativo
 - [x] Ciclo DL: Aprovar — batch reads + **Li** + botão Teoria + `onMarkedRead`
 - [x] Versão **1.0.0+24** + smoke **622/622** + docs COMO/ROADMAP DK–DL
+- [x] Ciclo DM: `theory_reads.dart` — `essayTheorySubject` + `essayTheoryTopic` (mapeamento redação)
+- [x] Ciclo DM: Redação — `_loadEssayReads` (temas/missão/histórico) + badge **Li** + Material local + `onMarkedRead`
+- [x] Ciclo DM: Fila — missão redação `_loadEssayMissionReads` + badge **Li** + ícone teoria
+- [x] Versão **1.0.0+25** + smoke **630/630** + docs COMO/ROADMAP DL–DM

@@ -3820,9 +3820,9 @@ def main() -> int:
     ok(
         "ciclo_cl_version_align",
         ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec
-        or "1.0.0+8" in pubspec         or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec or "1.0.0+17" in pubspec or "1.0.0+18" in pubspec or "1.0.0+19" in pubspec or "1.0.0+20" in pubspec or "1.0.0+21" in pubspec or "1.0.0+22" in pubspec or "1.0.0+23" in pubspec or "1.0.0+24" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck or "1.0.0+17" in settings_ck or "1.0.0+18" in settings_ck or "1.0.0+19" in settings_ck or "1.0.0+20" in settings_ck or "1.0.0+21" in settings_ck or "1.0.0+22" in settings_ck or "1.0.0+23" in settings_ck or "1.0.0+24" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat or "1.0.0+17" in pack_bat or "1.0.0+18" in pack_bat or "1.0.0+19" in pack_bat or "1.0.0+20" in pack_bat or "1.0.0+21" in pack_bat or "1.0.0+22" in pack_bat or "1.0.0+23" in pack_bat or "1.0.0+24" in pack_bat),
+        or "1.0.0+8" in pubspec         or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec or "1.0.0+17" in pubspec or "1.0.0+18" in pubspec or "1.0.0+19" in pubspec or "1.0.0+20" in pubspec or "1.0.0+21" in pubspec or "1.0.0+22" in pubspec or "1.0.0+23" in pubspec or "1.0.0+24" in pubspec or "1.0.0+25" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck or "1.0.0+17" in settings_ck or "1.0.0+18" in settings_ck or "1.0.0+19" in settings_ck or "1.0.0+20" in settings_ck or "1.0.0+21" in settings_ck or "1.0.0+22" in settings_ck or "1.0.0+23" in settings_ck or "1.0.0+24" in settings_ck or "1.0.0+25" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat or "1.0.0+17" in pack_bat or "1.0.0+18" in pack_bat or "1.0.0+19" in pack_bat or "1.0.0+20" in pack_bat or "1.0.0+21" in pack_bat or "1.0.0+22" in pack_bat or "1.0.0+23" in pack_bat or "1.0.0+24" in pack_bat or "1.0.0+25" in pack_bat),
         "version +4/+5/+6",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -5255,7 +5255,9 @@ def main() -> int:
     )
     ok(
         "ciclo_dl_version_align",
-        "1.0.0+24" in pubspec and "1.0.0+24" in settings_ck and "1.0.0+24" in pack_bat,
+        any(v in pubspec for v in ("1.0.0+24", "1.0.0+25"))
+        and any(v in settings_ck for v in ("1.0.0+24", "1.0.0+25"))
+        and any(v in pack_bat for v in ("1.0.0+24", "1.0.0+25")),
         "version +24",
     )
     ver_dl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"

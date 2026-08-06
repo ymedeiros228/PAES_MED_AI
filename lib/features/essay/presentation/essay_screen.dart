@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class EssayScreen extends ConsumerStatefulWidget {
@@ -26,6 +28,40 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
   List<Map<String, dynamic>> personas = [];
   String? personaId;
   bool busy = false;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadEssayReads({List<dynamic>? historyItems}) async {
+    final pairs = <(String, String)>[];
+    for (final t in themes) {
+      pairs.add((essayTheorySubject, essayTheoryTopic(t)));
+    }
+    final mission = progress?['nextMission'];
+    if (mission is Map) {
+      final lab = mission['label']?.toString() ?? mission['axis']?.toString() ?? '';
+      if (lab.isNotEmpty) pairs.add((essayTheorySubject, essayTheoryTopic(lab)));
+    }
+    for (final raw in historyItems ?? const []) {
+      if (raw is! Map) continue;
+      final th = raw['theme']?.toString() ?? '';
+      if (th.isNotEmpty) pairs.add((essayTheorySubject, essayTheoryTopic(th)));
+    }
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = {...theoryReadByKey, ...out});
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -48,6 +84,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
         themes = (data as List).map((e) => e.toString()).toList();
         theme = themes.isNotEmpty ? themes.first : null;
       });
+      await _loadEssayReads();
     } catch (_) {}
   }
 
@@ -80,6 +117,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           personaId = suggested;
         }
       });
+      await _loadEssayReads();
     } catch (_) {
       if (!mounted) return;
       setState(() => progress = null);
@@ -312,10 +350,45 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
                         ),
                         const SizedBox(height: 10),
-                        OutlinedButton.icon(
-                          onPressed: () => _startMissionRewrite(history),
-                          icon: const Icon(Icons.edit_note_rounded, size: 18),
-                          label: const Text('Reescrever missão'),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: () => _startMissionRewrite(history),
+                              icon: const Icon(Icons.edit_note_rounded, size: 18),
+                              label: const Text('Reescrever missão'),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                final lab =
+                                    (progress!['nextMission'] as Map)['label']?.toString() ?? 'eixo';
+                                final top = essayTheoryTopic(lab);
+                                _openTheory(essayTheorySubject, top);
+                              },
+                              icon: Icon(
+                                _isTheoryRead(
+                                  essayTheorySubject,
+                                  essayTheoryTopic(
+                                    (progress!['nextMission'] as Map)['label']?.toString() ?? 'eixo',
+                                  ),
+                                )
+                                    ? Icons.check_circle_outline
+                                    : Icons.menu_book_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                _isTheoryRead(
+                                  essayTheorySubject,
+                                  essayTheoryTopic(
+                                    (progress!['nextMission'] as Map)['label']?.toString() ?? 'eixo',
+                                  ),
+                                )
+                                    ? 'Material · Li'
+                                    : 'Material local',
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -472,6 +545,26 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     for (final t in themes) DropdownMenuEntry(value: t, label: t),
                   ],
                 ),
+              if (theme != null && theme!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openTheory(essayTheorySubject, essayTheoryTopic(theme!)),
+                    icon: Icon(
+                      _isTheoryRead(essayTheorySubject, essayTheoryTopic(theme!))
+                          ? Icons.check_circle_outline
+                          : Icons.menu_book_outlined,
+                      size: 18,
+                    ),
+                    label: Text(
+                      _isTheoryRead(essayTheorySubject, essayTheoryTopic(theme!))
+                          ? 'Material local · Li'
+                          : 'Material local',
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               TextField(
                 controller: textCtrl,
@@ -591,6 +684,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       ),
                     );
                   }
+                  WidgetsBinding.instance.addPostFrameCallback((_) => _loadEssayReads(historyItems: items));
                   final scores = items
                       .map((raw) => ((raw as Map)['score'] as num?)?.toDouble())
                       .whereType<double>()
@@ -629,11 +723,24 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           ),
                         ),
                       for (final raw in items)
-                        PlaylistTile(
-                          title: (raw as Map)['theme']?.toString() ?? 'Tema',
-                          subtitle: 'Nota ${raw['score']} · ${raw['createdAt'] ?? ''} · toque para abrir',
-                          leadingIcon: Icons.edit_note_rounded,
-                          onPlay: () => _openEssayDetail(Map<String, dynamic>.from(raw)),
+                        Builder(
+                          builder: (_) {
+                            final m = Map<String, dynamic>.from(raw as Map);
+                            final th = m['theme']?.toString() ?? 'Tema';
+                            final top = essayTheoryTopic(th);
+                            return PlaylistTile(
+                              title: th,
+                              subtitle: 'Nota ${m['score']} · ${m['createdAt'] ?? ''} · toque para abrir',
+                              badge: _isTheoryRead(essayTheorySubject, top) ? 'Li' : null,
+                              leadingIcon: Icons.edit_note_rounded,
+                              onPlay: () => _openEssayDetail(m),
+                              secondary: IconButton(
+                                tooltip: 'Teoria local',
+                                icon: const Icon(Icons.menu_book_outlined, size: 20),
+                                onPressed: () => _openTheory(essayTheorySubject, top),
+                              ),
+                            );
+                          },
                         ),
                     ],
                   );

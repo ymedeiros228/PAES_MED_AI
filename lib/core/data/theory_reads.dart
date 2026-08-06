@@ -1,5 +1,15 @@
 import 'api_client.dart';
 
+/// Disciplina fixa para teoria local de redação (eixos e temas).
+const essayTheorySubject = 'Língua Portuguesa e Literatura';
+
+/// Tópico estável para mark-read de redação (tema ou eixo da missão).
+String essayTheoryTopic(String raw) {
+  final t = raw.trim();
+  if (t.isEmpty) return t;
+  return t.startsWith('Redação · ') ? t : 'Redação · $t';
+}
+
 /// Chave estável subject|topic para mapa de mark-read local.
 String theoryReadKey(String subject, String topic) => '$subject|$topic';
 

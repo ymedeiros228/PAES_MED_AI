@@ -64,6 +64,19 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     if (mounted) setState(() => theoryReadByKey = out);
   }
 
+  Future<void> _loadEssayMissionReads() async {
+    try {
+      final data = await apiClient.get('/api/essays/progress');
+      final prog = Map<String, dynamic>.from(data as Map);
+      final mission = prog['nextMission'];
+      if (mission is! Map) return;
+      final label = mission['label']?.toString() ?? '';
+      if (label.isEmpty) return;
+      final out = await fetchTheoryReadMap([(essayTheorySubject, essayTheoryTopic(label))]);
+      if (mounted) setState(() => theoryReadByKey = {...theoryReadByKey, ...out});
+    } catch (_) {}
+  }
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +92,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         error = null;
       });
       await _loadTheoryReads(q);
+      await _loadEssayMissionReads();
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a fila. Tente de novo.'));
     }
@@ -438,6 +452,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     final mission = prog['nextMission'];
                     if (count < 1 || mission is! Map) return const SizedBox.shrink();
                     final label = mission['label']?.toString() ?? 'eixo';
+                    final topic = essayTheoryTopic(label);
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -445,9 +460,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         PlaylistTile(
                           title: 'Subir $label',
                           subtitle: mission['prompt']?.toString() ?? 'Treino local por eixos',
-                          badge: 'missão',
+                          badge: _isTheoryRead(essayTheorySubject, topic) ? 'Li' : 'missão',
                           leadingIcon: Icons.edit_note_rounded,
                           onPlay: () => context.go('/redacao'),
+                          secondary: IconButton(
+                            tooltip: 'Teoria local',
+                            icon: const Icon(Icons.menu_book_outlined, size: 20),
+                            onPressed: () => _openTheory(essayTheorySubject, topic),
+                          ),
                         ),
                       ],
                     );
