@@ -23,7 +23,7 @@ Prioridade: topo = primeiro.
 
 ## P3 · Ship / gate (modo C ou D)
 
-- [ ] Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N)
+- [x] Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N)
 - [ ] Manter `ciclo_gu_pack_*` se dist existir
 
 ## P4 · Não fazer (congelado)

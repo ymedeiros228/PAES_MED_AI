@@ -22,6 +22,10 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Fila / lacunas] | chip contador “N sem teoria” ao lado do SectionLabel | escaneabilidade rápida | S
 - [x] [Biblioteca / msg erro PDF] | QuietEmpty com CTA Abrir provas quando open-path falha | 1 ação clara pós-erro de caminho | S
 - [x] [Theory sheet / lido] | row check “Marcado como lido” no topo do sheet | feedback visual imediato pós mark-read | S
+- [x] [Ajustes / Sobre] | chip de versão ao lado do título PAES MED AI | versão legível sem linha técnica longa | S
+- [ ] [Ship / bump] | script ou doc 1-pager “bump +N” listando 4 arquivos | evita esquecer bat ao shippar | S
+- [ ] [Ajustes / Sobre] | link “Notas desta versão” colapsável (CHANGELOG thin) | contexto do build sem poluir | M
+- [ ] [Pack / dist] | badge “Desktop build” no Sobre quando VERSION.txt detectado | usuário sabe se está no exe | M
 - [ ] [Fila / lacunas] | subtitle “· li” no tile quando read=true (além do ícone) | reforço textual no mobile | S
 - [ ] [Ficha / Ler teoria] | ícone livro preenchido se tópico já lido (fetch reads no load) | estado consistente ficha+fila | S
 - [ ] [Theory sheet] | haptic leve ao marcar “li” (mobile/desktop) | confirmação tátil do progresso | S

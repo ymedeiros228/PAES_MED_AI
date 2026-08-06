@@ -1918,6 +1918,17 @@ def main() -> int:
     from pathlib import Path
 
     root = Path(__file__).resolve().parent.parent
+    app_version_dart = (
+        root / "lib" / "core" / "app_version.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "app_version.dart"
+    ).exists() else ""
+
+    def version_in_ui(settings_text: str, versions: tuple[str, ...]) -> bool:
+        if any(v in settings_text for v in versions):
+            return True
+        return "kAppVersionLabel" in settings_text and any(v in app_version_dart for v in versions)
+
     dist_main = root / "dist" / "PAES_MED_AI_Windows" / "Iniciar_PAES_MED_AI.bat"
     dist_dll = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
     if dist_main.exists() and dist_dll.exists():
@@ -3590,7 +3601,7 @@ def main() -> int:
     ok(
         "ciclo_ce_version_align",
         any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and version_in_ui(settings_ce, ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and "VERSION.txt" in pack_bat
         and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "pubspec/Sobre/bat +3..+6",
@@ -3833,7 +3844,7 @@ def main() -> int:
     ok(
         "ciclo_cl_version_align",
         ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck)
+        and version_in_ui(settings_ck, ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat),
         "version +4/+5/+6",
     )
@@ -3968,7 +3979,7 @@ def main() -> int:
     ok(
         "ciclo_cp_version_align",
         any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and version_in_ui(settings_ck, ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +5/+6",
     )
@@ -4113,7 +4124,7 @@ def main() -> int:
     ok(
         "ciclo_ct_version_align",
         any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and version_in_ui(settings_ck, ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +6",
     )
@@ -4194,7 +4205,7 @@ def main() -> int:
     ok(
         "ciclo_cu_version_align",
         any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        and version_in_ui(settings_cu, ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
         and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
         "version +7/+8",
     )
@@ -4836,7 +4847,7 @@ def main() -> int:
     ok(
         "ciclo_ed_version_108",
         any(v in pubspec for v in ("1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9"))
+        and version_in_ui(settings_ed, ("1.0.0+8", "1.0.0+9"))
         and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9")),
         "version +8/+9",
     )
@@ -5938,7 +5949,7 @@ def main() -> int:
     ok(
         "ciclo_gu_version_109",
         "1.0.0+9" in pubspec
-        and "1.0.0+9" in settings_ed
+        and version_in_ui(settings_ed, ("1.0.0+9",))
         and "1.0.0+9" in pack_bat,
         "version +9",
     )
@@ -5989,6 +6000,24 @@ def main() -> int:
         "ciclo_gu_roadmap_gr_gu",
         "Ciclo GR" in como_ap or "GR–GU" in como_ap or "GR-GU" in (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore"),
         "roadmap GR-GU",
+    )
+
+    # --- Ciclo HA: version triple-lock (sem bump se FOCUS +9) ---
+    import re as _re_ha
+
+    pubspec_ver_m = _re_ha.search(r"^version:\s*(\S+)", pubspec, _re_ha.M)
+    pubspec_ver = pubspec_ver_m.group(1) if pubspec_ver_m else ""
+    app_ver_ha = (
+        root / "lib" / "core" / "app_version.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ha_version_triple_lock",
+        bool(pubspec_ver)
+        and pubspec_ver in pack_bat
+        and pubspec_ver in app_ver_ha
+        and "kAppVersionLabel" in app_ver_ha
+        and "kAppVersionLabel" in settings_ed,
+        f"version {pubspec_ver or '?'}",
     )
 
     failed = [c for c in checks if not c[1]]

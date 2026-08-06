@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 6 concluído |
-| **Próximo** | P3: bump versão (+N) se ship, ou manter pack gate |
-| **Último feito** | mark-read Ler teoria: smoke GZ + refresh ícone li na Fila |
+| **Agora** | — idle; ciclo 7 concluído |
+| **Próximo** | P3: manter ciclo_gu_pack_* (dist ausente — skip) ou fila vazia P1 |
+| **Último feito** | Versão +9 triple-lock; sem bump; Sobre com chip versão |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

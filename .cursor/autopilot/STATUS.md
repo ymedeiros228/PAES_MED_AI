@@ -1,23 +1,23 @@
 # Auto-Pilot — STATUS
 
-## Git ciclo 6…
+## Git ciclo 7…
 
 | | |
 |---|---|
 | **Estado** | RUNNING |
 | **Projeto** | PAES_MED_AI |
-| **Ciclo** | 6 |
-| **Tempo restante** | 52m |
+| **Ciclo** | 7 |
+| **Tempo restante** | 50m |
 | **Última tool** | edit |
 | **Agent** | agent-8f4d530b-026a-412b-b0f8-d6067da4b00c |
-| **Run** | run-b4fd1f23-228c-4f20-baf3-a8dafef20bb4 |
+| **Run** | run-1243105d-3b4c-4de9-b6e5-39913c911599 |
 | **Branch** | autopilot/20260806-155832 |
-| **Commit** | 0bf69df |
+| **Commit** | e6ec55b |
 | **PR** | — |
 | **Validate** | validate skipped |
 | **Modo FOCUS** | A · Uso real |
-| **QUEUE head** | Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N) |
-| **Atualizado** | 06/08/2026, 13:07:28 |
+| **QUEUE head** | Manter `ciclo_gu_pack_*` se dist existir |
+| **Atualizado** | 06/08/2026, 13:09:23 |
 
 ### Missão
 
@@ -29,21 +29,21 @@ Host: commit/push/PR…
 
 ### Log recente
 
-- [13:06:56] tool ok edit
-- [13:06:57] tool ok edit
-- [13:07:01] tool ok edit
-- [13:07:04] tool ok read
-- [13:07:06] tool ok edit
-- [13:07:10] tool ok shell
-- [13:07:18] tool ok shell
-- [13:07:20] tool ok edit
-- [13:07:22] tool ok edit
-- [13:07:22] tool ok edit
-- [13:07:22] tool ok edit
-- [13:07:23] tool ok edit
-- [13:07:25] tool ok edit
-- [13:07:28] fim ciclo 6: finished
-- [13:07:28] validate skipped
+- [13:08:50] tool ok edit
+- [13:08:50] tool ok edit
+- [13:08:52] tool ok edit
+- [13:08:52] tool ok edit
+- [13:08:57] tool ok read
+- [13:09:00] tool ok edit
+- [13:09:11] tool ok shell
+- [13:09:13] tool ok edit
+- [13:09:15] tool ok edit
+- [13:09:15] tool ok edit
+- [13:09:16] tool ok edit
+- [13:09:17] tool ok edit
+- [13:09:19] tool ok edit
+- [13:09:23] fim ciclo 7: finished
+- [13:09:23] validate skipped
 
 ### Ao voltar no Cursor
 

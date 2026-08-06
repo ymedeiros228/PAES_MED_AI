@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/app_version.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
@@ -232,12 +233,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               SectionLabel('Sobre'),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.35),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'PAES MED AI · 1.0.0+9',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'PAES MED AI',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                          ),
+                          child: Text(
+                            kAppVersionLabel,
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(

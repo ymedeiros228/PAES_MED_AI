@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 6
-modo: B thin
-item: mark-read / Ler teoria ficha+fila — smoke + refresh pós-clique
-smoke: 713/713 OK; ciclo_gz_mark_read_ficha_fila
-nota: _readRefreshTick fila; fix regress GT+FX; polish check lido no sheet
+<!-- ciclo: 7
+modo: C thin (sem bump)
+item: versão +9 alinhada — pubspec/Sobre/bat/app_version
+smoke: 714/714 OK; ciclo_ha_version_triple_lock
+nota: sem bump (+9 FOCUS); chip Sobre; version_in_ui smoke helper
 -->
 ```
 
