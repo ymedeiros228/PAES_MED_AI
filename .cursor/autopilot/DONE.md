@@ -49,3 +49,6 @@ Projeto: PAES_MED_AI
 - [x] Versão **1.0.0+21** + smoke **602/602** + docs COMO/ROADMAP DH–DI
 - [x] Ciclo DJ: Sessão guiada — `_loadSessionReads` (meta/questões/cards) + **Li** teoria/debrief + `onMarkedRead`
 - [x] Versão **1.0.0+22** + smoke **608/608** + docs COMO/ROADMAP DI–DJ
+- [x] Ciclo DK: Simulados — `_loadSimReads` (questões/lacunas/erros) + **Li** gaps/debrief + `onMarkedRead`
+- [x] Ciclo DK: Biblioteca — `_loadSearchReads` em hits questão + badge **Li** + ícone teoria
+- [x] Versão **1.0.0+23** + smoke **615/615** + docs COMO/ROADMAP DJ–DK

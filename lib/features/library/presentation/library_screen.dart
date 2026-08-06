@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,7 +8,9 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
 
@@ -31,6 +35,45 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String searchSourceKind = 'todos'; // todos | oficial | estudo
   bool searchPdfOnly = false;
   List<Map<String, dynamic>> searchHistory = [];
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadSearchReads(List<Map<String, dynamic>> hits) async {
+    final pairs = <(String, String)>[];
+    for (final hit in hits) {
+      if (hit['kind'] != 'question') continue;
+      final s = hit['subject']?.toString() ?? '';
+      final t = hit['topic']?.toString() ?? '';
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    if (pairs.isEmpty) return;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    if (subject.isEmpty || topic.isEmpty) return;
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
+
+  String? _hitBadge(Map<String, dynamic> hit) {
+    final s = hit['subject']?.toString() ?? '';
+    final t = hit['topic']?.toString() ?? '';
+    if (s.isNotEmpty && t.isNotEmpty && _isTheoryRead(s, t)) return 'Li';
+    final isPdf = _hitIsPdf(hit);
+    if (isPdf) return 'PDF';
+    if (hit['sourceKind']?.toString() == 'oficial') return 'oficial';
+    return 'local';
+  }
 
   @override
   void initState() {
@@ -690,6 +733,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             .toList();
         searchNote = map['note']?.toString();
       });
+      unawaited(_loadSearchReads(searchHits));
       await _loadSearchHistory();
     } catch (e) {
       setState(() {
@@ -1020,19 +1064,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         Builder(
                           builder: (_) {
                             final isPdf = _hitIsPdf(hit);
+                            final s = hit['subject']?.toString() ?? '';
+                            final t = hit['topic']?.toString() ?? '';
+                            final hasTopic = hit['kind'] == 'question' && s.isNotEmpty && t.isNotEmpty;
                             return Tooltip(
                               message: isPdf ? 'Abre no leitor padrão (Windows)' : 'Abrir',
                               child: PlaylistTile(
                                 title: hit['label']?.toString() ?? 'item',
                                 subtitle:
                                     '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
-                                badge: isPdf
-                                    ? 'PDF'
-                                    : (hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local'),
+                                badge: _hitBadge(hit),
                                 leadingIcon: hit['kind'] == 'question'
                                     ? Icons.quiz_outlined
                                     : (isPdf ? Icons.picture_as_pdf_outlined : Icons.description_outlined),
                                 onPlay: () => _openSearchHit(hit),
+                                secondary: hasTopic
+                                    ? IconButton(
+                                        tooltip: 'Teoria local',
+                                        icon: const Icon(Icons.menu_book_outlined),
+                                        onPressed: () => _openTheory(s, t),
+                                      )
+                                    : null,
                               ),
                             );
                           },

@@ -111,7 +111,7 @@ if not exist "%OUT%\Iniciar_PAES_MED_AI.bat" (
 )
 
 REM Ciclo CE: carimbo de versão visível no pacote
-echo 1.0.0+22> "%OUT%\VERSION.txt"
+echo 1.0.0+23> "%OUT%\VERSION.txt"
 if not exist "%OUT%\VERSION.txt" (
   echo ERRO: VERSION.txt nao gravado no dist.
   goto :erro

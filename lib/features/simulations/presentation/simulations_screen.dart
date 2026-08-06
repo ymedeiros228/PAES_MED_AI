@@ -8,8 +8,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
+import '../../../core/widgets/theory_topic_sheet.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -43,6 +45,45 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   /// Ciclo BS: teclado 1–5 / Enter na sessão em andamento.
   final FocusNode sessionFocus = FocusNode();
   int keyboardQi = 0;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String subject, String topic) =>
+      theoryReadByKey[theoryReadKey(subject, topic)] == true;
+
+  Future<void> _loadSimReads() async {
+    final pairs = <(String, String)>[];
+    void add(String s, String t) {
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    for (final raw in questions) {
+      final q = Map<String, dynamic>.from(raw as Map);
+      add(q['subject']?.toString() ?? '', q['topic']?.toString() ?? '');
+    }
+    for (final raw in report?['gaps'] as List? ?? const []) {
+      final g = Map<String, dynamic>.from(raw as Map);
+      add(g['subject']?.toString() ?? '', g['topic']?.toString() ?? '');
+    }
+    for (final raw in report?['results'] as List? ?? const []) {
+      final r = Map<String, dynamic>.from(raw as Map);
+      if (r['correct'] == true) continue;
+      add(r['subject']?.toString() ?? '', r['topic']?.toString() ?? '');
+    }
+    if (pairs.isEmpty) return;
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = {...theoryReadByKey, ...out});
+  }
+
+  Future<void> _openTheory(String subject, String topic) async {
+    if (subject.isEmpty || topic.isEmpty) return;
+    await TheoryTopicSheet.show(
+      context,
+      subject: subject,
+      topic: topic,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(subject, topic)] = true);
+      },
+    );
+  }
 
   static const _modes = <(String, String, String, IconData)>[
     ('dia_prova', 'Dia de prova', 'Cronômetro e sem gabarito até terminar', Icons.timer_outlined),
@@ -344,6 +385,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         // approximate elapsed by starting earlier is hard; just display from 0 + note
       }
     });
+    unawaited(_loadSimReads());
     final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
     ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -427,6 +469,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
           ..reset()
           ..start();
       });
+      unawaited(_loadSimReads());
       final hardCap = mode == 'dia_prova' ? Duration(minutes: (limit * 1.5).ceil().clamp(15, 90)) : null;
       ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (!mounted) return;
@@ -468,6 +511,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       running = false;
       examLocked = false;
     });
+    unawaited(_loadSimReads());
     for (final raw in (report?['results'] as List? ?? [])) {
       final r = Map<String, dynamic>.from(raw as Map);
       if (r['correct'] == true) continue;
@@ -535,6 +579,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               ),
               child: const Text('Remediar'),
             ),
+            if (subject.isNotEmpty && topic.isNotEmpty)
+              TextButton(
+                onPressed: () => _openTheory(subject, topic),
+                child: Text(_isTheoryRead(subject, topic) ? 'Teoria local · Li' : 'Teoria local'),
+              ),
             TextButton(onPressed: () => context.go('/fila'), child: const Text('Fila')),
             TextButton(
               onPressed: () => context.go(
@@ -925,14 +974,29 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 if ((report!['gaps'] as List? ?? []).isNotEmpty) ...[
                   SectionLabel('Lacunas para treinar'),
                   for (final g in (report!['gaps'] as List).take(6))
-                    PlaylistTile(
-                      title: '${(g as Map)['subject']} · ${g['topic']}',
-                      subtitle: '${g['wrong']} erro(s)',
-                      leadingIcon: Icons.flag_outlined,
-                      onPlay: () => context.go(
-                        '/adaptativo?subject=${Uri.encodeComponent(g['subject']?.toString() ?? '')}'
-                        '&topic=${Uri.encodeComponent(g['topic']?.toString() ?? '')}',
-                      ),
+                    Builder(
+                      builder: (_) {
+                        final gap = Map<String, dynamic>.from(g as Map);
+                        final gs = gap['subject']?.toString() ?? '';
+                        final gt = gap['topic']?.toString() ?? '';
+                        return PlaylistTile(
+                          title: '$gs · $gt',
+                          subtitle: '${gap['wrong']} erro(s)',
+                          badge: _isTheoryRead(gs, gt) ? 'Li' : null,
+                          leadingIcon: Icons.flag_outlined,
+                          onPlay: () => context.go(
+                            '/adaptativo?subject=${Uri.encodeComponent(gs)}'
+                            '&topic=${Uri.encodeComponent(gt)}',
+                          ),
+                          secondary: gs.isNotEmpty && gt.isNotEmpty
+                              ? IconButton(
+                                  tooltip: 'Teoria local',
+                                  icon: const Icon(Icons.menu_book_outlined),
+                                  onPressed: () => _openTheory(gs, gt),
+                                )
+                              : null,
+                        );
+                      },
                     ),
                   Builder(
                     builder: (_) {
@@ -963,7 +1027,8 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${r['subject'] ?? ''} · ${r['topic'] ?? ''}',
+                            '${r['subject'] ?? ''} · ${r['topic'] ?? ''}'
+                            '${_isTheoryRead(r['subject']?.toString() ?? '', r['topic']?.toString() ?? '') ? ' · Li' : ''}',
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           _debriefBlock(
