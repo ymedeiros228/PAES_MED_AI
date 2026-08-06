@@ -289,7 +289,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sem PDF de ${q.year} em data/provas no PC — não inventamos arquivo.'),
+          content: Text('Sem PDF de ${q.year} neste PC — não inventamos arquivo.'),
         ),
       );
       return;
@@ -353,10 +353,18 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     final questionPane = ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('${q.subject} · ${q.topic} · ${q.year}', style: Theme.of(context).textTheme.titleMedium),
         Text(
-          'Atalhos: 1–5 · Enter · N (após revelar)',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
+          '${q.subject} · ${q.topic}',
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: cs.onSurface.withOpacity(0.55),
+                letterSpacing: 0.2,
+              ),
+        ),
+        Text(
+          '${q.year}',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurface.withOpacity(0.4),
+              ),
         ),
         if (saveError != null) ...[
           const SizedBox(height: 8),
@@ -368,23 +376,6 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             ),
           ),
         ],
-        if (q.sourcePdf != null && q.sourcePdf!.isNotEmpty)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: _openSourcePdf,
-              icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-              label: Text('Abrir PDF do ano ${q.year}'),
-            ),
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              'PDF ${q.year}: não está em data/provas (sem inventar).',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
         if (q.generated)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -393,9 +384,12 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               style: TextStyle(color: cs.tertiary),
             ),
           ),
-        const SizedBox(height: 12),
-        Text(q.statement, style: Theme.of(context).textTheme.titleLarge?.copyWith(height: 1.35)),
         const SizedBox(height: 16),
+        Text(
+          q.statement,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(height: 1.4),
+        ),
+        const SizedBox(height: 20),
         for (var i = 0; i < q.options.length; i++)
           RadioListTile<int>(
             value: i,
@@ -466,24 +460,32 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               'bancaIntent': pm['bancaIntent'] ?? q.bancaIntent,
               'examBoard': pm['examBoard'] ?? q.examBoard,
             },
+            pdfYear: q.year,
+            pdfAvailable: q.sourcePdf != null && q.sourcePdf!.isNotEmpty,
+            onOpenPdf: _openSourcePdf,
             trailing: Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                TextButton(
-                  onPressed: () => context.go(
-                    '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
-                    '&topic=${Uri.encodeComponent(q.topic)}',
-                  ),
-                  child: const Text('Treinar este tópico'),
-                ),
-                TextButton(
+                FilledButton.tonal(
                   onPressed: () => openTheoryReadSheet(
                     context,
                     subject: q.subject,
                     topic: q.topic,
+                    trainSessionPath:
+                        '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+                        '&subject=${Uri.encodeComponent(q.subject)}'
+                        '&topic=${Uri.encodeComponent(q.topic)}',
                   ),
                   child: const Text('Ler teoria'),
+                ),
+                TextButton(
+                  onPressed: () => context.go(
+                    '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+                    '&subject=${Uri.encodeComponent(q.subject)}'
+                    '&topic=${Uri.encodeComponent(q.topic)}',
+                  ),
+                  child: const Text('Treinar tópico'),
                 ),
                 TextButton(
                   onPressed: () {
@@ -493,6 +495,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       if (q.subject.isNotEmpty) 'subject': q.subject,
                       if (q.topic.isNotEmpty) 'topic': q.topic,
                       if (seed.isNotEmpty) 'q': seed,
+                      if (revealed && selected != q.correctIndex) 'errorType': errorType,
                     };
                     final qs = qp.entries
                         .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')

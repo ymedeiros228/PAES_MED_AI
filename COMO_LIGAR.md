@@ -1134,6 +1134,151 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. Sobre / pubspec / VERSION = **1.0.0+9**.
 3. Stop micro-teclas; ship pack OK.
 
+## Acervo no Hoje (Ciclo GV)
+
+1. Dashboard → card **Acervo UEMA**: `GET /api/dashboard` → `acervoSummary` (anos no disco · manual 2017–23).
+2. CTA **Abrir Biblioteca** — sem inventar cobertura histórica.
+3. Smoke: `ciclo_gv_*`.
+
+## Honestidade 2017–23 (Ciclo GW)
+
+1. `acervo_year_grid`: ano sem PDF no disco **nunca** `uiStatus=committed` sem `committedCount`.
+2. Dry-run `POST /api/acervo/fetch-available` com `dryRun: true` — só shape, não baixa.
+3. Inventário: [`data/inventory/README_INVENTARIO.md`](data/inventory/README_INVENTARIO.md).
+4. Smoke: `ciclo_gw_*`.
+
+## Pack gate + 1.0.0+10 (Ciclo GX ship)
+
+1. Bump **1.0.0+10** (pubspec, Ajustes, `empacotar_windows.bat`).
+2. Host Windows: fechar app, `empacotar_windows.bat`, smoke local.
+
+## Tutor grounding por pergunta (Ciclo GY)
+
+1. `POST /api/tutor/ask` = alias de `/api/chat`; cites com `refType`/`refId` + `type`/`id`.
+2. Offline/online: score pela **mensagem** (+ boost coach); só ids reais no SQLite.
+3. Smoke: `ciclo_gy_*` (genética → cites ou sem base; rejeita id inventado).
+
+## Tutor UI block + chips (Ciclo GZ)
+
+1. Sucesso = `citations` não vazio **ou** `uncited` explícito; senão erro (“Resposta sem fonte”).
+2. Fontes como `ActionChip` → `/questoes/{id}` ou adaptativo.
+3. Smoke: `ciclo_gz_*`.
+
+## preferOfficial + Natureza (Ciclo HA)
+
+1. `ChatRequest.preferOfficial` (default = officialUnlocked); UI toggle **Preferir oficiais**.
+2. RAG filtra oficial quando pedido; coach Natureza → bias Bio/Fís/Qui.
+3. Smoke: `ciclo_ha_*`.
+
+## Pack gate + 1.0.0+11 (Ciclo HB ship)
+
+1. Bump **1.0.0+11**; F3 deep fechado.
+2. Host: `empacotar_windows.bat` após merge.
+
+## Sessão sem jargão (Ciclo HC)
+
+1. Empties/erros da Sessão em português claro (sem “API offline?”, “due”, “Sync syllabus”).
+2. Cada empty com **1 CTA** (Biblioteca / Carregar revisões / Tentar de novo).
+3. Smoke: `ciclo_hc_*`.
+
+## Ficha teoria → treino (Ciclo HD)
+
+1. Pós-erro: **Ler teoria** primeiro (com `trainSessionPath` → `/sessao?...`), depois **Treinar tópico**.
+2. Sheet: hint “ler teoria → treinar na sessão”.
+3. Smoke: `ciclo_hd_*`.
+
+## Pack gate + 1.0.0+12 (Ciclo HE ship)
+
+1. Bump **1.0.0+12**; Mode A HC–HD.
+2. Host: `empacotar_windows.bat` após merge.
+
+## First-run Semana 1 (Ciclo HF)
+
+1. Onboarding: CTA **Ir para Semana 1** → `/biblioteca`.
+2. Coach no Hoje (sem oficiais): **Ir para Semana 1** → Biblioteca.
+3. Smoke: `ciclo_hf_*`.
+
+## Fila vazia / sem material (Ciclo HG)
+
+1. Fila vazia sem base oficial → QuietEmpty Biblioteca / Semana 1 (não só Sessão).
+2. Cards de eixo: “para revisar” (sem jargão `due` na UI).
+3. Smoke: `ciclo_hg_*`.
+
+## Pack gate + 1.0.0+13 (Ciclo HH ship)
+
+1. Bump **1.0.0+13**.
+2. Host: `empacotar_windows.bat` após merge.
+
+## Tutor prosa limpa (Ciclo HI)
+
+1. Offline: resposta em prosa (assunto/tópico), sem `Questão bio-` / ids / URLs no corpo.
+2. IDs só em `citations[]`; UI: bloco **Fontes** depois do texto.
+3. Prompt online: não colar ids/URLs no corpo.
+4. Smoke: `ciclo_hi_*`.
+
+## Ficha / debrief limpos (Ciclo HJ)
+
+1. Debrief: explicação no corpo; rodapé **Fonte** (banca / PDF) quieto.
+2. Ficha: enunciado limpo; PDF abaixo da resolução.
+3. Smoke: `ciclo_hj_*`.
+
+## Identidade visual core (Ciclo HK)
+
+1. Tema: Georgia + Segoe UI Variable; navy/teal; hero Hoje com marca dominante.
+2. Fila / Tutor / Ficha: hierarquia limpa + motion leve.
+3. Smoke: `ciclo_hk_*`.
+
+## Pack gate + 1.0.0+14 (Ciclo HL ship)
+
+1. Bump **1.0.0+14** (qualidade IA + visual).
+2. Host: `empacotar_windows.bat` após merge.
+
+## Tutor didático offline (Ciclo HM)
+
+1. `build_offline_tutor_lesson`: socrático → conceito → diagnóstico → verificação.
+2. Prompt online com MISSÃO de ensinar + `errorType` no `/api/chat`.
+3. Smoke: `ciclo_hm_*`.
+
+## Miss → remediação acionável (Ciclo HN)
+
+1. `remediation_for` devolve `diagnosis`, `teachFocus`, `cta`, `ctaTutor`, `ctaTheory`.
+2. Sessão: CTAs Treinar remediação / Pedir aula ao tutor / Ler teoria.
+3. Smoke: `ciclo_hn_*`.
+
+## Contexto de erro no Tutor + Adaptive (Ciclo HO)
+
+1. `/tutor?errorType=` calibra a aula; ficha passa errorType após miss.
+2. Adaptive mostra `teachOpener` do tipo dominante.
+3. Smoke: `ciclo_ho_*`.
+
+## Pack gate + 1.0.0+15 (Ciclo HP ship)
+
+1. Bump **1.0.0+15** (gênio em ensinar — pedagogia amarrada).
+2. Host: `empacotar_windows.bat` após merge.
+
+## Tutor multi-turno (Ciclo HQ)
+
+1. Se a última resposta pediu verificação, o próximo turno fecha o loop (certo/quase/reexplicar).
+2. Offline: `grade_verification_reply`; online: regra MULTI-TURNO no prompt.
+3. Smoke: `ciclo_hq_*`.
+
+## Domínio após remediação (Ciclo HR)
+
+1. `/api/answers` devolve `teachMastery` (recuperado / ainda frágil).
+2. Adaptive: painel **Domínio** no fim da fila.
+3. Smoke: `ciclo_hr_*`.
+
+## Missão didática Hoje/Fila (Ciclo HS)
+
+1. `dailyRoutine.teachMission` a partir da lacuna aberta (tópico + tipo de erro).
+2. Coach line: “Hoje: fechar {tópico} (erro de {tipo}) — teoria → 5 itens”.
+3. Smoke: `ciclo_hs_*`.
+
+## Pack gate + 1.0.0+16 (Ciclo HT ship)
+
+1. Bump **1.0.0+16** (loop didático fechado).
+2. Host: `empacotar_windows.bat` após merge.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

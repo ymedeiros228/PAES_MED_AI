@@ -1,8 +1,8 @@
 ﻿# Inventário de materiais oficiais — PAES/UEMA
 
 Coloque os PDFs nas pastas indicadas. Marque o que já tem.
-Atualizado Ciclo N (K–N qualidade): 2024–26 é o núcleo no disco quando os pares existem;
-2017–23 só entram após drop manual — sem arquivo = sem cobertura prometida.
+Atualizado GV–GW (F1 deep): resumo também no Hoje (`acervoSummary`); 2024–26 é o núcleo no disco;
+2017–23 só entram após drop manual — sem arquivo = sem cobertura prometida (smoke `ciclo_gw_*`).
 
 ## Edital
 

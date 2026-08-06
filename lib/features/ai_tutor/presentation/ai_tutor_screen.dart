@@ -15,11 +15,13 @@ class AiTutorScreen extends ConsumerStatefulWidget {
     this.seedSubject,
     this.seedTopic,
     this.seedQuery,
+    this.seedErrorType,
   });
 
   final String? seedSubject;
   final String? seedTopic;
   final String? seedQuery;
+  final String? seedErrorType;
 
   @override
   ConsumerState<AiTutorScreen> createState() => _AiTutorScreenState();
@@ -56,15 +58,28 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     final sub = widget.seedSubject?.trim() ?? '';
     final top = widget.seedTopic?.trim() ?? '';
     final q = widget.seedQuery?.trim() ?? '';
-    if (sub.isEmpty && top.isEmpty && q.isEmpty) {
+    final err = widget.seedErrorType?.trim() ?? '';
+    if (sub.isEmpty && top.isEmpty && q.isEmpty && err.isEmpty) {
       _seedApplied = true;
       return;
+    }
+    if (err.isNotEmpty) {
+      ref.read(aiTutorControllerProvider.notifier).setErrorContext(
+            errorType: err,
+            subject: sub.isEmpty ? null : sub,
+            topic: top.isEmpty ? null : top,
+          );
     }
     final buf = StringBuffer();
     if (sub.isNotEmpty || top.isNotEmpty) {
       buf.write('Sobre ${sub.isEmpty ? '—' : sub}');
       if (top.isNotEmpty) buf.write(' · $top');
       buf.writeln('.');
+    }
+    if (err.isNotEmpty) {
+      buf.writeln(
+        'Errei por $err. Me ensine o ponto certo e o próximo passo — sem entregar só o gabarito.',
+      );
     }
     if (q.isNotEmpty) {
       buf.writeln('Questão (trecho): $q');
@@ -119,9 +134,9 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
             child: PageHeader(
-              eyebrow: 'Ajuda',
+              eyebrow: 'PAES MED',
               title: 'Tutor',
-              subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
+              subtitle: 'Pergunte com base local · responda a verificação para fechar a aula · fontes clicáveis no rodapé · clique abre ficha',
               trailing: IconButton(
                 tooltip: 'Limpar conversa',
                 onPressed: state.isLoading
@@ -160,6 +175,14 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
             padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
             child: Row(
               children: [
+                FilterChip(
+                  label: const Text('Preferir oficiais'),
+                  selected: state.preferOfficial,
+                  showCheckmark: false,
+                  onSelected: (v) =>
+                      ref.read(aiTutorControllerProvider.notifier).setPreferOfficial(v),
+                ),
+                const SizedBox(width: 8),
                 for (final s in _styles)
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
@@ -320,13 +343,24 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
 }
 
 String _citeLine(Map<String, dynamic> c) {
-  final type = c['type']?.toString() ?? 'fonte';
+  final type = (c['type'] ?? c['refType'])?.toString() ?? 'fonte';
+  final id = (c['id'] ?? c['refId'])?.toString();
   final year = c['year']?.toString();
   final tag = year != null && year.isNotEmpty ? '[$type · $year]' : '[$type]';
-  final label = c['label'] ?? c['id'] ?? '—';
-  final snippet = c['snippet']?.toString();
-  if (snippet != null && snippet.isNotEmpty) return '$tag $label — $snippet';
-  return '$tag $label';
+  final label = (c['label'] ?? id ?? '—').toString();
+  // Chip: texto curto (label), sem snippet longo
+  final short = label.length > 36 ? '${label.substring(0, 34)}…' : label;
+  return '$tag $short';
+}
+
+IconData _citeIcon(Map<String, dynamic> c) {
+  final type = (c['type'] ?? c['refType'])?.toString() ?? '';
+  return switch (type) {
+    'question' => Icons.quiz_outlined,
+    'edital' => Icons.menu_book_outlined,
+    'lesson' => Icons.school_outlined,
+    _ => Icons.link,
+  };
 }
 
 class _MessageBubble extends StatelessWidget {
@@ -337,7 +371,18 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Align(
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, 8 * (1 - t)),
+          child: child,
+        ),
+      ),
+      child: Align(
       alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 720),
@@ -371,48 +416,62 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             ],
-            SelectableText(message.content),
+            SelectableText(
+              message.content,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+            ),
             if (message.citations.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Divider(height: 1, color: scheme.outlineVariant.withOpacity(0.6)),
               const SizedBox(height: 10),
               Text(
-                'Fontes na base (clique abre ficha/treino)',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 4),
-              for (final c in message.citations.take(5))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: InkWell(
-                    onTap: () {
-                      final type = c['type']?.toString();
-                      final id = c['id']?.toString();
-                      final subject = c['subject']?.toString() ?? '';
-                      final topic = c['topic']?.toString() ?? '';
-                      if (type == 'question' && id != null && id.isNotEmpty) {
-                        context.go('/questoes/$id');
-                      } else if ((type == 'edital' || type == 'lesson') && subject.isNotEmpty) {
-                        context.go(
-                          '/adaptativo?subject=${Uri.encodeComponent(subject)}'
-                          '&topic=${Uri.encodeComponent(topic)}',
-                        );
-                      } else if (type == 'edital' || type == 'lesson') {
-                        // Ciclo CF: lesson never hostil /aulas sob foco
-                        context.go('/sessao');
-                      }
-                    },
-                    child: Text(
-                      '• ${_citeLine(c)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            decoration: TextDecoration.underline,
-                          ),
+                'Fontes',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
                     ),
-                  ),
-                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final c in message.citations.take(6))
+                    ActionChip(
+                      avatar: Icon(
+                        _citeIcon(c),
+                        size: 16,
+                        color: scheme.primary,
+                      ),
+                      label: Text(
+                        _citeLine(c),
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                      onPressed: () {
+                        final type = (c['type'] ?? c['refType'])?.toString();
+                        final id = (c['id'] ?? c['refId'])?.toString();
+                        final subject = c['subject']?.toString() ?? '';
+                        final topic = c['topic']?.toString() ?? '';
+                        if (type == 'question' && id != null && id.isNotEmpty) {
+                          context.go('/questoes/$id');
+                        } else if ((type == 'edital' || type == 'lesson') && subject.isNotEmpty) {
+                          context.go(
+                            '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+                            '&topic=${Uri.encodeComponent(topic)}',
+                          );
+                        } else if (type == 'edital' || type == 'lesson') {
+                          context.go('/sessao');
+                        }
+                      },
+                    ),
+                ],
+              ),
             ],
           ],
         ),
       ),
+    ),
     );
   }
 }

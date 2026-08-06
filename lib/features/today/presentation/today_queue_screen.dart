@@ -223,6 +223,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     final sessionPath = routine['sessionPath']?.toString() ??
         '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
     final coach = routine['line']?.toString();
+    final teachMission = routine['teachMission'] is Map
+        ? Map<String, dynamic>.from(routine['teachMission'] as Map)
+        : null;
     final officialUnlocked = queue!['officialUnlocked'] == true;
     final coachYear = routine['year'];
     final coachSubject = routine['subject']?.toString();
@@ -252,17 +255,42 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                PageHeader(
-                  eyebrow: 'Estudar',
-                  title: 'Fila',
-                  subtitle: coach != null
-                      ? '$coach · S sessão · R atualiza · ↑/↓ J/K · Enter item'
-                      : 'O que fazer a seguir · ~$minutes min · S sessão · R atualiza · ↑/↓ Enter',
-                  trailing: IconButton(
-                    tooltip: 'Atualizar',
-                    onPressed: _load,
-                    icon: const Icon(Icons.refresh_rounded),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 480),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, t, child) => Opacity(
+                    opacity: t,
+                    child: Transform.translate(
+                      offset: Offset(0, 10 * (1 - t)),
+                      child: child,
                     ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'PAES MED',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              letterSpacing: 1.6,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      PageHeader(
+                        title: 'Fila',
+                        subtitle: coach != null
+                            ? '$coach · S sessão · R atualiza'
+                            : 'O próximo passo do dia · ~$minutes min · R atualiza',
+                        trailing: IconButton(
+                          tooltip: 'Atualizar',
+                          onPressed: _load,
+                          icon: const Icon(Icons.refresh_rounded),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 FilledButton.icon(
@@ -270,6 +298,28 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('Começar sessão (S)'),
                 ),
+                if (teachMission != null) ...[
+                  const SizedBox(height: 12),
+                  SectionLabel(
+                    'Missão didática',
+                    hint: teachMission['errorLabel'] != null
+                        ? 'Erro de ${teachMission['errorLabel']}'
+                        : 'Lacuna aberta',
+                  ),
+                  PlaylistTile(
+                    title: teachMission['topic']?.toString() ?? 'Lacuna',
+                    subtitle: teachMission['line']?.toString() ??
+                        '${teachMission['subject']} · fechar lacuna',
+                    badge: 'missão',
+                    leadingIcon: Icons.school_outlined,
+                    onPlay: () {
+                      final path = teachMission['path']?.toString();
+                      if (path != null && path.isNotEmpty) {
+                        context.go(path);
+                      }
+                    },
+                  ),
+                ],
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
                   builder: (context, snap) {
@@ -320,10 +370,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 if (!hasAnything) ...[
                   const SizedBox(height: 20),
                   QuietEmpty(
-                    message: 'Fila leve — sessão guiada é o caminho.',
+                    message: officialUnlocked
+                        ? 'Fila leve — sessão guiada é o caminho.'
+                        : 'Ainda sem base oficial na fila. Comece pela Semana 1 (2024–26) na Biblioteca.',
                     action: TextButton(
-                      onPressed: () => context.go('/sessao'),
-                      child: const Text('Sessão'),
+                      onPressed: () => context.go(
+                        officialUnlocked ? '/sessao' : '/biblioteca',
+                      ),
+                      child: Text(officialUnlocked ? 'Sessão' : 'Ir para Semana 1'),
                     ),
                   ),
                 ],
@@ -413,9 +467,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final due = (queue!['axisCardsDue'] as int?) ?? 0;
                         final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
                         if (due > 0 && neu > 0) {
-                          return '$due due · $neu dos eixos sem revisão';
+                          return '$due para revisar · $neu dos eixos ainda sem revisão';
                         }
-                        if (due > 0) return '$due card(s) dos eixos due';
+                        if (due > 0) return '$due card(s) dos eixos para revisar';
                         return '$neu card(s) dos eixos (ainda sem revisão)';
                       }(),
                       badge: 'eixos',

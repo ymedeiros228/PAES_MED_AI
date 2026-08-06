@@ -250,7 +250,7 @@ Future<void> openTheoryReadSheet(
                           },
                           child: Text(isRead ? 'Li de novo' : 'Marquei como li'),
                         ),
-                        FilledButton.tonal(
+                        FilledButton(
                           onPressed: () {
                             Navigator.pop(ctx);
                             context.go(sessionPath);
@@ -265,6 +265,11 @@ Future<void> openTheoryReadSheet(
                           child: const Text('Biblioteca'),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Caminho: ler teoria → treinar na sessão (não inventa PDF).',
+                      style: Theme.of(ctx).textTheme.bodySmall,
                     ),
                   ],
                 );

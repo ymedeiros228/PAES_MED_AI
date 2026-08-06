@@ -41,6 +41,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   bool pendingErrorPick = false;
   String? answerSaveError;
   String? generatedPartialNote;
+  Map<String, dynamic>? teachMastery;
 
   static const _errorTypes = [
     'conceito',
@@ -161,7 +162,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     final id = q['id']?.toString();
     if (id == null || correctIndex == null) return;
     try {
-      await apiClient.post('/api/answers', {
+      final res = await apiClient.post('/api/answers', {
         'questionId': id,
         'correct': correct,
         'subject': q['subject'] ?? subject,
@@ -170,7 +171,16 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
         'timeMs': null,
       });
       ref.read(refreshTickProvider.notifier).state++;
-      if (mounted) setState(() => answerSaveError = null);
+      if (mounted) {
+        setState(() {
+          answerSaveError = null;
+          final map = res is Map ? Map<String, dynamic>.from(res as Map) : null;
+          final tm = map?['teachMastery'];
+          if (tm is Map) {
+            teachMastery = Map<String, dynamic>.from(tm);
+          }
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -337,6 +347,35 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   ),
                   const SizedBox(height: 8),
                 ],
+                if (meta != null &&
+                    (meta!['teachOpener']?.toString().isNotEmpty == true ||
+                        meta!['practiceHint']?.toString().isNotEmpty == true)) ...[
+                  SurfacePanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Como treinar este erro',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        if (meta!['teachOpener'] != null) ...[
+                          const SizedBox(height: 6),
+                          Text(meta!['teachOpener'].toString()),
+                        ],
+                        if (meta!['practiceHint'] != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            meta!['practiceHint'].toString(),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (answerSaveError != null) ...[
                   QuietEmpty(
                     message: answerSaveError!,
@@ -359,6 +398,46 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           '${answeredCount > 0 ? ' (${(100 * correctCount / answeredCount).toStringAsFixed(0)}%)' : ''}'
                           ' · $subject · $topic',
                         ),
+                        if (teachMastery != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            'Domínio',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            teachMastery!['message']?.toString() ??
+                                (teachMastery!['status'] == 'recovered'
+                                    ? 'Erro em $topic: recuperado.'
+                                    : 'Erro em $topic: ainda frágil.'),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              if (teachMastery!['status'] == 'recovered')
+                                FilledButton.tonal(
+                                  onPressed: () => context.go('/fila'),
+                                  child: const Text('Fila'),
+                                )
+                              else
+                                FilledButton.tonal(
+                                  onPressed: () {
+                                    final err =
+                                        teachMastery!['errorType']?.toString() ?? errorType;
+                                    context.go(
+                                      '/tutor?subject=${Uri.encodeComponent(subject)}'
+                                      '&topic=${Uri.encodeComponent(topic)}'
+                                      '&errorType=${Uri.encodeComponent(err)}',
+                                    );
+                                  },
+                                  child: const Text('Tutor'),
+                                ),
+                            ],
+                          ),
+                        ],
                         if (meta?['dominantErrorType'] != null) ...[
                           const SizedBox(height: 6),
                           Text(

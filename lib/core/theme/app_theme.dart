@@ -104,16 +104,25 @@ class AppTheme {
       inversePrimary: dark ? tealDeep : const Color(0xFF3DC9A8),
     );
 
-    // Display Georgia (editorial) + corpo Segoe (UI limpa)
+    // Display Georgia (editorial) + corpo Segoe Variable (UI limpa, HK)
+    const displayFallback = <String>['Georgia', 'Times New Roman', 'serif'];
+    const bodyFallback = <String>[
+      'Segoe UI Variable',
+      'Segoe UI',
+      'Candara',
+      'sans-serif',
+    ];
     final display = TextStyle(
       fontFamily: 'Georgia',
+      fontFamilyFallback: displayFallback,
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
       height: 1.12,
       letterSpacing: -0.6,
     );
     final body = TextStyle(
-      fontFamily: 'Segoe UI',
+      fontFamily: 'Segoe UI Variable',
+      fontFamilyFallback: bodyFallback,
       color: scheme.onSurface,
       height: 1.45,
       letterSpacing: 0.1,

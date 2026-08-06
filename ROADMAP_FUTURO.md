@@ -304,6 +304,24 @@ flowchart TB
 | GS | Git host + suite / BLOCKED | host | **Feito** |
 | GT | F2 thin Ler teoria (Fila+ficha) | `ciclo_gt_*` | **Feito** |
 | GU | Pack smoke gate + **1.0.0+9** | `ciclo_gu_*` | **Feito** |
+| GV | Dashboard acervo summary (F1 deep) | `ciclo_gv_*` | **Feito** |
+| GW | Gate honestidade 2017–23 + dry-run fetch | `ciclo_gw_*` | **Feito** |
+| GY | F3 grounding + `/api/tutor/ask` + aliases | `ciclo_gy_*` | **Feito** |
+| GZ | Tutor UI block sem fonte + chips | `ciclo_gz_*` | **Feito** |
+| HA | preferOfficial + Natureza e2e | `ciclo_ha_*` | **Feito** |
+| HC | Sessão empties/erros PT + 1 CTA | `ciclo_hc_*` | **Feito** |
+| HD | Ficha Ler teoria → treinar + trainSessionPath | `ciclo_hd_*` | **Feito** |
+| HF | First-run CTA Semana 1 | `ciclo_hf_*` | **Feito** |
+| HG | Fila empty → Biblioteca + PT sem due | `ciclo_hg_*` | **Feito** |
+| HI | Tutor prosa limpa + Fontes rodapé | `ciclo_hi_*` | **Feito** |
+| HJ | Ficha/debrief sem lixo técnico | `ciclo_hj_*` | **Feito** |
+| HK | Identidade visual core (Hoje/Fila/…) | `ciclo_hk_*` | **Feito** |
+| HM | Tutor offline didático (socrático+passo) | `ciclo_hm_*` | **Feito** |
+| HN | Miss → diagnóstico + CTA remediação | `ciclo_hn_*` | **Feito** |
+| HO | Tutor errorType + adaptive opener | `ciclo_ho_*` | **Feito** |
+| HQ | Tutor multi-turno verificação | `ciclo_hq_*` | **Feito** |
+| HR | Mastery após remediação | `ciclo_hr_*` | **Feito** |
+| HS | Missão didática Hoje/Fila | `ciclo_hs_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -311,9 +329,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós GR–GU)
+## Estado (atualizado pós HQ–HS / loop didático)
 
-- Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
-- GN–GQ: mobile sync UX + biblioteca PDF ano open — **Feito**.
-- Residual curto: F3/F1 deep (inventário UEMA completo) TBD; stop micro-ciclos de teclado.
-- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: se agente sem `git`, commit/push na máquina.
+- Rodada **HM–HO** (gênio ensinar): lição + remediação + errorType + ship **1.0.0+15**.
+- Rodada **HQ–HS** (loop fechado): multi-turno verificação + domínio + missão didática + ship **1.0.0+16**.
+- Residual: pack Windows no host após merge (`empacotar_windows.bat`).
+- Push no GitHub após suite verde (autor: Yuri Medeiros).

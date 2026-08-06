@@ -12,6 +12,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -313,10 +314,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       pendingErrorPick = false;
       errorType = 'conceito';
       questionsLoadError = out.isEmpty && batch.isNotEmpty
-          ? 'Não foi possível carregar as questões desta fase — API offline?'
+          ? 'Não foi possível carregar as questões desta fase. Verifique se o app está ligado (atalho PAES MED AI) e tente de novo.'
           : null;
       questionsPartialLoadNote = failed > 0 && out.isNotEmpty
-          ? '$failed de ${batch.length} questões não carregaram — API instável?'
+          ? '$failed de ${batch.length} questões não carregaram. Toque em Carregar questões ou avance a fase.'
           : null;
     });
     qSw
@@ -431,7 +432,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       sessionCards = [];
       revisionUsingQuestions = true;
       questionsLoadError = ids.isEmpty && fetchFailures > 0
-          ? 'Não foi possível buscar questões das revisões due.'
+          ? 'Não foi possível buscar questões das revisões desta sessão. Tente Carregar revisões de novo.'
           : null;
     });
     if (ids.isNotEmpty) await _loadQuestionBodies(ids);
@@ -543,7 +544,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const SizedBox(height: 8),
           ],
           if (gaps.isEmpty)
-            const Text('Sem misses neste bloco — siga a fila ou os cards due.')
+            const Text('Sem misses neste bloco — siga a fila ou os cards do dia.')
           else ...[
             Text(
               'Tópicos fracos',
@@ -918,18 +919,36 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final q = sessionQuestions[qIndex];
     final s = q['subject']?.toString() ?? '';
     final t = q['topic']?.toString() ?? '';
+    final trainPath =
+        '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+        '&subject=${Uri.encodeComponent(s)}'
+        '&topic=${Uri.encodeComponent(t)}';
+    final yearRaw = q['year'];
+    final year = yearRaw is int
+        ? yearRaw
+        : int.tryParse(yearRaw?.toString() ?? '');
     return ResolutionDebrief(
       question: q,
       professor: _professor,
+      pdfYear: year,
+      pdfAvailable: false,
       trailing: Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
-          TextButton(
-            onPressed: () => context.go(
-              '/adaptativo?subject=${Uri.encodeComponent(s)}&topic=${Uri.encodeComponent(t)}',
+          if (s.isNotEmpty && t.isNotEmpty)
+            FilledButton.tonal(
+              onPressed: () => openTheoryReadSheet(
+                context,
+                subject: s,
+                topic: t,
+                trainSessionPath: trainPath,
+              ),
+              child: const Text('Ler teoria'),
             ),
-            child: const Text('Treinar este tópico'),
+          TextButton(
+            onPressed: () => context.go(trainPath),
+            child: const Text('Treinar tópico'),
           ),
           TextButton(
             onPressed: _createCardFromCurrent,
@@ -1160,26 +1179,48 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               Text('Teoria do edital', style: Theme.of(context).textTheme.titleMedium),
               if (snippets.isEmpty)
                 QuietEmpty(
-                  message: 'Sem tópicos de syllabus para o assunto do dia — rode Sync syllabus na Biblioteca.',
+                  message:
+                      'Sem trechos de edital para o assunto do dia. Abra a Biblioteca e sincronize o edital, ou avance para as questões.',
                   action: TextButton(
                     onPressed: () => context.go('/biblioteca'),
                     child: const Text('Biblioteca'),
                   ),
                 )
               else
-                for (final s in snippets.take(10))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 2, right: 8),
-                          child: Icon(Icons.menu_book_outlined, size: 18),
+                for (final raw in snippets.take(10))
+                  Builder(
+                    builder: (_) {
+                      final text = raw.toString().trim();
+                      if (text.isEmpty) return const SizedBox.shrink();
+                      final low = text.toLowerCase();
+                      if (low.startsWith('id=') ||
+                          text.contains('/data/') ||
+                          text.startsWith('http') ||
+                          RegExp(r'\b[a-z]{2,6}-\d{4}-\d+\b').hasMatch(low)) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 2, right: 8),
+                              child: Icon(Icons.menu_book_outlined, size: 18),
+                            ),
+                            Expanded(
+                              child: SelectableText(
+                                text,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(height: 1.45),
+                              ),
+                            ),
+                          ],
                         ),
-                        Expanded(child: SelectableText(s)),
-                      ],
-                    ),
+                      );
+                    },
                   ),
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
               if (study != null)
@@ -1269,10 +1310,73 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ],
                 if (!pendingErrorPick && lastRemediation != null && lastRemediation!.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Text(lastRemediation!['title']?.toString() ?? 'Remediação', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    lastRemediation!['title']?.toString() ?? 'Remediação',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if ((lastRemediation!['diagnosis']?.toString() ?? '').isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        lastRemediation!['diagnosis'].toString(),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  if ((lastRemediation!['teachFocus']?.toString() ?? '').isNotEmpty)
+                    Text(
+                      'Foque no eixo «${lastRemediation!['teachFocus']}».',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   for (final s in (lastRemediation!['steps'] as List? ?? []))
                     Text('• $s'),
-                  Text(lastRemediation!['practiceHint']?.toString() ?? '', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    lastRemediation!['practiceHint']?.toString() ?? '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if ((lastRemediation!['cta'] as Map?)?['path'] != null)
+                        FilledButton.tonal(
+                          onPressed: () {
+                            final path = (lastRemediation!['cta'] as Map)['path'].toString();
+                            context.go(path);
+                          },
+                          child: Text(
+                            (lastRemediation!['cta'] as Map)['label']?.toString() ??
+                                'Treinar remediação',
+                          ),
+                        ),
+                      if ((lastRemediation!['ctaTutor'] as Map?)?['path'] != null)
+                        TextButton(
+                          onPressed: () {
+                            final path =
+                                (lastRemediation!['ctaTutor'] as Map)['path'].toString();
+                            context.go(path);
+                          },
+                          child: Text(
+                            (lastRemediation!['ctaTutor'] as Map)['label']?.toString() ??
+                                'Pedir aula ao tutor',
+                          ),
+                        ),
+                      if ((lastRemediation!['ctaTheory'] as Map?) != null)
+                        TextButton(
+                          onPressed: () {
+                            final t = lastRemediation!['ctaTheory'] as Map;
+                            openTheoryReadSheet(
+                              context,
+                              subject: t['subject']?.toString() ?? '',
+                              topic: t['topic']?.toString() ?? '',
+                              trainSessionPath:
+                                  (lastRemediation!['cta'] as Map?)?['path']?.toString(),
+                            );
+                          },
+                          child: const Text('Ler teoria'),
+                        ),
+                    ],
+                  ),
                 ],
               ],
               const SizedBox(height: 8),
@@ -1317,8 +1421,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               if (sessionCards.isEmpty)
                 QuietEmpty(
                   message:
-                      'Sem flashcards due. Revisões na fila: ${((plan?['revisions'] as List?) ?? []).length}. '
-                      'Carregue revisões para praticar questões dos tópicos, ou avance a fase.',
+                      'Nenhum card para revisar agora'
+                      '${((plan?['revisions'] as List?) ?? []).isNotEmpty ? ' (há tópicos na fila de revisão)' : ''}. '
+                      'Carregue as revisões para praticar, ou avance a fase.',
                   action: TextButton(
                     onPressed: () => unawaited(_enterRevisionsPhase()),
                     child: const Text('Carregar revisões'),
@@ -1357,7 +1462,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ],
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)
               QuietEmpty(
-                message: 'Sem questões carregadas para as revisões due.',
+                message: 'Ainda não há questões carregadas para esta revisão. Toque em Carregar revisões.',
                 action: TextButton(
                   onPressed: () => unawaited(_enterRevisionsPhase()),
                   child: const Text('Carregar revisões'),

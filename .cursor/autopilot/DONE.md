@@ -1,15 +1,18 @@
 # Auto-Pilot — DONE
 
-## GR–GU (2026-08-05/06)
+## HC–HD Mode A → 1.0.0+12
 
-- **GR**: pack Desktop canônico (bat + ico + exe + VERSION) + atalho.
-- **GS**: MinGit host, land em `main`, smoke 708.
-- **GT**: `openTheoryReadSheet` + CTA **Ler teoria** (Fila + ficha).
-- **GU**: smoke `ciclo_gu_pack_*`, versão **1.0.0+9**, push; fix compile Windows release.
+- Sessão PT + ficha teoria→treino.
 
-## Nota
+## HF–HG Mode A (2026-08-06)
 
-Autopilot micro-ciclos GN–GQ (e anteriores) estavam **certos**.  
-GR–GU = ship de residual real (pack/git/F2), não substituir toda a missão do Auto-Pilot.
+- **HF**: Onboarding + coach Hoje → **Ir para Semana 1** (`/biblioteca`).
+- **HG**: Fila vazia sem oficiais → Semana 1; copy “para revisar” (sem due).
+- **HH ship**: **1.0.0+13**.
+- PR #4 fechado (superseded).
 
-**Pack rule:** nunca deixar dist só com `app\` sem launcher/ico.
+- **HI–HK / HL ship**: Tutor prosa + Fontes rodapé; ficha/debrief limpos; identidade Hoje/Fila/Tutor; **1.0.0+14**.
+
+- **HM–HO / HP**: Tutor didático + remediação CTA + errorType no tutor/adaptativo; **1.0.0+15**.
+
+- **HQ–HS / HT**: multi-turno verificação + Domínio + missão didática; **1.0.0+16**.

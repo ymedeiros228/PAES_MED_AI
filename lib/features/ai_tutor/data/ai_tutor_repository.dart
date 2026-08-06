@@ -16,12 +16,17 @@ class TutorAnswer {
     this.ragMode,
     this.uncited = false,
     this.hasLocalBase = true,
+    this.preferOfficial,
   });
   final String answer;
   final List<Map<String, dynamic>> citations;
   final String? ragMode;
   final bool uncited;
   final bool hasLocalBase;
+  final bool? preferOfficial;
+
+  /// Sucesso F3: tem fontes OU recusa explícita (uncited + motivo).
+  bool get isGroundedOk => citations.isNotEmpty || uncited;
 }
 
 class AiTutorRepository {
@@ -29,13 +34,31 @@ class AiTutorRepository {
     required String message,
     required List<ChatMessage> history,
     String style = 'professor',
+    bool? preferOfficial,
+    String? errorType,
+    String? subject,
+    String? topic,
   }) async {
     try {
-      final data = await apiClient.post('/api/chat', {
+      final body = <String, dynamic>{
         'message': message,
         'style': style,
         'history': history.map((item) => item.toJson()).toList(),
-      });
+      };
+      if (preferOfficial != null) {
+        body['preferOfficial'] = preferOfficial;
+      }
+      if (errorType != null && errorType.isNotEmpty) {
+        body['errorType'] = errorType;
+      }
+      if (subject != null && subject.isNotEmpty) {
+        body['subject'] = subject;
+      }
+      if (topic != null && topic.isNotEmpty) {
+        body['topic'] = topic;
+      }
+      // F3: alias /api/tutor/ask (mesmo contrato de /api/chat)
+      final data = await apiClient.post('/api/tutor/ask', body);
       final map = Map<String, dynamic>.from(data as Map);
       final answer = map['answer']?.toString();
       if (answer == null || answer.trim().isEmpty) {
@@ -44,13 +67,24 @@ class AiTutorRepository {
       final cites = (map['citations'] as List? ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
-      return TutorAnswer(
+      final uncited = map['uncited'] == true;
+      final result = TutorAnswer(
         answer: answer.trim(),
         citations: cites,
         ragMode: map['ragMode']?.toString(),
-        uncited: map['uncited'] == true,
+        uncited: uncited,
         hasLocalBase: map['hasLocalBase'] != false,
+        preferOfficial: map['preferOfficial'] is bool ? map['preferOfficial'] as bool : null,
       );
+      // GZ: bloquear resposta "ok" sem fonte e sem recusa explícita
+      if (!result.isGroundedOk) {
+        throw const AiTutorException(
+          'Resposta sem fonte na base local. Tente de novo ou abra Biblioteca / Sessão.',
+        );
+      }
+      return result;
+    } on AiTutorException {
+      rethrow;
     } on ApiException catch (e) {
       throw AiTutorException(e.message);
     } catch (e) {

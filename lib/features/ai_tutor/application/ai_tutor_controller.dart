@@ -8,25 +8,42 @@ class AiTutorState {
     this.isLoading = false,
     this.error,
     this.style = 'professor',
+    this.preferOfficial = true,
+    this.errorType,
+    this.contextSubject,
+    this.contextTopic,
   });
 
   final List<ChatMessage> messages;
   final bool isLoading;
   final String? error;
   final String style;
+  final bool preferOfficial;
+  final String? errorType;
+  final String? contextSubject;
+  final String? contextTopic;
 
   AiTutorState copyWith({
     List<ChatMessage>? messages,
     bool? isLoading,
     String? error,
     String? style,
+    bool? preferOfficial,
+    String? errorType,
+    String? contextSubject,
+    String? contextTopic,
     bool clearError = false,
+    bool clearErrorContext = false,
   }) {
     return AiTutorState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
       style: style ?? this.style,
+      preferOfficial: preferOfficial ?? this.preferOfficial,
+      errorType: clearErrorContext ? null : (errorType ?? this.errorType),
+      contextSubject: clearErrorContext ? null : (contextSubject ?? this.contextSubject),
+      contextTopic: clearErrorContext ? null : (contextTopic ?? this.contextTopic),
     );
   }
 }
@@ -48,8 +65,9 @@ class AiTutorController extends StateNotifier<AiTutorState> {
               ChatMessage(
                 role: ChatRole.assistant,
                 content:
-                    'Olá! Sou seu tutor calibrado no PAES/UEMA (base local + edital). '
-                    'Não invento estatísticas. Posso explicar como professor, fazer macetes, mapas e flashcards. O que estudamos?',
+                    'Olá! Sou seu tutor do PAES/UEMA (base local). '
+                    'Diagnosticamos o tipo de erro, explicamos o ponto certo e guiamos o próximo passo — '
+                    'sem inventar estatísticas. O que estudamos?',
               ),
             ],
           ),
@@ -59,6 +77,22 @@ class AiTutorController extends StateNotifier<AiTutorState> {
 
   void setStyle(String style) {
     state = state.copyWith(style: style);
+  }
+
+  void setPreferOfficial(bool value) {
+    state = state.copyWith(preferOfficial: value);
+  }
+
+  void setErrorContext({
+    String? errorType,
+    String? subject,
+    String? topic,
+  }) {
+    state = state.copyWith(
+      errorType: errorType,
+      contextSubject: subject,
+      contextTopic: topic,
+    );
   }
 
   Future<void> send(String rawText) async {
@@ -78,7 +112,19 @@ class AiTutorController extends StateNotifier<AiTutorState> {
         message: text,
         history: previousHistory,
         style: state.style,
+        preferOfficial: state.preferOfficial,
+        errorType: state.errorType,
+        subject: state.contextSubject,
+        topic: state.contextTopic,
       );
+      // GZ: só commit se grounded (cites) ou uncited explícito
+      if (!answer.isGroundedOk) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Resposta sem fonte na base local. Tente de novo ou abra Biblioteca.',
+        );
+        return;
+      }
       state = state.copyWith(
         messages: [
           ...state.messages,
@@ -101,6 +147,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
   void clearConversation() {
     state = AiTutorState(
       style: state.style,
+      preferOfficial: state.preferOfficial,
       messages: const [
         ChatMessage(
           role: ChatRole.assistant,

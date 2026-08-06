@@ -209,6 +209,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ? '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
                 : '/sessao');
         final coachLine = routine['line']?.toString() ?? 'Pronto para estudar?';
+        final teachMission = routine['teachMission'] is Map
+            ? Map<String, dynamic>.from(routine['teachMission'] as Map)
+            : null;
         final closePath = routine['closePath']?.toString() ?? '/fila';
         final closeLabel = routine['closeLabel']?.toString() ?? 'Ver fila';
         final progress = routine['progressLabel']?.toString() ?? '';
@@ -247,91 +250,107 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 360),
-                padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.heroGradient(Theme.of(context).brightness),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 520),
+                curve: Curves.easeOutCubic,
+                builder: (context, t, child) => Opacity(
+                  opacity: t,
+                  child: Transform.translate(
+                    offset: Offset(0, 12 * (1 - t)),
+                    child: child,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PAES MED AI',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: Colors.white,
-                            fontSize: 34,
-                          ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      (countdown['label']?.toString().isNotEmpty == true)
-                          ? countdown['label'].toString()
-                          : examDays == null
-                              ? 'Medicina · UEMA'
-                              : examDays >= 0
-                                  ? '$examDays dias para a prova'
-                                  : 'Prova na conta',
-                      style: TextStyle(color: Colors.white.withOpacity(0.78), fontSize: 15),
-                    ),
-                    const SizedBox(height: 22),
-                    Text(
-                      coachLine,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            height: 1.25,
-                          ),
-                    ),
-                    if (progress.isNotEmpty) ...[
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 380),
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(28, 40, 28, 32),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.heroGradient(Theme.of(context).brightness),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PAES MED AI',
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                              color: Colors.white,
+                              fontSize: 42,
+                              height: 1.05,
+                            ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        coachLine,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.white.withOpacity(0.92),
+                              height: 1.35,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
                       const SizedBox(height: 8),
                       Text(
-                        progress,
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+                        (countdown['label']?.toString().isNotEmpty == true)
+                            ? countdown['label'].toString()
+                            : examDays == null
+                                ? 'Medicina · UEMA'
+                                : examDays >= 0
+                                    ? '$examDays dias para a prova'
+                                    : 'Prova na conta',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.62),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppTheme.navy,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                            ),
+                            onPressed: () => context.go(sessionPath),
+                            child: Text(
+                              checkpoint != null
+                                  ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
+                                  : 'Começar sessão (S)',
+                            ),
+                          ),
+                          if (checkpoint != null)
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Colors.white70),
+                              ),
+                              onPressed: _discardCheckpoint,
+                              child: const Text('Recomeçar'),
+                            ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white.withOpacity(0.85),
+                            ),
+                            onPressed: () => context.go(closePath),
+                            child: Text('$closeLabel (L)'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'S sessão · L fila · R atualiza',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 22),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppTheme.navy,
-                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                          ),
-                          onPressed: () => context.go(sessionPath),
-                          child: Text(
-                            checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
-                                : 'Começar sessão (S)',
-                          ),
-                        ),
-                        if (checkpoint != null)
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white70),
-                            ),
-                            onPressed: _discardCheckpoint,
-                            child: const Text('Recomeçar'),
-                          ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white70),
-                          ),
-                          onPressed: () => context.go(closePath),
-                          child: Text('$closeLabel (L)'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'S sessão · L fila · R atualiza · Enter',
-                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 12),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -377,10 +396,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Comece pelo acervo', style: Theme.of(context).textTheme.titleMedium),
+                                  Text('Comece pela Semana 1', style: Theme.of(context).textTheme.titleMedium),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'Com as provas UEMA na Biblioteca, o estudo fica alinhado à banca.',
+                                    'Atualize 2024–26 na Biblioteca para alinhar o estudo às provas UEMA.',
                                     style: Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const SizedBox(height: 12),
@@ -392,7 +411,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           _dismissFirstRunCoach();
                                           context.go('/biblioteca');
                                         },
-                                        child: const Text('Ir à Biblioteca'),
+                                        child: const Text('Ir para Semana 1'),
                                       ),
                                       TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
                                     ],
@@ -402,6 +421,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
+                          if (teachMission != null) ...[
+                            PlaylistTile(
+                              title: 'Missão: ${teachMission['topic'] ?? 'lacuna'}',
+                              subtitle: teachMission['line']?.toString() ??
+                                  'Fechar lacuna · teoria → treino',
+                              badge: 'missão',
+                              leadingIcon: Icons.school_outlined,
+                              onPlay: () {
+                                final path = teachMission['path']?.toString();
+                                if (path != null && path.isNotEmpty) {
+                                  context.go(path);
+                                } else {
+                                  context.go('/fila');
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           _CheckRow(
                             done: checklist['session'] == true,
                             label: 'Sessão (~15+ min)',
@@ -443,6 +480,65 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             label: dayClosed ? 'Dia encerrado' : 'Encerrar o dia',
                             actionLabel: dayClosed ? null : 'Fechar',
                             onAction: dayClosed ? null : _closeDay,
+                          ),
+
+                          Builder(
+                            builder: (_) {
+                              final acervo = Map<String, dynamic>.from(
+                                data['acervoSummary'] as Map? ?? const {},
+                              );
+                              if (acervo.isEmpty) return const SizedBox.shrink();
+                              final label = acervo['label']?.toString();
+                              if (label == null || label.isEmpty) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                                child: SurfacePanel(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.folder_special_outlined,
+                                            size: 20,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Acervo UEMA',
+                                              style: Theme.of(context).textTheme.titleSmall,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        label,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                      if (acervo['disclaimer']?.toString().isNotEmpty == true) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          acervo['disclaimer'].toString(),
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: TextButton(
+                                          onPressed: () => context.go(
+                                            acervo['ctaPath']?.toString() ?? '/biblioteca',
+                                          ),
+                                          child: const Text('Abrir Biblioteca'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
 
                           const SizedBox(height: 8),

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import uuid
 from datetime import datetime, timedelta
@@ -23,6 +24,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Faça 2–3 questões fáceis/médias do mesmo tópico.",
         ],
         "practiceHint": "Priorize questões de conceito (definição/classificação).",
+        "axisFocus": "conceito",
+        "diagnosis": "O erro costuma ser falha de definição ou classificação — volte ao conceito antes de marcar.",
+        "socraticSeed": "Em uma frase, o que este tópico exige que você saiba definir?",
     },
     "interpretacao": {
         "title": "Remediação — interpretação",
@@ -32,6 +36,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Elimine 2 alternativas e justifique por que caem.",
         ],
         "practiceHint": "Treine enunciados longos do mesmo assunto.",
+        "axisFocus": "comando",
+        "diagnosis": "O erro costuma ser ler o comando errado ou cair no distrator — releia o que a banca pede.",
+        "socraticSeed": "Qual é o verbo de comando do enunciado e o que ele exige exatamente?",
     },
     "calculo": {
         "title": "Remediação — cálculo",
@@ -41,6 +48,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Refaça 2 exercícios numéricos parecidos.",
         ],
         "practiceHint": "Foque itens com números/gráficos do tópico.",
+        "axisFocus": "gabarito",
+        "diagnosis": "O erro costuma ser conta/unidade — refaça no papel e cheque a ordem de grandeza.",
+        "socraticSeed": "Quais dados numéricos entram na conta e qual unidade o gabarito exige?",
     },
     "distracao": {
         "title": "Remediação — distração",
@@ -50,6 +60,9 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Próxima questão: ritual de 5s de foco antes de ler.",
         ],
         "practiceHint": "Simulado curto (5 Q) com timer leve.",
+        "axisFocus": "distrator",
+        "diagnosis": "O erro costuma ser pressa ou marcar outra letra — ritual de foco antes da próxima.",
+        "socraticSeed": "O que você marcou e o que o enunciado pedia de fato?",
     },
     "tempo": {
         "title": "Remediação — tempo",
@@ -59,7 +72,19 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
             "Treine 5 questões em bloco cronometrado.",
         ],
         "practiceHint": "Bloco cronometrado do mesmo tópico.",
+        "axisFocus": "comando",
+        "diagnosis": "O erro costuma ser pressão de tempo — limite 2 min e avance com chute informado se travar.",
+        "socraticSeed": "Em 30 segundos, qual atalho elimina duas alternativas claramente erradas?",
     },
+}
+
+
+_ERROR_LABEL_PT = {
+    "conceito": "conceito",
+    "interpretacao": "interpretação",
+    "calculo": "cálculo",
+    "distracao": "distração",
+    "tempo": "tempo",
 }
 
 
@@ -67,23 +92,345 @@ def remediation_for(error_type: str | None, subject: str = "", topic: str = "") 
     key = (error_type or "conceito").strip().lower()
     recipe = dict(REMEDIATION_RECIPES.get(key) or REMEDIATION_RECIPES["conceito"])
     recipe["errorType"] = key
+    recipe["errorLabel"] = _ERROR_LABEL_PT.get(key, key)
     recipe["subject"] = subject
     recipe["topic"] = topic
+    recipe["teachFocus"] = recipe.get("axisFocus") or "conceito"
     recipe["cta"] = {
-        "path": f"/adaptativo?subject={subject}&topic={topic}" if subject else "/adaptativo",
+        "path": (
+            f"/adaptativo?subject={subject}&topic={topic}"
+            if subject
+            else "/adaptativo"
+        ),
         "label": "Treinar remediação",
     }
+    # Micro-path: teoria → adaptativo (F2 accept, sem tela nova)
+    if subject and topic:
+        recipe["ctaTheory"] = {
+            "label": "Ler teoria",
+            "subject": subject,
+            "topic": topic,
+        }
+        recipe["ctaTutor"] = {
+            "path": (
+                f"/tutor?subject={subject}&topic={topic}"
+                f"&errorType={key}"
+                f"&q={_url_quote(f'Errei por {_ERROR_LABEL_PT.get(key, key)} em {topic}. Me ensine o ponto certo.')}"
+            ),
+            "label": "Pedir aula ao tutor",
+        }
     return recipe
 
 
-def build_rag_context(query: str, limit: int = 8) -> str:
-    """Recupera trechos da base local relevantes à pergunta (RAG simples por palavras)."""
-    context, _ = build_rag_context_with_citations(query, limit)
-    return context
+def _url_quote(s: str) -> str:
+    from urllib.parse import quote
+
+    return quote(s, safe="")
 
 
-def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, list[dict[str, Any]]]:
+def clean_resolution_lines(resolution: str, limit: int = 3) -> list[str]:
+    """Trechos de resolução sem meta técnica (ids/paths/http)."""
+    clean_lines: list[str] = []
+    for ln in (resolution or "").splitlines():
+        t = ln.strip()
+        if not t or t == "—":
+            continue
+        low = t.lower()
+        if low.startswith("[rascunho") or "não é resolução oficial" in low:
+            continue
+        if t.startswith("id=") or "/data/" in t or t.startswith("http"):
+            continue
+        clean_lines.append(t)
+        if len(clean_lines) >= limit:
+            break
+    return clean_lines
+
+
+def build_offline_tutor_lesson(
+    *,
+    subject: str,
+    topic: str,
+    year: Any = None,
+    resolution: str = "",
+    statement: str = "",
+    error_type: str | None = None,
+    basis_oficial: bool = False,
+    is_first: bool = True,
+) -> list[str]:
+    """
+    Lição offline estruturada (HM): socrático → conceito → (diagnóstico) → verificação.
+    Sem ids/paths/URLs no corpo.
+    """
+    bits: list[str] = []
+    rem = remediation_for(error_type, subject, topic) if error_type else None
+    year_bit = f" (prova {year})" if year else ""
+    clean = clean_resolution_lines(resolution, limit=3)
+    stmt = (statement or "").strip()
+    # Socrático: pergunta do errorType ou do enunciado
+    if rem and rem.get("socraticSeed"):
+        ask = rem["socraticSeed"]
+    elif stmt and len(stmt) > 40:
+        ask = "Antes do gabarito: o que o enunciado pede de fato — qual o comando?"
+    else:
+        ask = f"Antes de memorizar: o que você precisa saber sobre {topic}?"
+    if is_first:
+        bits.append(f"Vamos estudar {subject} · {topic}{year_bit}.")
+        bits.append(ask)
+    else:
+        bits.append(f"Outro ângulo do mesmo eixo{year_bit}:")
+        bits.append(ask)
+    if clean:
+        bits.append("")
+        bits.append("Ponto da base local:")
+        bits.append(" ".join(clean))
+    if rem:
+        bits.append("")
+        bits.append(
+            f"Como o erro foi de {rem.get('errorLabel', 'conceito')}: {rem.get('diagnosis', '')}"
+        )
+        focus = rem.get("teachFocus") or rem.get("axisFocus")
+        if focus:
+            bits.append(f"Foque no eixo «{focus}» da explicação.")
+        steps = rem.get("steps") or []
+        if steps:
+            bits.append("")
+            bits.append(f"Próximo passo: {steps[0]}")
+        hint = rem.get("practiceHint")
+        if hint:
+            bits.append(f"Depois: {hint}")
+    if is_first:
+        bits.append("")
+        bits.append(
+            rem.get("socraticSeed")
+            if rem and rem.get("socraticSeed") and rem["socraticSeed"] != ask
+            else "Verificação: qual distrator você eliminaria primeiro e por quê?"
+        )
+    if is_first and not basis_oficial:
+        bits.append("")
+        bits.append(
+            "Aviso: a base ainda mistura treino — não inventa % de cobrança oficial."
+        )
+    return bits
+
+
+def last_assistant_awaits_verification(history: list[Any] | None) -> bool:
+    """True se a última mensagem do assistente pediu verificação (HQ)."""
+    if not history:
+        return False
+    last_asst = None
+    for item in reversed(list(history)):
+        role = getattr(item, "role", None) or (item.get("role") if isinstance(item, dict) else None)
+        content = getattr(item, "content", None) or (item.get("content") if isinstance(item, dict) else None)
+        if role == "assistant" and content:
+            last_asst = str(content)
+            break
+    if not last_asst:
+        return False
+    low = last_asst.lower()
+    markers = (
+        "verificação:",
+        "verificacao:",
+        "qual distrator",
+        "em uma frase",
+        "o que este tópico exige",
+        "qual é o verbo de comando",
+        "quais dados numéricos",
+        "o que você marcou",
+        "atalho elimina",
+        "antes do gabarito",
+        "antes de memorizar",
+    )
+    return any(m in low for m in markers)
+
+
+def grade_verification_reply(
+    *,
+    student_reply: str,
+    prior_assistant: str,
+    concept_lines: list[str] | None = None,
+    subject: str = "",
+    topic: str = "",
+    error_type: str | None = None,
+) -> dict[str, Any]:
+    """
+    Fecha o loop da verificação (HQ): feedback certo/quase/reexplicar + próximo passo.
+    Heurística lexical offline — sem inventar % UEMA.
+    """
+    reply = (student_reply or "").strip()
+    prior = (prior_assistant or "").strip()
+    concepts = [c for c in (concept_lines or []) if (c or "").strip()]
+    if not concepts:
+        # Extrai "Ponto da base local:" do turno anterior
+        chunk = ""
+        if "ponto da base local:" in prior.lower():
+            idx = prior.lower().find("ponto da base local:")
+            rest = prior[idx:].split("\n", 1)[-1] if idx >= 0 else ""
+            for ln in rest.splitlines():
+                t = ln.strip()
+                if not t:
+                    if chunk:
+                        break
+                    continue
+                low = t.lower()
+                if low.startswith("como o erro") or low.startswith("próximo") or low.startswith("foque"):
+                    break
+                if low.startswith("verificação") or low.startswith("aviso:"):
+                    break
+                chunk = f"{chunk} {t}".strip() if chunk else t
+                if len(chunk) > 200:
+                    break
+            if chunk:
+                concepts = [chunk]
+    rem = remediation_for(error_type, subject, topic) if error_type else None
+    tokens = {t for t in re.findall(r"[a-zA-ZÀ-ÿ0-9]{4,}", reply.lower())}
+    concept_toks = {
+        t
+        for c in concepts
+        for t in re.findall(r"[a-zA-ZÀ-ÿ0-9]{4,}", c.lower())
+    }
+    overlap = len(tokens & concept_toks) if concept_toks else 0
+    # Respostas muito curtas ou vazias = frágil
+    if len(reply) < 8:
+        grade = "retry"
+    elif overlap >= 2 or (overlap >= 1 and len(reply) >= 40):
+        grade = "ok"
+    elif overlap == 1 or len(reply) >= 25:
+        grade = "almost"
+    else:
+        grade = "retry"
+
+    bits: list[str] = []
+    if grade == "ok":
+        bits.append("Fechou a verificação — bom raciocínio.")
+        if concepts:
+            bits.append(f"Você alinhou com o ponto da base: {concepts[0][:180]}")
+        bits.append("Próximo passo: faça 3 itens semelhantes no Treino ou volte à Fila.")
+    elif grade == "almost":
+        bits.append("Quase — a direção está certa, falta precisão.")
+        if concepts:
+            bits.append(f"Complete com isto da base local: {concepts[0][:200]}")
+        step = (rem or {}).get("steps", ["Releia o comando e elimine 2 alternativas."])[0]
+        bits.append(f"Próximo passo: {step}")
+        bits.append("Verificação: diga de novo, em uma frase, o ponto central.")
+    else:
+        bits.append("Ainda não fechou — vamos retomar sem pressa.")
+        if concepts:
+            bits.append(f"Ponto da base local: {concepts[0][:200]}")
+        elif topic:
+            bits.append(f"Lembre o essencial de {topic} antes de marcar.")
+        step = (rem or {}).get("steps", ["Releia o trecho de teoria (2–3 min)."])[0]
+        bits.append(f"Próximo passo: {step}")
+        bits.append("Verificação: qual é o comando / conceito em uma frase?")
+
+    return {
+        "grade": grade,
+        "answer": "\n\n".join(bits),
+        "awaitingVerification": grade != "ok",
+    }
+
+
+TUTOR_SYSTEM = """
+Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
+Responda em português do Brasil, em prosa clara para o aluno.
+
+MISSÃO: ensinar como um professor excelente — diagnosticar a falha, explicar o ponto certo,
+guiar o próximo passo. Não despeje texto; conduza o aprendizado.
+
+REGRAS OBRIGATÓRIAS:
+1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
+2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
+3. Estrutura da resposta (nessa ordem), quando for NOVA aula:
+   (a) 1 pergunta socrática OU diagnóstico curto do tipo de erro (se informado);
+   (b) 2–4 frases com o conceito/comando certo, com base no contexto;
+   (c) 1 próximo passo concreto (releitura, eliminação, cálculo, treino);
+   (d) UMA pergunta de verificação no final.
+4. MULTI-TURNO: se o histórico mostra que você fez uma verificação e o aluno está respondendo a ela,
+   NÃO abra tópico novo. Dê feedback (certo / quase / reexplicar 2 frases) + 1 próximo passo;
+   só faça nova verificação se ainda não fechou.
+5. Nunca entregue só o gabarito. Ensine o raciocínio.
+6. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
+7. NÃO cole no texto da resposta: ids de questão (ex. bio-2017-01), paths de arquivo, URLs, nem rótulos técnicos.
+   As fontes estruturadas vão no schema citations (fora do texto). No corpo, fale só de assunto/tópico/ano em linguagem natural.
+8. Se o aluno informar errorType (conceito/interpretação/cálculo/distração/tempo), priorize o eixo didático correspondente
+   (conceito; comando+distrator; conta/unidade; foco; ritmo) e cite a remediação em 1 passo.
+""".strip()
+
+
+def normalize_citation(cite: dict[str, Any]) -> dict[str, Any]:
+    """Aliases F3: refType/refId espelham type/id (compat UI)."""
+    out = dict(cite)
+    ctype = out.get("type") or out.get("refType")
+    cid = out.get("id") if out.get("id") is not None else out.get("refId")
+    if ctype is not None:
+        out["type"] = ctype
+        out["refType"] = ctype
+    if cid is not None:
+        out["id"] = cid
+        out["refId"] = cid
+    return out
+
+
+def score_questions_for_query(
+    query: str,
+    *,
+    prefer_official: bool = False,
+    coach_subject: str | None = None,
+    coach_topic: str | None = None,
+    natureza_bias: bool = False,
+    limit: int = 12,
+) -> list[dict[str, Any]]:
+    """Pontua questões pela pergunta (+ boost coach / Natureza). Só ids reais do SQLite."""
+    from services_core import NATUREZA_SUBJECTS, is_official_source
+
+    tokens = {t.lower() for t in query.replace("?", " ").replace("·", " ").split() if len(t) > 2}
+    conn = connect()
+    try:
+        questions = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
+    finally:
+        conn.close()
+
+    scored: list[tuple[int, dict[str, Any]]] = []
+    for q in questions:
+        if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
+            continue
+        blob = " ".join(
+            [
+                q.get("subject") or "",
+                q.get("topic") or "",
+                q.get("subtopic") or "",
+                q.get("statement") or "",
+                q.get("resolution") or "",
+                q.get("macete") or "",
+                q.get("banca_intent") or "",
+            ]
+        ).lower()
+        score = sum(1 for t in tokens if t in blob)
+        subj = (q.get("subject") or "").strip()
+        topic = (q.get("topic") or "").strip()
+        if coach_subject and subj.lower() == coach_subject.lower():
+            score += 2
+        if coach_topic and coach_topic.lower() in topic.lower():
+            score += 3
+        if natureza_bias and subj in NATUREZA_SUBJECTS:
+            score += 2
+        if score:
+            scored.append((score, q))
+    scored.sort(key=lambda x: -x[0])
+    return [q for _, q in scored[:limit]]
+
+
+def build_rag_context_with_citations(
+    query: str,
+    limit: int = 8,
+    *,
+    prefer_official: bool = False,
+    coach_subject: str | None = None,
+    coach_topic: str | None = None,
+    natureza_bias: bool = False,
+) -> tuple[str, list[dict[str, Any]]]:
     """Retorna (contexto, citações) para o tutor mostrar fontes."""
+    from services_core import is_official_source
+
     tokens = {t.lower() for t in query.replace("?", " ").split() if len(t) > 3}
     conn = connect()
     try:
@@ -95,6 +442,8 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
 
     scored_q: list[tuple[int, dict[str, Any]]] = []
     for q in questions:
+        if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
+            continue
         blob = " ".join(
             [
                 q["subject"],
@@ -106,24 +455,46 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             ]
         ).lower()
         score = sum(1 for t in tokens if t in blob)
+        subj = (q.get("subject") or "").strip()
+        topic = (q.get("topic") or "").strip()
+        if coach_subject and subj.lower() == (coach_subject or "").lower():
+            score += 2
+        if coach_topic and (coach_topic or "").lower() in topic.lower():
+            score += 3
+        if natureza_bias:
+            from services_core import NATUREZA_SUBJECTS
+
+            if subj in NATUREZA_SUBJECTS:
+                score += 2
         if score:
             scored_q.append((score, q))
     scored_q.sort(key=lambda x: -x[0])
 
+    scored_s: list[tuple[int, dict[str, Any]]] = []
+    for s in syllabus:
+        blob = f"{s.get('subject','')} {s.get('topic','')} {s.get('subtopic') or ''}".lower()
+        score = sum(1 for t in tokens if t in blob)
+        if score:
+            scored_s.append((score, s))
+    scored_s.sort(key=lambda x: -x[0])
+    syllabus_hits = [s for _, s in scored_s[:8]] or syllabus[:5]
+
     chunks: list[str] = []
     citations: list[dict[str, Any]] = []
-    chunks.append("=== EDITAL (tópicos cadastrados) ===")
-    for s in syllabus[:30]:
+    chunks.append("=== EDITAL (tópicos alinhados à pergunta) ===")
+    for s in syllabus_hits:
         chunks.append(f"- {s['subject']} > {s['topic']} ({s.get('subtopic') or ''}) peso={s['weight']}")
         citations.append(
-            {
-                "type": "edital",
-                "id": s.get("id"),
-                "label": f"Edital · {s['subject']} · {s['topic']}",
-                "snippet": s["topic"],
-                "subject": s["subject"],
-                "topic": s["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "edital",
+                    "id": s.get("id"),
+                    "label": f"Edital · {s['subject']} · {s['topic']}",
+                    "snippet": s["topic"],
+                    "subject": s["subject"],
+                    "topic": s["topic"],
+                }
+            )
         )
 
     chunks.append("=== QUESTÕES / RESOLUÇÕES RELEVANTES ===")
@@ -136,15 +507,18 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             f"Macete: {q.get('macete') or 'n/d'}"
         )
         citations.append(
-            {
-                "type": "question",
-                "id": q["id"],
-                "label": f"{q['subject']} · {q['topic']} ({q['year']})",
-                "snippet": (q["statement"] or "")[:140],
-                "score": score,
-                "subject": q["subject"],
-                "topic": q["topic"],
-            }
+            normalize_citation(
+                {
+                    "type": "question",
+                    "id": q["id"],
+                    "label": f"{q['subject']} · {q['topic']} ({q['year']})",
+                    "snippet": (q["statement"] or "")[:140],
+                    "score": score,
+                    "subject": q["subject"],
+                    "topic": q["topic"],
+                    "official": is_official_source(q.get("source"), q.get("generated")),
+                }
+            )
         )
 
     if lessons:
@@ -155,14 +529,16 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
                 f"Resumo: {lesson.get('summary') or ''}"
             )
             citations.append(
-                {
-                    "type": "lesson",
-                    "id": lesson["id"],
-                    "label": lesson["title"],
-                    "snippet": (lesson.get("summary") or "")[:140],
-                    "subject": lesson.get("subject"),
-                    "topic": lesson.get("topic"),
-                }
+                normalize_citation(
+                    {
+                        "type": "lesson",
+                        "id": lesson["id"],
+                        "label": lesson["title"],
+                        "snippet": (lesson.get("summary") or "")[:140],
+                        "subject": lesson.get("subject"),
+                        "topic": lesson.get("topic"),
+                    }
+                )
             )
 
     freq = topic_frequency()[:10]
@@ -175,18 +551,10 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
     return "\n\n".join(chunks), citations[:12]
 
 
-TUTOR_SYSTEM = """
-Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
-Responda em português do Brasil.
-
-REGRAS OBRIGATÓRIAS:
-1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
-2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
-3. Nunca entregue a resposta pronta de imediato. Faça perguntas socráticas, use analogias e explique como professor.
-4. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
-5. Cite fontes do contexto (ano, id da questão, tópico do edital).
-6. Ao final, faça UMA pergunta de verificação.
-""".strip()
+def build_rag_context(query: str, limit: int = 8) -> str:
+    """Recupera trechos da base local relevantes à pergunta (RAG simples por palavras)."""
+    context, _ = build_rag_context_with_citations(query, limit)
+    return context
 
 
 def record_answer(
@@ -220,6 +588,50 @@ def record_answer(
         out: dict[str, Any] = {"ok": True}
         if gap_info:
             out["gap"] = gap_info
+            # HR: teachMastery a partir do progresso da lacuna
+            status = gap_info.get("status")
+            streak = int(gap_info.get("correctStreak") or gap_info.get("missCount") or 0)
+            err_t = gap_info.get("errorType") or error_type
+            if status == "recovered":
+                out["teachMastery"] = {
+                    "status": "recovered",
+                    "label": "recuperado",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "correctStreak": gap_info.get("correctStreak"),
+                    "message": (
+                        f"Domínio: erro de {err_t or 'conceito'} em {topic} — recuperado. "
+                        "Volte à Fila ou peça uma verificação no Tutor."
+                    ),
+                }
+            elif status == "open" and gap_info.get("action") == "progress":
+                out["teachMastery"] = {
+                    "status": "fragile",
+                    "label": "ainda frágil",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "correctStreak": gap_info.get("correctStreak"),
+                    "message": (
+                        f"Domínio: {topic} ainda frágil "
+                        f"({gap_info.get('correctStreak') or 0}/2 acertos seguidos). "
+                        "Continue o treino ou releia a teoria."
+                    ),
+                }
+            elif status == "open" and gap_info.get("action") == "opened":
+                out["teachMastery"] = {
+                    "status": "open",
+                    "label": "lacuna aberta",
+                    "subject": subject,
+                    "topic": topic,
+                    "errorType": err_t,
+                    "message": (
+                        f"Lacuna aberta em {topic}"
+                        + (f" (erro de {err_t})" if err_t else "")
+                        + " — teoria → treino."
+                    ),
+                }
         if not correct:
             out["remediation"] = remediation_for(error_type, subject, topic)
             if flash_info:
@@ -308,6 +720,7 @@ def _progress_gap_on_correct(conn, subject: str, topic: str) -> dict[str, Any] |
             "topic": topic,
             "status": "recovered",
             "correctStreak": streak,
+            "errorType": row["error_type"],
             "action": "recovered",
         }
     conn.execute(
@@ -319,6 +732,7 @@ def _progress_gap_on_correct(conn, subject: str, topic: str) -> dict[str, Any] |
         "topic": topic,
         "status": "open",
         "correctStreak": streak,
+        "errorType": row["error_type"],
         "action": "progress",
     }
 

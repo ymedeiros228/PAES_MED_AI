@@ -625,12 +625,13 @@ def main() -> int:
         "chat_offline_structured",
         r.status_code == 200
         and "answer" in chat
-        and "•" in chat.get("answer", "")
+        and ("Sobre " in chat.get("answer", "") or "Vamos estudar" in chat.get("answer", "") or "•" in chat.get("answer", "") or "Próximo passo" in chat.get("answer", ""))
         and "citations" in chat
         and (
             "treino" in chat.get("answer", "").lower()
             or (chat.get("statsBasis") or {}).get("basis") == "oficial"
             or "Aviso" in chat.get("answer", "")
+            or len(chat.get("citations") or []) >= 1
         ),
         chat.get("answer", "")[:90],
     )
@@ -3589,10 +3590,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
+        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3600,7 +3601,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_txt),
         )
     else:
@@ -3630,7 +3631,7 @@ def main() -> int:
     ok(
         "ciclo_cf_theory_cta",
         "Biblioteca" in sess_cf
-        and "Sync syllabus" in sess_cf
+        and ("Sync syllabus" in sess_cf or "sincronize o edital" in sess_cf)
         and "phaseName == 'theory'" in sess_cf
         and "numpadEnter" in sess_cf,
         "theory CTA + Enter",
@@ -3832,17 +3833,17 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec)
-        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck)
-        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat),
-        "version +4/+5/+6",
+        ("1.0.0+4" in pubspec or "1.0.0+5" in pubspec or "1.0.0+6" in pubspec or "1.0.0+7" in pubspec or "1.0.0+8" in pubspec or "1.0.0+9" in pubspec or "1.0.0+10" in pubspec or "1.0.0+11" in pubspec or "1.0.0+12" in pubspec or "1.0.0+13" in pubspec or "1.0.0+14" in pubspec or "1.0.0+15" in pubspec or "1.0.0+16" in pubspec)
+        and ("1.0.0+4" in settings_ck or "1.0.0+5" in settings_ck or "1.0.0+6" in settings_ck or "1.0.0+7" in settings_ck or "1.0.0+8" in settings_ck or "1.0.0+9" in settings_ck or "1.0.0+10" in settings_ck or "1.0.0+11" in settings_ck or "1.0.0+12" in settings_ck or "1.0.0+13" in settings_ck or "1.0.0+14" in settings_ck or "1.0.0+15" in settings_ck or "1.0.0+16" in settings_ck)
+        and ("1.0.0+4" in pack_bat or "1.0.0+5" in pack_bat or "1.0.0+6" in pack_bat or "1.0.0+7" in pack_bat or "1.0.0+8" in pack_bat or "1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat or "1.0.0+11" in pack_bat or "1.0.0+12" in pack_bat or "1.0.0+13" in pack_bat or "1.0.0+14" in pack_bat or "1.0.0+15" in pack_bat or "1.0.0+16" in pack_bat),
+        "version +4..+13",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cl.exists():
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_cl),
         )
     else:
@@ -3967,9 +3968,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ck for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3977,7 +3978,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_cp),
         )
     else:
@@ -4112,16 +4113,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ck for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_ct),
         )
     else:
@@ -4193,16 +4194,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_cu for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +7/+8",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9"))
+            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
             or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
             str(ver_cu),
         )
@@ -4372,7 +4373,7 @@ def main() -> int:
     if ver_dc.exists():
         ok(
             "ciclo_dc_version_file",
-            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9")),
+            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             str(ver_dc),
         )
     else:
@@ -4835,9 +4836,9 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ed_version_108",
-        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9"))
-        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9"))
-        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9")),
+        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
         "version +8/+9",
     )
     ok(
@@ -5574,7 +5575,10 @@ def main() -> int:
     ok(
         "ciclo_fz_session_partial_load",
         "questionsPartialLoadNote" in sess_fb
-        and "questões não carregaram — API instável?" in sess_fb,
+        and (
+            "questões não carregaram — API instável?" in sess_fb
+            or "questões não carregaram. Toque em Carregar questões" in sess_fb
+        ),
         "session partial load",
     )
     ok(
@@ -5587,7 +5591,10 @@ def main() -> int:
     ok(
         "ciclo_ga_session_revision_fetch",
         "fetchFailures" in sess_fb
-        and "Não foi possível buscar questões das revisões due." in sess_fb,
+        and (
+            "Não foi possível buscar questões das revisões due." in sess_fb
+            or "Não foi possível buscar questões das revisões desta sessão." in sess_fb
+        ),
         "session revision fetch",
     )
     ok(
@@ -5863,13 +5870,13 @@ def main() -> int:
         "COMO GT",
     )
 
-    # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
+    # --- Ciclo GU: pack gate + versão 1.0.0+9 (histórico; atual +10 em GX) ---
     ok(
         "ciclo_gu_version_109",
-        "1.0.0+9" in pubspec
-        and "1.0.0+9" in settings_ed
-        and "1.0.0+9" in pack_bat,
-        "version +9",
+        any(v in pubspec for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +9/+10",
     )
     dist_gu = root / "dist" / "PAES_MED_AI_Windows"
     if dist_gu.is_dir():
@@ -5887,7 +5894,7 @@ def main() -> int:
         )
         ok(
             "ciclo_gu_pack_version_txt",
-            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9")),
+            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
             "VERSION.txt match",
         )
         ok(
@@ -5906,8 +5913,8 @@ def main() -> int:
         "Iniciar_PAES_MED_AI.bat" in pack_bat
         and "app_icon.ico" in pack_bat
         and "VERSION.txt" in pack_bat
-        and "1.0.0+9" in pack_bat,
-        "empacotar gates +9",
+        and any(v in pack_bat for v in ("1.0.0+9", "1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "empacotar gates +9/+10",
     )
     ok(
         "ciclo_gu_como_section",
@@ -5919,6 +5926,840 @@ def main() -> int:
         "Ciclo GR" in como_ap or "GR–GU" in como_ap or "GR-GU" in (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore"),
         "roadmap GR-GU",
     )
+
+    # --- Ciclo GV: dashboard acervo summary (F1 deep) ---
+    from acervo_fetch import acervo_dashboard_summary, acervo_year_grid
+
+    dash_gv = client.get("/api/dashboard").json()
+    acervo_gv = dash_gv.get("acervoSummary") or {}
+    ok(
+        "ciclo_gv_dashboard_acervo_summary",
+        isinstance(acervo_gv, dict)
+        and "completeOnDisk" in acervo_gv
+        and "needsManualHistoric" in acervo_gv
+        and "label" in acervo_gv
+        and acervo_gv.get("ctaPath") == "/biblioteca",
+        str(acervo_gv)[:200],
+    )
+    summary_fn = acervo_dashboard_summary()
+    ok(
+        "ciclo_gv_summary_fn_shape",
+        summary_fn.get("historicRange") == "2017–23"
+        and isinstance(summary_fn.get("completeOnDisk"), int)
+        and isinstance(summary_fn.get("needsManualHistoric"), int),
+        str(summary_fn)[:160],
+    )
+    dash_ui_gv = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gv_dashboard_card",
+        "acervoSummary" in dash_ui_gv
+        and "Acervo UEMA" in dash_ui_gv
+        and "Abrir Biblioteca" in dash_ui_gv,
+        "dashboard acervo card",
+    )
+    ok(
+        "ciclo_gv_como_section",
+        "Ciclo GV" in como_ap,
+        "COMO GV (pending until doc update)",
+    )
+
+    # --- Ciclo GW: honestidade 2017–23 + dry-run fetch ---
+    grid_gw = acervo_year_grid(min_year=2017, max_year=2026)
+    honest_gw = True
+    for row in grid_gw:
+        on_disk = row.get("onDisk") or {}
+        has_pair = bool(on_disk.get("hasProva") and on_disk.get("hasGabarito"))
+        committed = int(row.get("committedCount") or 0)
+        if row.get("uiStatus") == "committed" and not has_pair and committed <= 0:
+            honest_gw = False
+            break
+    ok("ciclo_gw_grid_no_false_committed", honest_gw, f"rows={len(grid_gw)}")
+    historic_empty = [
+        int(r["year"])
+        for r in grid_gw
+        if 2017 <= int(r["year"]) <= 2023
+        and not ((r.get("onDisk") or {}).get("hasProva") and (r.get("onDisk") or {}).get("hasGabarito"))
+        and int(r.get("committedCount") or 0) == 0
+    ]
+    ok(
+        "ciclo_gw_historic_needs_manual",
+        len(historic_empty) >= 1,
+        str(historic_empty),
+    )
+    r_gw = client.post("/api/acervo/fetch-available", json={"dryRun": True})
+    ok(
+        "ciclo_gw_fetch_available_dry",
+        r_gw.status_code == 200
+        and isinstance(r_gw.json(), dict)
+        and ("dryRun" in r_gw.json() or "items" in r_gw.json() or "years" in r_gw.json()),
+        str(r_gw.json())[:160],
+    )
+    inv_readme = (root / "data" / "inventory" / "README_INVENTARIO.md").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_gw_inventory_readme",
+        "2017" in inv_readme and "2023" in inv_readme and "manual" in inv_readme.lower(),
+        "inventory readme",
+    )
+    ok(
+        "ciclo_gw_como_section",
+        "Ciclo GW" in como_ap,
+        "COMO GW (pending until doc update)",
+    )
+    ok(
+        "ciclo_gw_roadmap_gv_gw",
+        "GV | Dashboard acervo summary" in roadmap and "GW | Gate honestidade" in roadmap,
+        "roadmap GV-GW",
+    )
+
+    # --- Ciclo GX ship: versão 1.0.0+10 ---
+    ok(
+        "ciclo_gx_version_110",
+        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +10/+11",
+    )
+    ok(
+        "ciclo_gx_como_section",
+        "Ciclo GV" in como_ap and "Ciclo GW" in como_ap and ("1.0.0+10" in como_ap or "1.0.0+11" in como_ap),
+        "COMO GV-GW-GX",
+    )
+
+    # --- Ciclo GY: F3 grounding + /api/tutor/ask + aliases ---
+    from services_extra import normalize_citation, score_questions_for_query
+    from main import _filter_real_question_cites
+
+    r_gy = client.post(
+        "/api/tutor/ask",
+        json={"message": "O que a banca quer em genética?", "preferOfficial": False},
+    )
+    j_gy = r_gy.json() if r_gy.status_code == 200 else {}
+    cites_gy = j_gy.get("citations") or []
+    q_cites_gy = [
+        c
+        for c in cites_gy
+        if isinstance(c, dict)
+        and (c.get("type") == "question" or c.get("refType") == "question")
+        and (c.get("id") or c.get("refId"))
+    ]
+    ok(
+        "ciclo_gy_tutor_ask_alias",
+        r_gy.status_code == 200 and isinstance(j_gy.get("answer"), str),
+        str(r_gy.status_code),
+    )
+    ok(
+        "ciclo_gy_genetica_cite_or_uncited",
+        (len(q_cites_gy) >= 1 and j_gy.get("uncited") is not True)
+        or (j_gy.get("uncited") is True and "Sem base" in (j_gy.get("answer") or "")),
+        str({"q": len(q_cites_gy), "uncited": j_gy.get("uncited")})[:120],
+    )
+    if q_cites_gy:
+        known_ids = {str(r["id"]) for r in __import__("db").connect().execute("SELECT id FROM questions")}
+        ok(
+            "ciclo_gy_cite_ids_real",
+            all(str(c.get("id") or c.get("refId")) in known_ids for c in q_cites_gy),
+            str([c.get("id") for c in q_cites_gy[:3]]),
+        )
+        ok(
+            "ciclo_gy_cite_aliases",
+            all(c.get("refType") and c.get("refId") is not None for c in q_cites_gy),
+            str(q_cites_gy[0].keys()) if q_cites_gy else "none",
+        )
+    else:
+        ok("ciclo_gy_cite_ids_real", True, "uncited path")
+        ok("ciclo_gy_cite_aliases", True, "uncited path")
+    fake_gy = _filter_real_question_cites(
+        [{"type": "question", "id": "paes-2099-inventado", "label": "fake"}]
+    )
+    ok("ciclo_gy_reject_fake_id", fake_gy == [], str(fake_gy))
+    pool_gy = score_questions_for_query("genética Mendel", limit=5)
+    ok("ciclo_gy_score_by_query", len(pool_gy) >= 1, str(len(pool_gy)))
+    nc = normalize_citation({"type": "question", "id": "x"})
+    ok(
+        "ciclo_gy_normalize_citation",
+        nc.get("refType") == "question" and nc.get("refId") == "x",
+        str(nc),
+    )
+    ok(
+        "ciclo_gy_como_section",
+        "Ciclo GY" in como_ap,
+        "COMO GY",
+    )
+
+    # --- Ciclo GZ: UI block + chips ---
+    tutor_gz = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    repo_gz = (
+        root / "lib" / "features" / "ai_tutor" / "data" / "ai_tutor_repository.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ctrl_gz = (
+        root / "lib" / "features" / "ai_tutor" / "application" / "ai_tutor_controller.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gz_ui_chips",
+        "ActionChip" in tutor_gz and "_citeIcon" in tutor_gz and "refType" in tutor_gz and "/questoes/" in tutor_gz,
+        "chips + questao",
+    )
+    ok(
+        "ciclo_gz_block_ungrounded",
+        "isGroundedOk" in repo_gz
+        and "Resposta sem fonte" in repo_gz
+        and "isGroundedOk" in ctrl_gz,
+        "block ungrounded",
+    )
+    ok(
+        "ciclo_gz_tutor_ask_path",
+        "/api/tutor/ask" in repo_gz,
+        "repo uses tutor/ask",
+    )
+    ok(
+        "ciclo_gz_como_section",
+        "Ciclo GZ" in como_ap,
+        "COMO GZ",
+    )
+
+    # --- Ciclo HA: preferOfficial + Natureza e2e ---
+    r_ha = client.post(
+        "/api/tutor/ask",
+        json={
+            "message": "O que a banca quer em genética?",
+            "preferOfficial": True,
+        },
+    )
+    j_ha = r_ha.json() if r_ha.status_code == 200 else {}
+    ok(
+        "ciclo_ha_prefer_official_echo",
+        r_ha.status_code == 200 and j_ha.get("preferOfficial") is True,
+        str(j_ha.get("preferOfficial")),
+    )
+    cites_ha = [
+        c
+        for c in (j_ha.get("citations") or [])
+        if (c.get("type") == "question" or c.get("refType") == "question")
+    ]
+    ok(
+        "ciclo_ha_genetica_aceite",
+        (len(cites_ha) >= 1 and not j_ha.get("uncited"))
+        or (j_ha.get("uncited") is True and "Sem base" in (j_ha.get("answer") or "")),
+        str({"cites": len(cites_ha), "uncited": j_ha.get("uncited")})[:120],
+    )
+    ok(
+        "ciclo_ha_ui_prefer_toggle",
+        "Preferir oficiais" in tutor_gz and "preferOfficial" in ctrl_gz and "setPreferOfficial" in ctrl_gz,
+        "preferOfficial UI",
+    )
+    main_ha = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ha_chat_request_field",
+        "preferOfficial" in main_ha and "natureza_bias" in main_ha,
+        "backend preferOfficial",
+    )
+    ok(
+        "ciclo_ha_como_section",
+        "Ciclo HA" in como_ap,
+        "COMO HA",
+    )
+    ok(
+        "ciclo_ha_roadmap_f3",
+        "GY" in roadmap and "GZ" in roadmap and "HA" in roadmap,
+        "roadmap GY-HA",
+    )
+
+    # --- Ciclo HB ship: versão 1.0.0+11 (histórico; atual +12) ---
+    ok(
+        "ciclo_hb_version_111",
+        any(v in pubspec for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+11", "1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +11/+12",
+    )
+
+    # --- Ciclo HC: Sessão sem jargão ---
+    sess_hc = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hc_no_api_jargon",
+        "API offline?" not in sess_hc
+        and "API instável?" not in sess_hc
+        and "Sync syllabus" not in sess_hc
+        and "flashcards due" not in sess_hc
+        and "revisões due" not in sess_hc
+        and "cards due" not in sess_hc,
+        "no eng jargon",
+    )
+    ok(
+        "ciclo_hc_human_copy_cta",
+        "Verifique se o app está ligado" in sess_hc
+        and "sincronize o edital" in sess_hc
+        and "Carregar revisões" in sess_hc
+        and "Biblioteca" in sess_hc,
+        "PT copy + CTA",
+    )
+    ok(
+        "ciclo_hc_como_section",
+        "Ciclo HC" in como_ap,
+        "COMO HC",
+    )
+
+    # --- Ciclo HD: ficha teoria → treino ---
+    ficha_hd = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    theory_hd = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    # Ler teoria aparece antes de Treinar tópico no trailing
+    idx_ler = ficha_hd.find("Ler teoria")
+    idx_treino = ficha_hd.find("Treinar tópico")
+    ok(
+        "ciclo_hd_theory_before_train",
+        idx_ler != -1 and idx_treino != -1 and idx_ler < idx_treino,
+        f"ler@{idx_ler} train@{idx_treino}",
+    )
+    ok(
+        "ciclo_hd_train_session_path",
+        "trainSessionPath:" in ficha_hd
+        and "/sessao?examBoard=UEMA_PAES" in ficha_hd
+        and "openTheoryReadSheet" in ficha_hd,
+        "ficha trainSessionPath",
+    )
+    ok(
+        "ciclo_hd_sheet_hint",
+        "ler teoria → treinar" in theory_hd.lower() or "Caminho: ler teoria" in theory_hd,
+        "sheet hint",
+    )
+    ok(
+        "ciclo_hd_session_debrief_theory",
+        "openTheoryReadSheet" in sess_hc and "Ler teoria" in sess_hc,
+        "session debrief theory",
+    )
+    ok(
+        "ciclo_hd_como_section",
+        "Ciclo HD" in como_ap,
+        "COMO HD",
+    )
+    ok(
+        "ciclo_hd_roadmap",
+        "HC |" in roadmap and "HD |" in roadmap,
+        "roadmap HC-HD",
+    )
+
+    # --- Ciclo HE ship: 1.0.0+12 (histórico; atual +13) ---
+    ok(
+        "ciclo_he_version_112",
+        any(v in pubspec for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +12/+13",
+    )
+
+    # --- Ciclo HF: first-run Semana 1 ---
+    onb_hf = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_hf = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hf_onboarding_semana1",
+        "Ir para Semana 1" in onb_hf and "/biblioteca" in onb_hf and "Ir ao Hoje" in onb_hf,
+        "onboarding Semana 1",
+    )
+    ok(
+        "ciclo_hf_coach_semana1",
+        "Ir para Semana 1" in dash_hf
+        and "Comece pela Semana 1" in dash_hf
+        and "showFirstRunCoach" in dash_hf,
+        "dashboard coach",
+    )
+    ok(
+        "ciclo_hf_como_section",
+        "Ciclo HF" in como_ap,
+        "COMO HF",
+    )
+
+    # --- Ciclo HG: Fila empty → Biblioteca ---
+    fila_hg = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hg_empty_semana1",
+        "Ir para Semana 1" in fila_hg
+        and "Ainda sem base oficial" in fila_hg
+        and "officialUnlocked" in fila_hg,
+        "fila empty Semana 1",
+    )
+    ok(
+        "ciclo_hg_no_due_jargon",
+        "due ·" not in fila_hg
+        and "eixos due" not in fila_hg
+        and "para revisar" in fila_hg,
+        "no due jargon UI",
+    )
+    ok(
+        "ciclo_hg_como_section",
+        "Ciclo HG" in como_ap,
+        "COMO HG",
+    )
+    ok(
+        "ciclo_hg_roadmap",
+        "HF |" in roadmap and "HG |" in roadmap,
+        "roadmap HF-HG",
+    )
+
+    # --- Ciclo HH ship: 1.0.0+13 (histórico; atual +14) ---
+    ok(
+        "ciclo_hh_version_113",
+        any(v in pubspec for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +13+",
+    )
+
+
+    # --- Ciclo HI: Tutor prosa limpa ---
+    main_hi = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    tutor_hi = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    svc_hi = (root / "backend" / "services_extra.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hi_offline_prose",
+        ("Sobre {subj}" in main_hi or "build_offline_tutor_lesson" in main_hi or "Vamos estudar" in main_hi
+         or "offline-teach" in main_hi)
+        and "• Questão" not in main_hi,
+        "offline prose",
+    )
+    ok(
+        "ciclo_hi_prompt_no_ids",
+        "NÃO cole" in svc_hi
+        and "citations" in svc_hi
+        and "bio-2017-01" in svc_hi,
+        "prompt citations schema",
+    )
+    ok(
+        "ciclo_hi_fontes_after_content",
+        "'Fontes'" in tutor_hi
+        and tutor_hi.rfind("SelectableText") < tutor_hi.rfind("'Fontes'"),
+        "Fontes after content",
+    )
+    r_hi = client.post(
+        "/api/tutor/ask",
+        json={"message": "Explique genética mendeliana com base local", "preferOfficial": False},
+    )
+    body_hi = r_hi.json() if r_hi.status_code == 200 else {}
+    ans_hi = (body_hi.get("answer") or "").lower()
+    cites_hi = body_hi.get("citations") or []
+    ok(
+        "ciclo_hi_answer_no_tech",
+        r_hi.status_code == 200
+        and "questão bio-" not in ans_hi
+        and "id=" not in ans_hi
+        and "http://" not in ans_hi
+        and "https://" not in ans_hi,
+        "offline answer clean",
+    )
+    ok(
+        "ciclo_hi_cites_or_uncited",
+        r_hi.status_code == 200
+        and (len(cites_hi) >= 1 or body_hi.get("uncited") is True),
+        "cites or uncited",
+    )
+    ok(
+        "ciclo_hi_como_section",
+        "Ciclo HI" in como_ap,
+        "COMO HI",
+    )
+
+    # --- Ciclo HJ: Ficha/debrief limpos ---
+    debrief_hj = (
+        root / "lib" / "core" / "widgets" / "resolution_debrief.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_hj = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hj_fonte_footer",
+        "'Fonte'" in debrief_hj
+        and "similar a $" not in debrief_hj
+        and "Chip(" not in debrief_hj,
+        "Fonte footer quiet",
+    )
+    ok(
+        "ciclo_hj_pdf_below_resolution",
+        "onOpenPdf: _openSourcePdf" in ficha_hj
+        and "Abrir PDF do ano" not in ficha_hj
+        and "q.statement" in ficha_hj,
+        "PDF below stem",
+    )
+    ok(
+        "ciclo_hj_no_abs_path_ui",
+        "data/provas" not in ficha_hj
+        and "data\\\\provas" not in ficha_hj
+        and "/workspace/" not in debrief_hj,
+        "no abs path student UI",
+    )
+    ok(
+        "ciclo_hj_como_section",
+        "Ciclo HJ" in como_ap,
+        "COMO HJ",
+    )
+
+    # --- Ciclo HK: Identidade visual core ---
+    theme_hk = (
+        root / "lib" / "core" / "theme" / "app_theme.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_hk = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hk_theme_fonts",
+        "Georgia" in theme_hk
+        and ("Segoe UI Variable" in theme_hk or "Segoe UI" in theme_hk)
+        and "0xFF" in theme_hk
+        and "purple" not in theme_hk.lower()
+        and "Inter" not in theme_hk
+        and "Roboto" not in theme_hk,
+        "theme tokens",
+    )
+    ok(
+        "ciclo_hk_hero_brand",
+        "PAES MED AI" in dash_hk
+        and "heroGradient" in dash_hk
+        and "TweenAnimationBuilder" in dash_hk,
+        "hoje hero brand+motion",
+    )
+    ok(
+        "ciclo_hk_como_section",
+        "Ciclo HK" in como_ap,
+        "COMO HK",
+    )
+    ok(
+        "ciclo_hk_roadmap",
+        "HI |" in roadmap and "HJ |" in roadmap and "HK |" in roadmap,
+        "roadmap HI-HK",
+    )
+
+    # --- Ciclo HL ship: 1.0.0+14 (histórico; atual +15) ---
+    ok(
+        "ciclo_hl_version_114",
+        any(v in pubspec for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +14+",
+    )
+
+
+
+    # --- Ciclo HM: Tutor offline didático ---
+    svc_hm = (root / "backend" / "services_extra.py").read_text(encoding="utf-8", errors="ignore")
+    main_hm = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hm_offline_lesson_fn",
+        "def build_offline_tutor_lesson" in svc_hm
+        and "socraticSeed" in svc_hm
+        and "Próximo passo" in svc_hm,
+        "offline lesson builder",
+    )
+    ok(
+        "ciclo_hm_tutor_mission",
+        "MISSÃO" in svc_hm and "diagnosticar" in svc_hm.lower(),
+        "tutor mission prompt",
+    )
+    r_hm = client.post(
+        "/api/tutor/ask",
+        json={
+            "message": "Explique genética mendeliana",
+            "preferOfficial": False,
+            "errorType": "conceito",
+            "subject": "Biologia",
+            "topic": "Genética",
+        },
+    )
+    j_hm = r_hm.json() if r_hm.status_code == 200 else {}
+    ans_hm = j_hm.get("answer") or ""
+    ok(
+        "ciclo_hm_error_aware_answer",
+        r_hm.status_code == 200
+        and ("conceito" in ans_hm.lower() or "próximo passo" in ans_hm.lower() or "definição" in ans_hm.lower()
+             or "vamos estudar" in ans_hm.lower()),
+        "error-aware lesson",
+    )
+    ok(
+        "ciclo_hm_chat_request_fields",
+        "errorType" in main_hm and "build_offline_tutor_lesson" in main_hm,
+        "chat errorType fields",
+    )
+    ok(
+        "ciclo_hm_como_section",
+        "Ciclo HM" in como_ap,
+        "COMO HM",
+    )
+
+    # --- Ciclo HN: Miss remediação CTA ---
+    rem_hn = client.get("/api/remediation", params={"errorType": "interpretacao", "subject": "Biologia", "topic": "Genética"})
+    j_rem = rem_hn.json() if rem_hn.status_code == 200 else {}
+    ok(
+        "ciclo_hn_remediation_diagnosis",
+        rem_hn.status_code == 200
+        and "diagnosis" in j_rem
+        and "teachFocus" in j_rem
+        and "cta" in j_rem
+        and "ctaTutor" in j_rem,
+        "remediation teach payload",
+    )
+    sess_hn = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hn_session_cta_wired",
+        "Treinar remediação" in sess_hn
+        and "ctaTutor" in sess_hn
+        and "Pedir aula ao tutor" in sess_hn,
+        "session remediation CTAs",
+    )
+    ok(
+        "ciclo_hn_como_section",
+        "Ciclo HN" in como_ap,
+        "COMO HN",
+    )
+
+    # --- Ciclo HO: Tutor seed error + adaptive opener ---
+    tutor_ho = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    adapt_ho = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    app_ho = (root / "lib" / "app.dart").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ho_tutor_seed_error",
+        "seedErrorType" in tutor_ho and "seedErrorType" in app_ho and "setErrorContext" in (
+            root / "lib" / "features" / "ai_tutor" / "application" / "ai_tutor_controller.dart"
+        ).read_text(encoding="utf-8", errors="ignore"),
+        "tutor error seed",
+    )
+    ok(
+        "ciclo_ho_adaptive_opener",
+        "teachOpener" in adapt_ho and "Como treinar este erro" in adapt_ho,
+        "adaptive teach opener",
+    )
+    ok(
+        "ciclo_ho_como_section",
+        "Ciclo HO" in como_ap,
+        "COMO HO",
+    )
+    ok(
+        "ciclo_ho_roadmap",
+        "HM |" in roadmap and "HN |" in roadmap and "HO |" in roadmap,
+        "roadmap HM-HO",
+    )
+
+    # --- Ciclo HP ship: 1.0.0+15 (histórico; atual +16) ---
+    ok(
+        "ciclo_hp_version_115",
+        any(v in pubspec for v in ("1.0.0+15", "1.0.0+16"))
+        and any(v in settings_ed for v in ("1.0.0+15", "1.0.0+16"))
+        and any(v in pack_bat for v in ("1.0.0+15", "1.0.0+16")),
+        "version +15+",
+    )
+
+
+
+    # --- Ciclo HQ: Tutor multi-turno verificação ---
+    svc_hq = (root / "backend" / "services_extra.py").read_text(encoding="utf-8", errors="ignore")
+    main_hq = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    tutor_hq = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hq_grade_fn",
+        "def grade_verification_reply" in svc_hq
+        and "def last_assistant_awaits_verification" in svc_hq
+        and "MULTI-TURNO" in svc_hq,
+        "verify helpers",
+    )
+    ok(
+        "ciclo_hq_verify_mode",
+        "verify_mode" in main_hq and "offline-verify" in main_hq,
+        "chat verify mode",
+    )
+    r1 = client.post(
+        "/api/tutor/ask",
+        json={"message": "Explique genética mendeliana", "preferOfficial": False, "subject": "Biologia", "topic": "Genética"},
+    )
+    j1 = r1.json() if r1.status_code == 200 else {}
+    a1 = j1.get("answer") or ""
+    hist = [
+        {"role": "user", "content": "Explique genética mendeliana"},
+        {"role": "assistant", "content": a1},
+    ]
+    r2 = client.post(
+        "/api/tutor/ask",
+        json={
+            "message": "O comando pede a definição de recessivo e elimino o distrator de dominante.",
+            "history": hist,
+            "preferOfficial": False,
+            "subject": "Biologia",
+            "topic": "Genética",
+        },
+    )
+    j2 = r2.json() if r2.status_code == 200 else {}
+    a2 = (j2.get("answer") or "").lower()
+    ok(
+        "ciclo_hq_multiturn_feedback",
+        r2.status_code == 200
+        and (
+            "fechou" in a2
+            or "quase" in a2
+            or "ainda não" in a2
+            or "próximo passo" in a2
+            or "verificação" in a2
+        )
+        and "questão bio-" not in a2
+        and "http://" not in a2,
+        "multiturn feedback",
+    )
+    ok(
+        "ciclo_hq_ui_hint",
+        "responda a verificação" in tutor_hq.lower(),
+        "tutor verify hint",
+    )
+    ok(
+        "ciclo_hq_como_section",
+        "Ciclo HQ" in como_ap,
+        "COMO HQ",
+    )
+
+    # --- Ciclo HR: Mastery após remediação ---
+    # abrir lacuna + 2 acertos
+    qid_hr = None
+    for row in __import__("db").connect().execute(
+        "SELECT id, subject, topic FROM questions WHERE subject='Biologia' AND topic LIKE '%Gen%' LIMIT 1"
+    ):
+        qid_hr = dict(row)
+        break
+    if qid_hr:
+        client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": False,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+                "errorType": "conceito",
+            },
+        )
+        r_m1 = client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": True,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+            },
+        )
+        j_m1 = r_m1.json() if r_m1.status_code == 200 else {}
+        r_m2 = client.post(
+            "/api/answers",
+            json={
+                "questionId": qid_hr["id"],
+                "correct": True,
+                "subject": qid_hr["subject"],
+                "topic": qid_hr["topic"],
+            },
+        )
+        j_m2 = r_m2.json() if r_m2.status_code == 200 else {}
+        tm = j_m2.get("teachMastery") or j_m1.get("teachMastery") or {}
+        ok(
+            "ciclo_hr_teach_mastery_payload",
+            "teachMastery" in j_m1 or "teachMastery" in j_m2,
+            str(tm)[:100],
+        )
+    else:
+        ok("ciclo_hr_teach_mastery_payload", False, "no bio question")
+    adapt_hr = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hr_dominio_ui",
+        "'Domínio'" in adapt_hr and "teachMastery" in adapt_hr,
+        "adaptive dominio UI",
+    )
+    ok(
+        "ciclo_hr_como_section",
+        "Ciclo HR" in como_ap,
+        "COMO HR",
+    )
+
+    # --- Ciclo HS: Missão didática Hoje/Fila ---
+    core_hs = (root / "backend" / "services_core.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hs_teach_mission_api",
+        "teachMission" in core_hs and "fechar" in core_hs and "open_gap_items" in core_hs,
+        "dailyRoutine teachMission",
+    )
+    dash_hs = client.get("/api/dashboard").json() if True else {}
+    # ensure a gap exists from HR above
+    dr = (dash_hs.get("dailyRoutine") or {}) if isinstance(dash_hs, dict) else {}
+    # may or may not have open gap if recovered — create one
+    client.post(
+        "/api/answers",
+        json={
+            "questionId": (qid_hr or {}).get("id") or "bio-2017-01",
+            "correct": False,
+            "subject": "Biologia",
+            "topic": "Genética",
+            "errorType": "interpretacao",
+        },
+    )
+    dash_hs2 = client.get("/api/dashboard").json()
+    dr2 = dash_hs2.get("dailyRoutine") or {}
+    tm2 = dr2.get("teachMission") or {}
+    ok(
+        "ciclo_hs_coach_gap_line",
+        isinstance(tm2, dict)
+        and "line" in tm2
+        and ("erro de" in (tm2.get("line") or "").lower() or "fechar" in (tm2.get("line") or "").lower()),
+        str(tm2.get("line"))[:120],
+    )
+    fila_hs = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_ui = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hs_ui_missao",
+        "Missão didática" in fila_hs and "teachMission" in dash_ui,
+        "hoje/fila missao UI",
+    )
+    ok(
+        "ciclo_hs_como_section",
+        "Ciclo HS" in como_ap,
+        "COMO HS",
+    )
+    ok(
+        "ciclo_hs_roadmap",
+        "HQ |" in roadmap and "HR |" in roadmap and "HS |" in roadmap,
+        "roadmap HQ-HS",
+    )
+
+    # --- Ciclo HT ship: 1.0.0+16 ---
+    ok(
+        "ciclo_ht_version_116",
+        "1.0.0+16" in pubspec
+        and "1.0.0+16" in settings_ed
+        and "1.0.0+16" in pack_bat,
+        "version +16",
+    )
+
 
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
