@@ -278,68 +278,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _bootstrapAndCommit() async {
-    setState(() {
-      busy = true;
-      msg = 'Baixando… commitando altas confianças…';
-    });
-    try {
-      final data = await apiClient.post('/api/acervo/bootstrap-and-commit', {
-        'dryRun': false,
-        'overwrite': false,
-        'minConfidence': 0.55,
-        'autoProfessor': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      final year = map['year'] as int? ?? 0;
-      final inserted = map['inserted'] ?? 0;
-      final n = map['officialCount'] ?? 0;
-      final healthLine = _healthLine(map, inserted: inserted);
-      final pack = map['naturezaPack'] is Map ? Map<String, dynamic>.from(map['naturezaPack'] as Map) : null;
-      final packLine = _naturezaPackLine(pack);
-      final sessao = map['sessionPath']?.toString() ??
-          (year > 0
-              ? '/sessao?examBoard=UEMA_PAES&year=$year&preferNatureza=1'
-              : '/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      setState(() {
-        msg = map['message']?.toString() ?? 'Commit OK · $inserted oficiais · base $n$healthLine';
-      });
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('1 clique OK · $inserted UEMA · oficiais $n$healthLine'),
-          action: SnackBarAction(
-            label: 'Estudar agora',
-            onPressed: () => _goStudy(
-              sessao,
-              yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
-            ),
-          ),
-          duration: const Duration(seconds: 6),
-        ),
-      );
-      await _showPostCommitCta(
-        title: 'Oficiais gravadas',
-        body: 'Commit OK · $inserted · base $n$healthLine$packLine\nEstudar Natureza/UEMA agora?',
-        sessaoPath: sessao,
-        professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
-        yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
-        naturezaPack: pack,
-      );
-      ref.read(refreshTickProvider.notifier).state++;
-      await _load();
-    } catch (e) {
-      setState(() {
-        msg = humanApiError(
-          e,
-          fallback: 'Bootstrap+commit falhou — use Baixar e revisar, ou Manual / Abrir provas.',
-        );
-      });
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
   Future<void> _showFetchPlaybook({
     required String title,
     required String body,
@@ -490,10 +428,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _commitFoundAvailable() async {
-    await _semana1Real();
-  }
-
   Future<void> _commitOnDisk() async {
     setState(() {
       busy = true;
@@ -553,6 +487,96 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       default:
         return 'Vazio';
     }
+  }
+
+  /// Cartão de um ano do quadro 2024–26 (layout vertical, usado no grid responsivo).
+  Widget _yearCard(BuildContext context, Map<String, dynamic> g, ColorScheme cs) {
+    final y = g['year'] as int? ?? 0;
+    final status = g['uiStatus']?.toString() ?? 'empty';
+    final n = g['committedCount'] as int? ?? 0;
+    final canFetch = g['canFetch'] == true;
+    final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
+    final diskOk = onDisk['hasProva'] == true && onDisk['hasGabarito'] == true;
+    final ready = status == 'committed' || n > 0;
+
+    final Widget cta;
+    if (ready) {
+      cta = Row(
+        children: [
+          if (onDisk['hasProva'] == true) ...[
+            OutlinedButton(
+              onPressed: busy ? null : () => _openYearPdf(y),
+              child: const Text('PDF'),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: FilledButton(
+              onPressed: busy
+                  ? null
+                  : () => _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1'),
+              child: const Text('Estudar'),
+            ),
+          ),
+        ],
+      );
+    } else if (canFetch || diskOk) {
+      cta = SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: busy ? null : () => _bootstrapAndCommitYear(y),
+          child: Text(diskOk && !canFetch ? 'Gravar' : 'Importar'),
+        ),
+      );
+    } else {
+      cta = SizedBox(
+        width: double.infinity,
+        child: TextButton(
+          onPressed: busy ? null : () => _fetchYear(y),
+          child: const Text('Baixar'),
+        ),
+      );
+    }
+
+    return SurfacePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ready ? cs.primaryContainer : cs.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$y',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: ready ? cs.primary : cs.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _StatusChip(label: _uiStatusLabel(status), ready: ready),
+          if (n > 0) ...[
+            const SizedBox(height: 4),
+            Text('$n questões', style: Theme.of(context).textTheme.bodySmall),
+          ],
+          const SizedBox(height: 12),
+          cta,
+        ],
+      ),
+    );
   }
 
   String _naturezaPackLine(Map<String, dynamic>? pack) {
@@ -1177,85 +1201,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 )
               else
-                for (final g in board)
-                  Builder(
-                    builder: (_) {
-                      final y = g['year'] as int? ?? 0;
-                      final status = g['uiStatus']?.toString() ?? 'empty';
-                      final n = g['committedCount'] as int? ?? 0;
-                      final canFetch = g['canFetch'] == true;
-                      final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                      final diskOk = onDisk['hasProva'] == true && onDisk['hasGabarito'] == true;
-                      final ready = status == 'committed' || n > 0;
-                      return SurfacePanel(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: ready ? cs.primaryContainer : cs.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '$y',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: ready ? cs.primary : cs.onSurface,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
-                                  Text(
-                                    ready
-                                        ? '${n > 0 ? '$n questões · ' : ''}${_uiStatusLabel(status)}'
-                                        : _uiStatusLabel(status),
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (ready)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (onDisk['hasProva'] == true)
-                                    TextButton(
-                                      onPressed: busy ? null : () => _openYearPdf(y),
-                                      child: const Text('PDF'),
-                                    ),
-                                  FilledButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () => _goStudy(
-                                              '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                            ),
-                                    child: const Text('Estudar'),
-                                  ),
-                                ],
-                              )
-                            else if (canFetch || diskOk)
-                              OutlinedButton(
-                                onPressed: busy ? null : () => _bootstrapAndCommitYear(y),
-                                child: Text(diskOk && !canFetch ? 'Gravar' : 'Importar'),
-                              )
-                            else
-                              TextButton(
-                                onPressed: busy ? null : () => _fetchYear(y),
-                                child: const Text('Baixar'),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final w = constraints.maxWidth;
+                    final cols = w >= 900 ? 3 : (w >= 560 ? 2 : 1);
+                    const gap = 10.0;
+                    final cardW = cols == 1 ? w : (w - gap * (cols - 1)) / cols;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          for (final g in board)
+                            SizedBox(width: cardW, child: _yearCard(context, g, cs)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
 
               if (pendingN > 0) ...[
                 SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
@@ -1422,6 +1386,46 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
       ],
     ),
+    );
+  }
+}
+
+/// Chip compacto de status para os cartões de ano da Biblioteca.
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.label, required this.ready});
+
+  final String label;
+  final bool ready;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bg = ready ? cs.primaryContainer : cs.surfaceContainerHigh;
+    final fg = ready ? cs.onPrimaryContainer : cs.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            ready ? Icons.check_circle_rounded : Icons.hourglass_empty_rounded,
+            size: 14,
+            color: fg,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: fg,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

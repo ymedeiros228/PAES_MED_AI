@@ -9,7 +9,6 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/resolution_debrief.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AdaptiveTrainingScreen extends ConsumerStatefulWidget {
@@ -382,13 +381,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             if (subject.isNotEmpty && topic.isNotEmpty)
                               OutlinedButton(
                                 onPressed: () async {
+                                  final messenger = ScaffoldMessenger.of(context);
                                   try {
                                     await apiClient.post('/api/gaps/recover', {
                                       'subject': subject,
                                       'topic': topic,
                                     });
                                     if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    messenger.showSnackBar(
                                       const SnackBar(
                                         content: Text(
                                           'Lacuna marcada como recuperada (treino local).',
@@ -397,7 +397,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                     );
                                     } catch (e) {
                                       if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             humanApiError(e, fallback: 'Não deu para criar o card.'),
@@ -591,20 +591,21 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                   onPressed: () async {
                                     final id = q['id']?.toString();
                                     if (id == null) return;
+                                    final messenger = ScaffoldMessenger.of(context);
                                     try {
                                       final data = await apiClient.post(
                                         '/api/flashcards/from-question',
                                         {'questionId': id, 'count': 4},
                                       );
                                       if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         SnackBar(
                                           content: Text('Card(s): ${(data as Map)['created'] ?? 0}'),
                                         ),
                                       );
                                     } catch (e) {
                                       if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             humanApiError(e, fallback: 'Não deu para criar o card.'),

@@ -174,76 +174,55 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
             ),
           ),
           Expanded(
-            child: (state.messages.length <= 1 && !state.isLoading)
-                ? Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.messages.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                state.messages.first.content,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          const QuietEmpty(
-                            message: 'Escolha um atalho ou digite abaixo.',
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              ActionChip(
-                                label: const Text('Meta de hoje'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Qual a meta de estudo de hoje e o que priorizar?',
-                                            );
-                                      },
-                              ),
-                              ActionChip(
-                                label: const Text('Macete do tópico'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
-                                            );
-                                      },
-                              ),
-                              ActionChip(
-                                label: const Text('Abrir sessão'),
-                                onPressed: () => context.go('/sessao'),
-                              ),
-                              ActionChip(
-                                label: const Text('Biblioteca'),
-                                onPressed: () => context.go('/biblioteca'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
-                    itemCount: state.messages.length + (state.isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == state.messages.length) {
-                        return const _TypingIndicator();
-                      }
-                      return _MessageBubble(message: state.messages[index]);
-                    },
+            child: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
+              children: [
+                for (final m in state.messages) _MessageBubble(message: m),
+                if (state.isLoading) const _TypingIndicator(),
+                if (state.messages.length <= 1 && !state.isLoading) ...[
+                  const SizedBox(height: 4),
+                  const QuietEmpty(
+                    message: 'Escolha um atalho ou digite abaixo.',
                   ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ActionChip(
+                        label: const Text('Meta de hoje'),
+                        onPressed: state.isLoading
+                            ? null
+                            : () {
+                                ref.read(aiTutorControllerProvider.notifier).send(
+                                      'Qual a meta de estudo de hoje e o que priorizar?',
+                                    );
+                              },
+                      ),
+                      ActionChip(
+                        label: const Text('Macete do tópico'),
+                        onPressed: state.isLoading
+                            ? null
+                            : () {
+                                ref.read(aiTutorControllerProvider.notifier).send(
+                                      'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
+                                    );
+                              },
+                      ),
+                      ActionChip(
+                        label: const Text('Abrir sessão'),
+                        onPressed: () => context.go('/sessao'),
+                      ),
+                      ActionChip(
+                        label: const Text('Biblioteca'),
+                        onPressed: () => context.go('/biblioteca'),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ),
           Material(
             elevation: 6,

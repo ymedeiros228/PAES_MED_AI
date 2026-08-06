@@ -35,6 +35,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   final Set<String> debriefLoading = {};
   String defaultErrorType = 'conceito';
   final sw = Stopwatch();
+  /// Tempo já decorrido antes desta retomada (checkpoint). O relógio efetivo é
+  /// [_elapsedBase] + [sw.elapsed], pois um [Stopwatch] não aceita valor inicial.
+  Duration _elapsedBase = Duration.zero;
+  Duration get _elapsed => _elapsedBase + sw.elapsed;
   Timer? ticker;
   bool examLocked = false;
   Duration? diaProvaHardCap;
@@ -263,7 +267,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         'questionIds': ids,
         'questions': qs,
         'currentIndex': keyboardQi,
-        'elapsedSec': sw.elapsed.inSeconds,
+        'elapsedSec': _elapsed.inSeconds,
         'examLocked': examLocked,
         'preflightDone': preflightDone,
         'basis': lastSimMeta?['basis'],
@@ -431,6 +435,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       pendingSimCheckpoint = null;
       debriefById.clear();
       debriefLoading.clear();
+      _elapsedBase = Duration(seconds: elapsed);
       sw
         ..reset()
         ..start();
@@ -508,6 +513,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         keyboardQi = 0;
         examLocked = mode == 'dia_prova';
         preflightDone = mode == 'dia_prova';
+        _elapsedBase = Duration.zero;
         sw
           ..reset()
           ..start();
@@ -530,7 +536,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .map((e) => {
               'questionId': e.key,
               'selectedIndex': e.value,
-              'timeMs': sw.elapsedMilliseconds ~/ answers.length.clamp(1, 999),
+              'timeMs': _elapsed.inMilliseconds ~/ answers.length.clamp(1, 999),
               'errorType': errorTypes[e.key] ?? defaultErrorType,
             })
         .toList();
@@ -666,7 +672,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   }
 
   String get _clock {
-    final e = sw.elapsed;
+    final e = _elapsed;
     return '${e.inMinutes.toString().padLeft(2, '0')}:${(e.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 
@@ -676,7 +682,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   String get _timeRemainingLabel {
     final cap = diaProvaHardCap;
     if (cap == null) return '';
-    final left = cap - sw.elapsed;
+    final left = cap - _elapsed;
     if (!left.isNegative && left.inSeconds <= 0) return '00:00';
     final safe = left.isNegative ? Duration.zero : left;
     return '${safe.inMinutes.toString().padLeft(2, '0')}:${(safe.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -688,12 +694,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final cap = diaProvaHardCap;
-      if (cap != null && sw.elapsed >= cap && report == null) {
+      if (cap != null && _elapsed >= cap && report == null) {
         _grade();
         return;
       }
       setState(() {});
-      if (sw.elapsed.inSeconds % 5 == 0) {
+      if (_elapsed.inSeconds % 5 == 0) {
         unawaited(_saveSimCheckpoint());
       }
     });
@@ -852,12 +858,82 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     ),
                   ),
                 SectionLabel('Dia de prova', hint: 'Caminho principal · cronômetro · gabarito no fim'),
-                _ModeCard(
-                  selected: mode == 'dia_prova',
-                  icon: Icons.timer_outlined,
-                  title: 'Dia de prova',
-                  subtitle: 'Cronômetro e sem gabarito até terminar',
-                  onTap: () => setState(() => mode = 'dia_prova'),
+                Builder(
+                  builder: (context) {
+                    final selected = mode == 'dia_prova';
+                    final est = _diaProvaHardCapForLimit(limit);
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => setState(() => mode = 'dia_prova'),
+                        child: SurfacePanel(
+                          color: selected ? cs.primaryContainer.withOpacity(0.45) : null,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 46,
+                                    height: 46,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: cs.primary.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(Icons.timer_rounded, color: cs.primary),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Dia de prova',
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Cronômetro e sem gabarito até terminar',
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (selected)
+                                    Icon(Icons.check_circle_rounded, color: cs.primary),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    avatar: const Icon(Icons.schedule_rounded, size: 16),
+                                    label: Text('~${est.inMinutes} min'),
+                                  ),
+                                  Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    avatar: const Icon(Icons.quiz_rounded, size: 16),
+                                    label: Text('$limit questões'),
+                                  ),
+                                  const Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    avatar: Icon(Icons.lock_clock_rounded, size: 16),
+                                    label: Text('gabarito no fim'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 4),
                 ExpansionTile(

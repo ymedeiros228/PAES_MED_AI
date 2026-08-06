@@ -477,8 +477,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
-                subtitle: const Text('Mídia · oficina · índices · paths'),
+                subtitle: const Text('Navegação · mídia · oficina · índices · paths'),
                 children: [
+                  SectionLabel('Navegação', hint: 'Telas fora da barra lateral'),
+                  for (final nav in const <(String, String, IconData)>[
+                    ('/medicina', 'Domínio', Icons.local_hospital_rounded),
+                    ('/banca', 'Banca', Icons.analytics_rounded),
+                    ('/aulas', 'Aulas', Icons.video_library_rounded),
+                    ('/adaptativo', 'Treino', Icons.psychology_rounded),
+                    ('/redacao', 'Redação', Icons.edit_note_rounded),
+                  ])
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(nav.$3, color: Theme.of(context).colorScheme.primary),
+                      title: Text(nav.$2),
+                      trailing: focus
+                          ? Tooltip(
+                              message: 'Desligue F (modo foco) para abrir',
+                              child: const TextButton(onPressed: null, child: Text('Abrir')),
+                            )
+                          : TextButton(
+                              onPressed: () => context.go(nav.$1),
+                              child: const Text('Abrir'),
+                            ),
+                    ),
                   SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,

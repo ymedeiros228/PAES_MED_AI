@@ -261,8 +261,9 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         ),
       );
       if (!mounted) return;
+      final router = GoRouter.of(context);
       if (choice == 'study') {
-        context.go(sessaoPath);
+        router.go(sessaoPath);
         return;
       }
       if (choice == 'professor') {
@@ -279,7 +280,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       if (highConfidenceOnly) {
         setState(() => msg = toast);
       } else {
-        context.go('/biblioteca');
+        router.go('/biblioteca');
       }
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Não deu para commitar — revise e tente de novo.'));
