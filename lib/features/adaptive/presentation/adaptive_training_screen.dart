@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/data/theory_reads.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -41,6 +42,23 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   bool autoStarted = false;
   bool finished = false;
   bool pendingErrorPick = false;
+  Map<String, bool> theoryReadByKey = {};
+
+  bool _isTheoryRead(String s, String t) =>
+      theoryReadByKey[theoryReadKey(s, t)] == true;
+
+  Future<void> _loadQueueReads() async {
+    final pairs = <(String, String)>[];
+    void add(String s, String t) {
+      if (s.isNotEmpty && t.isNotEmpty) pairs.add((s, t));
+    }
+    add(subject, topic);
+    for (final q in queue) {
+      add(q['subject']?.toString() ?? '', q['topic']?.toString() ?? '');
+    }
+    final out = await fetchTheoryReadMap(pairs);
+    if (mounted) setState(() => theoryReadByKey = out);
+  }
 
   static const _errorTypes = [
     'conceito',
@@ -78,6 +96,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
           _start();
         }
       });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && subject.isNotEmpty && topic.isNotEmpty) _loadQueueReads();
+      });
     }
   }
 
@@ -94,7 +116,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     final sub = (s ?? subject).trim();
     final top = (t ?? topic).trim();
     if (sub.isEmpty || top.isEmpty) return;
-    await TheoryTopicSheet.show(context, subject: sub, topic: top);
+    await TheoryTopicSheet.show(
+      context,
+      subject: sub,
+      topic: top,
+      onMarkedRead: () {
+        if (mounted) setState(() => theoryReadByKey[theoryReadKey(sub, top)] = true);
+      },
+    );
   }
 
   Future<void> _start() async {
@@ -142,7 +171,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
         ];
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) focusNode.requestFocus();
+        if (mounted) {
+          _loadQueueReads();
+          focusNode.requestFocus();
+        }
       });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para montar o treino. Tente de novo.'));
@@ -375,7 +407,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             if (subject.isNotEmpty && topic.isNotEmpty)
                               OutlinedButton(
                                 onPressed: () => _openTheory(),
-                                child: const Text('Teoria local'),
+                                child: Text(
+                                  _isTheoryRead(subject, topic)
+                                      ? 'Teoria local · Li'
+                                      : 'Teoria local',
+                                ),
                               ),
                           ],
                         ),
@@ -418,7 +454,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     OutlinedButton.icon(
                       onPressed: loading ? null : () => _openTheory(),
                       icon: const Icon(Icons.menu_book_outlined),
-                      label: const Text('Teoria local antes de treinar'),
+                      label: Text(
+                        _isTheoryRead(subject, topic)
+                            ? 'Teoria local · Li'
+                            : 'Teoria local antes de treinar',
+                      ),
                     ),
                   ],
                   if (error != null) ...[
@@ -440,7 +480,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     ),
                   ),
                 ] else if (q != null) ...[
-                  SurfacePanel(
+                  Builder(
+                    builder: (_) {
+                      final qSub = (q['subject'] ?? subject).toString();
+                      final qTop = (q['topic'] ?? topic).toString();
+                      return SurfacePanel(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +492,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         Text(
                           'Questão ${index + 1}/${queue.length}'
                           ' · ${_phaseLabel[q['_phase']] ?? q['_phase']}'
-                          '${q['generated'] == true ? ' · revisar depois' : ''}',
+                          '${q['generated'] == true ? ' · revisar depois' : ''}'
+                          '${_isTheoryRead(qSub, qTop) ? ' · Li' : ''}',
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                 color: cs.primary,
                                 fontWeight: FontWeight.w700,
@@ -456,7 +501,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${q['subject'] ?? subject} · ${q['topic'] ?? topic}',
+                          '$qSub · $qTop',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const SizedBox(height: 10),
@@ -556,11 +601,11 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    final s = (q['subject'] ?? subject).toString();
-                                    final t = (q['topic'] ?? topic).toString();
-                                    if (s.isNotEmpty && t.isNotEmpty) _openTheory(s, t);
+                                    if (qSub.isNotEmpty && qTop.isNotEmpty) _openTheory(qSub, qTop);
                                   },
-                                  child: const Text('Teoria local'),
+                                  child: Text(
+                                    _isTheoryRead(qSub, qTop) ? 'Teoria local · Li' : 'Teoria local',
+                                  ),
                                 ),
                                 TextButton(
                                   onPressed: () async {
@@ -632,6 +677,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         ),
                       ],
                     ),
+                  );
+                    },
                   ),
                 ],
               ],

@@ -40,3 +40,6 @@ Projeto: PAES_MED_AI
 - [x] Versão **1.0.0+18** + smoke **581/581** + docs COMO/ROADMAP DE–DF
 - [x] Ciclo DG: Banca — batch reads co-ocorrência + frequência + badge **Li** + `_openTheory`/`onMarkedRead`
 - [x] Versão **1.0.0+19** + smoke **587/587** + docs COMO/ROADMAP DF–DG
+- [x] Ciclo DH: Flashcards — batch reads + chip **Li** + `_openTheory`/`onMarkedRead`
+- [x] Ciclo DH: Adaptativo — `_loadQueueReads` + indicador **Li** (preflight, questão, debrief, fim)
+- [x] Versão **1.0.0+20** + smoke **594/594** + docs COMO/ROADMAP DG–DH
