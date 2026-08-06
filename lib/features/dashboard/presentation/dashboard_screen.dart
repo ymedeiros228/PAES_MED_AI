@@ -497,13 +497,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
-                          FutureBuilder(
-                            future: apiClient.get('/api/essays/progress'),
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) {
-                                return const SizedBox.shrink();
-                              }
-                              final prog = Map<String, dynamic>.from(snap.data as Map);
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final prog = ref.watch(essayProgressProvider).asData?.value;
+                              if (prog == null) return const SizedBox.shrink();
                               final c = prog['count'] as int? ?? 0;
                               final mission = prog['nextMission'];
                               if (c < 1 || mission is! Map) return const SizedBox.shrink();

@@ -10,6 +10,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/ui_kit.dart';
+import '../essay_progress_view.dart';
 
 class EssayScreen extends ConsumerStatefulWidget {
   const EssayScreen({super.key});
@@ -87,9 +88,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
 
   Future<void> _loadProgress() async {
     try {
-      final data = await apiClient.get('/api/essays/progress');
+      // Passa pelo provider central (dedupe com Hoje/Dashboard).
+      final data = await ref.read(essayProgressProvider.future);
       if (!mounted) return;
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = Map<String, dynamic>.from(data);
       final mission = map['nextMission'];
       String? suggested;
       if (mission is Map) {
@@ -276,6 +278,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
         .toList();
     final count = progress?['count'] as int? ?? 0;
     final streak = progress?['streakDays'] as int? ?? 0;
+    final lastScores = Map<String, dynamic>.from(progress?['lastAxisScores'] as Map? ?? {});
+    final radarAvg = essayRadarValues(avg, axes);
+    final radarLast = essayRadarLastValues(lastScores, axes);
+    final weakKey = progress == null ? null : weakestAxisKey(progress!);
 
     return CallbackShortcuts(
       bindings: {
@@ -376,11 +382,33 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                               fontWeight: FontWeight.w700,
                             ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
-                        '${streak > 0 ? ' · sequência $streak dia(s)' : ''}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      const SizedBox(height: 10),
+                      StatsStrip(
+                        items: [
+                          ('Redações', '$count'),
+                          ('Média', '${progress!['meanScore'] ?? '—'}'),
+                          ('Sequência', streak > 0 ? '$streak d' : '—'),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            streak > 0 ? Icons.local_fire_department_rounded : Icons.bolt_rounded,
+                            size: 16,
+                            color: streak > 0 ? cs.tertiary : cs.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              streakLabel(streak),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: streak > 0 ? FontWeight.w700 : FontWeight.w500,
+                                    color: streak > 0 ? cs.tertiary : cs.onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
@@ -390,20 +418,23 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                             dataSets: [
                               RadarDataSet(
                                 dataEntries: [
-                                  for (final key in axes)
-                                    RadarEntry(
-                                      value: () {
-                                        final raw = avg[key];
-                                        final v = raw is num ? raw.toDouble() : 0.0;
-                                        return v.clamp(0.0, 10.0);
-                                      }(),
-                                    ),
+                                  for (final v in radarAvg) RadarEntry(value: v),
                                 ],
                                 fillColor: cs.primary.withOpacity(0.18),
                                 borderColor: cs.primary,
                                 entryRadius: 2.5,
                                 borderWidth: 2,
                               ),
+                              if (radarLast != null)
+                                RadarDataSet(
+                                  dataEntries: [
+                                    for (final v in radarLast) RadarEntry(value: v),
+                                  ],
+                                  fillColor: cs.tertiary.withOpacity(0.10),
+                                  borderColor: cs.tertiary,
+                                  entryRadius: 2,
+                                  borderWidth: 2,
+                                ),
                             ],
                             radarBackgroundColor: Colors.transparent,
                             borderData: FlBorderData(show: false),
@@ -431,10 +462,30 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Radar dos eixos (0–10) · treino local',
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
+                      if (radarLast != null)
+                        Row(
+                          children: [
+                            _LegendDot(color: cs.primary),
+                            const SizedBox(width: 4),
+                            Text('média', style: Theme.of(context).textTheme.labelSmall),
+                            const SizedBox(width: 12),
+                            _LegendDot(color: cs.tertiary),
+                            const SizedBox(width: 4),
+                            Text('última', style: Theme.of(context).textTheme.labelSmall),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '· eixos 0–10 · treino local',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Text(
+                          'Radar dos eixos (0–10) · treino local',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
                       const SizedBox(height: 12),
                       for (final key in axes)
                         Builder(
@@ -443,6 +494,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                             final value = raw is num ? raw.toDouble() : null;
                             final label = labels[key]?.toString() ?? key;
                             final t = value == null ? 0.0 : (value / 10.0).clamp(0.0, 1.0);
+                            final isWeak = key == weakKey;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 10),
                               child: Column(
@@ -450,7 +502,26 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
+                                      Expanded(
+                                        child: Text(
+                                          label,
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                fontWeight: isWeak ? FontWeight.w800 : FontWeight.w400,
+                                              ),
+                                        ),
+                                      ),
+                                      if (isWeak) ...[
+                                        Icon(Icons.trending_up_rounded, size: 14, color: cs.tertiary),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'focar',
+                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                                color: cs.tertiary,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
                                       Text(
                                         value == null ? '—' : value.toStringAsFixed(1),
                                         style: Theme.of(context).textTheme.labelLarge,
@@ -464,6 +535,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                       value: t,
                                       minHeight: 8,
                                       backgroundColor: cs.surfaceContainerHighest,
+                                      color: isWeak ? cs.tertiary : null,
                                     ),
                                   ),
                                 ],
@@ -688,6 +760,21 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       ],
         ),
       ),
+    );
+  }
+}
+
+/// Ponto colorido de legenda para o radar (média vs última).
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }
