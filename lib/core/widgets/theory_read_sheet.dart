@@ -149,7 +149,7 @@ Future<void> openTheoryReadSheet(
                       for (final raw in articles.take(5))
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: Text((raw as Map)['title']?.toString() ?? 'Leitura'),
+                          title: Text(raw['title']?.toString() ?? 'Leitura'),
                           subtitle: Text(raw['source']?.toString() ?? raw['channel']?.toString() ?? ''),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
