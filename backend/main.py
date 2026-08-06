@@ -1794,7 +1794,10 @@ def api_library_open_path(payload: OpenPathRequest) -> dict[str, Any]:
     except ValueError as exc:
         raise HTTPException(403, "Só é possível abrir arquivos dentro da pasta de dados do app") from exc
     if not target.exists():
-        raise HTTPException(404, "Arquivo não encontrado")
+        raise HTTPException(
+            404,
+            "Arquivo não encontrado no disco — pode ter sido movido ou apagado.",
+        )
     try:
         if os.name == "nt":
             os.startfile(str(target))  # type: ignore[attr-defined]

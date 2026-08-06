@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 4
-modo: A/B thin
-item: Fila lacunas sem material — hasLocalMaterial + Biblioteca
-smoke: 709/711 OK; ciclo_gx_fila_gap_no_material
-nota: backend enrich gaps; tile badge+CTA; QuietEmpty seção lacunas
+<!-- ciclo: 5
+modo: B thin
+item: open-path / PDF ano — mensagens honestas se caminho sumir
+smoke: 710/712 OK; ciclo_gy_open_path_honest
+nota: humanOpenPathError; year_pdf path.exists; QuietEmpty+Abrir provas
 -->
 ```
 

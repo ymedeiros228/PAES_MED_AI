@@ -304,7 +304,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para abrir o PDF.'))),
+          SnackBar(
+            content: Text(
+              humanOpenPathError(e, label: 'PDF PAES ${q.year}'),
+            ),
+          ),
         );
       }
     }

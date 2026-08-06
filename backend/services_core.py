@@ -763,13 +763,13 @@ def resolve_prova_pdf(year: int | None) -> Path | None:
 
 def year_pdf_info(year: int) -> dict[str, Any]:
     path = resolve_prova_pdf(year)
-    if path is None:
+    if path is None or not path.exists():
         return {
             "ok": True,
             "year": year,
             "exists": False,
             "path": None,
-            "note": f"Sem PDF de prova {year} em data/provas — coloque o arquivo no PC (não inventamos).",
+            "note": f"Sem PDF de prova {year} em data/provas — coloque paes_{year}.pdf no PC (não inventamos).",
         }
     return {
         "ok": True,

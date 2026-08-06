@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 4 concluído |
-| **Próximo** | P2: open-path / PDF ano — mensagens honestas |
-| **Último feito** | Fila lacunas sem material: badge + Biblioteca + hasLocalMaterial |
+| **Agora** | — idle; ciclo 5 concluído |
+| **Próximo** | P2: mark-read / Ler teoria smoke + clique |
+| **Último feito** | open-path/PDF ano: mensagens honestas + CTA Abrir provas |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

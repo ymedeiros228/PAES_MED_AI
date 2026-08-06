@@ -815,8 +815,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         setState(() => msg = 'Abrindo PDF $label');
       } catch (e) {
         setState(
-          () => msg =
-              '$label · ${humanApiError(e, fallback: 'PDF no PC mas pasta não abriu.')}',
+          () => msg = humanOpenPathError(e, label: 'PDF $label'),
         );
       }
     } catch (e) {
@@ -836,7 +835,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         await apiClient.post('/api/library/open-path', {'path': path});
         setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
-        setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
+        setState(
+          () => msg = humanOpenPathError(
+            e,
+            label: hit['label']?.toString() ?? 'Arquivo',
+          ),
+        );
       }
     }
   }
@@ -1466,10 +1470,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               if (msg != null) ...[
                 const SizedBox(height: 12),
-                Text(
-                  msg!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
-                ),
+                if (msg!.contains('sumiu') ||
+                    msg!.contains('não abriu') ||
+                    msg!.contains('nao abriu') ||
+                    msg!.contains('Sem PDF'))
+                  QuietEmpty(
+                    message: msg!,
+                    action: FilledButton.tonal(
+                      onPressed: busy ? null : () => unawaited(_openFolder('provas')),
+                      child: const Text('Abrir provas'),
+                    ),
+                  )
+                else
+                  Text(
+                    msg!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
+                  ),
               ],
             ],
           ),

@@ -117,19 +117,28 @@ Future<void> openTheoryReadSheet(
                                         try {
                                           await apiClient.post('/api/library/open-path', {'path': path});
                                         } catch (e) {
+                                          final err = humanOpenPathError(
+                                            e,
+                                            label: it['label']?.toString() ?? 'Material',
+                                          );
                                           try {
                                             await apiClient.post(
                                               '/api/library/open-folder',
                                               {'folder': it['folder'] ?? 'edital'},
                                             );
+                                            if (ctx.mounted) {
+                                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                                SnackBar(content: Text('$err · pasta aberta.')),
+                                              );
+                                            }
                                           } catch (e2) {
                                             if (ctx.mounted) {
                                               ScaffoldMessenger.of(ctx).showSnackBar(
                                                 SnackBar(
                                                   content: Text(
-                                                    humanApiError(
+                                                    humanOpenPathError(
                                                       e2,
-                                                      fallback: 'Não deu para abrir o material.',
+                                                      label: it['label']?.toString() ?? 'Material',
                                                     ),
                                                   ),
                                                 ),

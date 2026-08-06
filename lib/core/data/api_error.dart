@@ -33,3 +33,27 @@ String humanApiError(Object e, {String fallback = 'Não deu para carregar — te
   }
   return fallback;
 }
+
+/// Erros ao abrir PDF/arquivo local (open-path / ano).
+String humanOpenPathError(
+  Object e, {
+  String? label,
+}) {
+  final s = e.toString().toLowerCase();
+  final name = (label != null && label.isNotEmpty) ? label : 'Arquivo';
+  if (s.contains('404') ||
+      s.contains('not found') ||
+      s.contains('não encontrado') ||
+      s.contains('nao encontrado')) {
+    return '$name sumiu do disco — coloque o PDF em data/provas ou atualize o acervo.';
+  }
+  if (s.contains('403')) {
+    return 'Só abrimos arquivos dentro da pasta de dados do app.';
+  }
+  if (s.contains('500') ||
+      s.contains('não foi possível abrir') ||
+      s.contains('nao foi possivel abrir')) {
+    return '$name está no PC mas não abriu — use Abrir provas na Biblioteca.';
+  }
+  return humanApiError(e, fallback: '$name no PC mas não abriu — verifique data/provas.');
+}

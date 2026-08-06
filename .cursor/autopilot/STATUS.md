@@ -1,23 +1,23 @@
 # Auto-Pilot — STATUS
 
-## Git ciclo 4…
+## Git ciclo 5…
 
 | | |
 |---|---|
 | **Estado** | RUNNING |
 | **Projeto** | PAES_MED_AI |
-| **Ciclo** | 4 |
-| **Tempo restante** | 54m |
+| **Ciclo** | 5 |
+| **Tempo restante** | 53m |
 | **Última tool** | edit |
 | **Agent** | agent-8f4d530b-026a-412b-b0f8-d6067da4b00c |
-| **Run** | run-a7f2cb84-5444-4e8f-b6e4-50ffd03ebb15 |
+| **Run** | run-d36b1f79-8bc6-4977-bfb1-71c750ae42cf |
 | **Branch** | autopilot/20260806-155832 |
-| **Commit** | 6924b4e |
+| **Commit** | 9658c92 |
 | **PR** | — |
 | **Validate** | validate skipped |
 | **Modo FOCUS** | A · Uso real |
-| **QUEUE head** | open-path / PDF ano: mensagens honestas se caminho sumir (já parcialmente GQ — só regressão) |
-| **Atualizado** | 06/08/2026, 13:04:46 |
+| **QUEUE head** | mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional |
+| **Atualizado** | 06/08/2026, 13:06:04 |
 
 ### Missão
 
@@ -29,21 +29,21 @@ Host: commit/push/PR…
 
 ### Log recente
 
-- [13:03:56] tool ok edit
-- [13:03:56] tool ok edit
-- [13:03:59] tool ok read
-- [13:04:01] tool ok edit
-- [13:04:05] tool ok shell
-- [13:04:07] tool ok edit
-- [13:04:21] tool ok shell
-- [13:04:24] tool ok edit
-- [13:04:24] tool ok edit
-- [13:04:24] tool ok edit
-- [13:04:26] tool ok edit
-- [13:04:36] tool ok edit
-- [13:04:36] tool ok edit
-- [13:04:46] fim ciclo 4: finished
-- [13:04:46] validate skipped
+- [13:05:34] tool ok edit
+- [13:05:39] tool ok read
+- [13:05:39] tool ok grep
+- [13:05:41] tool ok edit
+- [13:05:42] tool ok edit
+- [13:05:46] tool ok shell
+- [13:05:54] tool ok shell
+- [13:05:56] tool ok edit
+- [13:05:56] tool ok edit
+- [13:05:57] tool ok edit
+- [13:05:58] tool ok edit
+- [13:05:59] tool ok edit
+- [13:06:01] tool ok edit
+- [13:06:04] fim ciclo 5: finished
+- [13:06:04] validate skipped
 
 ### Ao voltar no Cursor
 

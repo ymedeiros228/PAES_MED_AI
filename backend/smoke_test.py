@@ -5820,7 +5820,7 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_gq_library_year_pdf_open",
-        "PDF no PC mas pasta não abriu." in lib_gq and "_openYearPdf" in lib_gq,
+        "humanOpenPathError" in lib_gq and "_openYearPdf" in lib_gq,
         "library year pdf open",
     )
     ok(
@@ -5893,6 +5893,23 @@ def main() -> int:
         and "sem material local" in fila_gt
         and "hasLocalMaterial" in fila_gt,
         "fila gap no material",
+    )
+    api_gy = (
+        root / "lib" / "core" / "data" / "api_error.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    main_gy = (
+        root / "backend" / "main.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    core_gy = (
+        root / "backend" / "services_core.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_gy_open_path_honest",
+        "humanOpenPathError" in api_gy
+        and "sumiu do disco" in api_gy
+        and "movido ou apagado" in main_gy
+        and "path.exists()" in core_gy,
+        "open path honest",
     )
 
     # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
