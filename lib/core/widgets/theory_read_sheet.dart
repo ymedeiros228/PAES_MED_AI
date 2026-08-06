@@ -5,12 +5,16 @@ import '../data/api_client.dart';
 import '../data/api_error.dart';
 import 'ui_kit.dart';
 
-/// Bottom sheet F2: materiais locais + mark-read + empty honesto.
+String adaptiveTrainPath(String subject, String topic) =>
+    '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+    '&topic=${Uri.encodeComponent(topic)}';
+
+/// Bottom sheet F2: materiais locais + mark-read + treino adaptativo.
 Future<void> openTheoryReadSheet(
   BuildContext context, {
   required String subject,
   required String topic,
-  String? trainSessionPath,
+  String? trainPath,
 }) async {
   try {
     final matFuture = apiClient.get(
@@ -37,10 +41,7 @@ Future<void> openTheoryReadSheet(
     final note = map['note']?.toString();
     final artDisclaimer = artMap['disclaimer']?.toString();
     var isRead = readMap['read'] == true;
-    final sessionPath = trainSessionPath ??
-        '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
-            '&subject=${Uri.encodeComponent(subject)}'
-            '&topic=${Uri.encodeComponent(topic)}';
+    final nextTrainPath = trainPath ?? adaptiveTrainPath(subject, topic);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -214,49 +215,99 @@ Future<void> openTheoryReadSheet(
                         ),
                     ],
                     const SizedBox(height: 16),
+                    Text(
+                      isRead
+                          ? 'Passo 2 · Teoria lida — treine o tópico agora.'
+                          : 'Passo 1 · Leia o material e marque como lido. Depois treine.',
+                      style: Theme.of(ctx).textTheme.labelLarge?.copyWith(
+                            color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72),
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        FilledButton(
-                          onPressed: () async {
-                            try {
-                              final r = await apiClient.post('/api/study/mark-read', {
-                                'subject': subject,
-                                'topic': topic,
-                              });
-                              final m = Map<String, dynamic>.from(r as Map);
-                              setModal(() {
-                                isRead = true;
-                                readMap['at'] = m['at'];
-                                readMap['read'] = true;
-                              });
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Marcado como li (local).')),
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      humanApiError(e, fallback: 'Não deu para marcar como lido.'),
+                        if (isRead)
+                          FilledButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              context.go(nextTrainPath);
+                            },
+                            icon: const Icon(Icons.psychology_rounded, size: 18),
+                            label: const Text('Treinar agora'),
+                          )
+                        else
+                          FilledButton(
+                            onPressed: () async {
+                              try {
+                                final r = await apiClient.post('/api/study/mark-read', {
+                                  'subject': subject,
+                                  'topic': topic,
+                                });
+                                final m = Map<String, dynamic>.from(r as Map);
+                                setModal(() {
+                                  isRead = true;
+                                  readMap['at'] = m['at'];
+                                  readMap['read'] = true;
+                                });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Marcado como lido. Próximo: treinar o tópico.'),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        humanApiError(e, fallback: 'Não deu para marcar como lido.'),
+                                      ),
+                                    ),
+                                  );
+                                }
                               }
-                            }
-                          },
-                          child: Text(isRead ? 'Li de novo' : 'Marquei como li'),
-                        ),
-                        FilledButton.tonal(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.go(sessionPath);
-                          },
-                          child: const Text('Treinar tópico'),
-                        ),
+                            },
+                            child: const Text('Marquei como li'),
+                          ),
+                        if (isRead)
+                          OutlinedButton(
+                            onPressed: () async {
+                              try {
+                                await apiClient.post('/api/study/mark-read', {
+                                  'subject': subject,
+                                  'topic': topic,
+                                });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Marcado como li (local).')),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        humanApiError(e, fallback: 'Não deu para marcar como lido.'),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text('Li de novo'),
+                          )
+                        else
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              context.go(nextTrainPath);
+                            },
+                            child: const Text('Pular para treino'),
+                          ),
                         TextButton(
                           onPressed: () {
                             Navigator.pop(ctx);

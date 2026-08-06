@@ -5862,6 +5862,15 @@ def main() -> int:
         "Ciclo GT" in como_ap,
         "COMO GT",
     )
+    ok(
+        "ciclo_gv_theory_li_treino_path",
+        "adaptiveTrainPath" in theory_gt
+        and "/adaptativo" in theory_gt
+        and "Treinar agora" in theory_gt
+        and "trainPath" in ficha_gt
+        and "trainPath" in fila_gt,
+        "theory li treino adaptativo",
+    )
 
     # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
     ok(

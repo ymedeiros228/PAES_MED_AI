@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 1 concluído |
-| **Próximo** | Ficha pós-erro: path “li teoria → treino” (validar ao vivo) |
-| **Último feito** | Sessão/Fila: empty+erro legíveis, CTAs claros, jargão removido |
+| **Agora** | — idle; ciclo 2 concluído |
+| **Próximo** | Soft landing primeiro uso (onboarding + Semana 1) — só se repro |
+| **Último feito** | Ficha/Fila: li teoria → treino adaptativo com passos claros |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

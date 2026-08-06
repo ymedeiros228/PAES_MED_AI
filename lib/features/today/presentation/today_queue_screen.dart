@@ -178,7 +178,8 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       context,
       subject: subject,
       topic: topic,
-      trainSessionPath: _sessionFor(subject, topic),
+      trainPath: '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+          '&topic=${Uri.encodeComponent(topic)}',
     );
   }
 
@@ -318,9 +319,21 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
                 if (!hasAnything) ...[
                   const SizedBox(height: 20),
-                  QuietEmpty(
-                    message:
-                        'Nada pendente na fila. Toque em Começar sessão acima para montar o plano de hoje.',
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.playlist_add_check_rounded,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.22),
+                        ),
+                        const SizedBox(height: 10),
+                        QuietEmpty(
+                          message:
+                              'Nada pendente na fila. Toque em Começar sessão acima para montar o plano de hoje.',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
 

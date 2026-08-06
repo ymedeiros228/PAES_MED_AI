@@ -29,3 +29,4 @@ GR–GU = ship de residual real (pack/git/F2), não substituir toda a missão do
 ## Nova sessão 2026-08-06T15:58:32.217Z
 
 - [x] **Sessão/Fila empty+erro (modo A):** copy em PT sem jargão (misses/due/spaced/syllabus/API); CTAs primários únicos (Tentar de novo, Abrir fila, Carregar questões/revisões); erro de lacunas e card review com ação; fila vazia aponta para Começar sessão. **Polish UI:** divisor no painel fim de sessão. Smoke strings atualizadas (cf/fb/fz/ga).
+- [x] **Ficha/Fila li teoria → treino (modo A):** `theory_read_sheet` com passos 1/2, default `/adaptativo`, CTA **Treinar agora** pós-leitura; ficha pós-erro prioriza Ler teoria; fila lacunas passa `trainPath` adaptativo. **Polish UI:** ícone no empty da fila. Smoke `ciclo_gv_theory_li_treino_path`.
