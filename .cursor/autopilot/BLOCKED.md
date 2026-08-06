@@ -5,5 +5,5 @@ Formato: `- [ ] [TÍTULO] | por quê | onde | próxima ação`
 
 Sessão: 2026-08-06T01:04:22.847Z
 
-- [ ] flutter analyze local | `flutter` não está no PATH do shell do agente | ambiente Windows | rodar `flutter analyze lib` manualmente ou adicionar Flutter ao PATH do host
-- [ ] dist VERSION.txt 1.0.0+7 | pack não reexecutado neste ciclo (dist ainda +6) | dist/PAES_MED_AI_Windows/VERSION.txt | host rodar `empacotar_windows.bat` no próximo ciclo de ship
+- [ ] flutter analyze local | `flutter` não está no PATH do shell do agente (só via empacotar.bat) | ambiente Windows | rodar `flutter analyze lib` manualmente ou adicionar Flutter ao PATH do host
+- [ ] dist pack 1.0.0+7 | `dist\PAES_MED_AI_Windows` em lock (explorer/processo); build exe OK mas rmdir falhou | empacotar_windows.bat | fechar app/explorer em dist\ e rerodar `empacotar_windows.bat`

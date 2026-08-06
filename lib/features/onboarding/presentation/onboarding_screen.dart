@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,17 +21,60 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int step = 0;
   late final TextEditingController examCtrl;
   String? folderMsg;
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     examCtrl = TextEditingController(text: ref.read(examDateProvider));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     examCtrl.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _advance() async {
+    if (step == 1) {
+      final raw = examCtrl.text.trim();
+      if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(raw)) {
+        await ref.read(examDateProvider.notifier).setDate(raw);
+      }
+    }
+    if (step < 3) {
+      setState(() => step++);
+      return;
+    }
+    await _finish(path: '/dashboard');
+  }
+
+  void _back() {
+    if (step > 0) setState(() => step--);
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary != null && primary.context?.widget is EditableText) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      _back();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      unawaited(_advance());
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _openFolder(String folder) async {
@@ -65,7 +111,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       'Hoje → Sessão ou Fila. Biblioteca se ainda faltar prova. Simulado quando quiser medir.',
     ];
 
-    return Scaffold(
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _onKey,
+      child: Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
@@ -90,6 +139,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(titles[step], style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 12),
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
+              Text(
+                '← volta · → ou Enter avança',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.5)),
+              ),
               if (step == 1) ...[
                 const SizedBox(height: 16),
                 TextField(
@@ -136,16 +189,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     TextButton(onPressed: () => setState(() => step++), child: const Text('Pular data')),
                   if (step < 3)
                     FilledButton(
-                      onPressed: () async {
-                        if (step == 1) {
-                          final raw = examCtrl.text.trim();
-                          if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(raw)) {
-                            await ref.read(examDateProvider.notifier).setDate(raw);
-                          }
-                        }
-                        setState(() => step++);
-                      },
-                      child: const Text('Continuar'),
+                      onPressed: _advance,
+                      child: const Text('Continuar (Enter)'),
                     )
                   else ...[
                     TextButton(
@@ -163,6 +208,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

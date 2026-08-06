@@ -203,6 +203,9 @@ flowchart TB
 | CV | Aulas Ctrl+Enter estrutura legenda | `ciclo_cv_*` | **Feito** |
 | CW | Ingest review teclado nav + gabarito | `ciclo_cw_*` | **Feito** |
 | CX | Health offline legível em Ajustes | `ciclo_cx_*` | **Feito** |
+| CY | Questões teclado nav + páginas | `ciclo_cy_*` | **Feito** |
+| CZ | Tutor Ctrl+Enter envia | `ciclo_cz_*` | **Feito** |
+| DA | Onboarding ←/→/Enter | `ciclo_da_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -210,8 +213,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós CU–CX)
+## Estado (atualizado pós CY–DA)
 
-- Rodada CU–CX: erros humanos onda 4, Aulas Ctrl+Enter, teclado ingest review, health offline legível, **1.0.0+7**.
-- Residual próximo TBD (pack dist +7, teclado Questões ou Dia de prova).
+- Rodada CY–DA: teclado em Questões, Tutor Ctrl+Enter, onboarding ←/→/Enter; **1.0.0+7** mantida.
+- Residual: repack dist +7, flutter analyze no PATH do agente.
 - Push no GitHub após cada ciclo verde (autor: Yuri Medeiros).

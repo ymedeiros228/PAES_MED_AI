@@ -623,6 +623,21 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Ajustes → Seus dados: offline mostra mensagem `humanApiError` (não stack).
 2. Smoke: `ciclo_cx_*` + push.
 
+## Questões teclado (Ciclo CY)
+
+1. Lista: **↑/↓** ou **J/K** seleciona · **Enter** abre ficha · **[/]** ou **P/N** páginas.
+2. Smoke: `ciclo_cy_*` + push.
+
+## Tutor Ctrl+Enter (Ciclo CZ)
+
+1. Tutor IA: **Ctrl+Enter** envia (Enter sozinho quebra linha no campo).
+2. Smoke: `ciclo_cz_*` + push.
+
+## Onboarding teclado (Ciclo DA)
+
+1. **←** volta · **→** ou **Enter** avança (ignora quando cursor no campo de data).
+2. Smoke: `ciclo_da_*` + push.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

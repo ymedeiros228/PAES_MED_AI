@@ -8,5 +8,9 @@ Projeto: PAES_MED_AI
 - [x] Ciclo CV: Aulas Ctrl+Enter/Cmd+Enter estrutura legenda ≥80 chars + smoke `ciclo_cv_*`
 - [x] Ciclo CW: ingest review teclado ←/J · →/K · 1–5 gabarito + nav por filtro visível + smoke `ciclo_cw_*`
 - [x] Ciclo CX: Ajustes offline exibe `health['error']` humanizado + smoke `ciclo_cx_*`
-- [x] Smoke suite: 498 testes (baseline era 478) — 0 falhas
-- [x] COMO_LIGAR.md e ROADMAP_FUTURO.md atualizados (CU–CX)
+- [x] Ciclo CY: Questões teclado ↑/↓ J/K · Enter abre · [/] P/N páginas + highlight `active` + smoke `ciclo_cy_*`
+- [x] Ciclo CZ: Tutor IA Ctrl+Enter envia (multiline) + smoke `ciclo_cz_*`
+- [x] Ciclo DA: Onboarding ←/→/Enter avança (safe com EditableText) + smoke `ciclo_da_*`
+- [x] Smoke suite ciclo 2: **505/505** OK (baseline ciclo 1: 498)
+- [x] COMO_LIGAR.md e ROADMAP_FUTURO.md atualizados (CU–DA)
+- [x] Flutter build windows release OK (42s); pack dist bloqueado por lock de pasta

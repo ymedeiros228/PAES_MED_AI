@@ -4267,6 +4267,62 @@ def main() -> int:
         "COMO CX",
     )
 
+    # --- Ciclo CY: questões teclado ---
+    quest_cy = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cy_questions_nav_keys",
+        "_onKey" in quest_cy
+        and "LogicalKeyboardKey.keyJ" in quest_cy
+        and "_openSelected" in quest_cy,
+        "questions nav keys",
+    )
+    ok(
+        "ciclo_cy_questions_page_keys",
+        "bracketRight" in quest_cy and "_prevPage" in quest_cy and "active: i == selected" in quest_cy,
+        "questions page keys",
+    )
+    ok(
+        "ciclo_cy_como_section",
+        "Ciclo CY" in como_ap,
+        "COMO CY",
+    )
+
+    # --- Ciclo CZ: tutor Ctrl+Enter ---
+    tutor_cz = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_cz_tutor_ctrl_enter",
+        "CallbackShortcuts" in tutor_cz
+        and "LogicalKeyboardKey.enter, control: true" in tutor_cz
+        and "unawaited(_send())" in tutor_cz,
+        "tutor ctrl enter",
+    )
+    ok(
+        "ciclo_cz_como_section",
+        "Ciclo CZ" in como_ap,
+        "COMO CZ",
+    )
+
+    # --- Ciclo DA: onboarding teclado ---
+    onboard_da = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_da_onboarding_keys",
+        "_advance" in onboard_da
+        and "LogicalKeyboardKey.arrowRight" in onboard_da
+        and "EditableText" in onboard_da,
+        "onboarding keys",
+    )
+    ok(
+        "ciclo_da_como_section",
+        "Ciclo DA" in como_ap,
+        "COMO DA",
+    )
+
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"
