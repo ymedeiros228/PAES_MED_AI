@@ -5885,6 +5885,15 @@ def main() -> int:
         and "Atualizar 2024–26" in onb_ck,
         "first run semana1 soft landing",
     )
+    ok(
+        "ciclo_gx_fila_gap_no_material",
+        "hasLocalMaterial" in open(
+            root / "backend" / "services_extra.py", encoding="utf-8", errors="ignore"
+        ).read()
+        and "sem material local" in fila_gt
+        and "hasLocalMaterial" in fila_gt,
+        "fila gap no material",
+    )
 
     # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
     ok(

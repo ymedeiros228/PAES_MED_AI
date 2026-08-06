@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: 3
-modo: A
-item: Soft landing onboarding + Semana 1 pós-+9
-smoke: flutter analyze OK; ciclo_gw_first_run_semana1
-nota: coach Biblioteca+Hoje; onboarding Semana 1 primário; playbook CTA Abrir provas
+<!-- ciclo: 4
+modo: A/B thin
+item: Fila lacunas sem material — hasLocalMaterial + Biblioteca
+smoke: 709/711 OK; ciclo_gx_fila_gap_no_material
+nota: backend enrich gaps; tile badge+CTA; QuietEmpty seção lacunas
 -->
 ```
 

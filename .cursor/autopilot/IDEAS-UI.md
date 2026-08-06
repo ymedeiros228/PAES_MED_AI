@@ -16,3 +16,7 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 - [ ] [Onboarding / passo 3] | preview mini do painel Biblioteca (mock) antes de ir | reduz surpresa na primeira tela real | M
 - [ ] [Hoje / coach] | dismiss automático só após Semana 1 OK, não só officialN>0 | coach some no momento certo | S
 - [x] [Biblioteca / first-run] | banner Bem-vindo + painel Semana 1 destacado | guia quem veio do onboarding direto à Biblioteca | S
+- [ ] [Fila / lacunas] | filtro “só sem material” no topo da seção Lacunas | foco quando várias lacunas misturadas | S
+- [ ] [Fila / lacunas] | link direto Biblioteca com subject/topic na query (scroll futuro) | 1 clique do gap certo ao acervo | M
+- [ ] [Theory sheet] | empty mostra qual pasta abrir (edital vs provas) conforme note da API | menos adivinhação pós-lacuna | S
+- [ ] [Fila / lacunas] | chip contador “N sem teoria” ao lado do SectionLabel | escaneabilidade rápida | S

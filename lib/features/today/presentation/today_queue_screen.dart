@@ -345,15 +345,18 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final g = Map<String, dynamic>.from(raw as Map);
                         final s = g['subject']?.toString() ?? '';
                         final t = g['topic']?.toString() ?? '';
+                        final hasMaterial = g['hasLocalMaterial'] != false;
                         final path =
                             '/adaptativo?subject=${Uri.encodeComponent(s)}'
                             '&topic=${Uri.encodeComponent(t)}';
                         return PlaylistTile(
                           title: s,
-                          subtitle: t,
-                          badge: 'retomar',
+                          subtitle: hasMaterial
+                              ? t
+                              : '$t · sem material local',
+                          badge: hasMaterial ? 'retomar' : 'sem teoria',
                           active: navIndexFor(path) == selected,
-                          leadingIcon: Icons.flag_rounded,
+                          leadingIcon: hasMaterial ? Icons.flag_rounded : Icons.folder_off_outlined,
                           onPlay: () {
                             final i = navIndexFor(path);
                             if (i >= 0) setState(() => selected = i);
@@ -362,6 +365,16 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           secondary: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (!hasMaterial)
+                                IconButton(
+                                  tooltip: 'Biblioteca — acervo 2024–26',
+                                  icon: Icon(
+                                    Icons.library_books_outlined,
+                                    size: 20,
+                                    color: Theme.of(context).colorScheme.tertiary,
+                                  ),
+                                  onPressed: () => context.go('/biblioteca'),
+                                ),
                               FutureBuilder(
                                 future: apiClient.get(
                                   '/api/study/reads',
@@ -398,6 +411,22 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           ),
                         );
                       },
+                    ),
+                  if (gapItems.any((raw) {
+                    if (raw is! Map) return false;
+                    return raw['hasLocalMaterial'] == false;
+                  }))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: QuietEmpty(
+                        message:
+                            'Lacuna(s) sem teoria local — o app não inventa edital. '
+                            'Atualize 2024–26 na Biblioteca ou treine direto no tópico.',
+                        action: FilledButton.tonal(
+                          onPressed: () => context.go('/biblioteca'),
+                          child: const Text('Biblioteca'),
+                        ),
+                      ),
                     ),
                 ],
 

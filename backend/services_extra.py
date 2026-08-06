@@ -354,6 +354,51 @@ def mark_gap_card_remembered(subject: str, topic: str) -> dict[str, Any]:
         conn.close()
 
 
+def _topic_has_local_material(subject: str, topic: str) -> bool:
+    """Espelha o recorte de /api/library/materials — lacuna sem material → Biblioteca."""
+    from services_edital import theory_snippets_for
+
+    subj = (subject or "").strip()
+    top = (topic or "").strip()
+    if theory_snippets_for(subj or None, top or None, limit=1):
+        return True
+    tokens = [t.lower() for t in f"{subj} {top}".split() if len(t) > 2]
+    if not tokens:
+        return False
+
+    def _matches_blob(blob: str) -> bool:
+        low = blob.lower()
+        return any(tok in low for tok in tokens)
+
+    edital_dir = DATA_DIR / "edital"
+    if edital_dir.exists():
+        for p in edital_dir.iterdir():
+            if not p.is_file():
+                continue
+            if p.suffix.lower() not in {".md", ".txt", ".pdf"}:
+                continue
+            if _matches_blob(p.name):
+                return True
+            if p.suffix.lower() in {".md", ".txt"}:
+                try:
+                    head = p.read_text(encoding="utf-8", errors="ignore")[:8000]
+                except OSError:
+                    continue
+                if _matches_blob(head):
+                    return True
+    provas_dir = DATA_DIR / "provas"
+    if provas_dir.exists():
+        for p in provas_dir.glob("*.pdf"):
+            if _matches_blob(p.name):
+                return True
+    aulas_dir = DATA_DIR / "aulas"
+    if aulas_dir.exists():
+        for p in aulas_dir.iterdir():
+            if p.is_file() and _matches_blob(p.name):
+                return True
+    return False
+
+
 def list_study_gaps(*, status: str = "open", limit: int = 40) -> dict[str, Any]:
     conn = connect()
     try:
@@ -380,6 +425,7 @@ def list_study_gaps(*, status: str = "open", limit: int = 40) -> dict[str, Any]:
                 "rememberedCard": bool(r["remembered_card"]),
                 "missCount": r["miss_count"],
                 "key": f"{r['subject']}::{r['topic']}",
+                "hasLocalMaterial": _topic_has_local_material(r["subject"], r["topic"]),
             }
             for r in rows
         ]

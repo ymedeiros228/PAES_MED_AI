@@ -17,7 +17,7 @@ Prioridade: topo = primeiro.
 
 ## P2 · Material / F2–F3 thin (modo B)
 
-- [ ] Gaps na Fila sem material: empty + Biblioteca deve bastar; auditar 1 disciplina fraca real
+- [x] Gaps na Fila sem material: empty + Biblioteca deve bastar; auditar 1 disciplina fraca real
 - [ ] open-path / PDF ano: mensagens honestas se caminho sumir (já parcialmente GQ — só regressão)
 - [ ] mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional
 

@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 3 concluído |
-| **Próximo** | P2: gaps Fila sem material — empty + Biblioteca |
-| **Último feito** | Soft landing primeiro uso: onboarding → Semana 1 na Biblioteca |
+| **Agora** | — idle; ciclo 4 concluído |
+| **Próximo** | P2: open-path / PDF ano — mensagens honestas |
+| **Último feito** | Fila lacunas sem material: badge + Biblioteca + hasLocalMaterial |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

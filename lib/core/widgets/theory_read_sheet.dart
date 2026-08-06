@@ -82,8 +82,10 @@ Future<void> openTheoryReadSheet(
                     if (items.isEmpty) ...[
                       const SizedBox(height: 16),
                       QuietEmpty(
-                        message: note ?? 'Sem material local para este tópico.',
-                        action: TextButton(
+                        message: note ??
+                            'Sem material local para $subject · $topic. '
+                            'Atualize o acervo na Biblioteca — o app não inventa edital.',
+                        action: FilledButton.tonal(
                           onPressed: () {
                             Navigator.pop(ctx);
                             context.go('/biblioteca');
