@@ -2602,6 +2602,62 @@ def backup_storage_summary() -> dict[str, Any]:
     }
 
 
+def backup_cleanup_plan(keep: int = 10) -> dict[str, Any]:
+    backup_dir = DATA_DIR / "backups"
+    keep = max(1, min(int(keep or 10), 200))
+    if not backup_dir.exists():
+        return {
+            "ok": True,
+            "keep": keep,
+            "total": 0,
+            "removeCount": 0,
+            "reclaimBytes": 0,
+            "reclaimMb": 0,
+            "candidates": [],
+            "command": f"powershell -ExecutionPolicy Bypass -File tools\\limpar_backups.ps1 -Keep {keep} -Apply",
+        }
+
+    items = [
+        p
+        for p in backup_dir.iterdir()
+        if p.name != "_restore_tmp" and (p.is_dir() or (p.is_file() and p.suffix.lower() == ".zip"))
+    ]
+    items.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    remove = items[keep:]
+
+    def item_size(path: Path) -> int:
+        if path.is_file():
+            return path.stat().st_size
+        return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
+
+    candidates = []
+    total_bytes = 0
+    for p in remove:
+        size = item_size(p)
+        total_bytes += size
+        candidates.append(
+            {
+                "name": p.name,
+                "kind": "folder" if p.is_dir() else "zip",
+                "bytes": size,
+                "mb": round(size / (1024 * 1024), 2),
+                "modifiedAt": datetime.fromtimestamp(p.stat().st_mtime).isoformat(timespec="seconds"),
+            }
+        )
+
+    return {
+        "ok": True,
+        "keep": keep,
+        "total": len(items),
+        "removeCount": len(remove),
+        "reclaimBytes": total_bytes,
+        "reclaimMb": round(total_bytes / (1024 * 1024), 2),
+        "candidates": candidates[:5],
+        "command": f"powershell -ExecutionPolicy Bypass -File tools\\limpar_backups.ps1 -Keep {keep} -Apply",
+        "dryRun": True,
+    }
+
+
 def list_backups(limit: int = 30) -> list[dict[str, Any]]:
     import zipfile
 

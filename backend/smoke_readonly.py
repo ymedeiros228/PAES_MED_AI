@@ -41,6 +41,18 @@ def main() -> int:
     summary = r.json() if r.status_code == 200 else {}
     ok("backups_summary", r.status_code == 200 and summary.get("ok") is True, str(summary)[:160])
 
+    r = client.get("/api/backups/cleanup-plan", params={"keep": 10})
+    plan = r.json() if r.status_code == 200 else {}
+    ok(
+        "backups_cleanup_plan",
+        r.status_code == 200
+        and plan.get("ok") is True
+        and plan.get("dryRun") is True
+        and "reclaimMb" in plan
+        and "command" in plan,
+        str(plan)[:160],
+    )
+
     repo = ROOT.parent
     draft_store = (repo / "lib" / "features" / "essay" / "essay_draft.dart").read_text(
         encoding="utf-8",
