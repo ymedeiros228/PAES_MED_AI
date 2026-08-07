@@ -325,6 +325,10 @@ flowchart TB
 | HZ | Fila filtros/cores + theory empty | `ciclo_hz_*` | **Feito** |
 | IA | Sessão teoria painéis + Sobre Desktop | `ciclo_ia_*` | **Feito** |
 | IB | Ship **1.0.0+13** pack/smoke | `ciclo_ib_*` | **Feito** |
+| IC | Coach Semana1 + onboarding preview | `ciclo_ic_*` | **Feito** |
+| ID | Fila dots + PDF stale disable | `ciclo_id_*` | **Feito** |
+| IE | open-path toast + pack 1/5…5/5 | `ciclo_ie_*` | **Feito** |
+| IF | Ship **1.0.0+14** pack/smoke | `ciclo_if_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -332,8 +336,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HY–IB)
+## Estado (atualizado pós IC–IF)
 
-- Rodada **HY–IB**: wave IDEAS-UI (fila/theory/ficha/Sobre), ship **1.0.0+13**.
+- Rodada **IC–IF**: residual IDEAS-UI, ship **1.0.0+14**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
 - PDFs grandes **fora** do git.

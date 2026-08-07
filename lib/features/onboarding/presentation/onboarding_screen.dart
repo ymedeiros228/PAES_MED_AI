@@ -188,6 +188,42 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Text(folderMsg!, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ],
+              if (step == 3) ...[
+                const SizedBox(height: 16),
+                // Mini preview do painel Biblioteca (mock estático)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHighest.withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: cs.outlineVariant),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Na Biblioteca você verá',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: cs.primary,
+                            ),
+                      ),
+                      const SizedBox(height: 10),
+                      _MiniLibRow(year: '2024', status: 'Pronto · Estudar'),
+                      _MiniLibRow(year: '2025', status: 'Pronto · Estudar'),
+                      _MiniLibRow(year: '2026', status: 'Atualizar se faltar'),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Painel Semana 1 · oficiais 2024–26 · sem inventar ano ausente',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: cs.onSurface.withOpacity(0.6),
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               Row(
                 children: [
@@ -227,6 +263,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
       ),
     ),
+    );
+  }
+}
+
+class _MiniLibRow extends StatelessWidget {
+  const _MiniLibRow({required this.year, required this.status});
+  final String year;
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: cs.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(year, style: TextStyle(fontWeight: FontWeight.w800, color: cs.primary, fontSize: 12)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(status, style: Theme.of(context).textTheme.bodySmall),
+          ),
+        ],
+      ),
     );
   }
 }

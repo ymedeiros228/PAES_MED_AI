@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Mensagens de erro legíveis no app de estudo (Ciclo CJ).
 /// Evita `ClientException` / stack em inglês na UI.
 String humanApiError(Object e, {String fallback = 'Não deu para carregar — tente de novo.'}) {
@@ -56,4 +58,42 @@ String humanOpenPathError(
     return '$name está no PC mas não abriu — use Abrir provas na Biblioteca.';
   }
   return humanApiError(e, fallback: '$name no PC mas não abriu — verifique data/provas.');
+}
+
+/// Toast único para open-path (2 linhas + ícone) — IDEAS Global/open-path.
+void showOpenPathSnackBar(
+  BuildContext context, {
+  required String message,
+  bool isError = false,
+  String? actionLabel,
+  VoidCallback? onAction,
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isError ? Icons.folder_off_outlined : Icons.folder_open_outlined,
+            color: Colors.white,
+            size: 22,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      action: actionLabel != null && onAction != null
+          ? SnackBarAction(label: actionLabel, onPressed: onAction)
+          : null,
+    ),
+  );
 }

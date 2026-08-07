@@ -6686,11 +6686,11 @@ def main() -> int:
     # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13"))
-        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13"))
-        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13"))
-        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13")),
-        "version +12/+13 triple",
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14")),
+        "version +12..+14 triple",
     )
     ok(
         "ciclo_hx_como_section",
@@ -6763,24 +6763,84 @@ def main() -> int:
         "BUMP_VERSION.md",
     )
 
-    # --- Ciclo IB: ship 1.0.0+13 ---
+    # --- Ciclo IB: ship 1.0.0+13 (aceita +14) ---
     ok(
         "ciclo_ib_version_13",
-        "1.0.0+13" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+13",))
-        and "1.0.0+13" in pack_bat
-        and "1.0.0+13" in app_ver_ht,
-        "version +13 triple",
+        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14"))
+        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14"))
+        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14"))
+        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14")),
+        "version +13/+14 triple",
     )
     ok(
         "ciclo_ib_como_section",
-        "1.0.0+13" in como_ap or "Ciclo IB" in como_ap or "IDEAS-UI" in como_ap,
+        "1.0.0+13" in como_ap or "1.0.0+14" in como_ap or "Ciclo IB" in como_ap or "IDEAS-UI" in como_ap,
         "COMO HY-IB",
     )
     ok(
         "ciclo_ib_roadmap",
-        "IB" in roadmap_hm and "1.0.0+13" in roadmap_hm,
+        ("IB" in roadmap_hm and ("1.0.0+13" in roadmap_hm or "1.0.0+14" in roadmap_hm)),
         "ROADMAP HY-IB",
+    )
+
+    # --- Ciclo IC–IF residual IDEAS ---
+    onb_ic = (
+        root / "lib" / "features" / "onboarding" / "presentation" / "onboarding_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_ic = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    fila_id = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_id = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    err_ie = (root / "lib" / "core" / "data" / "api_error.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_ic_onboarding_preview",
+        "_MiniLibRow" in onb_ic and "Na Biblioteca você verá" in onb_ic,
+        "onboarding mini lib",
+    )
+    ok(
+        "ciclo_ic_coach_semana1",
+        "semana1Ok" in dash_ic and "officialN >= 30" in dash_ic,
+        "coach limiar 30",
+    )
+    ok(
+        "ciclo_id_gap_dots",
+        "_GapDot" in fila_id and "active: read" in fila_id,
+        "fila dots",
+    )
+    ok(
+        "ciclo_id_pdf_stale",
+        "PDF sumiu do disco" in lib_id and "hasProva" in lib_id,
+        "PDF stale disable",
+    )
+    ok(
+        "ciclo_ie_open_path_toast",
+        "showOpenPathSnackBar" in err_ie and "showOpenPathSnackBar" in lib_id,
+        "open-path toast",
+    )
+    ok(
+        "ciclo_ie_pack_steps",
+        "passo 1/5" in pack_bat and "passo 5/5" in pack_bat,
+        "pack bat steps",
+    )
+    ok(
+        "ciclo_if_version_14",
+        "1.0.0+14" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+14",))
+        and "1.0.0+14" in pack_bat
+        and "1.0.0+14" in app_ver_ht,
+        "version +14 triple",
+    )
+    ok(
+        "ciclo_if_como_section",
+        "1.0.0+14" in como_ap or "Ciclo IF" in como_ap or "Residual IDEAS" in como_ap,
+        "COMO IC-IF",
     )
 
     failed = [c for c in checks if not c[1]]

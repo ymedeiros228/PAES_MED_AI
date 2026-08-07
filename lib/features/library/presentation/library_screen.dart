@@ -1014,6 +1014,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final data = await apiClient.get('/api/library/year-pdf', {'year': '$year'});
       final map = Map<String, dynamic>.from(data as Map);
       if (map['exists'] != true || (map['path']?.toString() ?? '').isEmpty) {
+        if (mounted) {
+          showOpenPathSnackBar(
+            context,
+            message: map['note']?.toString() ?? 'Sem PDF deste ano no PC.',
+            isError: true,
+            actionLabel: 'Provas',
+            onAction: () => unawaited(_openFolder('provas')),
+          );
+        }
         setState(() => msg = map['note']?.toString() ?? 'Sem PDF deste ano no PC.');
         return;
       }
@@ -1021,11 +1030,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final pdfPath = map['path']!.toString();
       try {
         await apiClient.post('/api/library/open-path', {'path': pdfPath});
+        if (mounted) {
+          showOpenPathSnackBar(context, message: 'Abrindo PDF $label');
+        }
         setState(() => msg = 'Abrindo PDF $label');
       } catch (e) {
-        setState(
-          () => msg = humanOpenPathError(e, label: 'PDF $label'),
-        );
+        final err = humanOpenPathError(e, label: 'PDF $label');
+        if (mounted) {
+          showOpenPathSnackBar(
+            context,
+            message: err,
+            isError: true,
+            actionLabel: 'Provas',
+            onAction: () => unawaited(_openFolder('provas')),
+          );
+        }
+        setState(() => msg = err);
       }
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
@@ -1561,11 +1581,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (hasProva)
-                                    TextButton(
-                                      onPressed: busy ? null : () => _openYearPdf(y),
+                                  Tooltip(
+                                    message: hasProva
+                                        ? 'Abrir PDF do ano $y'
+                                        : 'PDF sumiu do disco — coloque paes_$y.pdf em data/provas',
+                                    child: TextButton(
+                                      onPressed: busy || !hasProva ? null : () => _openYearPdf(y),
                                       child: const Text('PDF'),
                                     ),
+                                  ),
                                   FilledButton(
                                     onPressed: busy
                                         ? null

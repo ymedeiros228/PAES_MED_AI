@@ -418,6 +418,18 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                               secondary: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  // dots: 1 lido, 2 treinado (gap recuperada ≠, 2 = teórico + lido → pronto)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        _GapDot(active: read, label: '1'),
+                                        const SizedBox(width: 3),
+                                        _GapDot(active: read && hasMaterial, label: '2'),
+                                      ],
+                                    ),
+                                  ),
                                   IconButton(
                                     tooltip: 'Biblioteca deste tópico',
                                     icon: Icon(
@@ -672,6 +684,35 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ],
       ),
     ),
+    );
+  }
+}
+
+class _GapDot extends StatelessWidget {
+  const _GapDot({required this.active, required this.label});
+  final bool active;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 16,
+      height: 16,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: active ? cs.primary : cs.surfaceContainerHighest,
+        border: Border.all(color: active ? cs.primary : cs.outlineVariant),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.45),
+        ),
+      ),
     );
   }
 }

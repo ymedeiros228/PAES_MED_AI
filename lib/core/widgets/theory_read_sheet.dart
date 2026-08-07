@@ -226,6 +226,12 @@ Future<void> openTheoryReadSheet(
                                       onPressed: () async {
                                         try {
                                           await apiClient.post('/api/library/open-path', {'path': path});
+                                          if (ctx.mounted) {
+                                            showOpenPathSnackBar(
+                                              ctx,
+                                              message: 'Abrindo ${it['label'] ?? 'material'}',
+                                            );
+                                          }
                                         } catch (e) {
                                           final err = humanOpenPathError(
                                             e,
@@ -237,21 +243,21 @@ Future<void> openTheoryReadSheet(
                                               {'folder': it['folder'] ?? 'edital'},
                                             );
                                             if (ctx.mounted) {
-                                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                                SnackBar(content: Text('$err · pasta aberta.')),
+                                              showOpenPathSnackBar(
+                                                ctx,
+                                                message: '$err · pasta aberta.',
+                                                isError: true,
                                               );
                                             }
                                           } catch (e2) {
                                             if (ctx.mounted) {
-                                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    humanOpenPathError(
-                                                      e2,
-                                                      label: it['label']?.toString() ?? 'Material',
-                                                    ),
-                                                  ),
+                                              showOpenPathSnackBar(
+                                                ctx,
+                                                message: humanOpenPathError(
+                                                  e2,
+                                                  label: it['label']?.toString() ?? 'Material',
                                                 ),
+                                                isError: true,
                                               );
                                             }
                                           }

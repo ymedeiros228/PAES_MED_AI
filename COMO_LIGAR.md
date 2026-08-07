@@ -1215,6 +1215,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 2. **IA** — Sessão teoria em painéis + Passo 1/2; ficha «Onde colocar o PDF»; Sobre Desktop build.
 3. **IB** — ship **1.0.0+13**; `docs/BUMP_VERSION.md`; smoke `ciclo_hy_*`…`ciclo_ib_*`.
 
+## Residual IDEAS (Ciclos IC–IF · 1.0.0+14)
+
+1. **IC** — coach Semana 1 (≥ 30 oficiais; onboarding mini preview Biblioteca.
+2. **ID** — Fila dots 1/2 progresso; PDF desabilitado se arquivo sumiu.
+3. **IE** — `showOpenPathSnackBar`; pack bat passos 1/5…5/5.
+4. **IF** — ship **1.0.0+14**.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

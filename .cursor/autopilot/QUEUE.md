@@ -49,6 +49,12 @@ Prioridade: topo = primeiro.
 - [x] Sessão teoria painéis + ficha PDF path + Sobre Desktop
 - [x] Ship **1.0.0+13**
 
+## P3e · Residual IDEAS (IC–IF)
+
+- [x] Coach Semana1 limiar + onboarding preview
+- [x] Fila dots + PDF stale + open-path toast + pack steps
+- [x] Ship **1.0.0+14**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -62,5 +68,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- HY–IB (2026-08-06): IDEAS-UI wave; residual = host gab 2014–23.
-- Versão: **1.0.0+13**.
+- IC–IF (2026-08-06): residual IDEAS-UI; residual host = gab 2014–23.
+- Versão: **1.0.0+14**.

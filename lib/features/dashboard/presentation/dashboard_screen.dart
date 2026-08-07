@@ -227,8 +227,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final officialN = data['statsBasis'] is Map
             ? ((data['statsBasis'] as Map)['officialCount'] as int? ?? 0)
             : 0;
-        // Coach só com acervo vazio: se já há oficiais e flag pendente, limpa sem mostrar
-        if (showFirstRunCoach && officialN > 0) {
+        // Semana 1 OK = base oficial mínima (2024–26 importados em uso real)
+        final semana1Ok = officialN >= 30;
+        // Coach some só com Semana 1 ok — não com 1 oficial solto
+        if (showFirstRunCoach && semana1Ok) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && showFirstRunCoach) unawaited(_dismissFirstRunCoach());
           });
@@ -370,7 +372,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 ),
                               ),
                             ),
-                          if (showFirstRunCoach && officialN == 0)
+                          if (showFirstRunCoach && !semana1Ok)
                             SurfacePanel(
                               margin: const EdgeInsets.only(bottom: 16),
                               color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.45),
@@ -380,8 +382,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   Text('Primeiro passo: Semana 1', style: Theme.of(context).textTheme.titleMedium),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'Na Biblioteca, toque em Atualizar 2024–26 para importar as provas UEMA. '
-                                    'Depois volte ao Hoje para estudar.',
+                                    officialN > 0
+                                        ? 'Já há $officialN oficiais no PC — complete o import 2024–26 '
+                                            'na Biblioteca para fechar a Semana 1.'
+                                        : 'Na Biblioteca, toque em Atualizar 2024–26 para importar as provas UEMA. '
+                                            'Depois volte ao Hoje para estudar.',
                                     style: Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   const SizedBox(height: 12),
@@ -390,7 +395,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     children: [
                                       FilledButton(
                                         onPressed: () {
-                                          _dismissFirstRunCoach();
                                           context.go('/biblioteca?semana1=1');
                                         },
                                         child: const Text('Ir à Semana 1'),
