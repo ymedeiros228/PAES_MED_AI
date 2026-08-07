@@ -1238,6 +1238,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **IO** — Biblioteca/review + shell sem path crus e sem “sync”.
 5. **IP** — ship **1.0.0+16**.
 
+## Redação rascunho offline (Ciclo IV)
+
+1. Em **Redação**, digite um parágrafo — o app salva sozinho no PC (SharedPreferences).
+2. Feche e reabra a tela: o texto volta com a nota **Rascunho restaurado**.
+3. **Limpar rascunho** apaga o salvo; após **Corrigir**, o rascunho some sozinho.
+4. Smoke: `ciclo_iv_essay_draft_*`.
+
 ## Polish front kit (Ciclos IQ–IU · 1.0.0+17)
 
 1. **IQ** — SurfacePanel soft + QuietEmpty + SoftLoader + EmptyState.
