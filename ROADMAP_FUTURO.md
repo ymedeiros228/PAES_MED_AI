@@ -312,6 +312,11 @@ flowchart TB
 | HK | Import todos com gab / ops acervo | `ciclo_hk_*` | **Feito** |
 | HL | Estudo só oficiais com gab | `ciclo_hl_*` | **Feito** |
 | HM | Ship **1.0.0+10** pack/smoke | `ciclo_hm_*` | **Feito** |
+| HP | Kit hospitalidade UI | `ciclo_hp_*` | **Feito** |
+| HQ | Redação missão + eixos offline + deltas | `ciclo_hq_*` | **Feito** |
+| HR | Progresso · Relevo `/progresso` | `ciclo_hr_*` | **Feito** |
+| HS | Polimento debrief/empties/satélites | `ciclo_hs_*` | **Feito** |
+| HT | Ship **1.0.0+11** pack/smoke | `ciclo_ht_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -319,9 +324,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HJ–HM)
+## Estado (atualizado pós HP–HT / Ápice UX)
 
-- Rodada **HJ–HM**: parser/match, import-all-complete, filtro «oficiais com gab», ship **1.0.0+10**.
-- Provas 2014–26 no disco; gabaritos oficiais **só 2024–26** no acervo local.
+- Rodada **HP–HT**: kit visual, redação gamificada (missão/delta/5 personas), **Relevo** em `/progresso`, ship **1.0.0+11**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
 - PDFs grandes **fora** do git.

@@ -56,6 +56,18 @@ ESSAY_PERSONAS: list[dict[str, Any]] = [
         "focusAxis": "coherence",
         "hint": "Clareza sob pressão; priorize o essencial.",
     },
+    {
+        "id": "grammar_coach",
+        "label": "Coach de gramática",
+        "focusAxis": "grammar",
+        "hint": "Concordância, regência e pontuação.",
+    },
+    {
+        "id": "intervention_mentor",
+        "label": "Mentor de intervenção",
+        "focusAxis": "intervention",
+        "hint": "Proposta com agente, meio e efeito.",
+    },
 ]
 
 

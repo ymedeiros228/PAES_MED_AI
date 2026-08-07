@@ -322,11 +322,41 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 }
                 if (items.isEmpty) {
                   return EmptyState(
-                    title: 'Nada neste filtro',
-                    subtitle: page > 0 ? 'Volte uma página ou limpe os filtros.' : 'Importe provas na Biblioteca ou afrouxa os filtros.',
-                    action: page > 0
-                        ? TextButton(onPressed: _prevPage, child: const Text('Página anterior ([)'))
-                        : FilledButton(onPressed: () => context.go('/biblioteca'), child: const Text('Biblioteca')),
+                    title: 'Nenhuma questão aqui',
+                    subtitle: page > 0
+                        ? 'Volte uma página ou limpe os filtros.'
+                        : officialWithGab
+                            ? 'Sem oficiais com gab neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
+                            : 'Importe provas na Biblioteca ou afrouxe os filtros.',
+                    action: Wrap(
+                      spacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        if (page > 0)
+                          TextButton(onPressed: _prevPage, child: const Text('Página anterior')),
+                        if (subject != null ||
+                            topic != null ||
+                            examBoard != null ||
+                            officialWithGab ||
+                            source != null)
+                          FilledButton.tonal(
+                            onPressed: () => _resetPage(() {
+                              subject = null;
+                              topic = null;
+                              examBoard = null;
+                              source = null;
+                              officialWithGab = false;
+                              difficulty = null;
+                              year = null;
+                            }),
+                            child: const Text('Limpar filtros'),
+                          ),
+                        FilledButton(
+                          onPressed: () => context.go('/biblioteca'),
+                          child: const Text('Biblioteca'),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 return Column(

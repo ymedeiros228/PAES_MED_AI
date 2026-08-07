@@ -415,3 +415,327 @@ class QuietEmpty extends StatelessWidget {
     );
   }
 }
+
+/// Faixa de atmosfera (gradiente mint→sand) — sem “card farm”.
+class HeroStudyStrip extends StatelessWidget {
+  const HeroStudyStrip({
+    required this.title,
+    this.subtitle,
+    this.eyebrow,
+    this.trailing,
+    this.child,
+    super.key,
+  });
+
+  final String title;
+  final String? subtitle;
+  final String? eyebrow;
+  final Widget? trailing;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textOn = isDark ? Colors.white : const Color(0xFF0A1628);
+    final muted = textOn.withOpacity(0.72);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF0B1A2C), Color(0xFF0C3D36), Color(0xFF0A1628)]
+              : const [Color(0xFFE6F6F1), Color(0xFFF6F4F1), Color(0xFFDCEEE8)],
+        ),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFF0C7A63).withOpacity(0.12),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (eyebrow != null) ...[
+                      Text(
+                        eyebrow!.toUpperCase(),
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF3DC9A8) : const Color(0xFF0C7A63),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: textOn,
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
+                          ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: muted,
+                              height: 1.4,
+                            ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+            ],
+          ),
+          if (child != null) ...[const SizedBox(height: 14), child!],
+        ],
+      ),
+    );
+  }
+}
+
+enum MissionQuestStatus { open, active, cleared }
+
+/// Missão com um CTA — redação / Hoje / Progresso.
+class MissionQuestCard extends StatelessWidget {
+  const MissionQuestCard({
+    required this.title,
+    required this.why,
+    required this.ctaLabel,
+    required this.onCta,
+    this.status = MissionQuestStatus.open,
+    this.honestNote = 'treino local · não banca',
+    super.key,
+  });
+
+  final String title;
+  final String why;
+  final String ctaLabel;
+  final VoidCallback? onCta;
+  final MissionQuestStatus status;
+  final String honestNote;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final statusLabel = switch (status) {
+      MissionQuestStatus.open => 'Aberta',
+      MissionQuestStatus.active => 'Em curso',
+      MissionQuestStatus.cleared => 'Concluída',
+    };
+    final statusColor = switch (status) {
+      MissionQuestStatus.open => cs.tertiary,
+      MissionQuestStatus.active => cs.primary,
+      MissionQuestStatus.cleared => cs.primary.withOpacity(0.85),
+    };
+    return SurfacePanel(
+      margin: const EdgeInsets.only(bottom: 14),
+      color: cs.tertiaryContainer.withOpacity(0.32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(why, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 6),
+          Text(
+            honestNote,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+          ),
+          if (onCta != null && status != MissionQuestStatus.cleared) ...[
+            const SizedBox(height: 12),
+            FilledButton(onPressed: onCta, child: Text(ctaLabel)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Chip de variação (+0,8 coesão).
+class DeltaChip extends StatelessWidget {
+  const DeltaChip({required this.label, this.delta, super.key});
+
+  final String label;
+  final double? delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final d = delta;
+    final Color bg;
+    final Color fg;
+    String text;
+    if (d == null) {
+      bg = cs.surfaceContainerHighest;
+      fg = cs.onSurface.withOpacity(0.65);
+      text = label;
+    } else if (d > 0.05) {
+      bg = cs.primaryContainer;
+      fg = cs.onPrimaryContainer;
+      text = '+${d.toStringAsFixed(1)} $label';
+    } else if (d < -0.05) {
+      bg = cs.errorContainer.withOpacity(0.55);
+      fg = cs.onErrorContainer;
+      text = '${d.toStringAsFixed(1)} $label';
+    } else {
+      bg = cs.surfaceContainerHighest;
+      fg = cs.onSurface.withOpacity(0.65);
+      text = '· $label';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: fg,
+              fontWeight: FontWeight.w700,
+            ),
+      ),
+    );
+  }
+}
+
+class HonestBadge extends StatelessWidget {
+  const HonestBadge({this.label = 'treino local · não banca', super.key});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Text(
+      label,
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: cs.primary,
+            fontWeight: FontWeight.w700,
+          ),
+    );
+  }
+}
+
+/// Linha de histórico soft (redação / progresso).
+class SoftTimeline extends StatelessWidget {
+  const SoftTimeline({required this.items, super.key});
+
+  final List<SoftTimelineItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    if (items.isEmpty) {
+      return QuietEmpty(message: 'Ainda sem histórico.');
+    }
+    return Column(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          InkWell(
+            onTap: items[i].onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: i == 0 ? cs.primary : cs.outlineVariant,
+                        ),
+                      ),
+                      if (i < items.length - 1)
+                        Container(
+                          width: 2,
+                          height: 36,
+                          color: cs.outlineVariant.withOpacity(0.7),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          items[i].title,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        if (items[i].subtitle != null)
+                          Text(
+                            items[i].subtitle!,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: cs.onSurface.withOpacity(0.62),
+                                ),
+                          ),
+                        if (items[i].trailing != null) ...[
+                          const SizedBox(height: 6),
+                          items[i].trailing!,
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class SoftTimelineItem {
+  const SoftTimelineItem({
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+}

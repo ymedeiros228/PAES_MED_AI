@@ -18,6 +18,7 @@ import 'features/library/presentation/ingest_review_screen.dart';
 import 'features/library/presentation/library_screen.dart';
 import 'features/medicine/presentation/medicine_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/progress/presentation/progress_screen.dart';
 import 'features/questions/presentation/question_detail_screen.dart';
 import 'features/questions/presentation/questions_screen.dart';
 import 'features/revisions/presentation/revisions_screen.dart';
@@ -94,6 +95,7 @@ final appRouter = GoRouter(
           },
         ),
         GoRoute(path: '/medicina', builder: (_, __) => const MedicineScreen()),
+        GoRoute(path: '/progresso', builder: (_, __) => const ProgressScreen()),
         GoRoute(path: '/banca', builder: (_, __) => const BankProfileScreen()),
         GoRoute(path: '/biblioteca', builder: (_, __) => const LibraryScreen()),
         GoRoute(

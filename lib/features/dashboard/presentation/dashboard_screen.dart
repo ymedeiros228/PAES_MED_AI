@@ -446,6 +446,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             onAction: dayClosed ? null : _closeDay,
                           ),
 
+                          MissionQuestCard(
+                            title: 'Missão leve · redação',
+                            why: 'Abra a redação, aceite a missão do eixo fraco e treine com delta honesto.',
+                            ctaLabel: 'Ir à redação',
+                            status: MissionQuestStatus.open,
+                            onCta: () => context.go('/redacao'),
+                          ),
+
                           const SizedBox(height: 8),
                           SectionLabel('Agora', hint: 'próximo passo · espelha Fila'),
                           if (gapN > 0)
@@ -525,8 +533,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             tilePadding: EdgeInsets.zero,
                             initiallyExpanded: false,
                             title: Text('Mais do dia', style: Theme.of(context).textTheme.titleSmall),
-                            subtitle: const Text('semana, pulso, ritmo e atalhos'),
+                            subtitle: const Text('semana, pulso, relevo e ritmo'),
                             children: [
+                              PlaylistTile(
+                                title: 'Ver meu relevo',
+                                subtitle: 'Picos firmes e vales a treinar · progresso local',
+                                badge: 'mapa',
+                                leadingIcon: Icons.terrain_rounded,
+                                onPlay: () => context.go('/progresso'),
+                              ),
                               if (week.isNotEmpty) ...[
                                 SectionLabel('Semana', hint: week['hint']?.toString()),
                                 SurfacePanel(

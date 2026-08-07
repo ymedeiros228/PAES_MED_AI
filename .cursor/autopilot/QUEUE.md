@@ -30,6 +30,13 @@ Prioridade: topo = primeiro.
 - [x] Reimport path 2024–26
 - [x] Parser/match HJ + import-all HK + oficiais-com-gab HL + **1.0.0+10** HM
 
+## P3b · Ápice UX (HP–HT)
+
+- [x] Kit hospitalidade + Hoje relevo
+- [x] Redação missão / deltas / 5 personas / rose
+- [x] `/progresso` Relevo + overview API
+- [x] Polimento satélite + ship **1.0.0+11**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -43,5 +50,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- HJ–HM (2026-08-06): engole pares com 1 clique; residual = host gab 2014–23.
-- Versão: **1.0.0+10**.
+- HP–HT (2026-08-06): Ápice UX — redação + relevo; residual = host gab 2014–23.
+- Versão: **1.0.0+11**.

@@ -62,6 +62,7 @@ from services_extra import (
     create_backup,
     create_natureza_pack,
     create_simulation,
+    essay_grade_deltas,
     essay_themes,
     fill_professor_drafts,
     generate_similar_question_stub,
@@ -77,7 +78,9 @@ from services_extra import (
     list_revisions,
     list_study_gaps,
     mark_gap_card_remembered,
+    offline_essay_axis_scores,
     parse_gate_flags,
+    progress_overview,
     record_answer,
     recover_study_gap,
     remediation_for,
@@ -1310,38 +1313,40 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
     if persona:
         style_line = f"Persona: {persona['label']}. Foque o eixo {persona.get('focusAxis')}. {persona.get('hint') or ''}\n"
     if client is None:
-        n = len(payload.text.split())
-        score = min(10.0, 4 + n / 120)
+        heur = offline_essay_axis_scores(payload.theme, payload.text)
+        score = float(heur["score"])
+        scores = heur["scores"]
+        tips = heur["tips"]
         feedback = {
-            "grammar": "Revise concordância e pontuação.",
-            "cohesion": "Use conectivos de conclusão e oposição.",
-            "coherence": "Mantenha um fio argumentativo claro.",
-            "argumentation": "Traga repertório ligado ao tema e ao Maranhão/Brasil quando couber.",
-            "intervention": "Se o tema pedir, feche com proposta viável.",
+            **scores,
+            "scores": scores,
+            "tips": tips,
+            "grammarTip": tips["grammar"],
+            "cohesionTip": tips["cohesion"],
+            "coherenceTip": tips["coherence"],
+            "argumentationTip": tips["argumentation"],
+            "interventionTip": tips["intervention"],
             "note": (
-                "Rascunho offline por tamanho do texto — NÃO é nota de banca UEMA. "
+                "Rascunho offline por eixos (0–10) — NÃO é nota de banca UEMA. "
                 "Configure OpenAI para correção mais rica."
             ),
             "offlineHeuristic": True,
-            "wordCount": n,
+            "wordCount": heur["wordCount"],
+            "paragraphCount": heur.get("paragraphCount"),
             "persona": persona_id,
             "personaLabel": persona_label,
             "focusAxis": focus,
         }
-        if focus == "cohesion":
-            feedback["cohesion"] = "Missão coesão: reforçe conectivos de oposição/conclusão e elos referenciais."
-        elif focus == "argumentation":
-            feedback["argumentation"] = "Missão argumento: amarre repertório à tese com causa e efeito claros."
-        elif focus == "coherence":
-            feedback["coherence"] = "Missão clareza: um eixo por parágrafo; corte desvio de tema."
-        elif focus == "grammar":
-            feedback["grammar"] = "Missão gramática: revise concordância, regência e pontuação no fechamento."
-        elif focus == "intervention":
-            feedback["intervention"] = "Missão intervenção: feche com proposta viável (agente, meio, efeito)."
+        # Manter strings de leitura humana nos eixos também (UI antiga)
+        for ax, tip in tips.items():
+            feedback[f"{ax}_note"] = tip
+        if focus in tips:
+            feedback["missionHint"] = tips[focus]
     else:
         raw = _ask_openai(
             "Você corrige redações no espírito do PAES/UEMA. Responda JSON com "
-            "score (0-10), grammar, cohesion, coherence, argumentation, intervention, strengths, improvements. "
+            "score (0-10), grammar, cohesion, coherence, argumentation, intervention "
+            "(números 0-10), strengths, improvements, tips opcional por eixo. "
             "Nunca invente nota de banca oficial. " + style_line,
             f"Tema: {payload.theme}\nFoco eixo: {focus or 'geral'}\n\nRedação:\n{payload.text}",
         )
@@ -1359,7 +1364,12 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
         feedback["focusAxis"] = focus
         if "note" not in feedback:
             feedback["note"] = "Treino local com IA · não é nota de banca UEMA."
-    return save_essay(payload.theme, payload.text, feedback, score)
+    saved = save_essay(payload.theme, payload.text, feedback, score)
+    deltas = essay_grade_deltas(payload.theme, feedback if isinstance(feedback, dict) else {})
+    out = dict(saved)
+    out["deltas"] = deltas
+    out["disclaimer"] = "Treino local · não banca UEMA."
+    return out
 
 
 @app.get("/api/essays")
@@ -1369,9 +1379,14 @@ def api_essays() -> list[dict[str, Any]]:
 
 @app.get("/api/essays/progress")
 def api_essays_progress() -> dict[str, Any]:
-    """Progresso agregado de redação local (Ciclo AT/BB) — sem fingir nota UEMA."""
+    """Progresso agregado de redação local (Ciclo AT/BB/HQ) — sem fingir nota UEMA."""
     return essay_progress()
 
+
+@app.get("/api/progress/overview")
+def api_progress_overview() -> dict[str, Any]:
+    """Painel Relevo — cola dashboard + redação + gaps (Ciclo HR)."""
+    return progress_overview()
 
 @app.get("/api/media/videos")
 def api_media_videos(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:

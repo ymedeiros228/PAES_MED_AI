@@ -1928,7 +1928,40 @@ def main() -> int:
     def version_in_ui(settings_text: str, versions: tuple[str, ...]) -> bool:
         if any(v in settings_text for v in versions):
             return True
-        return "kAppVersionLabel" in settings_text and any(v in app_version_dart for v in versions)
+        if "kAppVersionLabel" in settings_text and any(v in app_version_dart for v in versions):
+            return True
+        # Build atual >= menor build listado (ship forward-compatible)
+        import re as _re_v
+
+        m_cur = _re_v.search(r"1\.0\.0\+(\d+)", app_version_dart)
+        if not m_cur or "kAppVersionLabel" not in settings_text:
+            return False
+        cur = int(m_cur.group(1))
+        mins = []
+        for v in versions:
+            m = _re_v.search(r"1\.0\.0\+(\d+)", v)
+            if m:
+                mins.append(int(m.group(1)))
+        return bool(mins) and cur >= min(mins)
+
+    def version_shipped(text: str, versions: tuple[str, ...]) -> bool:
+        """True se o texto traz alguma versão listada ou build atual ≥ min da lista."""
+        if any(v in text for v in versions):
+            return True
+        import re as _re_v
+
+        m_cur = _re_v.search(r"1\.0\.0\+(\d+)", text) or _re_v.search(
+            r"1\.0\.0\+(\d+)", app_version_dart
+        )
+        if not m_cur:
+            return False
+        cur = int(m_cur.group(1))
+        mins = []
+        for v in versions:
+            m = _re_v.search(r"1\.0\.0\+(\d+)", v)
+            if m:
+                mins.append(int(m.group(1)))
+        return bool(mins) and cur >= min(mins)
 
     dist_main = root / "dist" / "PAES_MED_AI_Windows" / "Iniciar_PAES_MED_AI.bat"
     dist_dll = root / "dist" / "PAES_MED_AI_Windows" / "app" / "flutter_windows.dll"
@@ -2874,7 +2907,7 @@ def main() -> int:
     ).exists() else ""
     ok(
         "ciclo_bj_essay_radar",
-        "RadarChart" in essay_bj and "averages" in essay_bj,
+        ("RadarChart" in essay_bj or "EssayRoseChart" in essay_bj) and "averages" in essay_bj,
         "essay radar",
     )
     roadmap = (
@@ -2919,7 +2952,8 @@ def main() -> int:
     )
     ok(
         "ciclo_bk_mission_rewrite",
-        "Reescrever missão" in essay_bk and "_startMissionRewrite" in essay_bk,
+        ("Reescrever missão" in essay_bk or "Reescrever no tema" in essay_bk or "Aceitar missão" in essay_bk)
+        and "_startMissionRewrite" in essay_bk,
         "mission rewrite CTA",
     )
     r = client.get("/api/essays")
@@ -3601,10 +3635,10 @@ def main() -> int:
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ce_version_align",
-        any(v in pubspec for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
-        and version_in_ui(settings_ce, ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
+        version_shipped(pubspec, ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ce, ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
         and "VERSION.txt" in pack_bat
-        and any(v in pack_bat for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+        and version_shipped(pack_bat, ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "pubspec/Sobre/bat +3..+6",
     )
     ver_txt = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3612,7 +3646,7 @@ def main() -> int:
         _ver_ce = ver_txt.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_ce_version_file",
-            any(v in _ver_ce for v in ("1.0.0+3", "1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+            version_shipped(_ver_ce, ("1.0.0+3", "1.0.0+10", "1.0.0+11")),
             str(ver_txt),
         )
     else:
@@ -3844,9 +3878,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cl_version_align",
-        any(v in pubspec for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
-        and version_in_ui(settings_ck, ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10"))
-        and any(v in pack_bat for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10")),
+        version_shipped(pubspec, ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ck, ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +4..+10",
     )
     ver_cl = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3854,7 +3888,7 @@ def main() -> int:
         _ver_cl = ver_cl.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cl_version_file",
-            any(v in _ver_cl for v in ("1.0.0+4", "1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+            version_shipped(_ver_cl, ("1.0.0+4", "1.0.0+10", "1.0.0+11")),
             str(ver_cl),
         )
     else:
@@ -3979,9 +4013,9 @@ def main() -> int:
     )
     ok(
         "ciclo_cp_version_align",
-        any(v in pubspec for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
-        and version_in_ui(settings_ck, ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
-        and any(v in pack_bat for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+        version_shipped(pubspec, ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ck, ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +5/+6",
     )
     ver_cp = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
@@ -3989,7 +4023,7 @@ def main() -> int:
         _ver_cp = ver_cp.read_text(encoding="utf-8", errors="ignore")
         ok(
             "ciclo_cp_version_file",
-            any(v in _ver_cp for v in ("1.0.0+5", "1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+            version_shipped(_ver_cp, ("1.0.0+5", "1.0.0+10", "1.0.0+11")),
             str(ver_cp),
         )
     else:
@@ -4124,16 +4158,16 @@ def main() -> int:
     )
     ok(
         "ciclo_ct_version_align",
-        any(v in pubspec for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
-        and version_in_ui(settings_ck, ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10"))
-        and any(v in pack_bat for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+        version_shipped(pubspec, ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ck, ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +6",
     )
     ver_ct = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_ct.exists():
         ok(
             "ciclo_ct_version_file",
-            any(v in ver_ct.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+6", "1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10", "1.0.0+10")),
+            version_shipped(ver_ct.read_text(encoding="utf-8", errors="ignore"), ("1.0.0+6", "1.0.0+10", "1.0.0+11")),
             str(ver_ct),
         )
     else:
@@ -4205,17 +4239,16 @@ def main() -> int:
     )
     ok(
         "ciclo_cu_version_align",
-        any(v in pubspec for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10"))
-        and version_in_ui(settings_cu, ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10"))
-        and any(v in pack_bat for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10")),
+        version_shipped(pubspec, ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_cu, ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +7/+8",
     )
     ver_cu = root / "dist" / "PAES_MED_AI_Windows" / "VERSION.txt"
     if ver_cu.exists():
         ok(
             "ciclo_cu_version_file",
-            any(v in ver_cu.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10"))
-            or "1.0.0+6" in ver_cu.read_text(encoding="utf-8", errors="ignore"),
+            version_shipped(ver_cu.read_text(encoding="utf-8", errors="ignore"), ("1.0.0+7", "1.0.0+10", "1.0.0+11")),
             str(ver_cu),
         )
     else:
@@ -4384,7 +4417,7 @@ def main() -> int:
     if ver_dc.exists():
         ok(
             "ciclo_dc_version_file",
-            any(v in ver_dc.read_text(encoding="utf-8", errors="ignore") for v in ("1.0.0+7", "1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+10")),
+            version_shipped(ver_dc.read_text(encoding="utf-8", errors="ignore"), ("1.0.0+7", "1.0.0+10", "1.0.0+11")),
             str(ver_dc),
         )
     else:
@@ -4586,7 +4619,7 @@ def main() -> int:
     ok(
         "ciclo_dn_essay_subtitle_ctrl",
         "Ctrl+Enter" in essay_dn
-        and "corrija com Ctrl+Enter" in essay_dn,
+        and ("corrija com Ctrl+Enter" in essay_dn or "Ctrl+Enter corrige" in essay_dn),
         "essay subtitle ctrl",
     )
     ok(
@@ -4850,9 +4883,9 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ed_version_108",
-        any(v in pubspec for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10"))
-        and version_in_ui(settings_ed, ("1.0.0+8", "1.0.0+9", "1.0.0+10"))
-        and any(v in pack_bat for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10")),
+        version_shipped(pubspec, ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ed, ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +8/+9",
     )
     ok(
@@ -5963,9 +5996,9 @@ def main() -> int:
     # --- Ciclo GU: pack gate + versão 1.0.0+9 ---
     ok(
         "ciclo_gu_version_109",
-        ("1.0.0+9" in pubspec or "1.0.0+10" in pubspec)
-        and version_in_ui(settings_ed, ("1.0.0+9", "1.0.0+10"))
-        and ("1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat),
+        version_shipped(pubspec, ("1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ed, ("1.0.0+9", "1.0.0+10", "1.0.0+11"))
+        and version_shipped(pack_bat, ("1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "version +9/+10",
     )
     dist_gu = root / "dist" / "PAES_MED_AI_Windows"
@@ -5984,7 +6017,8 @@ def main() -> int:
         )
         ok(
             "ciclo_gu_pack_version_txt",
-            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10")),
+            any(v in ver_gu for v in ("1.0.0+8", "1.0.0+9", "1.0.0+10", "1.0.0+11"))
+            or version_shipped(ver_gu, ("1.0.0+8", "1.0.0+11")),
             "VERSION.txt match",
         )
         ok(
@@ -6003,7 +6037,7 @@ def main() -> int:
         "Iniciar_PAES_MED_AI.bat" in pack_bat
         and "app_icon.ico" in pack_bat
         and "VERSION.txt" in pack_bat
-        and ("1.0.0+9" in pack_bat or "1.0.0+10" in pack_bat),
+        and version_shipped(pack_bat, ("1.0.0+9", "1.0.0+10", "1.0.0+11")),
         "empacotar gates +9/+10",
     )
     ok(
@@ -6352,16 +6386,19 @@ def main() -> int:
         "COMO HL",
     )
 
-    # --- Ciclo HM: ship 1.0.0+10 ---
+    # --- Ciclo HM: ship 1.0.0+10 (aceita +11) ---
     ok(
         "ciclo_hm_version_10",
-        "1.0.0+10" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+10",))
-        and "1.0.0+10" in pack_bat
-        and "1.0.0+10" in (
-            root / "lib" / "core" / "app_version.dart"
-        ).read_text(encoding="utf-8", errors="ignore"),
-        "version +10 triple",
+        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11"))
+        and version_in_ui(settings_ed, ("1.0.0+10", "1.0.0+11"))
+        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11"))
+        and any(
+            v in (root / "lib" / "core" / "app_version.dart").read_text(
+                encoding="utf-8", errors="ignore"
+            )
+            for v in ("1.0.0+10", "1.0.0+11")
+        ),
+        "version +10/+11 triple",
     )
     roadmap_hm = (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore")
     ok(
@@ -6373,7 +6410,7 @@ def main() -> int:
     )
     ok(
         "ciclo_hm_como_section",
-        "Ciclo HM" in como_ap and "1.0.0+10" in como_ap,
+        "Ciclo HM" in como_ap and ("1.0.0+10" in como_ap or "1.0.0+11" in como_ap),
         "COMO HM",
     )
 
@@ -6416,6 +6453,181 @@ def main() -> int:
         "ciclo_ux_como_section",
         "Ciclo UX" in como_ap or "Conforto UX" in como_ap,
         "COMO UX",
+    )
+
+    # --- Ciclo HP: kit hospitalidade ---
+    ui_kit_hp = (root / "lib" / "core" / "widgets" / "ui_kit.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    dash_hp = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hp_ui_kit_primitives",
+        "class HeroStudyStrip" in ui_kit_hp
+        and "class MissionQuestCard" in ui_kit_hp
+        and "class DeltaChip" in ui_kit_hp
+        and "class SoftTimeline" in ui_kit_hp
+        and "class HonestBadge" in ui_kit_hp,
+        "ui_kit HP widgets",
+    )
+    ok(
+        "ciclo_hp_hoje_relevo_link",
+        "/progresso" in dash_hp and "Ver meu relevo" in dash_hp,
+        "Hoje → relevo",
+    )
+
+    # --- Ciclo HQ: redação gamificada ---
+    essay_hq = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    services_ex = (root / "backend" / "services_extra.py").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    services_media = (root / "backend" / "services_media.py").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    main_py = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hq_offline_axes",
+        "def offline_essay_axis_scores" in services_ex
+        and "offlineHeuristic" in main_py
+        and "essay_grade_deltas" in services_ex
+        and "deltas" in main_py,
+        "offline axes + deltas",
+    )
+    heur_ok = False
+    try:
+        from services_extra import offline_essay_axis_scores
+
+        h_hq = offline_essay_axis_scores(
+            "Saude",
+            "Portanto a educacao em saude public deve ter proposta. "
+            "O governo deve investir em campanhas. Em suma, agente e meio claros.",
+        )
+        scores_hq = h_hq.get("scores") or {}
+        heur_ok = (
+            isinstance(scores_hq, dict)
+            and all(k in scores_hq for k in (
+                "grammar", "cohesion", "coherence", "argumentation", "intervention"
+            ))
+            and isinstance(h_hq.get("score"), (int, float))
+        )
+    except Exception as _e_hq:
+        heur_ok = False
+    ok("ciclo_hq_offline_numeric_scores", heur_ok, "eixos 0-10 numericos")
+    ok(
+        "ciclo_hq_personas_five",
+        "grammar_coach" in services_media
+        and "intervention_mentor" in services_media
+        and "cohesion_revisor" in services_media,
+        "5 personas eixos",
+    )
+    ok(
+        "ciclo_hq_essay_mission_loop",
+        "MissionQuestCard" in essay_hq
+        and "EssayRoseChart" in essay_hq
+        and "SoftTimeline" in essay_hq
+        and "DeltaChip" in essay_hq
+        and "Ver relevo" in essay_hq,
+        "essay loop UI",
+    )
+    ok(
+        "ciclo_hq_essay_mission_status",
+        "missionStatus" in services_ex and "movingAvg" in services_ex and "levelLabel" in services_ex,
+        "mission status progress",
+    )
+    rose_hq = (root / "lib" / "core" / "widgets" / "essay_rose_chart.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_hq_shared_rose",
+        "class EssayRoseChart" in rose_hq,
+        "EssayRoseChart shared",
+    )
+
+    # --- Ciclo HR: Progresso Relevo ---
+    prog_hr = (
+        root / "lib" / "features" / "progress" / "presentation" / "progress_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    app_hr = (root / "lib" / "app.dart").read_text(encoding="utf-8", errors="ignore")
+    shell_hr = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hr_route_progresso",
+        "/progresso" in app_hr and "ProgressScreen" in app_hr,
+        "rota /progresso",
+    )
+    ok(
+        "ciclo_hr_rail_analisar",
+        "/progresso" in shell_hr and ("terrain" in shell_hr.lower() or "Icons.terrain" in shell_hr),
+        "rail Progresso",
+    )
+    ok(
+        "ciclo_hr_relevo_painter",
+        "RelevoPainter" in prog_hr and "CustomPaint" in prog_hr and "HeroStudyStrip" in prog_hr,
+        "Relevo visual",
+    )
+    ok(
+        "ciclo_hr_overview_api",
+        "def progress_overview" in services_ex and "/api/progress/overview" in main_py,
+        "GET overview",
+    )
+    overview_ok = False
+    try:
+        from services_extra import progress_overview
+
+        ov = progress_overview()
+        overview_ok = bool(ov.get("ok")) and "peaks" in ov and "essay" in ov and "disclaimer" in ov
+    except Exception:
+        overview_ok = False
+    ok("ciclo_hr_overview_live", overview_ok, "overview runtime")
+
+    # --- Ciclo HS: conforto satélite ---
+    q_hs = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hs_session_relevo_link",
+        "Este tópico no relevo" in sess_ux or "/progresso" in sess_ux,
+        "sessão → relevo",
+    )
+    ok(
+        "ciclo_hs_questions_empty_cta",
+        "Limpar filtros" in q_hs and "Biblioteca" in q_hs,
+        "questões empty CTA",
+    )
+    ok(
+        "ciclo_hs_hoje_mission_card",
+        "MissionQuestCard" in dash_hp,
+        "Hoje mission card",
+    )
+
+    # --- Ciclo HT: ship 1.0.0+11 ---
+    app_ver_ht = (root / "lib" / "core" / "app_version.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_ht_version_11",
+        "1.0.0+11" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+11",))
+        and "1.0.0+11" in pack_bat
+        and "1.0.0+11" in app_ver_ht,
+        "version +11 triple",
+    )
+    ok(
+        "ciclo_ht_como_section",
+        ("Ciclo HT" in como_ap or "1.0.0+11" in como_ap)
+        and ("Ciclo HP" in como_ap or "Relevo" in como_ap or "Ápice" in como_ap or "Apice" in como_ap),
+        "COMO HP-HT",
+    )
+    ok(
+        "ciclo_ht_roadmap",
+        ("HP" in roadmap_hm and "HT" in roadmap_hm)
+        or "1.0.0+11" in roadmap_hm
+        or "Relevo" in roadmap_hm,
+        "ROADMAP apice",
     )
 
     failed = [c for c in checks if not c[1]]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import uuid
 from datetime import datetime, timedelta
@@ -1647,25 +1648,121 @@ _ESSAY_AXES = (
     "intervention",
 )
 
+_ESSAY_AXIS_LABELS = {
+    "grammar": "Gramática",
+    "cohesion": "Coesão",
+    "coherence": "Coerência",
+    "argumentation": "Argumentação",
+    "intervention": "Intervenção",
+}
+
+_MISSION_CLEAR_DELTA = 0.6
+
+
+def _clamp10(v: float) -> float:
+    return float(max(0.0, min(10.0, v)))
+
+
+def offline_essay_axis_scores(theme: str, text: str) -> dict[str, Any]:
+    """Heurísticas honestas 0–10 por eixo (treino local · não banca)."""
+    raw = text or ""
+    words = re.findall(r"(?u)\b[\wÀ-ÿ]+\b", raw.lower())
+    n = len(words)
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", raw) if p.strip()]
+    sentences = [s.strip() for s in re.split(r"[.!?]+", raw) if s.strip()]
+    # Gramática (proxy): pontuação, variação, frases não monstruosas
+    punct = len(re.findall(r"[,.;:!?]", raw))
+    long_sents = sum(1 for s in sentences if len(s.split()) > 45)
+    grammar = 4.2 + min(3.5, punct / 8.0) + min(1.2, n / 200.0) - min(2.0, long_sents * 0.4)
+    # Coesão: conectores
+    connectors = (
+        "porém", "contudo", "entretanto", "portanto", "assim", "além", "também",
+        "não só", "mas também", "logo", "dessa forma", "em suma", "ademais",
+        "embora", "ainda", "porque", "pois", "enquanto",
+    )
+    conn_hits = sum(1 for c in connectors if c in raw.lower())
+    cohesion = 3.8 + min(4.0, conn_hits * 0.55) + min(1.5, len(paragraphs) * 0.35)
+    # Coerência: tokens do tema + repetições controladas
+    theme_tokens = set(re.findall(r"(?u)\b[\wÀ-ÿ]{4,}\b", (theme or "").lower()))
+    unique = set(words)
+    theme_hits = sum(1 for t in theme_tokens if t in unique) if theme_tokens else 0
+    coherence = 4.0 + min(3.5, theme_hits * 0.9) + min(1.5, len(paragraphs) * 0.3)
+    if n < 40:
+        coherence = min(coherence, 4.5)
+    # Argumentação: densidade de períodos longos + repertório genérico
+    claim_markers = ("porque", "visto que", "dado que", "segundo", "de acordo", "é preciso", "deve-se")
+    claims = sum(1 for m in claim_markers if m in raw.lower())
+    longish = sum(1 for s in sentences if 18 <= len(s.split()) <= 55)
+    argumentation = 3.6 + min(3.5, claims * 0.7) + min(2.0, longish * 0.35) + min(1.2, n / 250.0)
+    # Intervenção: proposta
+    inter_markers = (
+        "deve", "necessário", "governo", "sociedade", "escola", "política",
+        "proposta", "investir", "promover", "garantir", "campanha", "conscientiza",
+        "órgão", "município", "estado", "família",
+    )
+    inter_hits = sum(1 for m in inter_markers if m in raw.lower())
+    intervention = 3.2 + min(4.5, inter_hits * 0.55) + (0.8 if any(x in raw.lower() for x in ("agente", "meio", "efeito", "projeto")) else 0.0)
+
+    tips = {
+        "grammar": "Revise concordância e pontuação; evite frases longas demais.",
+        "cohesion": "Use conectivos de oposição e conclusão entre parágrafos.",
+        "coherence": "Mantenha o fio do tema; um eixo por parágrafo.",
+        "argumentation": "Amarre repertório à tese com causa e efeito.",
+        "intervention": "Feche com proposta viável (agente, meio, efeito).",
+    }
+    scores = {
+        "grammar": round(_clamp10(grammar), 1),
+        "cohesion": round(_clamp10(cohesion), 1),
+        "coherence": round(_clamp10(coherence), 1),
+        "argumentation": round(_clamp10(argumentation), 1),
+        "intervention": round(_clamp10(intervention), 1),
+    }
+    overall = round(sum(scores.values()) / 5.0, 1)
+    return {
+        "score": overall,
+        "scores": scores,
+        "tips": tips,
+        "wordCount": n,
+        "paragraphCount": len(paragraphs),
+    }
+
+
+def _axis_numeric(fb: dict[str, Any], key: str) -> float | None:
+    v = fb.get(key)
+    if isinstance(v, (int, float)):
+        return _clamp10(float(v))
+    for alt in (f"{key}Score", f"{key}_score", f"{key}Rating"):
+        av = fb.get(alt)
+        if isinstance(av, (int, float)):
+            return _clamp10(float(av))
+    scores = fb.get("scores")
+    if isinstance(scores, dict) and isinstance(scores.get(key), (int, float)):
+        return _clamp10(float(scores[key]))
+    return None
+
 
 def essay_progress() -> dict[str, Any]:
-    """Médias locais por eixo (5) + últimos scores — treino, não banca UEMA (Ciclo AT)."""
+    """Médias locais por eixo (5) + missão/streak — treino, não banca UEMA."""
     essays = list_essays()
     axis_sums: dict[str, float] = {k: 0.0 for k in _ESSAY_AXES}
     axis_counts: dict[str, int] = {k: 0 for k in _ESSAY_AXES}
     last_scores: list[float] = []
     last_axis_scores: dict[str, float | None] = {k: None for k in _ESSAY_AXES}
+    prev_axis_scores: dict[str, float | None] = {k: None for k in _ESSAY_AXES}
+    used_proxy = False
 
     def _axis_val(fb: dict[str, Any], key: str, overall: float | None) -> float | None:
-        v = fb.get(key)
-        if isinstance(v, (int, float)):
-            return float(max(0.0, min(10.0, float(v))))
-        for alt in (f"{key}Score", f"{key}_score", f"{key}Rating"):
-            av = fb.get(alt)
-            if isinstance(av, (int, float)):
-                return float(max(0.0, min(10.0, float(av))))
+        nonlocal used_proxy
+        num = _axis_numeric(fb, key)
+        if num is not None:
+            return num
+        tip = fb.get(key)
+        if isinstance(tip, str) and overall is not None:
+            used_proxy = True
+            return _clamp10(overall)
         if overall is not None:
-            return float(max(0.0, min(10.0, overall)))
+            used_proxy = True
+            return _clamp10(overall)
         return None
 
     for e in essays:
@@ -1684,7 +1781,6 @@ def essay_progress() -> dict[str, Any]:
             axis_sums[key] += val
             axis_counts[key] += 1
 
-    # última redação = first in list (DESC created)
     if essays:
         e0 = essays[0]
         try:
@@ -1694,17 +1790,20 @@ def essay_progress() -> dict[str, Any]:
         fb0 = e0.get("feedback") if isinstance(e0.get("feedback"), dict) else {}
         for key in _ESSAY_AXES:
             last_axis_scores[key] = _axis_val(fb0, key, o0)
+    if len(essays) >= 2:
+        e1 = essays[1]
+        try:
+            o1 = float(e1["score"]) if e1.get("score") is not None else None
+        except (TypeError, ValueError):
+            o1 = None
+        fb1 = e1.get("feedback") if isinstance(e1.get("feedback"), dict) else {}
+        for key in _ESSAY_AXES:
+            prev_axis_scores[key] = _axis_val(fb1, key, o1)
 
     averages = {
         k: (round(axis_sums[k] / axis_counts[k], 2) if axis_counts[k] else None) for k in _ESSAY_AXES
     }
-    labels = {
-        "grammar": "Gramática",
-        "cohesion": "Coesão",
-        "coherence": "Coerência",
-        "argumentation": "Argumentação",
-        "intervention": "Intervenção",
-    }
+    labels = dict(_ESSAY_AXIS_LABELS)
     weakest: str | None = None
     weakest_val: float | None = None
     for k in _ESSAY_AXES:
@@ -1714,25 +1813,64 @@ def essay_progress() -> dict[str, Any]:
         if weakest_val is None or float(v) < weakest_val:
             weakest_val = float(v)
             weakest = k
+
+    moving_window = last_scores[:7]
+    moving_avg = round(sum(moving_window) / len(moving_window), 2) if moving_window else None
+    if moving_avg is None:
+        level_label = "Início"
+    elif moving_avg < 5.0:
+        level_label = "Aquecimento"
+    elif moving_avg < 6.5:
+        level_label = "Em forma"
+    elif moving_avg < 8.0:
+        level_label = "Consistente"
+    else:
+        level_label = "Afiado"
+
+    persona_by_axis = {
+        "cohesion": "cohesion_revisor",
+        "argumentation": "argument_critic",
+        "coherence": "timed_reader",
+        "grammar": "grammar_coach",
+        "intervention": "intervention_mentor",
+    }
+
+    mission_status = "open"
     next_mission = None
     if essays and weakest:
         lab = labels.get(weakest, weakest)
+        last_w = last_axis_scores.get(weakest)
+        prev_w = prev_axis_scores.get(weakest)
+        delta_w = None
+        if last_w is not None and prev_w is not None:
+            delta_w = round(float(last_w) - float(prev_w), 2)
+            if delta_w >= _MISSION_CLEAR_DELTA:
+                mission_status = "cleared"
+            else:
+                mission_status = "active"
+        elif last_w is not None:
+            mission_status = "active"
         next_mission = {
             "axis": weakest,
             "label": lab,
             "score": weakest_val,
+            "lastScore": last_w,
+            "prevScore": prev_w,
+            "delta": delta_w,
+            "status": mission_status,
+            "clearThreshold": _MISSION_CLEAR_DELTA,
             "prompt": (
                 f"Missão: subir {lab.lower()}. Reescreva o parágrafo mais fraco e peça nova correção — "
                 f"treino local, não nota de banca."
+                + (
+                    f" Vitória: +{_MISSION_CLEAR_DELTA:.1f} no eixo desde a redação anterior."
+                    if mission_status != "cleared"
+                    else " Eixo subiu o suficiente — escolha novo tema ou treine outro vale."
+                )
             ),
-            "suggestedPersona": {
-                "cohesion": "cohesion_revisor",
-                "argumentation": "argument_critic",
-                "coherence": "timed_reader",
-            }.get(weakest),
+            "suggestedPersona": persona_by_axis.get(weakest),
         }
 
-    # Streak de dias com ≥1 redação (calendário local)
     days_set: set[str] = set()
     last_essay_at = essays[0].get("createdAt") if essays else None
     for e in essays:
@@ -1742,7 +1880,6 @@ def essay_progress() -> dict[str, Any]:
     streak = 0
     if days_set:
         cursor = datetime.now().date()
-        # se hoje não tem, começa de ontem (streak ainda "quente")
         if cursor.isoformat() not in days_set:
             cursor = cursor - timedelta(days=1)
         while cursor.isoformat() in days_set:
@@ -1756,15 +1893,43 @@ def essay_progress() -> dict[str, Any]:
         "labels": labels,
         "averages": averages,
         "lastAxisScores": last_axis_scores,
+        "prevAxisScores": prev_axis_scores,
         "lastScores": last_scores[:12],
         "meanScore": round(sum(last_scores) / len(last_scores), 2) if last_scores else None,
+        "movingAvg": moving_avg,
+        "levelLabel": level_label,
         "weakestAxis": weakest,
         "nextMission": next_mission,
+        "missionStatus": mission_status if next_mission else None,
         "streakDays": streak,
         "lastEssayAt": last_essay_at,
         "disclaimer": "Treino local por eixos · não é nota de banca UEMA.",
-        "usedOverallAsProxy": True,
+        "usedOverallAsProxy": used_proxy,
     }
+
+
+def essay_grade_deltas(theme: str, feedback: dict[str, Any]) -> dict[str, float | None]:
+    """Delta por eixo vs redação imediatamente anterior (já salva a atual)."""
+    essays = list_essays()
+    prev = essays[1] if len(essays) >= 2 else None
+    if prev is None:
+        return {k: None for k in _ESSAY_AXES}
+    fb_prev = prev.get("feedback") if isinstance(prev.get("feedback"), dict) else {}
+    try:
+        o_prev = float(prev["score"]) if prev.get("score") is not None else None
+    except (TypeError, ValueError):
+        o_prev = None
+    out: dict[str, float | None] = {}
+    for k in _ESSAY_AXES:
+        cur = _axis_numeric(feedback, k)
+        old = _axis_numeric(fb_prev, k)
+        if old is None and o_prev is not None:
+            old = o_prev
+        if cur is None or old is None:
+            out[k] = None
+        else:
+            out[k] = round(float(cur) - float(old), 2)
+    return out
 
 
 def essay_themes() -> list[str]:
@@ -1777,6 +1942,70 @@ def essay_themes() -> list[str]:
     finally:
         conn.close()
 
+
+def progress_overview() -> dict[str, Any]:
+    """Cola dashboard + redação + gaps para /progresso (Ciclo HR)."""
+    from services_core import dashboard_stats, stats_basis
+
+    dash = dashboard_stats()
+    essay = essay_progress()
+    basis = stats_basis()
+    _raw_gaps = dash.get("openGaps") or dash.get("criticalTopics") or []
+    gaps = list(_raw_gaps)[:5] if isinstance(_raw_gaps, (list, tuple)) else []
+    # Forças por disciplina (acerto quando houver stats)
+    subject_force: dict[str, float] = {}
+    by_subj = dash.get("accuracyBySubject") or dash.get("subjectAccuracy") or {}
+    if isinstance(by_subj, dict):
+        for k, v in by_subj.items():
+            try:
+                subject_force[str(k)] = float(v) * (100.0 if float(v) <= 1.0 else 1.0)
+            except (TypeError, ValueError):
+                continue
+    # Relevo peeks: eixos de redação + sujetos
+    peaks: list[dict[str, Any]] = []
+    for k in _ESSAY_AXES:
+        avg = essay.get("averages", {}).get(k)
+        if avg is not None:
+            peaks.append(
+                {
+                    "id": k,
+                    "label": _ESSAY_AXIS_LABELS.get(k, k),
+                    "value": float(avg),
+                    "kind": "essay_axis",
+                    "max": 10.0,
+                }
+            )
+    for subj, val in list(subject_force.items())[:6]:
+        peaks.append(
+            {
+                "id": f"subj_{subj}",
+                "label": subj,
+                "value": min(10.0, float(val) / 10.0),
+                "kind": "subject",
+                "max": 10.0,
+            }
+        )
+    if not peaks:
+        peaks = [
+            {"id": "placeholder", "label": "Comece a treinar", "value": 2.0, "kind": "hint", "max": 10.0}
+        ]
+    return {
+        "ok": True,
+        "essay": essay,
+        "streakDays": dash.get("streakDays"),
+        "studyMinutesToday": dash.get("studyMinutesToday"),
+        "studyMinutesWeek": dash.get("studyMinutesWeek") or (dash.get("weekClose") or {}).get("studyMinutesWeek"),
+        "accuracy": dash.get("accuracy"),
+        "readiness": dash.get("readinessScore") or (dash.get("weekClose") or {}).get("readinessScore"),
+        "activity28": dash.get("activity28") or dash.get("studyCalendar") or [],
+        "gaps": gaps,
+        "peaks": peaks,
+        "officialCount": basis.get("officialCount", 0),
+        "disclaimer": "Progresso local · treino · não é % de aprovação nem banca UEMA.",
+        "sessionPath": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+        "essayPath": "/redacao",
+        "queuePath": "/fila",
+    }
 
 def create_backup() -> dict[str, Any]:
     import hashlib

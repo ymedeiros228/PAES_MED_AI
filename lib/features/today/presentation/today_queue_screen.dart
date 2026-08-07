@@ -271,6 +271,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ),
                 ),
 
+                MissionQuestCard(
+                  title: 'Missão de redação',
+                  why: 'Treine o eixo fraco com persona e delta honesto — treino local, não banca.',
+                  ctaLabel: 'Abrir redação',
+                  status: MissionQuestStatus.open,
+                  onCta: () => context.go('/redacao'),
+                ),
+
                 FilledButton.icon(
                   onPressed: () => context.go(sessionPath),
                   icon: const Icon(Icons.play_arrow_rounded),

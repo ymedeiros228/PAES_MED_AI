@@ -48,6 +48,7 @@ class AppShell extends ConsumerWidget {
       '/revisoes',
       '/adaptativo',
       '/redacao',
+      '/progresso',
       '/onboarding',
     ];
     return allowed.any((p) => path == p || path.startsWith('$p/'));
@@ -66,6 +67,7 @@ class AppShell extends ConsumerWidget {
         _NavItem('/tutor', 'Tutor', Icons.auto_awesome_rounded),
       ]),
       const _NavGroup('Analisar', [
+        _NavItem('/progresso', 'Progresso', Icons.terrain_rounded),
         _NavItem('/medicina', 'Domínio', Icons.local_hospital_rounded),
         _NavItem('/banca', 'Banca', Icons.analytics_rounded),
         _NavItem('/revisoes', 'Revisões', Icons.replay_circle_filled_rounded),

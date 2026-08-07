@@ -941,6 +941,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             child: const Text('Treinar este tópico'),
           ),
           TextButton(
+            onPressed: () => context.go('/progresso'),
+            child: const Text('Este tópico no relevo'),
+          ),
+          TextButton(
             onPressed: _createCardFromCurrent,
             child: const Text('Criar card'),
           ),

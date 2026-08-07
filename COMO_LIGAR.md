@@ -1194,6 +1194,14 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Atalhos de teclado reduzidos nas subtítulos; error types com rótulos legíveis.
 4. Biblioteca: banner busy + mensagem de sucesso com Estudar / Fila.
 
+## Ápice UX · Redação + Relevo (Ciclos HP–HT · 1.0.0+11)
+
+1. **HP** — kit `HeroStudyStrip`, `MissionQuestCard`, `DeltaChip`, `SoftTimeline`, `HonestBadge`; Hoje → Ver meu relevo.
+2. **HQ** — eixos offline 0–10, `deltas` no grade, 5 personas, missão com clear, `EssayRoseChart` + loop reescrever/relevo.
+3. **HR** — rota `/progresso` Relevo (mapa de forças), rail Analisar, `GET /api/progress/overview`.
+4. **HS** — empties com CTA; debrief «Este tópico no relevo»; missão leve no Hoje/Fila.
+5. **HT** — ship **1.0.0+11** (pubspec / app_version / pack VERSION / Sobre); smoke `ciclo_hp_*`…`ciclo_ht_*`.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
