@@ -29,6 +29,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Map<String, dynamic>? health;
   Map<String, dynamic>? lastBackup;
+  Map<String, dynamic>? backupSummary;
   String? msg;
   String? backupListError;
   String kind = 'prova';
@@ -65,6 +66,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _health();
     _backups();
     _lastBackup();
+    _backupSummary();
   }
 
   @override
@@ -83,6 +85,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  bool _tutorModelConfigured(Map<String, dynamic>? h) {
+    if (h == null) return false;
+    if (h['openai_configured'] == true || h['ollama_configured'] == true) return true;
+    final t = h['tutor'];
+    if (t is Map && t['configured'] == true) return true;
+    return false;
+  }
+
+  String _tutorOnlineSubtitle(Map<String, dynamic>? h) {
+    if (!_tutorModelConfigured(h)) {
+      return 'Sem modelo no .env — tutor local ensina com edital/questões. '
+          'OPENAI_API_KEY ou OLLAMA_HOST em backend/.env';
+    }
+    final t = h?['tutor'];
+    final tutorMap = t is Map ? Map<String, dynamic>.from(t) : null;
+    final p = tutorMap?['provider']?.toString() ?? 'openai';
+    final m = tutorMap?['model']?.toString() ?? h?['model']?.toString() ?? '—';
+    return 'Modelo ativo: $p · $m (desligue para forçar local)';
+  }
+
   Future<void> _backups() async {
     try {
       final data = await apiClient.get('/api/backups');
@@ -95,6 +117,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backups = [];
         backupListError = humanApiError(e, fallback: 'Não foi possível listar backups.');
       });
+    }
+  }
+
+  Future<void> _backupSummary() async {
+    try {
+      final data = await apiClient.get('/api/backups/summary');
+      setState(() {
+        backupSummary = Map<String, dynamic>.from(data as Map);
+      });
+    } catch (_) {
+      setState(() => backupSummary = null);
     }
   }
 
@@ -130,9 +163,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
       await _backups();
       await _lastBackup();
+      await _backupSummary();
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Falha no backup.'));
     }
+  }
+
+  String _formatMb(dynamic value) {
+    final n = value is num ? value.toDouble() : double.tryParse(value?.toString() ?? '');
+    if (n == null) return '—';
+    if (n >= 1024) return '${(n / 1024).toStringAsFixed(1)} GB';
+    return '${n.toStringAsFixed(n >= 10 ? 0 : 1)} MB';
   }
 
   Future<void> _restore(String name) async {
@@ -491,9 +532,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onPressed: () {
                             _backups();
                             _lastBackup();
+                            _backupSummary();
                           },
                           child: const Text('Tentar'),
                         ),
+                      ),
+                    ],
+                    if (backupSummary != null) ...[
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          final summary = backupSummary!;
+                          final warning = summary['warning']?.toString();
+                          final count = summary['count']?.toString() ?? '0';
+                          final dirs = summary['dirs']?.toString() ?? '0';
+                          final zips = summary['zips']?.toString() ?? '0';
+                          final size = _formatMb(summary['mb']);
+                          final cs = Theme.of(context).colorScheme;
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: Icon(
+                              warning == null ? Icons.folder_zip_outlined : Icons.warning_amber_rounded,
+                              color: warning == null ? cs.primary : cs.error,
+                            ),
+                            title: Text('$count backups · $size'),
+                            subtitle: Text(
+                              warning ?? '$zips zips · $dirs pastas antigas',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: warning == null ? null : cs.error,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                     if (lastBackup != null) ...[
@@ -525,36 +597,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     if (backups.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text('Restaurar', style: Theme.of(context).textTheme.titleSmall),
-                      for (final b in backups.take(5))
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text((b as Map)['name']?.toString() ?? ''),
-                          trailing: TextButton(
-                            onPressed: () async {
-                              final name = b['name']?.toString() ?? '';
-                              final verify = b['verify'] is Map ? Map<String, dynamic>.from(b['verify'] as Map) : null;
-                              final sha = verify?['sha256Prefix']?.toString() ?? '';
-                              final ok = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Restaurar backup?'),
-                                  content: Text(
-                                    'Substitui o progresso atual por:\n\n$name'
-                                    '${sha.isNotEmpty ? '\n\nCódigo de verificação (avançado): $sha' : ''}'
-                                    '\n\nSó confirme se tiver certeza.',
-                                  ),
-                                  actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                                    FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
-                                  ],
-                                ),
-                              );
-                              if (ok == true) await _restore(name);
-                            },
-                            child: const Text('Restaurar'),
+                      for (final raw in backups.take(5))
+                        Builder(
+                          builder: (context) {
+                            final b = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+                            final verify = b['verify'] is Map ? Map<String, dynamic>.from(b['verify'] as Map) : null;
+                            final sizeMb = b['bytes'] is num ? (b['bytes'] as num) / (1024 * 1024) : null;
+                            final detail = [
+                              b['kind']?.toString(),
+                              if (sizeMb != null) _formatMb(sizeMb),
+                              if (verify?['members'] != null) '${verify!['members']} arquivos',
+                            ].where((v) => v != null && v.toString().isNotEmpty).join(' · ');
+                            return ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(b['name']?.toString() ?? ''),
+                              subtitle: detail.isEmpty ? null : Text(detail, style: const TextStyle(fontSize: 12)),
+                              trailing: TextButton(
+                                onPressed: () async {
+                                  final name = b['name']?.toString() ?? '';
+                                  final sha = verify?['sha256Prefix']?.toString() ?? '';
+                                  final ok = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Restaurar backup?'),
+                                      content: Text(
+                                        'Substitui o progresso atual por:\n\n$name'
+                                        '${sha.isNotEmpty ? '\n\nCódigo de verificação (avançado): $sha' : ''}'
+                                        '\n\nSó confirme se tiver certeza.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, false),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          child: const Text('Restaurar'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (ok == true) await _restore(name);
+                                },
+                                child: const Text('Restaurar'),
+                              ),
+                            );
+                          },
                           ),
-                        ),
                     ],
                   ],
                 ),
@@ -570,15 +660,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Tutor com IA online'),
-                    subtitle: Text(
-                      health?['openai_configured'] == true
-                          ? 'Chave configurada'
-                          : 'Sem chave — tutor só com material local',
-                    ),
-                    value: health?['openai_configured'] == true && ref.watch(tutorOnlinePrefProvider),
-                    onChanged: health?['openai_configured'] == true
+                    subtitle: Text(_tutorOnlineSubtitle(health)),
+                    value: _tutorModelConfigured(health) && ref.watch(tutorOnlinePrefProvider),
+                    onChanged: _tutorModelConfigured(health)
                         ? (v) => ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v)
                         : null,
+                  ),
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    soft: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Como ativar o modelo',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '1) Em backend/.env: OPENAI_API_KEY=… (ou OLLAMA_HOST=http://127.0.0.1:11434).\n'
+                          '2) Opcional: OPENAI_BASE_URL (proxy/Groq/LM Studio) e OPENAI_MODEL / OLLAMA_MODEL.\n'
+                          '3) Reinicie a API · aqui em Ajustes ligue “Tutor com IA online”.\n'
+                          'Sem chave o tutor local continua ensinando com edital/questões (não inventa gabarito oficial).',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                   FutureBuilder(
                     future: apiClient.get('/api/media/prefs'),

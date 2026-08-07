@@ -12,6 +12,7 @@ import '../../../core/ux_copy.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/teach_loop.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../domain/question.dart';
@@ -48,6 +49,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   String? saveError;
   String? adaptiveLoadError;
   bool theoryRead = false;
+  Map<String, dynamic>? teachBlock;
 
   @override
   void initState() {
@@ -119,6 +121,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   }
 
   Future<void> _load() async {
+    setState(() {
+      error = null;
+      // não zera question se for reload: evita SoftLoader eterno em refresh
+    });
     try {
       final data = await apiClient.get('/api/questions/${widget.questionId}');
       final q = Question.fromJson(Map<String, dynamic>.from(data as Map));
@@ -136,8 +142,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       setState(() {
         question = q;
         theoryRead = read;
+        error = null;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => error = humanApiError(e, fallback: 'Não deu para abrir a ficha. Tente de novo.'));
     }
   }
@@ -165,7 +173,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     final q = question;
     if (q == null || selected == null) return;
     try {
-      await apiClient.post('/api/answers', {
+      final res = await apiClient.post('/api/answers', {
         'questionId': q.id,
         'correct': correct,
         'subject': q.subject,
@@ -174,10 +182,15 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         'timeMs': stopwatch.elapsedMilliseconds,
       });
       ref.read(refreshTickProvider.notifier).state++;
+      final resMap = res is Map ? Map<String, dynamic>.from(res as Map) : <String, dynamic>{};
+      final teach = resMap['teach'] is Map
+          ? Map<String, dynamic>.from(resMap['teach'] as Map)
+          : null;
       setState(() {
         revealed = true;
         pendingErrorPick = false;
         saveError = null;
+        teachBlock = teach;
       });
       if (!correct) {
         try {
@@ -363,7 +376,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       );
     }
     final q = question;
-    if (q == null) return const Center(child: CircularProgressIndicator());
+    if (q == null) {
+      return const SoftLoader(label: 'Abrindo ficha…');
+    }
 
     final pm = q.professorMode ?? {};
     final freq = pm['frequency'] as Map<String, dynamic>? ?? {};
@@ -508,6 +523,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 : 'Responda à esquerda para liberar a resolução.',
           )
         else ...[
+          if (teachBlock != null) ...[
+            DidacticTeachBlock(teach: teachBlock!),
+            const SizedBox(height: 8),
+          ],
           ResolutionDebrief(
             question: {
               'resolution': q.resolution,
@@ -538,6 +557,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       context,
                       subject: q.subject,
                       topic: q.topic,
+                      fromMistake: selected != q.correctIndex,
+                      whyThisMatters: teachBlock?['whyThisMatters']?.toString(),
                       trainPath: '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
                           '&topic=${Uri.encodeComponent(q.topic)}',
                     );
@@ -590,15 +611,17 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ],
             ),
           ),
-          if (revealed && !pendingErrorPick && q.subject.isNotEmpty && q.topic.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 4),
-              child: MediaReinforcement(
-                subject: q.subject,
-                topic: q.topic,
-                compact: true,
-              ),
+          if (q.subject.isNotEmpty && q.topic.isNotEmpty && teachBlock == null) ...[
+            const SizedBox(height: 10),
+            MediaReinforcement(
+              subject: q.subject,
+              topic: q.topic,
+              compact: true,
+              heading: 'Vídeos e materiais do tópico',
             ),
+          ],
+          if (revealed && !pendingErrorPick && q.subject.isNotEmpty && q.topic.isNotEmpty)
+            const SizedBox(height: 4),
           const SizedBox(height: 8),
           _Block('Relacionados', ((pm['relatedTopics'] as List?) ?? q.relatedTopics).join(', ')),
           _Block('No acervo', 'Anos: ${(freq['years'] as List?)?.join(', ') ?? q.year} · ${freq['count'] ?? 1}x'),

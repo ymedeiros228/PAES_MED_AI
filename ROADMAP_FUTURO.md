@@ -123,12 +123,20 @@ Player pesado embutido no 1º MVP; afirmar que o vídeo “cai na UEMA”.
 
 **Pedido:** treinar redação tipo game; IAs se “atualizando”; interface visual de progresso.
 
+### Status (Ciclo JC · 1.0.0+21)
+- **Entregue F5 residual:** radar fino (`axisDeltas` no `EssayRoseChart`) em Redação e Progresso; `missionTimeline` (missão atual + últimas redações + nós do path); missão com mentor sugerido.
+- **Entregue F3 residual:** tutor local sempre ensina; system soft com contexto parcial; chip de status + “como ativar modelo” em Ajustes; `GET /api/tutor/status` (já existia); offline keyword (sem cascade de embeddings).
+- **Entregue F2 residual:** CTA **Ler teoria** na lista (tópico filtrado); sheet abre antes do fetch de materiais.
+- **Perf:** keepAlive dashboard/studyPath; TTL 10s route + path/dashboard; GET `_inflightGet`; índices SQLite answers/questions; materials-pack cache 45s.
+- **Ainda futuro / host:** multi-persona cloud; gabaritos 2014–23 no disco; YOUTUBE/SERPER no `.env`.
+
 ### Melhor solução
 | Peça | Escolha | Por quê |
 |------|---------|--------|
 | Score | **5 eixos já existentes** (gramática, coesão, coerência, argumentação, intervenção) como XP por eixo | Reusa backend |
 | Game loop | Missões: “Subir coesão”, “Proposta de intervenção”, reescrever trecho → reavaliar | Motivação sem banca falsa |
 | Progresso visual | Painel radar/barras + streak de dias + “nível” = média móvel local | UX clara |
+| Caminho unificado | Nós sequenciais (questões/redação/streak) com status done/active/locked | Trilha tipo game, treino local |
 | “Várias IAs” | **Personas = prompts** (Revisor de coesão, Crítico de argumento, Leitor de tempo de prova) no mesmo modelo | Atualizam com o histórico do aluno, não multi-agente caro |
 | Persistência | Essays + agregado `essay_progress` (max por eixo, last 10) | Dashboard/Fila |
 
@@ -344,7 +352,14 @@ flowchart TB
 | IS | Hoje hero + checklist rows | `ciclo_is_*` | **Feito** |
 | IT | Playlist + rail polish | `ciclo_it_*` | **Feito** |
 | IU | Ship **1.0.0+17** pack/smoke | `ciclo_iu_*` | **Feito** |
-| IV | Redação rascunho offline (SharedPreferences) | `ciclo_iv_*` | **Feito** |
+| IV | materials-pack API + Redação rascunho offline (SharedPreferences) | `ciclo_iv_*` | **Feito** |
+| IW | YouTube busca aberta / searchActions | `ciclo_iw_*` | **Feito** |
+| IX | StudyMaterialPack UI + catálogo | `ciclo_ix_*` | **Feito** |
+| IZ | Ship **1.0.0+18** pack/smoke | `ciclo_iz_*` | **Feito** |
+| JA | Questões + pack de vídeos · **1.0.0+19** | `ciclo_ja_*` | **Feito** |
+| JB | Caminho gamificado Q&A + redação · **1.0.0+20** | `ciclo_jb_*` | **Feito** |
+| JC | Radar fino + timeline missões · tutor/TTL · **1.0.0+21** | `ciclo_jc_*` | **Feito** |
+| JD | Ensinar de verdade · coach + pós-resposta · **1.0.0+22** | `ciclo_jd_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -352,9 +367,16 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IV)
+## Estado (atualizado pós JD)
 
 - Rodada **IQ–IU**: polish front kit + opções, ship **1.0.0+17**.
-- **IV**: rascunho da Redação persiste no PC (restaura ao reabrir; limpa ao corrigir).
+- **IV**: materials-pack API e rascunho da Redação persistente no PC (restaura ao reabrir; limpa ao corrigir).
+- Rodada **IV–IZ**: materiais por disciplina + YouTube busca, ship **1.0.0+18**.
+- Rodada **JA**: lista/ficha/adaptativo com pack de vídeos, fallback catálogo, ship **1.0.0+19**.
+- Rodada **JB**: caminho de treino (`study_path` / `StudyPathTrail` / `studyPathProvider`) em Hoje, Questões, Redação e Progresso; ship **1.0.0+20**.
+- Rodada **JC**: radar fino + timeline de missões · tutor/status UI · TTL 10s path/dashboard · ship **1.0.0+21**.
+- Rodada **JD**: coach + loop didático pós-resposta/sessão/redação · **1.0.0+22**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gabarito**.
+- Residual pedagógico: explicações `resolutionQuality=real` ainda pedem curadoria; coach é heurística (sem LLM); tutor offline ensina mas não substitui material de banca.
+- Opcional: `YOUTUBE_API_KEY` / `SERPER_API_KEY` / `OPENAI_API_KEY` / `OLLAMA_HOST` no `.env` enriquecem (sem inventar).
 - PDFs grandes **fora** do git.

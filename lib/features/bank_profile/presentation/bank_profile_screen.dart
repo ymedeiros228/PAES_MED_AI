@@ -134,7 +134,13 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 ),
               ),
               profile.when(
-                loading: () => const LinearProgressIndicator(),
+                skipLoadingOnReload: true,
+                skipLoadingOnRefresh: true,
+                loading: () => SoftLoader(
+                  label: 'Carregando perfil da banca…',
+                  compact: true,
+                  onRetry: () => ref.read(refreshTickProvider.notifier).state++,
+                ),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Perfil da banca indisponível.'),
                   action: Wrap(

@@ -7,6 +7,8 @@ class ChatMessage {
     this.citations = const [],
     this.uncited = false,
     this.hasLocalBase = true,
+    this.model,
+    this.provider,
   });
 
   final ChatRole role;
@@ -14,6 +16,8 @@ class ChatMessage {
   final List<Map<String, dynamic>> citations;
   final bool uncited;
   final bool hasLocalBase;
+  final String? model;
+  final String? provider;
 
   bool get isUser => role == ChatRole.user;
 

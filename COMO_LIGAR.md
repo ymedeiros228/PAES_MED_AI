@@ -1253,6 +1253,46 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **IT** — PlaylistTile stripe + rail sel.
 5. **IU** — ship **1.0.0+17**.
 
+## Materiais por disciplina (Ciclos IV–IZ · 1.0.0+18)
+
+1. **IV** — API `/api/study/materials-pack` (banca + vídeo + leitura + busca).
+2. **IW** — buscas YouTube/Wikipédia abertas + `searchActions`.
+3. **IX** — UI `StudyMaterialPack` (chips Banca/Vídeos/Leituras/Buscar) na teoria e reforço.
+4. **IY** — catálogo diversificado (Natureza, Humanas, Mat, Português).
+5. **IZ** — ship **1.0.0+18**.
+
+## Questões + vídeos (Ciclo JA · 1.0.0+19)
+
+1. Lista de questões: loading estável, UI hero, cache; materiais/vídeos no filtro de disciplina.
+2. Ficha + treino adaptativo: pack Banca/Vídeos/Leituras/Buscar.
+3. API vídeos: catálogo + busca YouTube + fallback `__default__` + opcional `YOUTUBE_API_KEY`.
+4. Ship **1.0.0+19**.
+
+## Caminho de treino (Ciclo JB · 1.0.0+20)
+
+1. API `GET /api/study/path` e `GET /api/study/qa-progress` — nós Q&A + redação, XP/nível **treino local**.
+2. Provider `studyPathProvider` (Riverpod) + `StudyPathTrail` / `StudyPathNextStrip`.
+3. UI: **Hoje** (próximo nó), **Questões** / **Redação** (trilha compacta), **Progresso** (trilha completa); refresh com R / `refreshTick`.
+4. Ship **1.0.0+20**. Não é nota de banca UEMA.
+
+## Radar fino + tutor (Ciclo JC · 1.0.0+21)
+
+1. `essays/progress`: `axisDeltas` + `missionTimeline`; Progresso une missões e nós do path.
+2. UI Redação/Progresso: `EssayRoseChart` com Δ por eixo; timeline SoftTimeline; missão mostra mentor sugerido.
+3. Tutor: ensina offline; chip de modelo/status; Ajustes → “Como ativar o modelo” (OPENAI_* / OLLAMA_* no `backend/.env`).
+4. Perf: keepAlive em dashboard/studyPath; cache TTL 10s em `/api/dashboard` e `/api/study/path`.
+5. Ship **1.0.0+21**.
+
+## Ensinar de verdade (Ciclo JD · 1.0.0+22)
+
+1. Pós-resposta: `teach` em `/api/answers` + bloco didático na ficha e sessão (conceito, o que revisar, materiais).
+2. **Coach** `GET /api/study/coach` no Hoje — fracos, 1 questão/material/revisão, disclaimer local.
+3. Teoria: “por que isso importa” quando o caminho vem de erro; pack de materiais sempre.
+4. Redação: pós-correção com eixo fraco + missão + dica local + nó do caminho.
+5. Fim de sessão: erros por tópico com Materiais / Treinar.
+6. Fallbacks: “gabarito oficial não disponível” + revisão conceitual (sem inventar).
+7. Ship **1.0.0+22**.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

@@ -122,7 +122,7 @@ if not exist "%OUT%\branding\app_icon.ico" (
 
 echo.
 echo == passo 5/5 — VERSION + atalho Desktop ==
-echo 1.0.0+17> "%OUT%\VERSION.txt"
+echo 1.0.0+22> "%OUT%\VERSION.txt"
 if not exist "%OUT%\VERSION.txt" (
   echo ERRO: VERSION.txt nao gravado no dist.
   goto :erro

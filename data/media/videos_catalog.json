@@ -1,5 +1,5 @@
 {
-  "disclaimer": "Catálogo curado local — reforço, não edital UEMA. URLs públicas de canais educativos.",
+  "disclaimer": "Catálogo curado local — reforço, não edital UEMA. Inclui vídeos e buscas YouTube abertas.",
   "topics": {
     "Biologia::Genética": [
       {
@@ -132,6 +132,202 @@
         "title": "Ondas: propriedades e tipos",
         "channel": "CrashCourse",
         "url": "https://www.youtube.com/watch?v=s2Br74c2_qU"
+      }
+    ],
+    "Matemática::Funções": [
+      {
+        "title": "Introdução a funções",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=VhokQhjl5t0"
+      },
+      {
+        "title": "Funções: domínio e imagem (visão geral)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=52tpYl2tTqk"
+      }
+    ],
+    "Matemática::Equações": [
+      {
+        "title": "Equações do 1º grau",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=9DxrF6Ttws4"
+      },
+      {
+        "title": "Sistemas lineares (visão)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=7EqV1W6w1G8"
+      }
+    ],
+    "Matemática::Geometria": [
+      {
+        "title": "Áreas e perímetros",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=cC0fZ_lkFpQ"
+      }
+    ],
+    "Matemática::Probabilidade": [
+      {
+        "title": "Probabilidade básica",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=uzkc-qNVoOk"
+      }
+    ],
+    "Língua Portuguesa e Literatura::Interpretação de texto": [
+      {
+        "title": "Como ler textos dissertativos",
+        "channel": "Português",
+        "url": "https://www.youtube.com/results?search_query=interpreta%C3%A7%C3%A3o+de+texto+ENEM"
+      }
+    ],
+    "Língua Portuguesa e Literatura::Gramática": [
+      {
+        "title": "Buscar: gramática ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=gram%C3%A1tica+ENEM+an%C3%A1lise+sint%C3%A1tica"
+      }
+    ],
+    "Língua Portuguesa e Literatura::Literatura": [
+      {
+        "title": "Buscar: escolas literárias",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=escolas+liter%C3%A1rias+ENEM"
+      }
+    ],
+    "História::Brasil República": [
+      {
+        "title": "Buscar: República no Brasil",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=Rep%C3%BAblica+Velha+Brasil+hist%C3%B3ria"
+      }
+    ],
+    "História::Brasil Colônia": [
+      {
+        "title": "Buscar: Brasil Colônia",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=Brasil+Col%C3%B4nia+hist%C3%B3ria+ENEM"
+      }
+    ],
+    "Geografia::Clima": [
+      {
+        "title": "Buscar: climas do Brasil",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=climas+do+Brasil+geografia"
+      }
+    ],
+    "Geografia::Cartografia": [
+      {
+        "title": "Buscar: cartografia ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=cartografia+escala+ENEM"
+      }
+    ],
+    "Filosofia::Ética": [
+      {
+        "title": "Buscar: ética filosofia ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=filosofia+%C3%A9tica+ENEM"
+      }
+    ],
+    "Sociologia::Trabalho": [
+      {
+        "title": "Buscar: sociologia do trabalho",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=sociologia+trabalho+ENEM"
+      }
+    ],
+    "Química::Equilíbrio químico": [
+      {
+        "title": "Equilíbrio químico (visão)",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=g5wNg_dKsYY"
+      }
+    ],
+    "Química::Ácidos e bases": [
+      {
+        "title": "Ácidos e bases pH",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=Xeuyc55LqiY"
+      }
+    ],
+    "Física::Termologia": [
+      {
+        "title": "Calor e temperatura",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=VjOSBNQiAks"
+      }
+    ],
+    "Física::Óptica": [
+      {
+        "title": "Luz e reflexão",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=cjHvqP_bfHw"
+      }
+    ],
+    "Biologia::Microbiologia": [
+      {
+        "title": "Bactérias e vírus (visão)",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=T_EdxzQJwHs"
+      }
+    ],
+    "Biologia::Botânica": [
+      {
+        "title": "Plantas: introdução",
+        "channel": "CrashCourse",
+        "url": "https://www.youtube.com/watch?v=-hOhdjX1NJk"
+      }
+    ],
+    "Matemática::Funções": [
+      {
+        "title": "Introdução a funções",
+        "channel": "Khan Academy",
+        "url": "https://www.youtube.com/watch?v=VhokQhjl5t0"
+      },
+      {
+        "title": "Buscar: funções ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=fun%C3%A7%C3%B5es+matem%C3%A1tica+ENEM",
+        "kind": "youtube_search"
+      }
+    ],
+    "Matemática::Geometria": [
+      {
+        "title": "Buscar: geometria plana ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=geometria+plana+ENEM",
+        "kind": "youtube_search"
+      }
+    ],
+    "Matemática::Estatística": [
+      {
+        "title": "Buscar: estatística e probabilidade ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=estat%C3%ADstica+probabilidade+ENEM",
+        "kind": "youtube_search"
+      }
+    ],
+    "Língua Portuguesa e Literatura::Interpretação de texto": [
+      {
+        "title": "Buscar: interpretação de texto ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=interpreta%C3%A7%C3%A3o+de+texto+ENEM",
+        "kind": "youtube_search"
+      }
+    ],
+    "Língua Portuguesa e Literatura::Gramática": [
+      {
+        "title": "Buscar: gramática ENEM",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=gram%C3%A1tica+portugu%C3%AAs+ENEM",
+        "kind": "youtube_search"
+      }
+    ],
+    "__default__": [
+      {
+        "title": "Buscar reforço no YouTube (tema do tópico)",
+        "channel": "YouTube · busca",
+        "url": "https://www.youtube.com/results?search_query=ENEM+PAES+vestibular+Natureza",
+        "kind": "youtube_search"
       }
     ]
   }

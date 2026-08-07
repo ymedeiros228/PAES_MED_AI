@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/providers.dart';
 import '../data/study_prefs_providers.dart';
 import '../data/theme_mode_provider.dart';
 import '../theme/app_theme.dart';
@@ -54,7 +53,7 @@ class AppShell extends ConsumerWidget {
     return allowed.any((p) => path == p || path.startsWith('$p/'));
   }
 
-  List<_NavGroup> _groups({required int officialCount}) {
+  List<_NavGroup> _groups() {
     return [
       const _NavGroup('Estudar', [
         _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
@@ -92,19 +91,12 @@ class AppShell extends ConsumerWidget {
     final examDays = ref.watch(examDateProvider.notifier).daysUntilExam;
     final examSyncPending = ref.watch(examDateProvider).syncError != null;
     final location = GoRouterState.of(context).uri.path;
-    final dash = ref.watch(dashboardProvider);
-    final officialCount = dash.maybeWhen(
-      data: (d) {
-        final basis = d['statsBasis'];
-        if (basis is Map) return (basis['officialCount'] as int?) ?? 0;
-        return (d['officialCount'] as int?) ?? 0;
-      },
-      orElse: () => 0,
-    );
 
+    // Não assinar dashboardProvider na shell: contagem de oficiais era dead-weight
+    // e re-disparava o endpoint pesado em toda navegação / rebuild da rail.
     final activeGroups = focus
         ? [const _NavGroup('Foco', focusItems)]
-        : _groups(officialCount: officialCount);
+        : _groups();
 
     final items = [for (final g in activeGroups) ...g.items];
     var index = items.indexWhere((item) => location == item.path || location.startsWith('${item.path}/'));
@@ -138,18 +130,27 @@ class AppShell extends ConsumerWidget {
             final expanded = constraints.maxWidth >= 1180;
 
             final rail = AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
+              duration: const Duration(milliseconds: 240),
               curve: Curves.easeOutCubic,
-              width: expanded ? 236 : 84,
+              width: expanded ? 248 : 88,
               decoration: BoxDecoration(
                 gradient: AppTheme.railGradient(bright),
-                border: Border(right: BorderSide(color: cs.outlineVariant.withOpacity(0.7))),
+                border: Border(
+                  right: BorderSide(color: Colors.white.withOpacity(0.06)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.22),
+                    blurRadius: 24,
+                    offset: const Offset(4, 0),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(12, 20, 12, 8),
+                      padding: const EdgeInsets.fromLTRB(12, 22, 12, 8),
                       children: [
                         _BrandHeader(
                           expanded: expanded,
@@ -157,16 +158,18 @@ class AppShell extends ConsumerWidget {
                           examDays: examDays,
                           examSyncPending: examSyncPending,
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 22),
                         for (final group in activeGroups) ...[
                           if (expanded)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 14, 10, 6),
+                              padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
                               child: Text(
                                 group.label.toUpperCase(),
                                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurface.withOpacity(0.38),
-                                      letterSpacing: 1.4,
+                                      color: AppTheme.railMuted.withOpacity(0.75),
+                                      letterSpacing: 1.8,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 10,
                                     ),
                               ),
                             ),
@@ -183,7 +186,7 @@ class AppShell extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 14),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 16),
                     child: Column(
                       children: [
                         _RailControl(
@@ -202,12 +205,13 @@ class AppShell extends ConsumerWidget {
                           onTap: () => themeNotifier.cycle(),
                         ),
                         if (expanded) ...[
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
                           Text(
-                            'Tecla F: modo foco',
+                            'F foco · Ctrl+T tema',
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.42),
-                                  fontSize: 11,
+                                  color: AppTheme.railMuted.withOpacity(0.7),
+                                  fontSize: 10.5,
+                                  letterSpacing: 0.3,
                                 ),
                           ),
                         ],
@@ -218,15 +222,60 @@ class AppShell extends ConsumerWidget {
               ),
             );
 
-            final body = DecoratedBox(
-              decoration: BoxDecoration(gradient: AppTheme.scaffoldGradientFor(bright)),
-              child: Column(
-                children: [
-                  const BackendStatusBanner(),
-                  const ExamDateSyncBanner(),
-                  Expanded(child: child),
-                ],
-              ),
+            final body = Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(gradient: AppTheme.scaffoldGradientFor(bright)),
+                  ),
+                ),
+                // Glow atmosférico (canto) — presença de plataforma
+                Positioned(
+                  top: -120,
+                  right: -80,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 340,
+                      height: 340,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            cs.primary.withOpacity(bright == Brightness.dark ? 0.12 : 0.08),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -100,
+                  left: 40,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppTheme.navy.withOpacity(bright == Brightness.dark ? 0.25 : 0.04),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Column(
+                  children: [
+                    const BackendStatusBanner(),
+                    const ExamDateSyncBanner(),
+                    Expanded(child: child),
+                  ],
+                ),
+              ],
             );
 
             if (wide) {
@@ -376,17 +425,27 @@ class _BrandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     if (!expanded) {
       return Center(
         child: Container(
-          width: 42,
-          height: 42,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
-            color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1FA887), Color(0xFF0C7A63)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.teal.withOpacity(0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-          child: Icon(Icons.local_hospital_rounded, color: cs.primary, size: 22),
+          child: const Icon(Icons.local_hospital_rounded, color: Colors.white, size: 22),
         ),
       );
     }
@@ -398,15 +457,19 @@ class _BrandHeader extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(11),
+                  borderRadius: BorderRadius.circular(13),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1FA887), Color(0xFF0C7A63)],
+                  ),
                 ),
-                child: Icon(Icons.local_hospital_rounded, color: cs.primary, size: 18),
+                child: const Icon(Icons.local_hospital_rounded, color: Colors.white, size: 20),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,14 +478,18 @@ class _BrandHeader extends StatelessWidget {
                       'PAES MED',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
-                            letterSpacing: -0.2,
+                            letterSpacing: -0.3,
+                            color: AppTheme.railText,
+                            fontFamily: 'Georgia',
+                            fontSize: 17,
                           ),
                     ),
                     Text(
-                      focus ? 'Modo foco' : 'Medicina · UEMA',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.primary,
-                            fontWeight: FontWeight.w600,
+                      focus ? 'Modo foco' : 'Studio · UEMA',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: AppTheme.teal,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.4,
                           ),
                     ),
                   ],
@@ -431,16 +498,16 @@ class _BrandHeader extends StatelessWidget {
             ],
           ),
           if (examSyncPending) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.sync_problem_rounded, size: 14, color: cs.tertiary),
+                Icon(Icons.sync_problem_rounded, size: 14, color: AppTheme.warning),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Data da prova pendente',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.tertiary,
+                          color: AppTheme.warning,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -449,17 +516,21 @@ class _BrandHeader extends StatelessWidget {
             ),
           ],
           if (examDays != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.08)),
               ),
               child: Text(
                 examDays! >= 0 ? '$examDays dias para a prova' : 'Data da prova passou',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.railText.withOpacity(0.85),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
           ],
@@ -493,12 +564,14 @@ class _NavTileState extends State<_NavTile> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final bg = widget.selected
-        ? cs.primaryContainer.withOpacity(0.85)
+        ? AppTheme.teal.withOpacity(0.16)
         : hovered
-            ? cs.surfaceContainerHigh.withOpacity(0.6)
+            ? Colors.white.withOpacity(0.06)
             : Colors.transparent;
+    final iconColor = widget.selected
+        ? const Color(0xFF3ED4B0)
+        : AppTheme.railMuted.withOpacity(hovered ? 0.95 : 0.75);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -512,34 +585,42 @@ class _NavTileState extends State<_NavTile> {
             onEnter: (_) => setState(() => hovered = true),
             onExit: (_) => setState(() => hovered = false),
             child: Material(
-              color: bg,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.transparent,
               child: InkWell(
                 onTap: widget.onTap,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  height: 44,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  height: 46,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    color: bg,
+                    borderRadius: BorderRadius.circular(14),
                     border: widget.selected
-                        ? Border(
-                            left: BorderSide(color: cs.primary, width: 3),
-                          )
+                        ? Border.all(color: AppTheme.teal.withOpacity(0.28))
                         : null,
                   ),
                   padding: EdgeInsets.symmetric(horizontal: widget.expanded ? 12 : 0),
                   child: Row(
-                    mainAxisAlignment: widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
+                    mainAxisAlignment:
+                        widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
                     children: [
+                      if (widget.selected && widget.expanded)
+                        Container(
+                          width: 3,
+                          height: 22,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3ED4B0),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        )
+                      else if (widget.expanded)
+                        const SizedBox(width: 13),
                       Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          Icon(
-                            widget.item.icon,
-                            size: 22,
-                            color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
-                          ),
+                          Icon(widget.item.icon, size: 22, color: iconColor),
                           if (widget.badge)
                             Positioned(
                               right: -2,
@@ -548,9 +629,9 @@ class _NavTileState extends State<_NavTile> {
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: cs.tertiary,
+                                  color: AppTheme.warning,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: cs.surface, width: 1),
+                                  border: Border.all(color: AppTheme.railInk, width: 1),
                                 ),
                               ),
                             ),
@@ -563,11 +644,13 @@ class _NavTileState extends State<_NavTile> {
                             widget.item.label,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                   color: widget.selected
-                                      ? cs.onPrimaryContainer
-                                      : cs.onSurface.withOpacity(0.78),
+                                      ? AppTheme.railText
+                                      : AppTheme.railMuted.withOpacity(0.92),
+                                  fontWeight:
+                                      widget.selected ? FontWeight.w700 : FontWeight.w500,
+                                  fontSize: 13.2,
                                 ),
                           ),
                         ),
@@ -601,18 +684,19 @@ class _RailControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Tooltip(
       message: label,
       child: Semantics(
         button: true,
         label: label,
         child: Material(
-          color: active ? cs.primaryContainer.withOpacity(0.55) : cs.surfaceContainer.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(12),
+          color: active
+              ? AppTheme.teal.withOpacity(0.18)
+              : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             child: SizedBox(
               height: 42,
               child: expanded
@@ -620,18 +704,21 @@ class _RailControl extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
                         children: [
-                          Icon(icon, size: 20, color: cs.primary),
+                          Icon(icon, size: 20, color: const Color(0xFF3ED4B0)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               label,
-                              style: Theme.of(context).textTheme.labelLarge,
+                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: AppTheme.railText,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ),
                         ],
                       ),
                     )
-                  : Icon(icon, size: 20, color: cs.primary),
+                  : Icon(icon, size: 20, color: const Color(0xFF3ED4B0)),
             ),
           ),
         ),

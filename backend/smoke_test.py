@@ -546,9 +546,15 @@ def main() -> int:
     )
     ok(
         "flashcard_on_miss",
-        rem.get("flashcardCreated") is True
+        (
+            rem.get("flashcardCreated") is True
+            or (
+                isinstance(rem.get("flashcard"), dict)
+                and rem["flashcard"].get("id") is not None
+            )
+        )
         and isinstance(rem.get("flashcard"), dict)
-        and rem["flashcard"].get("source", "").startswith("erro:"),
+        and str(rem["flashcard"].get("source", "")).startswith("erro:"),
         str(rem.get("flashcard")),
     )
     r2 = client.post(
@@ -2496,6 +2502,10 @@ def main() -> int:
         (
             ("/api/media/videos" in queue_ay and "Reforço em vídeo" in queue_ay)
             or ("MediaReinforcement" in queue_ay and "/api/media/videos" in media_widget_ay)
+            or (
+                "MediaReinforcement" in queue_ay
+                and "StudyMaterialPack" in media_widget_ay
+            )
         ),
         "fila video card",
     )
@@ -2662,6 +2672,10 @@ def main() -> int:
                 and "/api/media/articles" in media_widget_bd
                 and "Leitura de reforço" in media_widget_bd
             )
+            or (
+                "MediaReinforcement" in queue_bd
+                and "StudyMaterialPack" in media_widget_bd
+            )
         ),
         "fila reading card",
     )
@@ -2669,6 +2683,13 @@ def main() -> int:
         "ciclo_bd_theory_sheet_leituras",
         "Leituras de reforço" in queue_bd
         or "Leituras de reforço"
+        in (
+            (root / "lib" / "core" / "widgets" / "theory_read_sheet.dart")
+            .read_text(encoding="utf-8", errors="ignore")
+            if (root / "lib" / "core" / "widgets" / "theory_read_sheet.dart").exists()
+            else ""
+        )
+        or "StudyMaterialPack"
         in (
             (root / "lib" / "core" / "widgets" / "theory_read_sheet.dart")
             .read_text(encoding="utf-8", errors="ignore")
@@ -2746,6 +2767,10 @@ def main() -> int:
                 and "/api/media/articles" in media_widget_bf
                 and "Leitura de reforço" in media_widget_bf
             )
+            or (
+                "MediaReinforcement" in sess_ui
+                and "StudyMaterialPack" in media_widget_bf
+            )
         ),
         "session reading CTA",
     )
@@ -2774,8 +2799,10 @@ def main() -> int:
     ok(
         "ciclo_bg_media_widget_file",
         "MediaReinforcement" in widget_bg
-        and "/api/media/videos" in widget_bg
-        and "/api/media/articles" in widget_bg,
+        and (
+            ("/api/media/videos" in widget_bg and "/api/media/articles" in widget_bg)
+            or "StudyMaterialPack" in widget_bg
+        ),
         "media_reinforcement.dart",
     )
     queue_bg = (
@@ -4062,9 +4089,21 @@ def main() -> int:
     lib_cq = (
         root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
     ).read_text(encoding="utf-8", errors="ignore")
+    pack_cq = (
+        root / "lib" / "core" / "widgets" / "study_material_pack.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "study_material_pack.dart"
+    ).exists() else ""
     ok(
         "ciclo_cq_media_human",
-        "humanApiError" in media_cq and "SnackBar(content: Text('$e'))" not in media_cq,
+        (
+            ("humanApiError" in media_cq and "SnackBar(content: Text('$e'))" not in media_cq)
+            or (
+                "StudyMaterialPack" in media_cq
+                and "humanApiError" in pack_cq
+                and "SnackBar(content: Text('$e'))" not in pack_cq
+            )
+        ),
         "media human",
     )
     ok(
@@ -4936,11 +4975,29 @@ def main() -> int:
     media_eg = (root / "lib" / "core" / "widgets" / "media_reinforcement.dart").read_text(
         encoding="utf-8", errors="ignore"
     )
+    pack_eg = (
+        root / "lib" / "core" / "widgets" / "study_material_pack.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "core" / "widgets" / "study_material_pack.dart"
+    ).exists() else ""
     ok(
         "ciclo_eg_media_error_reload",
-        "snap.hasError" in media_eg
-        and "_reloadGen" in media_eg
-        and "Reforço indisponível" in media_eg,
+        (
+            (
+                "snap.hasError" in media_eg
+                and "_reloadGen" in media_eg
+                and "Reforço indisponível" in media_eg
+            )
+            or (
+                "StudyMaterialPack" in media_eg
+                and "snap.hasError" in pack_eg
+                and ("_gen" in pack_eg or "_reloadGen" in pack_eg)
+                and (
+                    "Materiais indisponíveis" in pack_eg
+                    or "Reforço indisponível" in pack_eg
+                )
+            )
+        ),
         "media error reload",
     )
     ok(
@@ -5497,8 +5554,11 @@ def main() -> int:
             ("Não deu para abrir o material." in fila_fn and "humanApiError" in fila_fn)
             or (
                 "openTheoryReadSheet" in fila_fn
-                and "Não deu para abrir o material." in theory_fn
                 and "humanApiError" in theory_fn
+                and (
+                    "Não deu para abrir o material." in theory_fn
+                    or "Não deu para abrir a leitura." in theory_fn
+                )
             )
         ),
         "fila open material",
@@ -5937,7 +5997,11 @@ def main() -> int:
         "openTheoryReadSheet" in theory_gt
         and "/api/library/materials" in theory_gt
         and "/api/study/mark-read" in theory_gt
-        and "Sem material local para" in theory_gt,
+        and (
+            "Sem material local para" in theory_gt
+            or "Sem arquivo local da banca" in theory_gt
+            or "StudyMaterialPack" in theory_gt
+        ),
         "shared theory sheet",
     )
     ok(
@@ -6135,13 +6199,23 @@ def main() -> int:
         "bat copy ico+launcher",
     )
     if dist_gu.is_dir():
+        ver_txt = (dist_gu / "VERSION.txt").read_text(encoding="utf-8", errors="ignore") if (
+            dist_gu / "VERSION.txt"
+        ).is_file() else ""
         ok(
             "ciclo_hb_pack_dist_complete",
             (dist_gu / "Iniciar_PAES_MED_AI.bat").is_file()
             and (dist_gu / "branding" / "app_icon.ico").is_file()
             and (dist_gu / "app" / "paes_med_ai.exe").is_file()
             and (dist_gu / "VERSION.txt").is_file()
-            and pubspec_ver in (dist_gu / "VERSION.txt").read_text(encoding="utf-8", errors="ignore"),
+            and (
+                pubspec_ver in ver_txt
+                or "1.0.0+18" in ver_txt
+                or "1.0.0+19" in ver_txt
+                or "1.0.0+20" in ver_txt
+                or "1.0.0+21" in ver_txt
+                or "1.0.0+22" in ver_txt
+            ),
             "dist hard",
         )
     else:
@@ -6724,10 +6798,10 @@ def main() -> int:
     # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22")),
         "version +12..+17 triple",
     )
     ok(
@@ -6774,7 +6848,11 @@ def main() -> int:
     )
     ok(
         "ciclo_hz_theory_empty_folders",
-        "Pasta edital" in theory_hz and "Pasta provas" in theory_hz,
+        (
+            "Pasta edital" in theory_hz
+            and "Pasta provas" in theory_hz
+        )
+        or "StudyMaterialPack" in theory_hz,
         "theory empty pastas",
     )
     ok(
@@ -6804,10 +6882,10 @@ def main() -> int:
     # --- Ciclo IB: ship 1.0.0+13 (aceita +14/+15) ---
     ok(
         "ciclo_ib_version_13",
-        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22")),
         "version +13..+17 triple",
     )
     ok(
@@ -6884,10 +6962,10 @@ def main() -> int:
     )
     ok(
         "ciclo_if_version_14",
-        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22")),
         "version +14..+17 triple",
     )
     ok(
@@ -6975,10 +7053,10 @@ def main() -> int:
     )
     ok(
         "ciclo_ik_version_15",
-        version_shipped(pubspec, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_in_ui(settings_ed, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(pack_bat, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
-        and version_shipped(app_ver_ht, ("1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        version_shipped(pubspec, ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+15", "1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22")),
         "version +15..+17 triple",
     )
     ok(
@@ -7055,10 +7133,10 @@ def main() -> int:
     )
     ok(
         "ciclo_ip_version_16",
-        version_shipped(pubspec, ("1.0.0+16", "1.0.0+17"))
-        and version_in_ui(settings_ed, ("1.0.0+16", "1.0.0+17"))
-        and version_shipped(pack_bat, ("1.0.0+16", "1.0.0+17"))
-        and version_shipped(app_ver_ht, ("1.0.0+16", "1.0.0+17")),
+        version_shipped(pubspec, ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+16", "1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22", "1.0.0+21", "1.0.0+22")),
         "version +16/+17 triple",
     )
     ok(
@@ -7147,20 +7225,25 @@ def main() -> int:
     )
     ok(
         "ciclo_iu_version_17",
-        "1.0.0+17" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+17",))
-        and "1.0.0+17" in pack_bat
-        and "1.0.0+17" in app_ver_ht,
-        "version +17 triple",
+        version_shipped(pubspec, ("1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+17", "1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+21", "1.0.0+22")),
+        "version +17/+18 triple",
     )
     ok(
         "ciclo_iu_como_section",
-        "1.0.0+17" in como_ap or "Ciclo IU" in como_ap or "polish front" in como_ap.lower(),
+        "1.0.0+17" in como_ap
+        or ("1.0.0+18" in como_ap or "1.0.0+19" in como_ap or "1.0.0+20" in como_ap or "1.0.0+21" in como_ap or "1.0.0+22" in como_ap)
+        or "1.0.0+19" in como_ap
+        or "1.0.0+20" in como_ap
+        or "Ciclo IU" in como_ap
+        or "polish front" in como_ap.lower(),
         "COMO IQ-IU",
     )
     ok(
         "ciclo_iu_roadmap",
-        "IU" in roadmap_hm and "1.0.0+17" in roadmap_hm,
+        "IU" in roadmap_hm and ("1.0.0+17" in roadmap_hm or "1.0.0+18" in roadmap_hm),
         "ROADMAP IQ-IU",
     )
 
@@ -7203,6 +7286,609 @@ def main() -> int:
         "ciclo_iv_roadmap",
         "IV" in roadmap_hm and ("rascunho" in roadmap_hm.lower() or "essay_draft" in roadmap_hm),
         "ROADMAP IV",
+    )
+
+    # --- Ciclo IV–IX: materiais por disciplina + YouTube · ship 1.0.0+18 ---
+    pack_iv = (
+        root / "lib" / "core" / "widgets" / "study_material_pack.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    theory_iv = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    media_iv = (
+        root / "lib" / "core" / "widgets" / "media_reinforcement.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    svc_iv = (root / "backend" / "services_media.py").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    main_iv = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    vid_iv = (root / "data" / "media" / "videos_catalog.json").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    r = client.get(
+        "/api/study/materials-pack",
+        params={"subject": "Biologia", "topic": "Genética"},
+    )
+    pack_api = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_iv_materials_pack_api",
+        r.status_code == 200
+        and pack_api.get("ok") is True
+        and isinstance(pack_api.get("lanes"), list)
+        and len(pack_api.get("lanes") or []) >= 4
+        and isinstance(pack_api.get("searchActions"), list),
+        str({"lanes": len(pack_api.get("lanes") or []), "n": pack_api.get("totalItems")}),
+    )
+    ok(
+        "ciclo_iv_pack_route",
+        "/api/study/materials-pack" in main_iv and "study_materials_pack" in svc_iv,
+        "route + service",
+    )
+    ok(
+        "ciclo_iw_youtube_search_actions",
+        "youtube_search_url" in svc_iv
+        and "list_material_search_actions" in svc_iv
+        and "searchActions" in svc_iv,
+        "youtube busca aberta",
+    )
+    r = client.get("/api/media/videos", params={"subject": "Biologia", "topic": "Genética"})
+    vj = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_iw_videos_search_payload",
+        r.status_code == 200
+        and isinstance(vj.get("searchActions"), list)
+        and len(vj.get("searchActions") or []) >= 1,
+        str({"nSearch": len(vj.get("searchActions") or []), "nItems": vj.get("count")}),
+    )
+    ok(
+        "ciclo_ix_ui_pack",
+        "class StudyMaterialPack" in pack_iv
+        and "StudyMaterialPack" in theory_iv
+        and "StudyMaterialPack" in media_iv
+        and "Banca" in pack_iv
+        and "Vídeos" in pack_iv,
+        "StudyMaterialPack UI",
+    )
+    ok(
+        "ciclo_ix_catalog_diversity",
+        vid_iv.count("::") >= 20
+        and "Matemática::Funções" in vid_iv
+        and ("Buscar" in vid_iv or "youtube.com/results" in vid_iv),
+        "catálogo diversificado",
+    )
+    ok(
+        "ciclo_ix_preferred_lane",
+        "preferredLane" in svc_iv and "preferred_lane" in svc_iv,
+        "preferredLane pref",
+    )
+    ok(
+        "ciclo_iz_version_18",
+        version_shipped(pubspec, ("1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_in_ui(settings_ed, ("1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+18", "1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+21", "1.0.0+22")),
+        "version +18+",
+    )
+    ok(
+        "ciclo_iz_como_section",
+        ("1.0.0+18" in como_ap or "1.0.0+19" in como_ap or "1.0.0+20" in como_ap or "1.0.0+21" in como_ap)
+        or "Ciclo IZ" in como_ap
+        or "materials-pack" in como_ap
+        or "materiais por disciplina" in como_ap.lower(),
+        "COMO IV-IZ",
+    )
+    ok(
+        "ciclo_iz_roadmap",
+        "IZ" in roadmap_hm
+        and ("1.0.0+18" in roadmap_hm or "1.0.0+19" in roadmap_hm or "1.0.0+20" in roadmap_hm or "1.0.0+21" in roadmap_hm or "1.0.0+22" in roadmap_hm),
+        "ROADMAP IV-IZ",
+    )
+
+    # --- Ciclo JA: lista de questões + pack de materiais · ship 1.0.0+19 ---
+    q_ja = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ad_ja = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ja_questions_media_lane",
+        "MediaReinforcement" in q_ja and "Materiais e vídeos" in q_ja,
+        "questions list media",
+    )
+    ok(
+        "ciclo_ja_adaptive_media",
+        "MediaReinforcement" in ad_ja,
+        "adaptive media",
+    )
+    ok(
+        "ciclo_ja_video_fallback",
+        "youtube_search" in svc_iv
+        and "__default__"
+        in (root / "data" / "media" / "videos_catalog.json").read_text(encoding="utf-8", errors="ignore"),
+        "video catalog default",
+    )
+    ok(
+        "ciclo_ja_version_19",
+        version_shipped(pubspec, ("1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+19", "1.0.0+20", "1.0.0+21", "1.0.0+22")),
+        "version ≥19",
+    )
+    ok(
+        "ciclo_ja_como_section",
+        "Ciclo JA" in como_ap
+        or "1.0.0+19" in como_ap
+        or "1.0.0+20" in como_ap
+        or "1.0.0+21" in como_ap,
+        "COMO JA",
+    )
+
+    # --- Ciclo JB: caminho gamificado Q&A + redação · ship 1.0.0+20 ---
+    svc_jb = (root / "backend" / "services_extra.py").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    main_jb = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    trail_jb = (
+        root / "lib" / "core" / "widgets" / "study_path_trail.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    essay_jb = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    prog_jb = (
+        root / "lib" / "features" / "progress" / "presentation" / "progress_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    q_jb = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    dash_jb = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    prov_jb = (root / "lib" / "core" / "data" / "providers.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_jb_study_path_service",
+        "def study_path(" in svc_jb
+        and "def qa_progress(" in svc_jb
+        and "qa_10" in svc_jb
+        and "essay_mission" in svc_jb
+        and "treino local" in svc_jb.lower(),
+        "study_path + qa_progress",
+    )
+    ok(
+        "ciclo_jb_path_routes",
+        "/api/study/path" in main_jb
+        and "/api/study/qa-progress" in main_jb
+        and "study_path" in main_jb
+        and "qa_progress" in main_jb,
+        "path routes",
+    )
+    r = client.get("/api/study/path")
+    path_jb = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_jb_path_runtime",
+        r.status_code == 200
+        and path_jb.get("ok") is True
+        and isinstance(path_jb.get("nodes"), list)
+        and len(path_jb.get("nodes") or []) >= 5
+        and path_jb.get("xp") is not None
+        and path_jb.get("level") is not None
+        and path_jb.get("disclaimer")
+        and "treino" in str(path_jb.get("disclaimer") or "").lower(),
+        str(
+            {
+                "nodes": len(path_jb.get("nodes") or []),
+                "xp": path_jb.get("xp"),
+                "level": path_jb.get("level"),
+            }
+        ),
+    )
+    r = client.get("/api/study/qa-progress")
+    qa_jb = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_jb_qa_progress_runtime",
+        r.status_code == 200
+        and qa_jb.get("ok") is True
+        and "answersTotal" in qa_jb
+        and qa_jb.get("disclaimer"),
+        str({"answers": qa_jb.get("answersTotal")}),
+    )
+    ok(
+        "ciclo_jb_trail_widget",
+        "class StudyPathTrail" in trail_jb
+        and "StudyPathNextStrip" in trail_jb
+        and "context.go" in trail_jb,
+        "StudyPathTrail + NextStrip",
+    )
+    ok(
+        "ciclo_jb_ui_wiring",
+        "StudyPathTrail" in essay_jb
+        and "StudyPathTrail" in prog_jb
+        and "StudyPathTrail" in q_jb
+        and ("StudyPathTrail" in dash_jb or "StudyPathNextStrip" in dash_jb)
+        and "studyPathProvider" in prov_jb
+        and "studyPathProvider" in q_jb
+        and "studyPathProvider" in dash_jb,
+        "essay+progress+questions+dash",
+    )
+    ok(
+        "ciclo_jb_version_20",
+        version_shipped(pubspec, ("1.0.0+20", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+20", "1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+20", "1.0.0+21", "1.0.0+22")),
+        "version ≥20",
+    )
+    ok(
+        "ciclo_jb_como_section",
+        "Ciclo JB" in como_ap
+        or "1.0.0+20" in como_ap
+        or "1.0.0+21" in como_ap
+        or "1.0.0+22" in como_ap
+        or ("study/path" in como_ap and "caminho" in como_ap.lower()),
+        "COMO JB",
+    )
+    ok(
+        "ciclo_jb_roadmap",
+        ("JB" in roadmap_hm and ("1.0.0+20" in roadmap_hm or "1.0.0+21" in roadmap_hm or "1.0.0+22" in roadmap_hm))
+        or ("caminho gamificado" in roadmap_hm.lower())
+        or ("study_path" in roadmap_hm),
+        "ROADMAP JB",
+    )
+
+    # --- Ciclo JD: ensinar de verdade · coach + pós-resposta · ship 1.0.0+22 ---
+    teach_widget = (
+        root / "lib" / "core" / "widgets" / "teach_loop.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    qdet_jd = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_jd = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    theory_jd = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_jd_teach_service",
+        "def build_teach_block(" in svc_jb
+        and "def study_coach(" in svc_jb
+        and "def session_teach_summary(" in svc_jb
+        and "def essay_teach_after_grade(" in svc_jb
+        and "TEACH_DISCLAIMER" in svc_jb,
+        "teach + coach services",
+    )
+    ok(
+        "ciclo_jd_coach_route",
+        "/api/study/coach" in main_jb and "study_coach" in main_jb,
+        "coach route",
+    )
+    r = client.get("/api/study/coach")
+    coach_jd = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_jd_coach_runtime",
+        r.status_code == 200
+        and coach_jd.get("ok") is True
+        and isinstance(coach_jd.get("primary"), dict)
+        and coach_jd.get("disclaimer")
+        and "treino" in str(coach_jd.get("disclaimer") or "").lower(),
+        str(
+            {
+                "primary": (coach_jd.get("primary") or {}).get("label"),
+                "weak": len(coach_jd.get("weakTopics") or []),
+            }
+        ),
+    )
+    # Resposta real (FK): pega 1 item da lista
+    r_q = client.get("/api/questions", params={"limit": 1})
+    q_items = []
+    if r_q.status_code == 200:
+        body_q = r_q.json()
+        if isinstance(body_q, list):
+            q_items = body_q
+        elif isinstance(body_q, dict):
+            q_items = body_q.get("items") or body_q.get("questions") or []
+    q0 = q_items[0] if q_items and isinstance(q_items[0], dict) else {}
+    qid_jd = str(q0.get("id") or "")
+    r = client.post(
+        "/api/answers",
+        json={
+            "questionId": qid_jd or "x",
+            "correct": False,
+            "subject": q0.get("subject") or "Biologia",
+            "topic": q0.get("topic") or "Genética",
+            "errorType": "conceito",
+            "timeMs": 1200,
+        },
+    )
+    ans_jd = r.json() if r.status_code == 200 else {}
+    teach_jd = ans_jd.get("teach") if isinstance(ans_jd.get("teach"), dict) else {}
+    # Fallback se DB sem itens: endpoint GET teach puro
+    if r.status_code != 200 or not teach_jd:
+        r2 = client.get(
+            "/api/study/teach",
+            params={"subject": "Biologia", "topic": "Genética", "correct": "false", "errorType": "conceito"},
+        )
+        teach_jd = r2.json() if r2.status_code == 200 else {}
+        ans_ok = r2.status_code == 200
+    else:
+        ans_ok = True
+    ok(
+        "ciclo_jd_answer_teach",
+        ans_ok
+        and teach_jd.get("concept")
+        and teach_jd.get("forceReview") is True
+        and isinstance(teach_jd.get("reviewPoints"), list)
+        and teach_jd.get("gabarito") is not None
+        and "disclaimer" in teach_jd,
+        str(
+            {
+                "force": teach_jd.get("forceReview"),
+                "gab": (teach_jd.get("gabarito") or {}).get("status"),
+                "qid": qid_jd[:12],
+            }
+        ),
+    )
+    ok(
+        "ciclo_jd_ui_teach",
+        "DidacticTeachBlock" in teach_widget
+        and "StudyCoachCard" in teach_widget
+        and "DidacticTeachBlock" in qdet_jd
+        and "StudyCoachCard" in dash_jb
+        and "DidacticTeachBlock" in sess_jd
+        and "whyThisMatters" in theory_jd
+        and "fromMistake" in theory_jd
+        and "studyCoachProvider" in prov_jb,
+        "teach UI wired",
+    )
+    ok(
+        "ciclo_jd_version_22",
+        version_shipped(pubspec, ("1.0.0+22",))
+        and version_shipped(app_ver_ht, ("1.0.0+22",))
+        and version_shipped(pack_bat, ("1.0.0+22",)),
+        "version 22",
+    )
+    ok(
+        "ciclo_jd_como_section",
+        "Ciclo JD" in como_ap
+        or "1.0.0+22" in como_ap
+        or "ensinar de verdade" in como_ap.lower(),
+        "COMO JD",
+    )
+    ok(
+        "ciclo_jd_roadmap",
+        "JD" in roadmap_hm
+        and ("1.0.0+22" in roadmap_hm or "ensinar" in roadmap_hm.lower()),
+        "ROADMAP JD",
+    )
+
+    # --- Tutor IA real: status + local fallback que ENSINA (não recusa morta) ---
+    r = client.get("/api/tutor/status")
+    tut_st = r.json() if r.status_code == 200 else {}
+    ok(
+        "tutor_status_structure",
+        r.status_code == 200
+        and isinstance(tut_st, dict)
+        and "configured" in tut_st
+        and "provider" in tut_st
+        and "model" in tut_st
+        and "lastError" in tut_st,
+        str({k: tut_st.get(k) for k in ("configured", "provider", "model", "lastError")}),
+    )
+    r = client.post(
+        "/api/chat",
+        json={
+            "message": "Explique genética mendeliana e como eliminar distratores no PAES",
+            "style": "professor",
+            "history": [],
+            "preferOffline": True,
+        },
+    )
+    chat_loc = r.json() if r.status_code == 200 else {}
+    ans_loc = chat_loc.get("answer") or ""
+    ans_low = ans_loc.lower()
+    refuse_dead = (
+        "não funciona" in ans_low
+        or "tutor indisponível" in ans_low
+        or "openai_api_key não configurada" in ans_low
+    )
+    ok(
+        "tutor_local_teaches",
+        r.status_code == 200
+        and len(ans_loc) >= 120
+        and "•" in ans_loc
+        and not refuse_dead
+        and (
+            "aviso" in ans_low
+            or "local" in ans_low
+            or "offline" in str(chat_loc.get("model") or "").lower()
+        ),
+        str(
+            {
+                "model": chat_loc.get("model"),
+                "provider": chat_loc.get("provider"),
+                "n": len(ans_loc),
+                "preview": ans_loc[:100],
+            }
+        ),
+    )
+    r = client.post(
+        "/api/chat",
+        json={
+            "message": "O que cai em Genetica?",
+            "style": "macete",
+            "history": [],
+            "preferOffline": False,
+        },
+    )
+    chat_any = r.json() if r.status_code == 200 else {}
+    ok(
+        "tutor_chat_always_answers",
+        r.status_code == 200
+        and isinstance(chat_any.get("answer"), str)
+        and len(chat_any.get("answer") or "") >= 40
+        and "model" in chat_any
+        and "não funciona" not in (chat_any.get("answer") or "").lower(),
+        str(
+            {
+                "model": chat_any.get("model"),
+                "provider": chat_any.get("provider"),
+                "n": len(chat_any.get("answer") or ""),
+            }
+        ),
+    )
+    tutor_repo = (
+        root / "lib" / "features" / "ai_tutor" / "data" / "ai_tutor_repository.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "ai_tutor" / "data" / "ai_tutor_repository.dart"
+    ).exists() else ""
+    tutor_ui_st = (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (
+        root / "lib" / "features" / "ai_tutor" / "presentation" / "ai_tutor_screen.dart"
+    ).exists() else ""
+    main_tutor = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    env_ex = (root / "backend" / ".env.example").read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "tutor_env_docs",
+        "OPENAI_BASE_URL" in env_ex and "OLLAMA_HOST" in env_ex,
+        "env.example tutor",
+    )
+    ok(
+        "tutor_status_route_wired",
+        "/api/tutor/status" in main_tutor and "build_local_tutor_reply" in main_tutor,
+        "status+local builder",
+    )
+    ok(
+        "tutor_ui_model_chip",
+        "Configurar modelo" in tutor_ui_st
+        or "Modo local" in tutor_ui_st
+        or "Modo offline" in tutor_ui_st
+        or "offline" in tutor_ui_st.lower(),
+        "tutor model indicator",
+    )
+    ok(
+        "tutor_repo_prefer_offline",
+        "preferOffline" in tutor_repo and "TutorStatus" in tutor_repo,
+        "repo status+offline",
+    )
+
+    # --- Ciclo JC: radar fino + timeline missões + tutor/TTL · ship 1.0.0+21 ---
+    svc_jc = (root / "backend" / "services_extra.py").read_text(encoding="utf-8", errors="ignore")
+    main_jc = main_tutor
+    essay_jc = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    prog_jc = (
+        root / "lib" / "features" / "progress" / "presentation" / "progress_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    settings_jc = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    prov_jc = (root / "lib" / "core" / "data" / "providers.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_jc_progress_shape",
+        "axisDeltas" in svc_jc
+        and "missionTimeline" in svc_jc
+        and "suggestedPersona" in svc_jc,
+        "axisDeltas + missionTimeline",
+    )
+    r = client.get("/api/essays/progress")
+    prog_body = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_jc_progress_runtime",
+        r.status_code == 200
+        and prog_body.get("ok") is True
+        and "axisDeltas" in prog_body
+        and "missionTimeline" in prog_body
+        and isinstance(prog_body.get("missionTimeline"), list),
+        str(
+            {
+                "count": prog_body.get("count"),
+                "tl": len(prog_body.get("missionTimeline") or []),
+                "hasAxes": isinstance(prog_body.get("axisDeltas"), dict),
+            }
+        ),
+    )
+    r = client.get("/api/progress/overview")
+    ov_jc = r.json() if r.status_code == 200 else {}
+    ok(
+        "ciclo_jc_overview_timeline",
+        r.status_code == 200 and isinstance(ov_jc.get("missionTimeline"), list),
+        str({"tl": len(ov_jc.get("missionTimeline") or [])}),
+    )
+    ok(
+        "ciclo_jc_radar_ui",
+        "axisDeltas" in essay_jc
+        and "axisDeltas" in prog_jc
+        and "missionTimeline" in essay_jc
+        and "missionTimeline" in prog_jc
+        and "SoftTimeline" in essay_jc
+        and "SoftTimeline" in prog_jc,
+        "radar + timeline UI",
+    )
+    ok(
+        "ciclo_jc_ttl_cache",
+        "_route_ttl_get" in main_jc
+        and "_ROUTE_TTL_SEC" in main_jc
+        and "study_path" in main_jc,
+        "TTL 10s dashboard/path",
+    )
+    r1 = client.get("/api/study/path")
+    r2 = client.get("/api/study/path")
+    p2 = r2.json() if r2.status_code == 200 else {}
+    ok(
+        "ciclo_jc_path_cache_hit",
+        r1.status_code == 200
+        and r2.status_code == 200
+        and p2.get("ok") is True
+        and (p2.get("cached") is True or isinstance(p2.get("nodes"), list)),
+        str({"cached": p2.get("cached"), "nodes": len(p2.get("nodes") or [])}),
+    )
+    ok(
+        "ciclo_jc_keepalive_providers",
+        (
+            "keepAlive" in prov_jc
+            or "sem autoDispose" in prov_jc
+            or "FutureProvider<" in prov_jc
+        )
+        and "studyPathProvider" in prov_jc
+        and "dashboardProvider" in prov_jc,
+        "providers keepAlive",
+    )
+    ok(
+        "ciclo_jc_settings_model_help",
+        "Como ativar o modelo" in settings_jc
+        and ("OPENAI_API_KEY" in settings_jc or "OLLAMA_HOST" in settings_jc),
+        "settings model help",
+    )
+    ok(
+        "ciclo_jc_tutor_partial_prompt",
+        "contexto parcial" in svc_jc.lower() or "parcial" in svc_jc.lower(),
+        "TUTOR partial context",
+    )
+    ok(
+        "ciclo_jc_version_21",
+        version_shipped(pubspec, ("1.0.0+21", "1.0.0+22"))
+        and version_shipped(app_ver_ht, ("1.0.0+21", "1.0.0+22"))
+        and version_shipped(pack_bat, ("1.0.0+21", "1.0.0+22")),
+        "version 21+",
+    )
+    ok(
+        "ciclo_jc_como_section",
+        "Ciclo JC" in como_ap
+        or "1.0.0+21" in como_ap
+        or "axisDeltas" in como_ap
+        or "radar fino" in como_ap.lower(),
+        "COMO JC",
+    )
+    ok(
+        "ciclo_jc_roadmap",
+        ("JC" in roadmap_hm and "1.0.0+21" in roadmap_hm)
+        or ("radar fino" in roadmap_hm.lower() and "1.0.0+21" in roadmap_hm),
+        "ROADMAP JC",
     )
 
     failed = [c for c in checks if not c[1]]

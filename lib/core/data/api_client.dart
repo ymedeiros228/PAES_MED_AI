@@ -17,6 +17,9 @@ class ApiClient {
 
   static const _configuredBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
 
+  /// Concurrent same-URL GET short-circuit (Hoje, packs duplicados).
+  final Map<String, Future<dynamic>> _inflightGet = {};
+
   String get baseUrl {
     if (_configuredBaseUrl.trim().isNotEmpty) {
       return _configuredBaseUrl.trim().replaceFirst(RegExp(r'/$'), '');
@@ -27,28 +30,80 @@ class ApiClient {
     return 'http://127.0.0.1:8000';
   }
 
-  Future<dynamic> get(String path, [Map<String, String>? query]) async {
+  /// GETs de tela (lista/dashboard): falha rápido se API local caída.
+  static const Duration listTimeout = Duration(seconds: 12);
+  /// Health/status leve (banner, chip tutor).
+  static const Duration healthTimeout = Duration(seconds: 3);
+  /// POSTs longos (ingest/IA).
+  static const Duration longTimeout = Duration(seconds: 180);
+
+  Future<dynamic> get(
+    String path, [
+    Map<String, String>? query,
+    Duration? timeout,
+  ]) async {
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
-    final response = await _client.get(uri).timeout(const Duration(seconds: 60));
-    return _decode(response);
+    final key = '${uri.toString()}|${(timeout ?? listTimeout).inMilliseconds}';
+    final existing = _inflightGet[key];
+    if (existing != null) return existing;
+
+    final future = () async {
+      try {
+        final response = await _client.get(uri).timeout(timeout ?? listTimeout);
+        return _decode(response);
+      } on ApiException {
+        rethrow;
+      } on Exception catch (e) {
+        throw ApiException(_timeoutOrNet(e));
+      } finally {
+        _inflightGet.remove(key);
+      }
+    }();
+
+    _inflightGet[key] = future;
+    return future;
   }
 
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     final uri = Uri.parse('$baseUrl$path');
-    final response = await _client
-        .post(
-          uri,
-          headers: const {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode(body),
-        )
-        .timeout(const Duration(seconds: 180));
-    return _decode(response);
+    try {
+      final response = await _client
+          .post(
+            uri,
+            headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode(body),
+          )
+          .timeout(longTimeout);
+      return _decode(response);
+    } on ApiException {
+      rethrow;
+    } on Exception catch (e) {
+      throw ApiException(_timeoutOrNet(e));
+    }
   }
 
   Future<dynamic> delete(String path) async {
     final uri = Uri.parse('$baseUrl$path');
-    final response = await _client.delete(uri).timeout(const Duration(seconds: 30));
-    return _decode(response);
+    try {
+      final response = await _client.delete(uri).timeout(const Duration(seconds: 25));
+      return _decode(response);
+    } on ApiException {
+      rethrow;
+    } on Exception catch (e) {
+      throw ApiException(_timeoutOrNet(e));
+    }
+  }
+
+  String _timeoutOrNet(Object e) {
+    final s = e.toString();
+    if (s.contains('TimeoutException') || s.contains('timed out')) {
+      return 'API local demorou demais — confira se a janela do backend subiu e tente de novo.';
+    }
+    if (s.contains('SocketException') || s.contains('Connection refused') || s.contains('Failed host lookup')) {
+      return 'API local offline — abra pelo atalho PAES MED AI na área de trabalho.';
+    }
+    if (e is ApiException) return e.message;
+    return s;
   }
 
   Future<dynamic> postMultipart(

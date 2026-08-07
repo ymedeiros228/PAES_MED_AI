@@ -45,6 +45,26 @@ backend\.venv\Scripts\python.exe backend\smoke_test.py
 ```
 (rode a partir do layout do projeto; ver scripts locais)
 
+Smoke sem alterar a base local:
+
+```text
+backend\.venv\Scripts\python.exe backend\smoke_readonly.py
+```
+
+## Backups
+
+Backups novos são verificados em `.zip` e a pasta temporária é removida quando a verificação passa. Para auditar backups antigos antes de apagar:
+
+```text
+powershell -ExecutionPolicy Bypass -File tools\limpar_backups.ps1 -Keep 10
+```
+
+Para aplicar a limpeza:
+
+```text
+powershell -ExecutionPolicy Bypass -File tools\limpar_backups.ps1 -Keep 10 -Apply
+```
+
 ---
 
 © 2026 — todos os direitos reservados (ver LICENSE).  

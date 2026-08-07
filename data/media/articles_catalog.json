@@ -1,5 +1,5 @@
 {
-  "disclaimer": "Leituras de reforço — não oficiais da banca UEMA. URLs públicas curadas.",
+  "disclaimer": "Leituras de reforço — não oficiais da banca UEMA. URLs públicas curadas + Wikipédia.",
   "topics": {
     "Biologia::Genética": [
       {
@@ -183,6 +183,196 @@
         "source": "Wikipédia",
         "url": "https://pt.wikipedia.org/wiki/Som",
         "snippet": "Ondas mecânicas audíveis."
+      }
+    ],
+    "Matemática::Funções": [
+      {
+        "title": "Função (matemática)",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Fun%C3%A7%C3%A3o_(matem%C3%A1tica)",
+        "snippet": "Definição, domínio e imagem."
+      }
+    ],
+    "Matemática::Equações": [
+      {
+        "title": "Equação",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Equa%C3%A7%C3%A3o",
+        "snippet": "Igualdade com incógnitas."
+      }
+    ],
+    "Matemática::Geometria": [
+      {
+        "title": "Geometria",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Geometria",
+        "snippet": "Formas, medidas e relações espaciais."
+      }
+    ],
+    "Matemática::Probabilidade": [
+      {
+        "title": "Probabilidade",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Probabilidade",
+        "snippet": "Chance e eventos aleatórios."
+      }
+    ],
+    "Língua Portuguesa e Literatura::Interpretação de texto": [
+      {
+        "title": "Leitura",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Leitura",
+        "snippet": "Processos de compreensão textual."
+      }
+    ],
+    "Língua Portuguesa e Literatura::Gramática": [
+      {
+        "title": "Gramática",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Gram%C3%A1tica",
+        "snippet": "Sistema da língua."
+      },
+      {
+        "title": "Análise sintática",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/An%C3%A1lise_sint%C3%A1tica",
+        "snippet": "Funções na oração."
+      }
+    ],
+    "Língua Portuguesa e Literatura::Literatura": [
+      {
+        "title": "Literatura brasileira",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Literatura_do_Brasil",
+        "snippet": "Escolas e períodos."
+      }
+    ],
+    "História::Brasil República": [
+      {
+        "title": "República Velha",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Rep%C3%BAblica_Velha",
+        "snippet": "1889–1930 no Brasil."
+      }
+    ],
+    "História::Brasil Colônia": [
+      {
+        "title": "Brasil Colônia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Brasil_Col%C3%B4nia",
+        "snippet": "Período colonial."
+      }
+    ],
+    "Geografia::Clima": [
+      {
+        "title": "Clima do Brasil",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Clima_do_Brasil",
+        "snippet": "Classificações e regiões."
+      }
+    ],
+    "Geografia::Cartografia": [
+      {
+        "title": "Cartografia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Cartografia",
+        "snippet": "Mapas, escalas e projeções."
+      }
+    ],
+    "Filosofia::Ética": [
+      {
+        "title": "Ética",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/%C3%89tica",
+        "snippet": "Moral e ação humana."
+      }
+    ],
+    "Sociologia::Trabalho": [
+      {
+        "title": "Sociologia do trabalho",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Sociologia_do_trabalho",
+        "snippet": "Trabalho e sociedade."
+      }
+    ],
+    "Química::Equilíbrio químico": [
+      {
+        "title": "Equilíbrio químico",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Equil%C3%ADbrio_qu%C3%ADmico",
+        "snippet": "Reações reversíveis e Kc."
+      }
+    ],
+    "Química::Ácidos e bases": [
+      {
+        "title": "Ácido e base",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/%C3%81cido_e_base",
+        "snippet": "Teorias e pH."
+      }
+    ],
+    "Física::Termologia": [
+      {
+        "title": "Termologia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Termologia",
+        "snippet": "Calor e temperatura."
+      }
+    ],
+    "Física::Óptica": [
+      {
+        "title": "Óptica",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/%C3%93ptica",
+        "snippet": "Luz, espelhos e lentes."
+      }
+    ],
+    "Biologia::Microbiologia": [
+      {
+        "title": "Microbiologia",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Microbiologia",
+        "snippet": "Microrganismos e saúde."
+      }
+    ],
+    "Biologia::Botânica": [
+      {
+        "title": "Botânica",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Bot%C3%A2nica",
+        "snippet": "Plantas e estruturas."
+      }
+    ],
+    "Matemática::Funções": [
+      {
+        "title": "Função (matemática)",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Fun%C3%A7%C3%A3o_(matem%C3%A1tica)",
+        "snippet": "Domínio, imagem e tipos de função."
+      }
+    ],
+    "Matemática::Geometria": [
+      {
+        "title": "Geometria",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Geometria",
+        "snippet": "Formas, área e volume."
+      }
+    ],
+    "Língua Portuguesa e Literatura::Gramática": [
+      {
+        "title": "Gramática",
+        "source": "Wikipédia",
+        "url": "https://pt.wikipedia.org/wiki/Gram%C3%A1tica",
+        "snippet": "Classes e estruturas da língua."
+      }
+    ],
+    "__default__": [
+      {
+        "title": "Buscar na Wikipédia PT",
+        "source": "Wikipédia · busca",
+        "url": "https://pt.wikipedia.org/w/index.php?search=ENEM+educa%C3%A7%C3%A3o",
+        "snippet": "Você escolhe o artigo. Reforço — não é banca UEMA."
       }
     ]
   }

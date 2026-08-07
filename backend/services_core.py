@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 import json
 import re
+import time
 from typing import Any
 from urllib.parse import quote
 
@@ -16,6 +17,30 @@ from pathlib import Path
 NATUREZA_SUBJECTS = frozenset({"Biologia", "Química", "Física"})
 HUMANAS_SUBJECTS = frozenset({"História", "Geografia", "Filosofia", "Sociologia"})
 LINGUAGENS_SUBJECTS = frozenset({"Língua Portuguesa e Literatura", "Linguagens"})
+
+# TTL cache curto (Hoje/shell e navegação) — invalida em writes de progresso.
+_DASHBOARD_TTL_S = 12.0
+_dash_cache: dict[str, Any] = {"t": 0.0, "v": None}
+
+
+def invalidate_hot_caches() -> None:
+    """Quebra cache de dashboard/path após resposta, redação, etc."""
+    _dash_cache["t"] = 0.0
+    _dash_cache["v"] = None
+    try:
+        from services_extra import invalidate_path_cache
+
+        invalidate_path_cache()
+    except Exception:  # noqa: BLE001
+        pass
+    # main route TTL: evita import circular — limpa via hook se registrado
+    hook = globals().get("_ROUTE_TTL_HOOK")
+    if callable(hook):
+        try:
+            hook()
+        except Exception:  # noqa: BLE001
+            pass
+
 
 # Tópicos/keywords de domínio "estranho" sob Natureza (e vice-versa) — Ciclo K
 _CROSS_HUMAN_IN_TOPIC = re.compile(
@@ -739,6 +764,9 @@ def topic_read_status(subject: str | None = None, topic: str | None = None) -> d
     return {"ok": True, "count": len(items), "items": items[:80]}
 
 
+_pdf_year_cache: dict[int, Path | None] = {}
+
+
 def resolve_prova_pdf(year: int | None) -> Path | None:
     """Resolve PDF de prova no disco para o ano — None se não existir (Ciclo AV)."""
     if year is None:
@@ -747,18 +775,32 @@ def resolve_prova_pdf(year: int | None) -> Path | None:
         y = int(year)
     except (TypeError, ValueError):
         return None
+    if y in _pdf_year_cache:
+        cached = _pdf_year_cache[y]
+        if cached is None or cached.exists():
+            return cached
+        _pdf_year_cache.pop(y, None)
     provas = DATA_DIR / "provas"
     if not provas.exists():
+        _pdf_year_cache[y] = None
         return None
     y_str = str(y)
     candidates = [p for p in sorted(provas.glob("*.pdf")) if y_str in p.name]
     if not candidates:
+        _pdf_year_cache[y] = None
         return None
+    hit: Path | None = None
     for pref in (f"paes_{y_str}", f"paes-{y_str}", f"PAES_{y_str}", f"prova_{y_str}"):
         for p in candidates:
             if pref.lower() in p.name.lower():
-                return p
-    return candidates[0]
+                hit = p
+                break
+        if hit is not None:
+            break
+    if hit is None:
+        hit = candidates[0]
+    _pdf_year_cache[y] = hit
+    return hit
 
 
 def year_pdf_info(year: int) -> dict[str, Any]:
@@ -2096,10 +2138,47 @@ def get_study_plan(days: int) -> list[dict[str, Any]]:
 
 
 def dashboard_stats() -> dict[str, Any]:
+    now = time.monotonic()
+    cached = _dash_cache.get("v")
+    if cached is not None and (now - float(_dash_cache.get("t") or 0)) < _DASHBOARD_TTL_S:
+        return cached
+
+    result = _dashboard_stats_compute()
+    _dash_cache["t"] = now
+    _dash_cache["v"] = result
+    return result
+
+
+def _dashboard_stats_compute() -> dict[str, Any]:
     conn = connect()
     try:
-        answers = [dict(r) for r in conn.execute("SELECT * FROM answers ORDER BY answered_at").fetchall()]
-        revisions = [dict(r) for r in conn.execute("SELECT * FROM revisions").fetchall()]
+        # Só colunas usadas — evita SELECT * em answers/revisões longas.
+        answers = [
+            dict(r)
+            for r in conn.execute(
+                """
+                SELECT subject, topic, correct, error_type, time_ms, answered_at
+                FROM answers
+                ORDER BY answered_at
+                """
+            ).fetchall()
+        ]
+        n_revisions = int(
+            (conn.execute("SELECT COUNT(*) AS c FROM revisions").fetchone() or {"c": 0})["c"]
+        )
+        now_iso = datetime.now().isoformat(timespec="seconds")
+        due_revisions_n = int(
+            (
+                conn.execute(
+                    """
+                    SELECT COUNT(*) AS c FROM revisions
+                    WHERE next_due IS NOT NULL AND next_due <= ?
+                    """,
+                    (now_iso,),
+                ).fetchone()
+                or {"c": 0}
+            )["c"]
+        )
     finally:
         conn.close()
 
@@ -2133,13 +2212,15 @@ def dashboard_stats() -> dict[str, Any]:
     ]
     critical.sort(key=lambda x: x["accuracy"])
 
-    # Curva simples: acerto acumulado
+    # Curva de acerto amostrada (máx. ~200 pontos) — payload leve.
     curve = []
     ok = 0
+    step = max(1, total // 200) if total > 200 else 1
     for i, a in enumerate(answers, start=1):
         if a["correct"]:
             ok += 1
-        curve.append({"n": i, "accuracy": round(ok / i, 3)})
+        if i % step == 0 or i == total:
+            curve.append({"n": i, "accuracy": round(ok / i, 3)})
 
     # Nota estimada grosseira (estimativa)
     estimated = round(accuracy * 100, 1)
@@ -2194,9 +2275,9 @@ def dashboard_stats() -> dict[str, Any]:
     due_cards = 0
     axis_stats: dict[str, Any] = {"axisCardsDue": 0, "axisCardsCreatedToday": 0}
     try:
-        from services_advanced import flashcard_axis_stats, list_flashcards
+        from services_advanced import count_flashcards_due, flashcard_axis_stats
 
-        due_cards = len(list_flashcards(due_only=True))
+        due_cards = count_flashcards_due()
         axis_stats = flashcard_axis_stats()
     except Exception:  # noqa: BLE001
         due_cards = 0
@@ -2264,7 +2345,7 @@ def dashboard_stats() -> dict[str, Any]:
         medicine_top=med_rank,
         due_cards=due_cards,
         gap_n=gap_n,
-        due_revisions=len([r for r in revisions if (r.get("next_due") or "") <= datetime.now().isoformat(timespec="seconds")]),
+        due_revisions=due_revisions_n,
         study_minutes_today=round(study_minutes_today, 1),
         study_minutes_week=round(study_minutes_week, 1),
         streak=streak,
@@ -2291,7 +2372,7 @@ def dashboard_stats() -> dict[str, Any]:
         "approvalProbabilityNote": (
             "Estimativa informal com base no acerto atual; não é probabilidade real de aprovação."
         ),
-        "revisionsDue": len(revisions),
+        "revisionsDue": n_revisions,
         "studyToday": today,
         "medicineTop": med_rank,
         "streakDays": streak,
