@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/ux_copy.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -121,8 +122,8 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                       eyebrow: 'Analisar',
                       title: 'Revisões',
                       subtitle: _items.isEmpty
-                          ? 'Os erros viram revisões · S sessão · R atualiza'
-                          : '${_items.length} assunto(s) · ↑/↓ J/K · Enter · S sessão · R atualiza',
+                          ? 'Os erros viram revisões'
+                          : '${_items.length} assunto(s) para reforço',
                       trailing: IconButton(
                         tooltip: 'Atualizar',
                         onPressed: () => ref.read(refreshTickProvider.notifier).state++,
@@ -149,11 +150,11 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                             final item = _items[i];
                             final subject = item['subject']?.toString() ?? '';
                             final topic = item['topic']?.toString() ?? '';
-                            final due = item['next_due']?.toString() ?? '—';
+                            final due = humanDueLabel(item['next_due']?.toString());
                             final days = item['interval_days'];
                             return PlaylistTile(
                               title: '$subject · $topic',
-                              subtitle: 'Próxima: $due${days != null ? ' · a cada ${days}d' : ''}',
+                              subtitle: 'Próxima: $due${days != null ? ' · a cada $days dias' : ''}',
                               badge: 'revisar',
                               leadingIcon: Icons.replay_rounded,
                               active: i == selected,

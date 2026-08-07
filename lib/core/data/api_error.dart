@@ -47,7 +47,7 @@ String humanOpenPathError(
       s.contains('not found') ||
       s.contains('não encontrado') ||
       s.contains('nao encontrado')) {
-    return '$name sumiu do disco — coloque o PDF em data/provas ou atualize o acervo.';
+    return '$name sumiu do disco — coloque o PDF na pasta Provas ou atualize o acervo.';
   }
   if (s.contains('403')) {
     return 'Só abrimos arquivos dentro da pasta de dados do app.';
@@ -57,7 +57,7 @@ String humanOpenPathError(
       s.contains('nao foi possivel abrir')) {
     return '$name está no PC mas não abriu — use Abrir provas na Biblioteca.';
   }
-  return humanApiError(e, fallback: '$name no PC mas não abriu — verifique data/provas.');
+  return humanApiError(e, fallback: '$name no PC mas não abriu — verifique a pasta Provas.');
 }
 
 /// Toast único para open-path (2 linhas + ícone) — IDEAS Global/open-path.

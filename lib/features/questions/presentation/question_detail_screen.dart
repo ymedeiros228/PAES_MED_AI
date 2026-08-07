@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/ux_copy.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -305,7 +306,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sem PDF de ${q.year} em data/provas no PC — não inventamos arquivo.'),
+          content: Text('Sem PDF de ${q.year} na pasta Provas deste PC — não inventamos arquivo.'),
         ),
       );
       return;
@@ -375,8 +376,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       children: [
         Text('${q.subject} · ${q.topic} · ${q.year}', style: Theme.of(context).textTheme.titleMedium),
         Text(
-          'Atalhos: 1–5 · Enter · N (após revelar)',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
+          kSoftAtalhosHint,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurface.withOpacity(0.55),
+              ),
         ),
         if (saveError != null) ...[
           const SizedBox(height: 8),
@@ -404,7 +407,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PDF ${q.year}: não está em data/provas (sem inventar).',
+                  'PDF ${q.year}: ainda não está na pasta Provas do PC (sem inventar).',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 TextButton.icon(
@@ -459,7 +462,9 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           FilledButton(onPressed: selected == null ? null : _submit, child: const Text('Responder')),
         ] else ...[
           Text(
-            selected == q.correctIndex ? 'Correto!' : 'Incorreto · gabarito ${'ABCDE'[q.correctIndex]}',
+            selected == q.correctIndex
+                ? 'Correto!'
+                : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,

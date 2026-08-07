@@ -329,6 +329,11 @@ flowchart TB
 | ID | Fila dots + PDF stale disable | `ciclo_id_*` | **Feito** |
 | IE | open-path toast + pack 1/5…5/5 | `ciclo_ie_*` | **Feito** |
 | IF | Ship **1.0.0+14** pack/smoke | `ciclo_if_*` | **Feito** |
+| IG | Sessão end CTA + debrief PT | `ciclo_ig_*` | **Feito** |
+| IH | Questões hospitality | `ciclo_ih_*` | **Feito** |
+| II | Progress Ritmo + essay mentor PT | `ciclo_ii_*` | **Feito** |
+| IJ | Library/flashcards/settings human | `ciclo_ij_*` | **Feito** |
+| IK | Ship **1.0.0+15** pack/smoke | `ciclo_ik_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -336,8 +341,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IC–IF)
+## Estado (atualizado pós IG–IK)
 
-- Rodada **IC–IF**: residual IDEAS-UI, ship **1.0.0+14**.
+- Rodada **IG–IK**: hospitalidade / copy humana, ship **1.0.0+15**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
 - PDFs grandes **fora** do git.

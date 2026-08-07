@@ -240,6 +240,17 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     );
   }
 
+  String _axisPt(String key) {
+    return switch (key) {
+      'grammar' => 'gramática',
+      'cohesion' => 'coesão',
+      'coherence' => 'coerência',
+      'argumentation' => 'argumentação',
+      'intervention' => 'intervenção',
+      _ => key,
+    };
+  }
+
   void _startMissionRewrite(AsyncValue<List<dynamic>> history) {
     final mission = progress?['nextMission'];
     final suggested = mission is Map ? mission['suggestedPersona']?.toString() : null;
@@ -251,7 +262,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       final first = Map<String, dynamic>.from(items.first as Map);
       _applyEssayToEditor(first);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Texto da última redação no editor · treino local · não banca')),
+        const SnackBar(content: Text('Texto da última redação no editor · treino local')),
       );
       return;
     }
@@ -517,8 +528,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                           'grammar': 'Gramática',
                                           'cohesion': 'Coesão',
                                           'coherence': 'Coerência',
-                                          'argumentation': 'Arg.',
-                                          'intervention': 'Interv.',
+                                          'argumentation': 'Argumentação',
+                                          'intervention': 'Intervenção',
                                         }[e.key.toString()] ??
                                         e.key.toString(),
                                     delta: (e.value as num).toDouble(),
@@ -545,8 +556,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 6),
                                     child: Text(
-                                      'Persona: ${fb['personaLabel'] ?? fb['persona']}'
-                                      '${fb['focusAxis'] != null ? ' · eixo ${fb['focusAxis']}' : ''}',
+                                      'Mentor: ${fb['personaLabel'] ?? fb['persona']}'
+                                      '${fb['focusAxis'] != null ? ' · eixo ${_axisPt(fb['focusAxis'].toString())}' : ''}',
                                       style: Theme.of(context).textTheme.labelLarge,
                                     ),
                                   ),

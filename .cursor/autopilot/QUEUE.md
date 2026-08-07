@@ -55,6 +55,12 @@ Prioridade: topo = primeiro.
 - [x] Fila dots + PDF stale + open-path toast + pack steps
 - [x] Ship **1.0.0+14**
 
+## P3f · Hospitalidade (IG–IK)
+
+- [x] Sessão end + debrief PT + questões hospitality
+- [x] Progress Ritmo + essay mentor + library/flash/settings
+- [x] Ship **1.0.0+15**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -69,4 +75,5 @@ Prioridade: topo = primeiro.
 ## Notas
 
 - IC–IF (2026-08-06): residual IDEAS-UI; residual host = gab 2014–23.
-- Versão: **1.0.0+14**.
+- IG–IK (2026-08-06): hospitalidade copy/UX; ship **1.0.0+15**.
+- Versão: **1.0.0+15**.

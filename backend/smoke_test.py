@@ -5032,7 +5032,11 @@ def main() -> int:
         "ciclo_em_settings_keys",
         "LogicalKeyboardKey.keyR" in settings_el
         and "LogicalKeyboardKey.keyB" in settings_el
-        and "R atualiza health" in settings_el
+        and (
+            "R atualiza health" in settings_el
+            or "atalho B = backup" in settings_el
+            or "B backup" in settings_el
+        )
         and "Salvar cópia de segurança (B)" in settings_el,
         "settings rb keys",
     )
@@ -5299,7 +5303,7 @@ def main() -> int:
         "ciclo_fd_revisions_rs_keys",
         "LogicalKeyboardKey.keyR" in rev_fd
         and "LogicalKeyboardKey.keyS" in rev_fd
-        and "R atualiza" in rev_fd,
+        and ("R atualiza" in rev_fd or "assunto(s) para reforço" in rev_fd or "Os erros viram revisões" in rev_fd),
         "revisions rs keys",
     )
     ok(
@@ -5824,7 +5828,10 @@ def main() -> int:
     ok(
         "ciclo_gm_shell_sync_badge",
         "examSyncPending" in shell_gk
-        and "Sync da prova pendente" in shell_gk
+        and (
+            "Sync da prova pendente" in shell_gk
+            or "Data da prova pendente" in shell_gk
+        )
         and "badge:" in shell_gk,
         "shell sync badge",
     )
@@ -5837,7 +5844,10 @@ def main() -> int:
     # --- Ciclo GN: mobile app bar exam sync ---
     ok(
         "ciclo_gn_mobile_appbar_sync",
-        "Sync da prova pendente" in shell_gk
+        (
+            "Sync da prova pendente" in shell_gk
+            or "Data da prova pendente" in shell_gk
+        )
         and "sync_problem_rounded" in shell_gk
         and "retrySync" in shell_gk,
         "mobile appbar sync",
@@ -6361,7 +6371,11 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_hl_chip_oficiais_gab",
-        "Só oficiais com gab" in qs_hl and "officialWithGab" in qs_hl,
+        (
+            "Só oficiais com gab" in qs_hl
+            or "Oficiais com gabarito" in qs_hl
+        )
+        and "officialWithGab" in qs_hl,
         "chip questões",
     )
     ok(
@@ -6686,11 +6700,11 @@ def main() -> int:
     # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
-        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
-        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14"))
-        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14")),
-        "version +12..+14 triple",
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        "version +12..+15 triple",
     )
     ok(
         "ciclo_hx_como_section",
@@ -6763,23 +6777,34 @@ def main() -> int:
         "BUMP_VERSION.md",
     )
 
-    # --- Ciclo IB: ship 1.0.0+13 (aceita +14) ---
+    # --- Ciclo IB: ship 1.0.0+13 (aceita +14/+15) ---
     ok(
         "ciclo_ib_version_13",
-        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14"))
-        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14"))
-        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14"))
-        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14")),
-        "version +13/+14 triple",
+        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
+        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15")),
+        "version +13..+15 triple",
     )
     ok(
         "ciclo_ib_como_section",
-        "1.0.0+13" in como_ap or "1.0.0+14" in como_ap or "Ciclo IB" in como_ap or "IDEAS-UI" in como_ap,
+        "1.0.0+13" in como_ap
+        or "1.0.0+14" in como_ap
+        or "1.0.0+15" in como_ap
+        or "Ciclo IB" in como_ap
+        or "IDEAS-UI" in como_ap,
         "COMO HY-IB",
     )
     ok(
         "ciclo_ib_roadmap",
-        ("IB" in roadmap_hm and ("1.0.0+13" in roadmap_hm or "1.0.0+14" in roadmap_hm)),
+        (
+            "IB" in roadmap_hm
+            and (
+                "1.0.0+13" in roadmap_hm
+                or "1.0.0+14" in roadmap_hm
+                or "1.0.0+15" in roadmap_hm
+            )
+        ),
         "ROADMAP HY-IB",
     )
 
@@ -6831,16 +6856,110 @@ def main() -> int:
     )
     ok(
         "ciclo_if_version_14",
-        "1.0.0+14" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+14",))
-        and "1.0.0+14" in pack_bat
-        and "1.0.0+14" in app_ver_ht,
-        "version +14 triple",
+        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15"))
+        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15"))
+        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15"))
+        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15")),
+        "version +14/+15 triple",
     )
     ok(
         "ciclo_if_como_section",
-        "1.0.0+14" in como_ap or "Ciclo IF" in como_ap or "Residual IDEAS" in como_ap,
+        "1.0.0+14" in como_ap
+        or "1.0.0+15" in como_ap
+        or "Ciclo IF" in como_ap
+        or "Residual IDEAS" in como_ap,
         "COMO IC-IF",
+    )
+
+    # --- Ciclo IG–IK: hospitality / copy humana · ship 1.0.0+15 ---
+    debrief_ig = (
+        root / "lib" / "core" / "widgets" / "resolution_debrief.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_ig = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    q_ih = (
+        root / "lib" / "features" / "questions" / "presentation" / "questions_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    prog_ii = (
+        root / "lib" / "features" / "progress" / "presentation" / "progress_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    essay_ii = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ux_ij = (root / "lib" / "core" / "ux_copy.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    fc_ij = (
+        root / "lib" / "features" / "flashcards" / "presentation" / "flashcards_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_ij = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    set_ij = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_ig_session_end_primary",
+        "Continuar na Fila" in sess_ig and "eyebrow: 'Sessão'" in sess_ig,
+        "session end CTA + eyebrow",
+    )
+    ok(
+        "ciclo_ig_debrief_chips_pt",
+        "Explicação completa" in debrief_ig
+        and "Rascunho didático" in debrief_ig
+        and "Modelo de apoio" in debrief_ig,
+        "debrief chips PT",
+    )
+    ok(
+        "ciclo_ih_questions_hospitality",
+        "Oficiais com gabarito" in q_ih and "Página" in q_ih,
+        "questions list hospitality",
+    )
+    ok(
+        "ciclo_ii_progress_ritmo",
+        "Ritmo de treino" in prog_ii and "Readiness" not in prog_ii,
+        "progress Ritmo",
+    )
+    ok(
+        "ciclo_ii_essay_mentor_pt",
+        "Mentor:" in essay_ii and "Argumentação" in essay_ii and "Arg." not in essay_ii,
+        "essay mentor PT",
+    )
+    ok(
+        "ciclo_ij_human_due",
+        "humanDueLabel" in ux_ij and "humanDueLabel" in fc_ij,
+        "humanDueLabel flashcards",
+    )
+    ok(
+        "ciclo_ij_library_labels",
+        "Importar do PC" in lib_ij
+        and "Gravando PDFs no acervo" in lib_ij
+        and "Import seguro" not in lib_ij,
+        "library labels PT",
+    )
+    ok(
+        "ciclo_ij_settings_sobre",
+        "Base de Natureza" in set_ij and "R atualiza health" not in set_ij,
+        "settings Sobre human",
+    )
+    ok(
+        "ciclo_ik_version_15",
+        "1.0.0+15" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+15",))
+        and "1.0.0+15" in pack_bat
+        and "1.0.0+15" in app_ver_ht,
+        "version +15 triple",
+    )
+    ok(
+        "ciclo_ik_como_section",
+        "1.0.0+15" in como_ap or "Ciclo IK" in como_ap or "hospitalidade" in como_ap.lower(),
+        "COMO IG-IK",
+    )
+    ok(
+        "ciclo_ik_roadmap",
+        "IK" in roadmap_hm and "1.0.0+15" in roadmap_hm,
+        "ROADMAP IG-IK",
     )
 
     failed = [c for c in checks if not c[1]]

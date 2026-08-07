@@ -201,7 +201,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
   Future<void> _commit({bool highConfidenceOnly = false}) async {
     setState(() {
       busy = true;
-      msg = highConfidenceOnly ? 'Commitando altas confianças...' : 'Commitando...';
+      msg = highConfidenceOnly ? 'Gravando itens com alta confiança…' : 'Gravando no acervo…';
     });
     try {
       await apiClient.post('/api/ingest/preview/update', {

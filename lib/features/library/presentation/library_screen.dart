@@ -271,11 +271,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         total += (h['total'] as int?) ?? (y['inserted'] as int?) ?? 0;
       }
       if (total == 0 && inserted != null) total = int.tryParse('$inserted') ?? 0;
-      return total > 0 ? ' · saúde lote: $total qs · Bio $bio/Qui $qui/Fis $fis' : '';
+      return total > 0 ? ' · lote: $total questões · Bio $bio/Qui $qui/Fis $fis' : '';
     }
     final nat = Map<String, dynamic>.from(health['natureza'] as Map? ?? {});
     if (health.isEmpty) return '';
-    return ' · saúde: ${health['total'] ?? inserted ?? '—'} qs · gab ${health['gabaritoPct'] ?? '—'}%'
+    return ' · lote: ${health['total'] ?? inserted ?? '—'} questões · gabarito ${health['gabaritoPct'] ?? '—'}%'
         ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}'
         '${(health['suspectsRemaining'] as int? ?? 0) > 0 ? ' · ${health['suspectsRemaining']} suspeitas' : ''}';
   }
@@ -550,7 +550,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _commitOnDisk() async {
     setState(() {
       busy = true;
-      msg = 'Commitando PDFs no disco…';
+      msg = 'Gravando PDFs no acervo…';
     });
     try {
       final data = await apiClient.post('/api/acervo/commit-on-disk', {
@@ -705,14 +705,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String _uiBadge(String? status, {required bool ready, required bool diskOk, required bool hasProva, required bool hasGab}) {
     if (ready) return 'pronto';
     if (status == 'partial' || (hasProva && !hasGab)) return 'parcial';
-    if (diskOk) return 'par + gab';
+    if (diskOk) return 'prova + gabarito';
     return status ?? '';
   }
 
   Future<void> _importYearSafe(int year) async {
     setState(() {
       busy = true;
-      msg = 'Import seguro PAES $year…';
+      msg = 'Importando do PC · PAES $year…';
     });
     try {
       final data = await apiClient.post('/api/acervo/import-year-safe', {
@@ -781,7 +781,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Import seguro $year falhou.'));
+      setState(() => msg = humanApiError(e, fallback: 'Importação do PC $year falhou.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -860,7 +860,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _bootstrapAndCommitYear(int year) async {
     setState(() {
       busy = true;
-      msg = 'Commitando PAES $year…';
+      msg = 'Gravando PAES $year no acervo…';
     });
     try {
       final data = await apiClient.post('/api/acervo/bootstrap-and-commit', {
@@ -1458,7 +1458,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     if (anosParciais > 0) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Parcial: coloque gabarito_YYYY.pdf em Gabaritos, depois Importar / Import seguro. '
+                        'Parcial: coloque o gabarito do ano na pasta Gabaritos, depois Importar / Importar do PC. '
                         'Sem gabarito o app não grava oficiais (não inventa resposta).',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
@@ -1570,7 +1570,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
                                   Text(
                                     ready
-                                        ? '${n > 0 ? '$n qs · ' : ''}$label'
+                                        ? '${n > 0 ? '$n questões · ' : ''}$label'
                                         : label,
                                     style: Theme.of(context).textTheme.bodySmall,
                                   ),
@@ -1584,7 +1584,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   Tooltip(
                                     message: hasProva
                                         ? 'Abrir PDF do ano $y'
-                                        : 'PDF sumiu do disco — coloque paes_$y.pdf em data/provas',
+                                        : 'PDF sumiu do disco — coloque paes_$y.pdf na pasta Provas',
                                     child: TextButton(
                                       onPressed: busy || !hasProva ? null : () => _openYearPdf(y),
                                       child: const Text('PDF'),
@@ -1621,7 +1621,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                     : () => diskOk
                                         ? _importYearSafe(y)
                                         : _bootstrapAndCommitYear(y),
-                                child: Text(diskOk && !canFetch ? 'Import seguro' : 'Importar'),
+                                child: Text(diskOk && !canFetch ? 'Importar do PC' : 'Importar'),
                               )
                             else
                               TextButton(
@@ -1727,7 +1727,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                 : !ready && diskOk
                                     ? TextButton(
                                         onPressed: busy ? null : () => _importYearSafe(y),
-                                        child: const Text('Import seguro'),
+                                        child: const Text('Importar do PC'),
                                       )
                                     : null,
                           );
@@ -1798,7 +1798,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Sincronizar edital'),
-                    trailing: OutlinedButton(onPressed: busy ? null : _syncEdital, child: const Text('Sync')),
+                    trailing: OutlinedButton(onPressed: busy ? null : _syncEdital, child: const Text('Atualizar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,

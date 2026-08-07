@@ -1222,6 +1222,14 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. **IE** — `showOpenPathSnackBar`; pack bat passos 1/5…5/5.
 4. **IF** — ship **1.0.0+14**.
 
+## Hospitalidade / copy humana (Ciclos IG–IK · 1.0.0+15)
+
+1. **IG** — Sessão: fim com CTA **Continuar na Fila**; eyebrow Sessão; chips de debrief em PT.
+2. **IH** — Questões: filtro Oficiais com gabarito; empty/pager humanos; ficha sem paths crus.
+3. **II** — Progresso **Ritmo de treino**; redação Mentor + eixos em português.
+4. **IJ** — Biblioteca labels humanos; flashcards/`next_due` → Hoje/Amanhã; Ajustes sem jargão floor/health.
+5. **IK** — ship **1.0.0+15**.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

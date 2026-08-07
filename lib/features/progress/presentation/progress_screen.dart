@@ -109,7 +109,17 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 else if (error != null)
                   QuietEmpty(
                     message: error!,
-                    action: TextButton(onPressed: _load, child: const Text('Tentar')),
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(onPressed: _load, child: const Text('Tentar')),
+                        TextButton(onPressed: () => context.go('/fila'), child: const Text('Fila')),
+                        TextButton(
+                          onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                          child: const Text('Sessão'),
+                        ),
+                      ],
+                    ),
                   )
                 else ...[
                   HeroStudyStrip(
@@ -141,6 +151,22 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     },
                   ),
                   const SizedBox(height: 8),
+                  if (peaks.isEmpty || (peaks.length == 1 && peaks.first['kind'] == 'hint'))
+                    QuietEmpty(
+                      message:
+                          'Seu relevo ainda está plano. Faça uma sessão ou uma redação para ver picos e vales.',
+                      action: Wrap(
+                        spacing: 8,
+                        children: [
+                          FilledButton(
+                            onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                            child: const Text('Sessão'),
+                          ),
+                          TextButton(onPressed: () => context.go('/redacao'), child: const Text('Redação')),
+                        ],
+                      ),
+                    )
+                  else
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -191,14 +217,14 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ),
                     ),
                   ],
-                  SectionLabel('Pulso local', hint: 'instrumento de ritmo · não % aprovação'),
+                  SectionLabel('Ritmo de treino', hint: 'instrumento local · não % de aprovação'),
                   SurfacePanel(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Readiness ${data?['readiness'] ?? '—'}',
+                          'Ritmo ${data?['readiness'] ?? '—'}',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w800,
                               ),

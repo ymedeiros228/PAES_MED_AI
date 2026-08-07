@@ -249,7 +249,7 @@ class AppShell extends ConsumerWidget {
                     Text(focus ? 'PAES · Foco' : 'PAES MED AI'),
                     if (examSyncPending)
                       Text(
-                        'Sync da prova pendente',
+                        'Data da prova pendente',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               color: cs.tertiary,
                               fontWeight: FontWeight.w600,
@@ -438,7 +438,7 @@ class _BrandHeader extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Sync da prova pendente',
+                    'Data da prova pendente',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: cs.tertiary,
                           fontWeight: FontWeight.w600,

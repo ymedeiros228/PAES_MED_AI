@@ -528,6 +528,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             'Bloco encerrado',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
+          const SizedBox(height: 4),
+          Text(
+            gaps.isEmpty
+                ? 'Boa volta. O próximo passo natural é a Fila do dia.'
+                : 'Houve erro neste bloco — a Fila e o treino do tópico fraco resolvem bem.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: cs.onSurface.withOpacity(0.7),
+                ),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -562,16 +571,32 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
             ],
           ),
-          if (officialInPack != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Oficiais no pack: $officialInPack'
-              '${toppedOff ? ' · pack completado com oficiais' : ''}'
-              '${yearWidened ? ' · janela de anos ampliada' : ''}',
-              style: Theme.of(context).textTheme.bodySmall,
+          if (officialInPack != null || toppedOff || yearWidened)
+            Theme(
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                title: Text(
+                  'Detalhe do bloco',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      [
+                        if (officialInPack != null) 'Oficiais neste pack: $officialInPack',
+                        if (toppedOff) 'Completamos com oficiais do acervo',
+                        if (yearWidened) 'Janela de anos ampliada para achar itens',
+                      ].join(' · '),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if (scheduleGapsError != null) ...[
             QuietEmpty(
               message: scheduleGapsError!,
@@ -609,14 +634,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           const SizedBox(height: 16),
           Divider(color: cs.outlineVariant.withOpacity(0.5)),
           const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () => context.go('/fila'),
+            icon: const Icon(Icons.playlist_play_rounded),
+            label: const Text('Continuar na Fila'),
+          ),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              FilledButton(
-                onPressed: () => context.go('/fila'),
-                child: const Text('Abrir fila'),
-              ),
               if (first != null)
                 OutlinedButton(
                   onPressed: () {
@@ -627,23 +654,23 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   child: const Text('Treinar tópico fraco'),
                 ),
               if (subj.isNotEmpty && top.isNotEmpty)
-                OutlinedButton(
+                TextButton(
                   onPressed: () => openTheoryReadSheet(
                     context,
                     subject: subj,
                     topic: top,
                   ),
-                  child: const Text('Ler teoria da meta'),
+                  child: const Text('Ler teoria'),
                 ),
               TextButton(
                 onPressed: () => context.go('/flashcards?due=1'),
-                child: const Text('Revisar cards'),
+                child: const Text('Cards'),
               ),
               TextButton(
                 onPressed: () => context.go('/progresso'),
-                child: const Text('Ver relevo'),
+                child: const Text('Relevo'),
               ),
-              OutlinedButton(
+              TextButton(
                 onPressed: _closeStudyDay,
                 child: const Text('Encerrar dia'),
               ),
@@ -1064,7 +1091,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
         children: [
           PageHeader(
-            eyebrow: 'Foco',
+            eyebrow: 'Sessão',
             title: 'Sessão guiada',
             subtitle: sessionComplete
                 ? 'Sessão completa — próximos passos'

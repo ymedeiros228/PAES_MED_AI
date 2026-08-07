@@ -219,7 +219,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       }),
                     ),
                     FilterChip(
-                      label: const Text('Só oficiais com gab'),
+                      label: const Text('Oficiais com gabarito'),
                       selected: officialWithGab,
                       onSelected: (v) => _resetPage(() {
                         officialWithGab = v;
@@ -294,7 +294,21 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
           ),
           Expanded(
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Carregando questões do acervo local…',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: cs.onSurface.withOpacity(0.6),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
               error: (e, _) => EmptyState(
                 title: 'Não foi possível carregar',
                 subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
@@ -326,7 +340,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     subtitle: page > 0
                         ? 'Volte uma página ou limpe os filtros.'
                         : officialWithGab
-                            ? 'Sem oficiais com gab neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
+                            ? 'Sem oficiais com gabarito neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
                             : 'Importe provas na Biblioteca ou afrouxe os filtros.',
                     action: Wrap(
                       spacing: 8,
@@ -376,7 +390,11 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                           );
                           return PlaylistTile(
                             title: '${q.subject} · ${q.topic}',
-                            subtitle: '${q.year} · ${q.difficulty} · ${q.statement}',
+                            subtitle: () {
+                              final st = q.statement;
+                              final short = st.length > 90 ? '${st.substring(0, 90)}…' : st;
+                              return '${q.year} · ${q.difficulty} · $short';
+                            }(),
                             badge: badge,
                             leadingIcon: Icons.quiz_outlined,
                             active: i == selected,
@@ -395,17 +413,17 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                         children: [
                           TextButton(
                             onPressed: page == 0 ? null : _prevPage,
-                            child: const Text('Anterior ([)'),
+                            child: const Text('Anterior'),
                           ),
                           Text(
-                            'Pág. ${page + 1} · item ${selected + 1}/${items.length}',
+                            'Página ${page + 1} · ${selected + 1} de ${items.length}',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: cs.onSurface.withOpacity(0.65),
                                 ),
                           ),
                           TextButton(
                             onPressed: items.length < pageSize ? null : _nextPage,
-                            child: const Text('Próxima (])'),
+                            child: const Text('Próxima'),
                           ),
                         ],
                       ),

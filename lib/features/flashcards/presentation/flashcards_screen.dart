@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/ux_copy.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -300,8 +301,8 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                     const SizedBox(height: 6),
                                     Text(
                                       flipped
-                                          ? 'Toque / Space · L lembrei · E esqueci · ${item['next_due'] ?? '—'}'
-                                          : 'Toque / Space para revelar · ${item['next_due'] ?? '—'}',
+                                          ? 'Toque / Space · L lembrei · E esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
+                                          : 'Toque / Space para revelar · próxima: ${humanDueLabel(item['next_due']?.toString())}',
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                             color: cs.onSurface.withOpacity(0.55),
                                           ),

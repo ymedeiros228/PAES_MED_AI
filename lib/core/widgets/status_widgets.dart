@@ -104,7 +104,7 @@ class ExamDateSyncBanner extends ConsumerWidget {
           ),
           trailing: TextButton(
             onPressed: () => ref.read(examDateProvider.notifier).retrySync(),
-            child: const Text('Sync'),
+            child: const Text('Atualizar'),
           ),
         ),
       ),

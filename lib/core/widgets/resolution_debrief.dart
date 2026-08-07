@@ -59,7 +59,11 @@ class ResolutionDebrief extends StatelessWidget {
                 ),
                 if (label.isNotEmpty || isReal)
                   Chip(
-                    label: Text(isReal ? 'ok' : (label == 'rascunho' ? 'rascunho' : 'modelo')),
+                    label: Text(
+                      isReal
+                          ? 'Explicação completa'
+                          : (label == 'rascunho' ? 'Rascunho didático' : 'Modelo de apoio'),
+                    ),
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),

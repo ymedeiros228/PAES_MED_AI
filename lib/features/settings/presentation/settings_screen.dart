@@ -230,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               PageHeader(
                 eyebrow: 'Conta',
                 title: 'Ajustes',
-                subtitle: 'Preferências · R atualiza health · B backup',
+                subtitle: 'Preferências · atalho B = backup',
               ),
 
               SectionLabel('Sobre'),
@@ -446,10 +446,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               floorOk ? Icons.biotech_outlined : Icons.warning_amber_rounded,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            title: Text(floorOk ? 'Natureza estável' : 'Natureza precisa de floor'),
+                            title: Text(
+                              floorOk
+                                  ? 'Base de Natureza em dia'
+                                  : 'Base de Natureza ainda fraca',
+                            ),
                             subtitle: Text(
                               msg.isEmpty
-                                  ? 'real ${c['realCount'] ?? '—'} · cross ${c['crossDomainCount'] ?? '—'}'
+                                  ? 'oficiais ${c['realCount'] ?? '—'} · transversais ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
                               style: const TextStyle(fontSize: 12),
                             ),
@@ -512,11 +516,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               return lastBackup!['message']?.toString() ?? 'Salve uma cópia acima.';
                             }
                             final at = lastBackup!['at']?.toString() ?? '—';
-                            final v = lastBackup!['verify'] is Map
-                                ? Map<String, dynamic>.from(lastBackup!['verify'] as Map)
-                                : <String, dynamic>{};
-                            final sha = v['sha256Prefix']?.toString() ?? '';
-                            return '$at${sha.isNotEmpty ? ' · $sha' : ''}';
+                            return at;
                           }(),
                           style: const TextStyle(fontSize: 12),
                         ),
@@ -541,7 +541,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   title: const Text('Restaurar backup?'),
                                   content: Text(
                                     'Substitui o progresso atual por:\n\n$name'
-                                    '${sha.isNotEmpty ? '\n\nVerificação: $sha' : ''}'
+                                    '${sha.isNotEmpty ? '\n\nCódigo de verificação (avançado): $sha' : ''}'
                                     '\n\nSó confirme se tiver certeza.',
                                   ),
                                   actions: [
