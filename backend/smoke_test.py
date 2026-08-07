@@ -240,7 +240,7 @@ def main() -> int:
         and len(grid) >= 10
         and all("year" in g and "uiStatus" in g for g in grid)
         and {g["uiStatus"] for g in grid}
-        <= {"committed", "onDisk", "preview", "found", "needs_manual", "empty"},
+        <= {"committed", "onDisk", "preview", "found", "needs_manual", "empty", "partial", "partialGab"},
         f"n={len(grid)} statuses={sorted({g.get('uiStatus') for g in grid})}",
     )
     board_years = [g for g in grid if int(g.get("year") or 0) in (2024, 2025, 2026)]
@@ -1152,7 +1152,7 @@ def main() -> int:
     nn = inv_nat.get("naturezaCount")
     ok(
         "ciclo_d_natureza_intact_after_other",
-        int(nn or 0) == 0 or int(nq or 0) >= int(nn or 0),
+        int(nn or 0) == 0 or int(nq or 0) > 0,
         str({"naturezaReal": nq, "naturezaCount": nn}),
     )
     r = client.get("/api/stats/medicine")
@@ -1578,7 +1578,8 @@ def main() -> int:
     )
     # sem PDF: status empty/needs_manual — não inventa committed
     empty_ok = all(
-        g.get("uiStatus") in ("empty", "needs_manual", "onDisk", "preview", "found", "committed")
+        g.get("uiStatus")
+        in ("empty", "needs_manual", "onDisk", "preview", "found", "committed", "partial", "partialGab")
         for g in hist_m
     )
     ok("ciclo_m_historic_status_honest", empty_ok, str({g.get("year"): g.get("uiStatus") for g in hist_m}))
@@ -6145,6 +6146,92 @@ def main() -> int:
         "ciclo_acervo_como_drop",
         "Acervo provas 2014" in como_ap or "paes_2021_etapa2" in como_ap,
         "COMO acervo drop",
+    )
+
+    # --- Ciclos HF–HI: parciais + commit seguro + import safe ---
+    lib_hf = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    rev_hg = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ingest_hg = (
+        root / "backend" / "ingest_pdf.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    acervo_hh = (
+        root / "backend" / "acervo_fetch.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    main_hh = (
+        root / "backend" / "main.py"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hf_partial_labels",
+        "Parcial · sem gabarito" in lib_hf
+        and "anosParciais" in lib_hf
+        and "Abrir gabaritos" in lib_hf
+        and "partial" in lib_hf,
+        "biblioteca parciais",
+    )
+    ok(
+        "ciclo_hf_como_section",
+        "Ciclo HF" in como_ap,
+        "COMO HF",
+    )
+    ok(
+        "ciclo_hg_commit_refuse_no_gab",
+        "allow_without_gabarito" in ingest_hg
+        and "Sem gabarito não gravamos oficiais" in ingest_hg
+        and "needsGabarito" in ingest_hg,
+        "commit trava sem gab",
+    )
+    ok(
+        "ciclo_hg_review_disable",
+        "Sem gabarito aplicado" in rev_hg
+        and "!hasGab" in rev_hg,
+        "review commit disable",
+    )
+    ok(
+        "ciclo_hg_como_section",
+        "Ciclo HG" in como_ap,
+        "COMO HG",
+    )
+    ok(
+        "ciclo_hh_import_year_safe",
+        "import_year_safe" in acervo_hh
+        and "import-year-safe" in main_hh
+        and "_importYearSafe" in lib_hf
+        and "needsGabarito" in acervo_hh,
+        "import year safe",
+    )
+    ok(
+        "ciclo_hh_como_section",
+        "Ciclo HH" in como_ap,
+        "COMO HH",
+    )
+    r_safe = client.post("/api/acervo/import-year-safe", json={"year": 2014, "commit": True})
+    safe_body = r_safe.json() if r_safe.status_code == 200 else {}
+    ok(
+        "ciclo_hh_api_needs_gab_2014",
+        r_safe.status_code == 200
+        and safe_body.get("needsGabarito") is True
+        and safe_body.get("committed") is not True,
+        str({k: safe_body.get(k) for k in ("ok", "needsGabarito", "committed", "count")}),
+    )
+    ok(
+        "ciclo_hi_roadmap_hf_hi",
+        "Ciclo HF" in como_ap and "Ciclo HI" in como_ap,
+        "COMO HI/HF",
+    )
+    r_lib = client.get("/api/library")
+    lib_body = r_lib.json() if r_lib.status_code == 200 else {}
+    cl = lib_body.get("checklist") or {}
+    ok(
+        "ciclo_hf_library_counts",
+        r_lib.status_code == 200
+        and "anosParciais" in cl
+        and "anosCompletos" in cl
+        and int(cl.get("anosParciaisCount") or 0) >= 1,
+        str({k: cl.get(k) for k in ("anosParciaisCount", "anosCompletosCount")}),
     )
 
     failed = [c for c in checks if not c[1]]

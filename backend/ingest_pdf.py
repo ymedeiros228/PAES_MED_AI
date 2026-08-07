@@ -821,12 +821,30 @@ def import_year_pair(year: int, *, include_extra_provas: bool = True) -> dict[st
 
 
 def import_and_commit_year(year: int) -> dict[str, Any]:
-    """Importa e grava uma prova anual, preservando backup antes do commit."""
+    """Importa e grava uma prova anual (high-conf + gabarito obrigatório)."""
     from services_extra import create_backup
 
     backup = create_backup()
     preview = import_year_pair(year)
-    committed = commit_preview(preview["previewId"])
+    if int(preview.get("gabaritoApplied") or 0) <= 0:
+        return {
+            **preview,
+            "backup": backup,
+            "commit": {
+                "ok": False,
+                "message": (
+                    f"Cole gabarito_{year}.pdf em data/gabaritos e reimporte. "
+                    "Sem gabarito não gravamos oficiais (evita respostas inventadas)."
+                ),
+            },
+            "rag": None,
+        }
+    committed = commit_preview(
+        preview["previewId"],
+        preview.get("questions"),
+        high_confidence_only=True,
+        allow_without_gabarito=False,
+    )
     rag = None
     try:
         from services_advanced import index_all_questions
@@ -898,6 +916,7 @@ def commit_preview(
     *,
     high_confidence_only: bool = False,
     min_confidence: float = 0.55,
+    allow_without_gabarito: bool = False,
 ) -> dict[str, Any]:
     conn = connect()
     try:
@@ -921,6 +940,30 @@ def commit_preview(
             return {"ok": False, "message": "Preview já commitado"}
         questions = questions_override if questions_override is not None else json.loads(row["questions_json"])
         skipped = 0
+        gabarito_applied = 0
+        year_for_gab: int | None = None
+        if row["kind"] == "prova" and questions:
+            year_for_gab = int(questions[0].get("year", 0))
+            gabaritos = [
+                item for item in list_pdf_inventory()
+                if item["kind"] == "gabarito" and item.get("year") == year_for_gab
+            ]
+            if gabaritos:
+                answers = parse_gabarito(extract_pdf_text(Path(gabaritos[-1]["path"])))
+                questions = apply_gabarito(questions, answers)
+            gabarito_applied = sum(1 for question in questions if question.get("gabaritoApplied"))
+            questions = classify_questions_by_syllabus(questions)
+            if not allow_without_gabarito and gabarito_applied <= 0:
+                return {
+                    "ok": False,
+                    "message": (
+                        f"Cole gabarito_{year_for_gab}.pdf em data/gabaritos e reimporte. "
+                        "Sem gabarito não gravamos oficiais (evita respostas inventadas)."
+                    ),
+                    "needsGabarito": True,
+                    "year": year_for_gab,
+                    "skipped": 0,
+                }
         if high_confidence_only:
             kept: list[dict[str, Any]] = []
             for q in questions:
@@ -935,21 +978,14 @@ def commit_preview(
             if not questions:
                 return {
                     "ok": False,
-                    "message": "Nenhuma questão em alta confiança com gabarito aplicado.",
+                    "message": (
+                        "Nenhuma questão em alta confiança com gabarito aplicado. "
+                        "Cole gabarito_YYYY.pdf e reimporte, ou marque respostas na revisão."
+                    ),
                     "skipped": skipped,
+                    "needsGabarito": gabarito_applied <= 0,
+                    "year": year_for_gab,
                 }
-        gabarito_applied = 0
-        if row["kind"] == "prova" and questions:
-            year = int(questions[0].get("year", 0))
-            gabaritos = [
-                item for item in list_pdf_inventory()
-                if item["kind"] == "gabarito" and item.get("year") == year
-            ]
-            if gabaritos:
-                answers = parse_gabarito(extract_pdf_text(Path(gabaritos[-1]["path"])))
-                questions = apply_gabarito(questions, answers)
-                gabarito_applied = sum(1 for question in questions if question.get("gabaritoApplied"))
-            questions = classify_questions_by_syllabus(questions)
         inserted = 0
         for raw in questions:
             q = ensure_professor_defaults(raw)

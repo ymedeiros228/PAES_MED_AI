@@ -34,12 +34,26 @@ def load_manifest() -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def local_file_status(year: int) -> dict[str, bool]:
+def local_file_status(year: int) -> dict[str, Any]:
+    """Prova/gabarito no disco (qualquer PDF com o ano no nome; preferência canônica)."""
     provas = DATA_DIR / "provas"
     gabaritos = DATA_DIR / "gabaritos"
+    y = str(int(year))
+    has_prova = False
+    if provas.is_dir():
+        has_prova = (provas / f"paes_{year}.pdf").is_file() or any(
+            y in p.name for p in provas.glob("*.pdf")
+        )
+    has_gabarito = False
+    if gabaritos.is_dir():
+        has_gabarito = (gabaritos / f"gabarito_{year}.pdf").is_file() or any(
+            y in p.name for p in gabaritos.glob("*.pdf")
+        )
     return {
-        "hasProva": (provas / f"paes_{year}.pdf").exists(),
-        "hasGabarito": (gabaritos / f"gabarito_{year}.pdf").exists(),
+        "hasProva": has_prova,
+        "hasGabarito": has_gabarito,
+        "complete": has_prova and has_gabarito,
+        "partial": has_prova and not has_gabarito,
     }
 
 
@@ -474,7 +488,7 @@ def found_years() -> list[int]:
     return sorted(years, reverse=True)
 
 
-def years_complete_on_disk(*, min_year: int = 2017, max_year: int = 2030) -> list[int]:
+def years_complete_on_disk(*, min_year: int = 2014, max_year: int = 2030) -> list[int]:
     out = []
     for year in range(min_year, max_year + 1):
         local = local_file_status(year)
@@ -484,7 +498,7 @@ def years_complete_on_disk(*, min_year: int = 2017, max_year: int = 2030) -> lis
 
 
 def acervo_year_grid(*, min_year: int = 2014, max_year: int = 2026) -> list[dict[str, Any]]:
-    """Grade 2014–2026: committed / preview / onDisk / found / needs_manual / empty."""
+    """Grade 2014–2026: committed / preview / onDisk / partial / found / needs_manual / empty."""
     m = manifest_with_local()
     by_m = {int(y["year"]): y for y in (m.get("years") or [])}
     preview_by_year: dict[int, dict[str, Any]] = {}
@@ -517,6 +531,10 @@ def acervo_year_grid(*, min_year: int = 2014, max_year: int = 2026) -> list[dict
             ui = "preview"
         elif local["hasProva"] and local["hasGabarito"]:
             ui = "onDisk"
+        elif local["hasProva"] and not local["hasGabarito"]:
+            ui = "partial"
+        elif local["hasGabarito"] and not local["hasProva"]:
+            ui = "partialGab"
         elif entry.get("status") == "found":
             ui = "found"
         elif entry.get("status") == "needs_manual":
@@ -536,9 +554,116 @@ def acervo_year_grid(*, min_year: int = 2014, max_year: int = 2026) -> list[dict
                 "previewSuspects": (preview or {}).get("suspects", 0),
                 "previewNeedsOcr": bool((preview or {}).get("needsOcr")),
                 "previewCount": (preview or {}).get("count", 0),
+                "labelHint": {
+                    "committed": f"Commitado ({committed} qs)",
+                    "onDisk": "Par com gab · pode gravar",
+                    "partial": "Parcial · sem gabarito",
+                    "partialGab": "Só gabarito · falta prova",
+                    "preview": "Preview · revisar",
+                    "found": "Pode baixar (portal)",
+                    "needs_manual": "Baixar à mão",
+                    "empty": "Vazio",
+                }.get(ui, ui),
             }
         )
     return grid
+
+
+def import_year_safe(
+    year: int,
+    *,
+    commit: bool = True,
+    min_confidence: float = 0.55,
+    skip_if_committed: bool = False,
+) -> dict[str, Any]:
+    """Preview + commit high-conf só com prova+gabarito no disco (Ciclo HH)."""
+    from ingest_pdf import commit_preview, import_year_pair
+    from services_core import stats_basis
+
+    local = local_file_status(year)
+    if not local.get("hasProva"):
+        return {
+            "ok": False,
+            "year": year,
+            "needsProva": True,
+            "message": f"Sem prova de {year} no disco. Coloque paes_{year}.pdf em data/provas.",
+        }
+    if skip_if_committed and _uema_count_for_year(year) > 0:
+        return {
+            "ok": True,
+            "year": year,
+            "skipped": True,
+            "reason": "already_committed",
+            "committedCount": _uema_count_for_year(year),
+            "message": f"PAES {year} já tem oficiais na base.",
+        }
+    try:
+        preview = import_year_pair(year)
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False,
+            "year": year,
+            "error": str(exc),
+            "message": f"Parse falhou: {exc}",
+        }
+    preview_id = preview.get("previewId")
+    gab_on_disk = bool(local.get("hasGabarito"))
+    gab_applied = int(preview.get("gabaritoApplied") or 0)
+    if not gab_on_disk or gab_applied <= 0:
+        return {
+            "ok": True,
+            "year": year,
+            "committed": False,
+            "needsGabarito": True,
+            "previewId": preview_id,
+            "count": preview.get("count"),
+            "gabaritoApplied": gab_applied,
+            "avgParseConfidence": preview.get("avgParseConfidence"),
+            "pairValidation": preview.get("pairValidation"),
+            "questions": preview.get("questions"),
+            "message": (
+                f"Preview {year} com {preview.get('count') or 0} questões. "
+                f"Cole gabarito_{year}.pdf em data/gabaritos e use Importar de novo / Aplicar gabarito."
+            ),
+            "sessionPath": f"/sessao?examBoard=UEMA_PAES&year={year}&preferNatureza=1",
+        }
+    if not commit:
+        return {
+            "ok": True,
+            "year": year,
+            "committed": False,
+            "needsGabarito": False,
+            "previewId": preview_id,
+            "count": preview.get("count"),
+            "gabaritoApplied": gab_applied,
+            "questions": preview.get("questions"),
+            "pairValidation": preview.get("pairValidation"),
+            "message": preview.get("message"),
+        }
+    committed_res = commit_preview(
+        str(preview_id),
+        preview.get("questions") or [],
+        high_confidence_only=True,
+        min_confidence=min_confidence,
+        allow_without_gabarito=False,
+    )
+    basis = stats_basis()
+    return {
+        "ok": bool(committed_res.get("ok")),
+        "year": year,
+        "committed": bool(committed_res.get("ok")),
+        "needsGabarito": False,
+        "previewId": preview_id,
+        "inserted": committed_res.get("inserted", 0),
+        "skipped": committed_res.get("skipped", 0),
+        "yearHealth": committed_res.get("yearHealth"),
+        "officialCount": basis.get("officialCount", 0),
+        "sessionPath": committed_res.get("sessionPath")
+        or f"/sessao?examBoard=UEMA_PAES&year={year}&preferNatureza=1",
+        "error": None if committed_res.get("ok") else committed_res.get("message"),
+        "message": committed_res.get("message")
+        or f"Import seguro {year}: {committed_res.get('inserted', 0)} oficiais.",
+    }
 
 
 def bootstrap_and_commit_available(

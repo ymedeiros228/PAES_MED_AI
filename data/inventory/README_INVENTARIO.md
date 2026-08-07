@@ -36,3 +36,10 @@ Atualizado: 2026-08-06 — drop Downloads (provas 2014–2025) + 2026 prévio.
 ## Observação
 
 Nome canônico: `paes_YYYY.pdf`. Extras no mesmo ano: `paes_YYYY_etapa2.pdf` (import mescla cadernos).
+
+## Próximo passo (prioridade)
+
+**Gabaritos 2014–23** — `data/gabaritos/gabarito_YYYY.pdf`.  
+Sem isso o app marca o ano como **parcial** e **não grava oficiais** (evita inventar resposta).
+
+Fluxo com gabarito no disco: Biblioteca → Import seguro / apply gabarito → altas conf. → estudar.

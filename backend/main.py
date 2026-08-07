@@ -948,6 +948,7 @@ class CommitIngestRequest(BaseModel):
     highConfidenceOnly: bool = False
     minConfidence: float = 0.55
     autoProfessor: bool = True
+    allowWithoutGabarito: bool = False
 
 
 class UpdatePreviewRequest(BaseModel):
@@ -971,6 +972,13 @@ class ImportYearRequest(BaseModel):
     commit: bool = False
 
 
+class ImportYearSafeRequest(BaseModel):
+    year: int = Field(ge=1900, le=2100)
+    commit: bool = True
+    minConfidence: float = 0.55
+    skipIfCommitted: bool = False
+
+
 @app.post("/api/ingest/commit")
 def api_ingest_commit(payload: CommitIngestRequest) -> dict[str, Any]:
     create_backup()
@@ -979,6 +987,7 @@ def api_ingest_commit(payload: CommitIngestRequest) -> dict[str, Any]:
         payload.questions,
         high_confidence_only=payload.highConfidenceOnly,
         min_confidence=payload.minConfidence,
+        allow_without_gabarito=payload.allowWithoutGabarito,
     )
     if not result.get("ok"):
         raise HTTPException(400, result.get("message", "Commit falhou"))
@@ -1024,6 +1033,32 @@ def api_ingest_import_year(payload: ImportYearRequest) -> dict[str, Any]:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(500, f"Falha ao importar {payload.year}: {type(exc).__name__}: {exc}") from exc
+
+
+@app.post("/api/acervo/import-year-safe")
+def api_acervo_import_year_safe(payload: ImportYearSafeRequest) -> dict[str, Any]:
+    """Preview + commit high-conf só com gabarito; senão devolve needsGabarito (HH)."""
+    from acervo_fetch import import_year_safe
+
+    result = import_year_safe(
+        payload.year,
+        commit=payload.commit,
+        min_confidence=payload.minConfidence,
+        skip_if_committed=payload.skipIfCommitted,
+    )
+    if not result.get("ok") and result.get("needsProva"):
+        raise HTTPException(400, result.get("message") or "Sem prova no disco")
+    if result.get("committed") and result.get("ok"):
+        try:
+            result["rag"] = index_all_questions()
+        except Exception as exc:
+            result["rag"] = {"ok": False, "message": f"Reindex pendente: {type(exc).__name__}"}
+        if payload.commit and int(result.get("inserted") or 0) > 0:
+            result["professor"] = fill_professor_drafts(
+                limit=max(40, int(result.get("inserted") or 20)),
+                prefer_uema=True,
+            )
+    return result
 
 
 @app.post("/api/ingest/classify-pending")
@@ -1579,6 +1614,10 @@ def api_library() -> dict[str, Any]:
             },
             "provasYears": provas_years,
             "gabaritosYears": gabaritos_years,
+            "anosCompletos": sorted(set(provas_years) & set(gabaritos_years)),
+            "anosParciais": sorted(set(provas_years) - set(gabaritos_years)),
+            "anosParciaisCount": len(set(provas_years) - set(gabaritos_years)),
+            "anosCompletosCount": len(set(provas_years) & set(gabaritos_years)),
             "officialCount": stats_basis()["officialCount"],
             "message": (
                 "Acervo oficial disponível para revisão."

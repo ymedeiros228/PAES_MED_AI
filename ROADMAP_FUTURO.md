@@ -304,6 +304,10 @@ flowchart TB
 | GS | Git host + suite / BLOCKED | host | **Feito** |
 | GT | F2 thin Ler teoria (Fila+ficha) | `ciclo_gt_*` | **Feito** |
 | GU | Pack smoke gate + **1.0.0+9** | `ciclo_gu_*` | **Feito** |
+| HF | Biblioteca parciais (sem gab) | `ciclo_hf_*` | **Feito** |
+| HG | Commit seguro sem gabarito | `ciclo_hg_*` | **Feito** |
+| HH | Pipeline import-year-safe + gab | `ciclo_hh_*` | **Feito** |
+| HI | Reimport 2024–26 + gates | `ciclo_hi_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -311,9 +315,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós GR–GU)
+## Estado (atualizado pós HF–HI)
 
-- Rodada **GR–GU**: pack Desktop canônico + F2 “Ler teoria” thin + gate anti-pack-manco + ship **1.0.0+9**.
-- GN–GQ: mobile sync UX + biblioteca PDF ano open — **Feito**.
-- Residual curto: F3/F1 deep (inventário UEMA completo) TBD; stop micro-ciclos de teclado.
-- Push no GitHub após suite verde (autor: Yuri Medeiros). Host: se agente sem `git`, commit/push na máquina.
+- Rodada **HF–HI**: UX parciais, trava commit sem gabarito, import-year-safe, reimport 24–26.
+- Provas 2014–25 no disco; **próximo host** = drop `gabarito_YYYY.pdf` (2014–23).
+- Versão produto permanece **1.0.0+9** (sem repack obrigatório).
+- Push host (autor: Yuri Medeiros); PDFs grandes **fora** do git.

@@ -317,6 +317,14 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     }
   }
 
+  bool get _gabaritoPct {
+    if (questions.isEmpty) return false;
+    final n = questions.where((q) => q['gabaritoApplied'] == true).length;
+    return n > 0;
+  }
+
+  int get _gabaritoAppliedCount => questions.where((q) => q['gabaritoApplied'] == true).length;
+
   @override
   Widget build(BuildContext context) {
     final meta = widget.args.meta;
@@ -328,6 +336,8 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     final letter = 'ABCDE'[(current['correctIndex'] as int? ?? 0).clamp(0, 4)];
     final suspects = questions.where(_isSuspect).length;
     final visible = _visibleIndices;
+    final hasGab = _gabaritoPct;
+    final highN = questions.where(_isHighConfidence).length;
 
     return Focus(
       focusNode: _focusNode,
@@ -342,11 +352,13 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         actions: [
           TextButton(onPressed: busy ? null : () => context.go('/biblioteca'), child: const Text('Descartar')),
           FilledButton.tonal(
-            onPressed: busy || questions.isEmpty ? null : () => _commit(highConfidenceOnly: true),
-            child: Text('Altas conf. (${questions.where(_isHighConfidence).length})'),
+            onPressed: busy || questions.isEmpty || highN == 0
+                ? null
+                : () => _commit(highConfidenceOnly: true),
+            child: Text('Altas conf. ($highN)'),
           ),
           FilledButton(
-            onPressed: busy || questions.isEmpty ? null : () => _commit(),
+            onPressed: busy || questions.isEmpty || !hasGab ? null : () => _commit(),
             child: const Text('Commitar tudo'),
           ),
           const SizedBox(width: 8),
@@ -354,7 +366,40 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       ),
       body: questions.isEmpty
           ? const Center(child: Text('Nenhuma questão no preview.'))
-          : Row(
+          : Column(
+              children: [
+                if (!hasGab)
+                  Material(
+                    color: Colors.orange.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Sem gabarito aplicado (0/${questions.length}). '
+                              'Cole gabarito_${widget.args.year}.pdf em data/gabaritos ou marque respostas. '
+                              'Commit desabilitado para não inventar acertos.',
+                              style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Material(
+                    color: Colors.green.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Text(
+                        'Gabarito: $_gabaritoAppliedCount/${questions.length} · altas conf. $highN',
+                        style: TextStyle(fontSize: 12, color: Colors.green.shade900),
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: Row(
               children: [
                 SizedBox(
                   width: 300,
@@ -518,6 +563,9 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       ],
                     ],
                   ),
+                ),
+              ],
+            ),
                 ),
               ],
             ),

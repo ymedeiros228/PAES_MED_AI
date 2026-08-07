@@ -37,3 +37,6 @@ PDFs de prova: copiar para `data/provas/` como `paes_YYYY.pdf` (e `paes_YYYY_eta
 Gabaritos: `data/gabaritos/gabarito_YYYY.pdf`. Sem gabarito o ano fica **parcial** — estude só após Revisar respostas.
 
 Biblioteca → grade de anos → Importar / Revisar / Commitar.
+
+**Parcial (só prova):** badge honesto + Abrir gabaritos; commit bloqueado até `gabarito_YYYY.pdf`.  
+**Import seguro:** `POST /api/acervo/import-year-safe` — preview + high-conf só com gab.

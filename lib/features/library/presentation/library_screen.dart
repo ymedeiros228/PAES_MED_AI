@@ -594,9 +594,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String _uiStatusLabel(String? s) {
     switch (s) {
       case 'committed':
-        return 'Pronto';
+        return 'Commitado';
       case 'onDisk':
-        return 'PDFs no PC';
+        return 'Par com gab · pode gravar';
+      case 'partial':
+        return 'Parcial · sem gabarito';
+      case 'partialGab':
+        return 'Só gabarito · falta prova';
       case 'preview':
         return 'Precisa revisar';
       case 'found':
@@ -605,6 +609,91 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         return 'Baixar à mão';
       default:
         return 'Vazio';
+    }
+  }
+
+  String _uiBadge(String? status, {required bool ready, required bool diskOk, required bool hasProva, required bool hasGab}) {
+    if (ready) return 'pronto';
+    if (status == 'partial' || (hasProva && !hasGab)) return 'parcial';
+    if (diskOk) return 'par + gab';
+    return status ?? '';
+  }
+
+  Future<void> _importYearSafe(int year) async {
+    setState(() {
+      busy = true;
+      msg = 'Import seguro PAES $year…';
+    });
+    try {
+      final data = await apiClient.post('/api/acervo/import-year-safe', {
+        'year': year,
+        'commit': true,
+        'minConfidence': 0.55,
+        'skipIfCommitted': false,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      if (map['needsGabarito'] == true) {
+        setState(() => msg = map['message']?.toString() ?? 'Falta gabarito.');
+        if (!mounted) return;
+        final open = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('PAES $year · sem gabarito'),
+            content: Text(
+              map['message']?.toString() ??
+                  'Coloque gabarito_$year.pdf em data/gabaritos. Preview pronto: ${map['count'] ?? 0} questões.',
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('OK')),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Abrir gabaritos'),
+              ),
+              if (map['previewId'] != null)
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, null),
+                  child: const Text('Ver preview'),
+                ),
+            ],
+          ),
+        );
+        if (open == true) {
+          await _openFolder('gabaritos');
+        } else if (open == null && map['previewId'] != null && mounted) {
+          final questions = List<Map<String, dynamic>>.from(
+            (map['questions'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+          );
+          context.push(
+            '/biblioteca/revisao',
+            extra: IngestReviewArgs(
+              year: year,
+              previewId: map['previewId'].toString(),
+              questions: questions,
+              meta: map,
+            ),
+          );
+        }
+        await _load();
+        return;
+      }
+      final inserted = map['inserted'] ?? 0;
+      final n = map['officialCount'] ?? 0;
+      final sessao = map['sessionPath']?.toString() ??
+          '/sessao?examBoard=UEMA_PAES&year=$year&preferNatureza=1';
+      setState(() => msg = map['message']?.toString() ?? 'OK · $inserted');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PAES $year · +$inserted · base $n'),
+          action: SnackBarAction(label: 'Estudar', onPressed: () => _goStudy(sessao)),
+        ),
+      );
+      ref.read(refreshTickProvider.notifier).state++;
+      await _load();
+    } catch (e) {
+      setState(() => msg = humanApiError(e, fallback: 'Import seguro $year falhou.'));
+    } finally {
+      if (mounted) setState(() => busy = false);
     }
   }
 
@@ -1023,6 +1112,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
     final pendingItems = pending['items'] as List? ?? const [];
     final pendingN = pending['pendingCount'] as int? ?? pendingItems.length;
+    final anosParciais = (checklist['anosParciaisCount'] as int?) ??
+        (checklist['anosParciais'] as List?)?.length ??
+        0;
+    final anosCompletos = (checklist['anosCompletosCount'] as int?) ??
+        (checklist['anosCompletos'] as List?)?.length ??
+        0;
     final cs = Theme.of(context).colorScheme;
 
     final semana1Route = GoRouterState.of(context).uri.queryParameters['semana1'] == '1';
@@ -1223,9 +1318,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     Text(
                       officialN == 0
                           ? 'Atualize o acervo e estude de verdade — sem inventar prova antiga.'
-                          : 'Um toque atualiza o que estiver no PC ou no portal.',
+                          : 'Um toque atualiza o que estiver no PC ou no portal.'
+                              '${anosParciais > 0 ? ' · $anosParciais ano(s) só com prova (sem gabarito).' : ''}'
+                              '${anosCompletos > 0 ? ' · $anosCompletos par(es) prova+gab.' : ''}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
+                    if (anosParciais > 0) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Parcial: coloque gabarito_YYYY.pdf em Gabaritos, depois Importar / Import seguro. '
+                        'Sem gabarito o app não grava oficiais (não inventa resposta).',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: busy ? null : () => _openFolder('gabaritos'),
+                            icon: const Icon(Icons.folder_open_rounded, size: 18),
+                            label: const Text('Abrir gabaritos'),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -1277,8 +1393,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       final n = g['committedCount'] as int? ?? 0;
                       final canFetch = g['canFetch'] == true;
                       final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                      final diskOk = onDisk['hasProva'] == true && onDisk['hasGabarito'] == true;
+                      final hasProva = onDisk['hasProva'] == true;
+                      final hasGab = onDisk['hasGabarito'] == true;
+                      final diskOk = hasProva && hasGab;
+                      final partial = hasProva && !hasGab;
                       final ready = status == 'committed' || n > 0;
+                      final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
                       return SurfacePanel(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: Row(
@@ -1288,7 +1408,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               height: 48,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: ready ? cs.primaryContainer : cs.surfaceContainerHigh,
+                                color: ready
+                                    ? cs.primaryContainer
+                                    : partial
+                                        ? cs.tertiaryContainer
+                                        : cs.surfaceContainerHigh,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -1307,8 +1431,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
                                   Text(
                                     ready
-                                        ? '${n > 0 ? '$n questões · ' : ''}${_uiStatusLabel(status)}'
-                                        : _uiStatusLabel(status),
+                                        ? '${n > 0 ? '$n qs · ' : ''}$label'
+                                        : label,
                                     style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
@@ -1318,7 +1442,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (onDisk['hasProva'] == true)
+                                  if (hasProva)
                                     TextButton(
                                       onPressed: busy ? null : () => _openYearPdf(y),
                                       child: const Text('PDF'),
@@ -1333,10 +1457,28 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   ),
                                 ],
                               )
+                            else if (partial)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextButton(
+                                    onPressed: busy ? null : () => _openFolder('gabaritos'),
+                                    child: const Text('Gabaritos'),
+                                  ),
+                                  OutlinedButton(
+                                    onPressed: busy ? null : () => _importYear(y),
+                                    child: const Text('Preview'),
+                                  ),
+                                ],
+                              )
                             else if (canFetch || diskOk)
                               OutlinedButton(
-                                onPressed: busy ? null : () => _bootstrapAndCommitYear(y),
-                                child: Text(diskOk && !canFetch ? 'Gravar' : 'Importar'),
+                                onPressed: busy
+                                    ? null
+                                    : () => diskOk
+                                        ? _importYearSafe(y)
+                                        : _bootstrapAndCommitYear(y),
+                                child: Text(diskOk && !canFetch ? 'Import seguro' : 'Importar'),
                               )
                             else
                               TextButton(
@@ -1370,7 +1512,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Anos antigos (2014–23)', style: Theme.of(context).textTheme.titleSmall),
-                subtitle: const Text('Só se você tiver o PDF no PC — sem inventar cobertura'),
+                subtitle: Text(
+                  anosParciais > 0
+                      ? '$anosParciais parcial(is) · falta gabarito_YYYY.pdf'
+                      : 'Só se você tiver o PDF no PC — sem inventar cobertura',
+                ),
                 children: [
                   if (hist.isEmpty)
                     QuietEmpty(
@@ -1389,36 +1535,75 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           final status = g['uiStatus']?.toString() ?? 'empty';
                           final n = g['committedCount'] as int? ?? 0;
                           final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                          final diskOk = onDisk['hasProva'] == true && onDisk['hasGabarito'] == true;
+                          final hasProva = onDisk['hasProva'] == true;
+                          final hasGab = onDisk['hasGabarito'] == true;
+                          final diskOk = hasProva && hasGab;
+                          final partial = hasProva && !hasGab || status == 'partial';
                           final ready = status == 'committed' || n > 0;
-                          final emptyLabel = !diskOk && !ready
-                              ? 'Falta o PDF deste ano'
-                              : _uiStatusLabel(status);
+                          final label = g['labelHint']?.toString() ??
+                              (!diskOk && !ready && !partial
+                                  ? 'Falta o PDF deste ano'
+                                  : _uiStatusLabel(status));
                           return PlaylistTile(
                             title: 'PAES $y',
-                            subtitle: emptyLabel,
-                            badge: ready ? 'pronto' : (diskOk ? 'no disco' : null),
+                            subtitle: partial
+                                ? 'Parcial · sem gabarito · use gabarito_$y.pdf'
+                                : ready
+                                    ? 'Commitado ($n qs)'
+                                    : label,
+                            badge: _uiBadge(
+                              status,
+                              ready: ready,
+                              diskOk: diskOk,
+                              hasProva: hasProva,
+                              hasGab: hasGab,
+                            ),
                             onPlay: ready
                                 ? () => _goStudy(
                                       '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
                                     )
-                                : diskOk
-                                    ? () => _commitOnDiskYear(y)
-                                    : null,
-                            secondary: !ready && diskOk
-                                ? TextButton(
-                                    onPressed: busy ? null : () => _commitOnDiskYear(y),
-                                    child: const Text('Gravar'),
+                                : partial
+                                    ? () => _importYear(y)
+                                    : diskOk
+                                        ? () => _importYearSafe(y)
+                                        : null,
+                            secondary: partial
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextButton(
+                                        onPressed: busy ? null : () => _openFolder('gabaritos'),
+                                        child: const Text('Gabaritos'),
+                                      ),
+                                      TextButton(
+                                        onPressed: busy ? null : () => _importYear(y),
+                                        child: const Text('Preview'),
+                                      ),
+                                    ],
                                   )
-                                : null,
+                                : !ready && diskOk
+                                    ? TextButton(
+                                        onPressed: busy ? null : () => _importYearSafe(y),
+                                        child: const Text('Import seguro'),
+                                      )
+                                    : null,
                           );
                         },
                       ),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: TextButton(
-                      onPressed: busy ? null : _commitOnDisk,
-                      child: const Text('Gravar todos do PC'),
+                    child: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: busy ? null : _commitOnDisk,
+                          child: const Text('Gravar todos do PC (só com gab)'),
+                        ),
+                        TextButton(
+                          onPressed: busy ? null : () => _openFolder('gabaritos'),
+                          child: const Text('Abrir gabaritos'),
+                        ),
+                      ],
                     ),
                   ),
                 ],

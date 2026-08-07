@@ -9,40 +9,38 @@ Prioridade: topo = primeiro.
 
 - [ ] (vazio) se Desktop órfão ou dist sem `Iniciar_*.bat` / ico → modo **C** imediato
 
+## P0 · acervo host (humano)
+
+- [ ] Drop `gabarito_YYYY.pdf` em `data/gabaritos/` para **2014–2023** (provas já no disco)
+- [ ] Depois de cada drop: Biblioteca → **Import seguro** no ano
+
 ## P1 · Uso real (modo A) — default
 
-- [x] Sessão / Fila: qualquer empty ou erro que ainda jargone ou não tenha 1 CTA claro
-- [x] Ficha pós-erro: path “li teoria → treino” ainda confuso em algum fluxo (validar ao vivo; só se sim)
-- [x] Soft landing primeiro uso se onboarding + Semana 1 quebrar após +9 (só se repro)
+- [x] Sessão / Fila errors / soft landing (saturação pós-GN–GQ / autopilot)
 
-## P2 · Material / F2–F3 thin (modo B)
+## P2 · Material / F2
 
-- [x] Gaps na Fila sem material: empty + Biblioteca deve bastar; auditar 1 disciplina fraca real
-- [x] open-path / PDF ano: mensagens honestas se caminho sumir (já parcialmente GQ — só regressão)
-- [x] mark-read / “Ler teoria” ficha+fila: smoke + clique host ocasional
+- [x] Ler teoria / mark-read / open-path honest (GR–GU + fines)
 
-## P3 · Ship / gate (modo C ou D)
+## P3 · Acervo app (HF–HI)
 
-- [x] Se bump versão de produto: pubspec + Sobre + pack bat + VERSION + smoke (padrão +N)
-- [x] Manter `ciclo_gu_pack_*` se dist existir
+- [x] UX parciais (parcial / par+gab / commitado)
+- [x] Trava commit sem gabarito
+- [x] import-year-safe + Review aviso
+- [x] Reimport path 2024–26
 
 ## P4 · Não fazer (congelado)
 
-- ~~Teclado R/S/F5 em mais telas~~ (saturação GN–GQ)
+- ~~Teclado R/S/F5 em mais telas~~
 - ~~PDF inventado / multi-IA / force-push / redesign shell~~
-
-## Residual · fila vazia (IDEAS-UI modo A)
-
-- [x] Theory sheet: barra Passo 1/2 no topo + progresso visual (IDEAS-UI S)
-- [x] Fila lacunas: chip “N sem teoria” + badge/subtitle “teoria lida” / “· li” (IDEAS-UI S)
+- ~~Commit gabaritos inventados~~
 
 ## Como o AP usa
 
-1. Primeiro checkbox `[ ]` de P0; senão P1; senão P2…  
-2. Marca `[x]` + linha em DONE com 1 frase  
-3. Se item for grande demais: quebra em 1 thin e deixa resto `[ ]`  
+1. Primeiro checkbox `[ ]` de P0 (só travas de código se host não precisar)
+2. Sem PDF de gabarito novo: **não** inventar; handoff STATUS
 
 ## Notas
 
-- RODADA GR–GU fechou pack + F2 thin + 1.0.0+9 — **não** reabrir como se não tivesse shipado.  
-- Autopilot micro-ciclos **estavam certos**; esta fila evita **só** o looping de tecla sem valor.
+- HF–HI (2026-08-06): app pronto para engolir gabaritos sem polluir a base.
+- Versão: **1.0.0+9** estável.

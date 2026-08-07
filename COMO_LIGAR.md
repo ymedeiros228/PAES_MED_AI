@@ -1141,6 +1141,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. Sem gabarito no disco: **parcial** — preview extract OK; **não** inventa resposta (correctIndex 0).
 4. Smoke leve: inventário lista 2014+; import 2021 mescla 2 PDFs.
 
+## Biblioteca parciais (Ciclo HF)
+
+1. Badge **Parcial · sem gabarito** vs **Par com gab** vs **Commitado**.
+2. Contadores `anosParciais` / `anosCompletos` + Abrir gabaritos.
+3. Smoke: `ciclo_hf_*`.
+
+## Commit seguro sem gabarito (Ciclo HG)
+
+1. `commit_preview` recusa se 0 gabarito aplicado (salvo flag).
+2. Review: commit desabilitado se 0 gab.
+3. Smoke: `ciclo_hg_*`.
+
+## Pipeline gabarito (Ciclo HH)
+
+1. `POST /api/acervo/import-year-safe` → needsGabarito ou commit high-conf.
+2. Biblioteca **Import seguro** / Preview + pasta gabaritos.
+3. Smoke: `ciclo_hh_*`.
+
+## Reimport 2024–26 (Ciclo HI)
+
+1. Reimport high-conf anos com par no disco; health/yearHealth.
+2. ROADMAP HF–HI Feito; QUEUE: drop gabaritos 2014–23.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
