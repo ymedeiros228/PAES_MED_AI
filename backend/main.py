@@ -3134,3 +3134,10 @@ def api_backups_summary() -> dict[str, Any]:
     from services_extra import backup_storage_summary
 
     return backup_storage_summary()
+
+
+@app.get("/api/backups/cleanup-plan")
+def api_backups_cleanup_plan(keep: int = 10) -> dict[str, Any]:
+    from services_extra import backup_cleanup_plan
+
+    return backup_cleanup_plan(keep=keep)

@@ -30,6 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Map<String, dynamic>? health;
   Map<String, dynamic>? lastBackup;
   Map<String, dynamic>? backupSummary;
+  Map<String, dynamic>? backupCleanupPlan;
   String? msg;
   String? backupListError;
   String kind = 'prova';
@@ -67,6 +68,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _backups();
     _lastBackup();
     _backupSummary();
+    _backupCleanupPlan();
   }
 
   @override
@@ -131,6 +133,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _backupCleanupPlan({int keep = 10}) async {
+    try {
+      final data = await apiClient.get('/api/backups/cleanup-plan', {'keep': '$keep'});
+      setState(() {
+        backupCleanupPlan = Map<String, dynamic>.from(data as Map);
+      });
+    } catch (_) {
+      setState(() => backupCleanupPlan = null);
+    }
+  }
+
   Future<void> _lastBackup() async {
     try {
       final data = await apiClient.get('/api/backup/last');
@@ -164,6 +177,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await _backups();
       await _lastBackup();
       await _backupSummary();
+      await _backupCleanupPlan();
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Falha no backup.'));
     }
@@ -533,6 +547,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             _backups();
                             _lastBackup();
                             _backupSummary();
+                            _backupCleanupPlan();
                           },
                           child: const Text('Tentar'),
                         ),
@@ -563,6 +578,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 fontSize: 12,
                                 color: warning == null ? null : cs.error,
                               ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    if (backupCleanupPlan != null && (backupCleanupPlan!['removeCount'] is num)) ...[
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          final plan = backupCleanupPlan!;
+                          final removeCount = plan['removeCount'] is num ? (plan['removeCount'] as num).toInt() : 0;
+                          if (removeCount <= 0) return const SizedBox.shrink();
+                          final keep = plan['keep']?.toString() ?? '10';
+                          final reclaim = _formatMb(plan['reclaimMb']);
+                          final command = plan['command']?.toString() ?? '';
+                          final cs = Theme.of(context).colorScheme;
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            leading: Icon(Icons.cleaning_services_outlined, color: cs.tertiary),
+                            title: Text('Limpeza segura: liberar até $reclaim'),
+                            subtitle: Text(
+                              'Mantendo $keep backups recentes, $removeCount antigo(s) seriam removidos. '
+                              '${command.isNotEmpty ? command : 'Use o script em tools.'}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            trailing: TextButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: command));
+                                setState(() => msg = 'Comando de limpeza copiado.');
+                              },
+                              child: const Text('Copiar'),
                             ),
                           );
                         },
