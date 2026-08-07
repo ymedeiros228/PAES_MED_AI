@@ -107,11 +107,11 @@ Se a QUEUE esvaziar no modo A: puxar 1 item honesto de residual ROADMAP (F1/F3 t
 _Use no máximo 5 linhas por ciclo._
 
 ```
-<!-- ciclo: IV
+<!-- ciclo: 10
 modo: A (uso real)
-item: Redação rascunho offline SharedPreferences
-smoke: ciclo_iv_*; flutter 10/10 draft tests
-nota: restaura ao abrir; limpa ao corrigir; race tema vs loadThemes
+item: residual IDEAS-UI — fila lacunas chip sem teoria + estado lido
+smoke: 720/720 OK; ciclo_hd_fila_gap_read_chip
+nota: SectionLabel.chip; badge teoria lida + subtitle · li
 -->
 ```
 

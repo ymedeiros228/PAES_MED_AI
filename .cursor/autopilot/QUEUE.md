@@ -73,11 +73,6 @@ Prioridade: topo = primeiro.
 - [x] Hoje checklist + playlist/rail
 - [x] Ship **1.0.0+17**
 
-## P3i · Uso real residual (IV+)
-
-- [x] Redação: rascunho offline (SharedPreferences) restaura/limpa
-- [ ] (próximo) gap real de uso — Mode A thin ou Mode E se fila vazia
-
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -95,5 +90,4 @@ Prioridade: topo = primeiro.
 - IG–IK (2026-08-06): hospitalidade copy/UX; ship **1.0.0+15**.
 - IL–IP (2026-08-06): fluxo pós-bloco + Domínio/Biblioteca; ship **1.0.0+16**.
 - IQ–IU (2026-08-07): polish front kit; ship **1.0.0+17**.
-- IV (2026-08-07): Redação rascunho offline persistente.
-- Versão: **1.0.0+17** (sem bump neste ciclo).
+- Versão: **1.0.0+17**.
