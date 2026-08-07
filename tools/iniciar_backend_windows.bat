@@ -28,7 +28,10 @@ if not exist ".env" (
   pause
 )
 
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+rem So loopback: a API nao tem login, entao nao deve ficar exposta na rede.
+rem Para testar em celular real na mesma rede: set PAES_HOST=0.0.0.0 antes de rodar.
+if "%PAES_HOST%"=="" set PAES_HOST=127.0.0.1
+python -m uvicorn main:app --host %PAES_HOST% --port 8000 --reload
 goto :eof
 
 :erro

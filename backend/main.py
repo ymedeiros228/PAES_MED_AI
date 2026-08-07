@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 from pathlib import Path
 from typing import Any, Literal
 
@@ -139,10 +138,18 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
 
+# Origens locais (app desktop, Flutter web em porta aleatoria, emulador Android).
+# Sites externos abertos no navegador do usuario nao podem falar com a API local.
+LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1|\[::1\]|10\.0\.2\.2)(:\d+)?$"
+EXTRA_ORIGINS = [o.strip() for o in os.getenv("PAES_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
+MAX_UPLOAD_BYTES = int(os.getenv("PAES_MAX_UPLOAD_MB", "50")) * 1024 * 1024
+
 app = FastAPI(title="PAES MED AI API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=EXTRA_ORIGINS,
+    allow_origin_regex=LOCAL_ORIGIN_REGEX,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -269,6 +276,22 @@ def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage]
             status_code=502,
             detail=f"Falha OpenAI ({type(exc).__name__}).",
         ) from exc
+
+
+async def _save_upload(file: UploadFile, folder: Path, default_name: str) -> Path:
+    """Grava o upload dentro de `folder`, sem sair da pasta e sem estourar o limite."""
+    folder.mkdir(parents=True, exist_ok=True)
+    dest = folder / (Path(file.filename or default_name).name or default_name)
+    written = 0
+    with dest.open("wb") as f:
+        while chunk := await file.read(1024 * 1024):
+            written += len(chunk)
+            if written > MAX_UPLOAD_BYTES:
+                f.close()
+                dest.unlink(missing_ok=True)
+                raise HTTPException(413, f"Arquivo acima do limite de {MAX_UPLOAD_BYTES // (1024 * 1024)} MB")
+            f.write(chunk)
+    return dest
 
 
 @app.get("/")
@@ -898,11 +921,7 @@ async def api_lessons_from_audio(
     file: UploadFile = File(...),
 ) -> dict[str, Any]:
     """Transcreve com Whisper (OpenAI) se houver chave; senão orienta colar legenda."""
-    aulas = DATA_DIR / "aulas"
-    aulas.mkdir(parents=True, exist_ok=True)
-    dest = aulas / (file.filename or f"audio_{title}.bin")
-    with dest.open("wb") as f:
-        shutil.copyfileobj(file.file, f)
+    dest = await _save_upload(file, DATA_DIR / "aulas", f"audio_{title}.bin")
 
     client = _openai_client()
     if client is None:
@@ -938,11 +957,10 @@ async def api_ingest_pdf(
 ) -> dict[str, Any]:
     if kind not in ("prova", "gabarito", "edital"):
         raise HTTPException(400, "kind deve ser prova|gabarito|edital")
+    if not (Path(file.filename or "").name.lower().endswith(".pdf")):
+        raise HTTPException(400, "Envie um arquivo .pdf")
     folder = DATA_DIR / ("provas" if kind == "prova" else "gabaritos" if kind == "gabarito" else "edital")
-    folder.mkdir(parents=True, exist_ok=True)
-    dest = folder / (file.filename or "arquivo.pdf")
-    with dest.open("wb") as f:
-        shutil.copyfileobj(file.file, f)
+    dest = await _save_upload(file, folder, "arquivo.pdf")
     try:
         return parse_pdf_file(dest, kind, year=year, subject=subject)
     except Exception as exc:
@@ -1532,13 +1550,19 @@ def api_backup_last() -> dict[str, Any]:
 
 @app.post("/api/backup/restore")
 def api_backup_restore(folderName: str = "", path: str = "") -> dict[str, Any]:
-    """Restaura DB a partir de pasta em backups/ ou path zip absoluto."""
+    """Restaura DB a partir de pasta ou zip dentro de data/backups."""
     from services_extra import restore_backup_db
 
+    backups_dir = (DATA_DIR / "backups").resolve()
     if path:
-        return restore_backup_db(path)
+        candidate = Path(path).expanduser().resolve()
+        if not candidate.is_relative_to(backups_dir):
+            raise HTTPException(400, "path deve apontar para data/backups.")
+        return restore_backup_db(str(candidate))
     if not folderName:
         raise HTTPException(400, "Informe folderName ou path")
+    if Path(folderName).name != folderName:
+        raise HTTPException(400, "folderName deve ser um nome simples dentro de data/backups.")
     src = DATA_DIR / "backups" / folderName
     if (src / "paes_med_ai.db").exists():
         return restore_backup_db(str(src))
