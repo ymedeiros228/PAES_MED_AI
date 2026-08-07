@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/ux_copy.dart';
 import '../../../core/widgets/resolution_debrief.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AdaptiveTrainingScreen extends ConsumerStatefulWidget {
@@ -315,10 +315,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   eyebrow: 'Conteúdo',
                   title: 'Treino',
                   subtitle: finished
-                      ? 'Fila concluída · $correctCount/$answeredCount · R remonta fila'
+                      ? 'Fila concluída · $correctCount/$answeredCount'
                       : inQueue
-                          ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length} · R remonta'
-                          : 'Semelhantes → mais difíceis · R monta fila',
+                          ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length}'
+                          : 'Semelhantes → mais difíceis no mesmo tópico',
                   trailing: (inQueue || finished)
                       ? TextButton(
                           onPressed: () => setState(() {
@@ -362,21 +362,23 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         if (meta?['dominantErrorType'] != null) ...[
                           const SizedBox(height: 6),
                           Text(
-                            'Tipo dominante recente: ${meta!['dominantErrorType']}',
+                            'Tipo dominante recente: ${errorTypeLabelPt(meta!['dominantErrorType'].toString())}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                         const SizedBox(height: 14),
+                        FilledButton.icon(
+                          onPressed: () => context.go('/fila'),
+                          icon: const Icon(Icons.playlist_play_rounded),
+                          label: const Text('Continuar na Fila'),
+                        ),
+                        const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            FilledButton(
-                              onPressed: () => context.go('/fila'),
-                              child: const Text('Fila'),
-                            ),
                             FilledButton.tonal(
-                              onPressed: () => context.go('/flashcards'),
+                              onPressed: () => context.go('/flashcards?due=1'),
                               child: const Text('Cards'),
                             ),
                             if (subject.isNotEmpty && topic.isNotEmpty)
@@ -389,28 +391,20 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                     });
                                     if (!mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Lacuna marcada como recuperada (treino local).',
-                                        ),
-                                      ),
+                                      const SnackBar(content: Text('Lacuna enviada para reforço na Fila.')),
                                     );
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            humanApiError(e, fallback: 'Não deu para criar o card.'),
-                                          ),
-                                        ),
-                                      );
-                                    }
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a lacuna.'))),
+                                    );
+                                  }
                                 },
-                                child: const Text('Marcar recuperada'),
+                                child: const Text('Reforçar na Fila'),
                               ),
-                            OutlinedButton(
-                              onPressed: () => context.go('/dashboard'),
-                              child: const Text('Hoje'),
+                            TextButton(
+                              onPressed: loading ? null : () => unawaited(_start()),
+                              child: const Text('Remontar treino'),
                             ),
                           ],
                         ),

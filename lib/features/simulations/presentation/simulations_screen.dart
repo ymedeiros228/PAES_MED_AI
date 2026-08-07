@@ -1159,35 +1159,43 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    FilledButton.tonal(
-                      onPressed: _exportReport,
-                      child: const Text('Exportar relatório (E)'),
-                    ),
-                    if ((report!['gaps'] as List? ?? []).isNotEmpty)
-                      FilledButton(
-                        onPressed: _remediateGaps,
-                        child: const Text('Mandar lacunas para a fila (2)'),
-                      )
-                    else
-                      FilledButton(
-                        onPressed: () => context.go('/fila'),
-                        child: const Text('Ir à fila (2)'),
+                    FilledButton.icon(
+                      onPressed: (report!['gaps'] as List? ?? []).isNotEmpty
+                          ? _remediateGaps
+                          : () => context.go('/fila'),
+                      icon: const Icon(Icons.playlist_play_rounded),
+                      label: Text(
+                        (report!['gaps'] as List? ?? []).isNotEmpty
+                            ? 'Mandar lacunas para a Fila'
+                            : 'Continuar na Fila',
                       ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
                     FilledButton.tonal(
                       onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-                      child: const Text('Sessão Natureza (1)'),
+                      child: const Text('Sessão Natureza'),
                     ),
-                    FilledButton.tonal(
+                    TextButton(
                       onPressed: () => context.go('/redacao'),
-                      child: const Text('Redação (3)'),
+                      child: const Text('Redação'),
                     ),
-                    FilledButton.tonal(
+                    TextButton(
                       onPressed: () => context.go('/dashboard'),
-                      child: const Text('Voltar ao Hoje (Enter)'),
+                      child: const Text('Hoje'),
+                    ),
+                    TextButton(
+                      onPressed: _exportReport,
+                      child: const Text('Exportar resumo'),
                     ),
                     OutlinedButton(
                       onPressed: _resetSim,
-                      child: const Text('Novo simulado (N)'),
+                      child: const Text('Novo simulado'),
                     ),
                   ],
                 ),

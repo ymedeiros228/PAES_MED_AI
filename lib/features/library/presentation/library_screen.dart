@@ -616,7 +616,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         final ins = y['inserted'] ?? 0;
         final err = y['error']?.toString();
         final pct = y['gabaritoPct'] ?? (health['$yr'] is Map ? (health['$yr'] as Map)['gabaritoPct'] : null);
-        final pctTxt = pct != null ? ' · gab ${pct}%' : '';
+        final pctTxt = pct != null ? ' · gabarito ${pct}%' : '';
         if (err != null && err.isNotEmpty) return '$yr: erro ($err)';
         if (y['needsGabarito'] == true) return '$yr: precisa gabarito';
         if (y['skipped'] == true || y['reason'] == 'already_committed') {
@@ -643,11 +643,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Importar todos com gab'),
+          title: const Text('Importar todos com gabarito'),
           content: SingleChildScrollView(
             child: Text(
               '${map['message'] ?? ''}\n\n$perYear$waitLine\n\n'
-              'Base oficial: $n. Abrir sessão só oficiais com gab?',
+              'Base oficial: $n. Abrir sessão só com oficiais com gabarito?',
             ),
           ),
           actions: [
@@ -657,7 +657,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   Navigator.pop(ctx);
                   _openFolder('gabaritos');
                 },
-                child: const Text('Abrir gabaritos'),
+                child: const Text('Abrir pasta Gabaritos'),
               ),
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fechar')),
             FilledButton(
@@ -686,7 +686,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       case 'committed':
         return 'No acervo';
       case 'onDisk':
-        return 'Par com gab · pode gravar';
+        return 'Par com gabarito · pode gravar';
       case 'partial':
         return 'Parcial · sem gabarito';
       case 'partialGab':
@@ -1487,7 +1487,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         FilledButton.tonalIcon(
                           onPressed: busy ? null : _importAllComplete,
                           icon: const Icon(Icons.library_add_check_rounded),
-                          label: const Text('Importar todos com gab'),
+                          label: const Text('Importar todos com gabarito'),
                         ),
                         OutlinedButton(
                           onPressed: busy ? null : _commitOnDisk,
@@ -1667,7 +1667,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           'Falta o PDF deste intervalo (2014–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura. Sem gabarito, o app mostra prova e preview, mas não inventa resposta correta.',
                       action: TextButton(
                         onPressed: busy ? null : _importAllComplete,
-                        child: const Text('Importar todos com gab'),
+                        child: const Text('Importar todos com gabarito'),
                       ),
                     )
                   else

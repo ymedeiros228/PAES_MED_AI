@@ -153,7 +153,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               PageHeader(
                 eyebrow: 'Conteúdo',
                 title: 'Aulas',
-                subtitle: 'Legenda + Ctrl+Enter · R atualiza lista · S sessão',
+                subtitle: 'Suas anotações e links de referência',
               ),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),

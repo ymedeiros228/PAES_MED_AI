@@ -282,7 +282,7 @@ class AppShell extends ConsumerWidget {
                     icon: const Icon(Icons.auto_awesome_rounded),
                   ),
                   PopupMenuButton<String>(
-                    tooltip: examSyncPending ? 'Menu · sync pendente' : 'Menu',
+                    tooltip: examSyncPending ? 'Menu · data da prova pendente' : 'Menu',
                     onSelected: context.go,
                     icon: examSyncPending
                         ? Badge(
@@ -299,7 +299,7 @@ class AppShell extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   item.path == '/configuracoes' && examSyncPending
-                                      ? '${item.label} · sync pendente'
+                                      ? '${item.label} · data da prova pendente'
                                       : item.label,
                                 ),
                               ),

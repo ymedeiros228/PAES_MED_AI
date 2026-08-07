@@ -3538,7 +3538,8 @@ def main() -> int:
     )
     ok(
         "ciclo_cb_export_labels",
-        "Exportar pacote do dia" in sess_export and "Exportar relatório" in sim_cb,
+        "Exportar pacote do dia" in sess_export
+        and ("Exportar relatório" in sim_cb or "Exportar resumo" in sim_cb),
         "export labels",
     )
     ok(
@@ -3591,7 +3592,8 @@ def main() -> int:
     )
     ok(
         "ciclo_cd_adaptive_recover",
-        "/api/gaps/recover" in adapt_ca and "Marcar recuperada" in adapt_ca,
+        "/api/gaps/recover" in adapt_ca
+        and ("Marcar recuperada" in adapt_ca or "Reforçar na Fila" in adapt_ca),
         "adaptive recover",
     )
     ok(
@@ -4398,12 +4400,16 @@ def main() -> int:
         "Relatório: atalhos pós-grade" in sim_db
         and "LogicalKeyboardKey.keyN" in sim_db
         and "LogicalKeyboardKey.keyE" in sim_db
-        and "Sessão Natureza (1)" in sim_db,
+        and (
+            "Sessão Natureza (1)" in sim_db
+            or "Sessão Natureza" in sim_db
+        ),
         "sim report keys",
     )
     ok(
         "ciclo_db_reset_sim",
-        "_resetSim" in sim_db and "Novo simulado (N)" in sim_db,
+        "_resetSim" in sim_db
+        and ("Novo simulado (N)" in sim_db or "Novo simulado" in sim_db),
         "reset sim",
     )
     ok(
@@ -5100,7 +5106,10 @@ def main() -> int:
         "ciclo_eq_lessons_keys",
         "LogicalKeyboardKey.keyR" in lessons_eq
         and "LogicalKeyboardKey.keyS" in lessons_eq
-        and "R atualiza lista" in lessons_eq,
+        and (
+            "R atualiza lista" in lessons_eq
+            or "Suas anotações e links" in lessons_eq
+        ),
         "lessons rs keys",
     )
     ok(
@@ -5211,7 +5220,11 @@ def main() -> int:
     ok(
         "ciclo_ex_adaptive_r_restart",
         "LogicalKeyboardKey.keyR" in adapt_ew
-        and "R remonta" in adapt_ew,
+        and (
+            "R remonta" in adapt_ew
+            or "Remontar treino" in adapt_ew
+            or "Continuar na Fila" in adapt_ew
+        ),
         "adaptive r restart",
     )
     ok(
@@ -5371,7 +5384,11 @@ def main() -> int:
         "ciclo_fh_medicine_rs_keys",
         "LogicalKeyboardKey.keyR" in med_fh
         and "LogicalKeyboardKey.keyS" in med_fh
-        and "R atualiza" in med_fh,
+        and (
+            "R atualiza" in med_fh
+            or "assunto(s) por prioridade" in med_fh
+            or "Onde vale focar" in med_fh
+        ),
         "medicine rs keys",
     )
     ok(
@@ -5440,7 +5457,10 @@ def main() -> int:
         "ciclo_fl_bank_r_export",
         "LogicalKeyboardKey.keyR" in bank_fl
         and "Pasta de export não abriu." in bank_fl
-        and "R atualiza" in bank_fl,
+        and (
+            "R atualiza" in bank_fl
+            or "Estimativa local" in bank_fl
+        ),
         "bank r export",
     )
     ok(
@@ -5861,7 +5881,11 @@ def main() -> int:
     # --- Ciclo GO: mobile popup menu sync ---
     ok(
         "ciclo_go_mobile_menu_sync",
-        "sync pendente" in shell_gk and "menu_rounded" in shell_gk,
+        (
+            "sync pendente" in shell_gk
+            or "data da prova pendente" in shell_gk
+        )
+        and "menu_rounded" in shell_gk,
         "mobile menu sync",
     )
     ok(
@@ -6700,11 +6724,11 @@ def main() -> int:
     # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15")),
-        "version +12..+15 triple",
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +12..+16 triple",
     )
     ok(
         "ciclo_hx_como_section",
@@ -6780,17 +6804,18 @@ def main() -> int:
     # --- Ciclo IB: ship 1.0.0+13 (aceita +14/+15) ---
     ok(
         "ciclo_ib_version_13",
-        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15"))
-        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15")),
-        "version +13..+15 triple",
+        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +13..+16 triple",
     )
     ok(
         "ciclo_ib_como_section",
         "1.0.0+13" in como_ap
         or "1.0.0+14" in como_ap
         or "1.0.0+15" in como_ap
+        or "1.0.0+16" in como_ap
         or "Ciclo IB" in como_ap
         or "IDEAS-UI" in como_ap,
         "COMO HY-IB",
@@ -6803,6 +6828,7 @@ def main() -> int:
                 "1.0.0+13" in roadmap_hm
                 or "1.0.0+14" in roadmap_hm
                 or "1.0.0+15" in roadmap_hm
+                or "1.0.0+16" in roadmap_hm
             )
         ),
         "ROADMAP HY-IB",
@@ -6856,16 +6882,17 @@ def main() -> int:
     )
     ok(
         "ciclo_if_version_14",
-        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15"))
-        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15"))
-        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15"))
-        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15")),
-        "version +14/+15 triple",
+        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
+        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15", "1.0.0+16")),
+        "version +14..+16 triple",
     )
     ok(
         "ciclo_if_como_section",
         "1.0.0+14" in como_ap
         or "1.0.0+15" in como_ap
+        or "1.0.0+16" in como_ap
         or "Ciclo IF" in como_ap
         or "Residual IDEAS" in como_ap,
         "COMO IC-IF",
@@ -6945,21 +6972,99 @@ def main() -> int:
     )
     ok(
         "ciclo_ik_version_15",
-        "1.0.0+15" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+15",))
-        and "1.0.0+15" in pack_bat
-        and "1.0.0+15" in app_ver_ht,
-        "version +15 triple",
+        version_shipped(pubspec, ("1.0.0+15", "1.0.0+16"))
+        and version_in_ui(settings_ed, ("1.0.0+15", "1.0.0+16"))
+        and version_shipped(pack_bat, ("1.0.0+15", "1.0.0+16"))
+        and version_shipped(app_ver_ht, ("1.0.0+15", "1.0.0+16")),
+        "version +15/+16 triple",
     )
     ok(
         "ciclo_ik_como_section",
-        "1.0.0+15" in como_ap or "Ciclo IK" in como_ap or "hospitalidade" in como_ap.lower(),
+        "1.0.0+15" in como_ap
+        or "1.0.0+16" in como_ap
+        or "Ciclo IK" in como_ap
+        or "hospitalidade" in como_ap.lower(),
         "COMO IG-IK",
     )
     ok(
         "ciclo_ik_roadmap",
-        "IK" in roadmap_hm and "1.0.0+15" in roadmap_hm,
+        "IK" in roadmap_hm and ("1.0.0+15" in roadmap_hm or "1.0.0+16" in roadmap_hm),
         "ROADMAP IG-IK",
+    )
+
+    # --- Ciclo IL–IP: fluxo pós-bloco + copy Domínio/Biblioteca · ship 1.0.0+16 ---
+    sim_il = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    adapt_il = (
+        root / "lib" / "features" / "adaptive" / "presentation" / "adaptive_training_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    med_il = (
+        root / "lib" / "features" / "medicine" / "presentation" / "medicine_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ingest_il = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    lib_il = (
+        root / "lib" / "features" / "library" / "presentation" / "library_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    shell_il = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_il_sim_cta_primary",
+        "Continuar na Fila" in sim_il
+        and "Mandar lacunas para a Fila" in sim_il
+        and "Exportar resumo" in sim_il,
+        "simulado end CTA",
+    )
+    ok(
+        "ciclo_im_adaptive_end",
+        "Continuar na Fila" in adapt_il
+        and "Remontar treino" in adapt_il
+        and "errorTypeLabelPt" in adapt_il,
+        "adaptive end hospitality",
+    )
+    ok(
+        "ciclo_in_medicine_human",
+        "modelo" in med_il
+        and "Floor completo" not in med_il
+        and "Floor didático" not in med_il,
+        "domínio copy PT",
+    )
+    ok(
+        "ciclo_io_ingest_paths",
+        "pasta Gabaritos" in ingest_il and "Commit desabilitado" not in ingest_il,
+        "ingest human paths",
+    )
+    ok(
+        "ciclo_io_library_gab_word",
+        "Importar todos com gabarito" in lib_il
+        and "Par com gabarito" in lib_il,
+        "library gabarito word",
+    )
+    ok(
+        "ciclo_io_shell_no_sync_jargon",
+        "data da prova pendente" in shell_il and "sync pendente" not in shell_il,
+        "shell sem sync jargão",
+    )
+    ok(
+        "ciclo_ip_version_16",
+        "1.0.0+16" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+16",))
+        and "1.0.0+16" in pack_bat
+        and "1.0.0+16" in app_ver_ht,
+        "version +16 triple",
+    )
+    ok(
+        "ciclo_ip_como_section",
+        "1.0.0+16" in como_ap or "Ciclo IP" in como_ap or "fluxo pós-bloco" in como_ap.lower(),
+        "COMO IL-IP",
+    )
+    ok(
+        "ciclo_ip_roadmap",
+        "IP" in roadmap_hm and "1.0.0+16" in roadmap_hm,
+        "ROADMAP IL-IP",
     )
 
     failed = [c for c in checks if not c[1]]

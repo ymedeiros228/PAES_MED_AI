@@ -334,6 +334,11 @@ flowchart TB
 | II | Progress Ritmo + essay mentor PT | `ciclo_ii_*` | **Feito** |
 | IJ | Library/flashcards/settings human | `ciclo_ij_*` | **Feito** |
 | IK | Ship **1.0.0+15** pack/smoke | `ciclo_ik_*` | **Feito** |
+| IL | Simulado CTA fim primário | `ciclo_il_*` | **Feito** |
+| IM | Adaptive fim hospitalidade | `ciclo_im_*` | **Feito** |
+| IN | Domínio copy humana | `ciclo_in_*` | **Feito** |
+| IO | Biblioteca/shell human | `ciclo_io_*` | **Feito** |
+| IP | Ship **1.0.0+16** pack/smoke | `ciclo_ip_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -341,8 +346,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IG–IK)
+## Estado (atualizado pós IL–IP)
 
-- Rodada **IG–IK**: hospitalidade / copy humana, ship **1.0.0+15**.
-- Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
+- Rodada **IL–IP**: fluxo pós-bloco + copy Domínio/Biblioteca, ship **1.0.0+16**.
+- Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gabarito**.
 - PDFs grandes **fora** do git.

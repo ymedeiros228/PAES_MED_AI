@@ -140,8 +140,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                     eyebrow: 'Analisar',
                     title: 'Domínio',
                     subtitle: items.isEmpty
-                        ? 'Onde vale focar · S sessão selecionado · R atualiza'
-                        : '${items.length} assunto(s) · ↑/↓ J/K · Enter/S sessão · R atualiza',
+                        ? 'Onde vale focar a seguir'
+                        : '${items.length} assunto(s) por prioridade de estudo',
                   ),
 
                   if (officialN == 0)
@@ -249,7 +249,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                             children: [
                               SectionLabel(
                                 'Para revisar hoje',
-                                hint: '$n rascunho(s) Natureza — Aceitar grava “ok”, não é texto oficial da banca',
+                                hint: '$n rascunho(s) Natureza — Aceitar grava como revisão ok (não é texto da banca)',
                               ),
                               for (final raw in draftItems.take(5))
                                 Builder(
@@ -262,7 +262,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                                     return PlaylistTile(
                                       title: '${it['subject']}',
                                       subtitle: '${it['topic']}',
-                                      badge: ql == 'template' ? 'template' : 'rascunho',
+                                      badge: ql == 'template' ? 'modelo' : 'rascunho',
                                       leadingIcon: Icons.edit_note_rounded,
                                       onPlay: () => context.go('/questoes/$id'),
                                       secondary: TextButton(
@@ -390,7 +390,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Reclassificar assuntos'),
-                        subtitle: const Text('Corrige labels cross-domain (Natureza × Humanas)'),
+                        subtitle: const Text('Corrige disciplina mal etiquetada (Natureza × outras)'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             try {
@@ -418,7 +418,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Completar explicações Natureza'),
-                        subtitle: const Text('Floor didático 4 eixos — não é texto da banca'),
+                        subtitle: const Text('4 eixos didáticos — modelo de apoio, não texto da banca'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             try {
@@ -439,8 +439,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         ),
                       ),
                       ListTile(
-                        title: const Text('Floor completo (Natureza → outras)'),
-                        subtitle: const Text('Não inventa incidência; só preenche real didático'),
+                        title: const Text('Completar base didática (todas as áreas)'),
+                        subtitle: const Text('Não inventa incidência; só preenche explicação de treino'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             try {

@@ -229,7 +229,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       final nat = Map<String, dynamic>.from(health['natureza'] as Map? ?? {});
       final healthBit = health.isEmpty
           ? ''
-          : ' · gab ${health['gabaritoPct'] ?? '—'}% · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}';
+          : ' · gabarito ${health['gabaritoPct'] ?? '—'}% · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}';
       final toast =
           'Gravamos $inserted oficiais no acervo'
           '${skipped is int && skipped > 0 ? ' · $skipped ficaram de fora (baixa confiança)' : ''}'
@@ -378,8 +378,8 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                           Expanded(
                             child: Text(
                               'Sem gabarito aplicado (0/${questions.length}). '
-                              'Cole gabarito_${widget.args.year}.pdf em data/gabaritos ou marque respostas. '
-                              'Commit desabilitado para não inventar acertos.',
+                              'Coloque o gabarito do ano na pasta Gabaritos ou marque as respostas. '
+                              'Gravar fica desativado para não inventar acertos.',
                               style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
                             ),
                           ),

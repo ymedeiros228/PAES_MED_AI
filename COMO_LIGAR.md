@@ -1230,6 +1230,14 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **IJ** — Biblioteca labels humanos; flashcards/`next_due` → Hoje/Amanhã; Ajustes sem jargão floor/health.
 5. **IK** — ship **1.0.0+15**.
 
+## Fluxo pós-bloco (Ciclos IL–IP · 1.0.0+16)
+
+1. **IL** — Simulado: CTA primário Fila · export “resumo”.
+2. **IM** — Treino adaptativo: fim com Continuar na Fila + tipos de erro em PT.
+3. **IN** — Domínio: labels humanos (sem floor/template/jargão de teclado).
+4. **IO** — Biblioteca/review + shell sem path crus e sem “sync”.
+5. **IP** — ship **1.0.0+16**.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

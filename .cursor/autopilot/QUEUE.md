@@ -61,6 +61,12 @@ Prioridade: topo = primeiro.
 - [x] Progress Ritmo + essay mentor + library/flash/settings
 - [x] Ship **1.0.0+15**
 
+## P3g · Fluxo pós-bloco (IL–IP)
+
+- [x] Simulado + adaptive CTA primário Fila
+- [x] Domínio/Biblioteca/shell copy humana
+- [x] Ship **1.0.0+16**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -76,4 +82,5 @@ Prioridade: topo = primeiro.
 
 - IC–IF (2026-08-06): residual IDEAS-UI; residual host = gab 2014–23.
 - IG–IK (2026-08-06): hospitalidade copy/UX; ship **1.0.0+15**.
-- Versão: **1.0.0+15**.
+- IL–IP (2026-08-06): fluxo pós-bloco + Domínio/Biblioteca; ship **1.0.0+16**.
+- Versão: **1.0.0+16**.

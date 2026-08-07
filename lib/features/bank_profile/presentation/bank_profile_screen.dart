@@ -114,7 +114,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               PageHeader(
                 eyebrow: 'Analisar',
                 title: 'Banca',
-                subtitle: 'Estimativa local · CTAs 1–6 · E exporta · R atualiza',
+                subtitle: 'Estimativa local com base no acervo — sem % de aprovação',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: () => ref.read(refreshTickProvider.notifier).state++,
