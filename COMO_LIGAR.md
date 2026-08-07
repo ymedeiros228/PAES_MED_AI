@@ -1238,6 +1238,14 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **IO** — Biblioteca/review + shell sem path crus e sem “sync”.
 5. **IP** — ship **1.0.0+16**.
 
+## Polish front kit (Ciclos IQ–IU · 1.0.0+17)
+
+1. **IQ** — SurfacePanel soft + QuietEmpty + SoftLoader + EmptyState.
+2. **IR** — ChoiceOptionTile (sessão/simulado/treino/ficha).
+3. **IS** — Hoje hero + StudyCheckRow; PageHeader accent.
+4. **IT** — PlaylistTile stripe + rail sel.
+5. **IU** — ship **1.0.0+17**.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

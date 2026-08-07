@@ -6724,11 +6724,11 @@ def main() -> int:
     # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
-        "version +12..+16 triple",
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        "version +12..+17 triple",
     )
     ok(
         "ciclo_hx_como_section",
@@ -6804,11 +6804,11 @@ def main() -> int:
     # --- Ciclo IB: ship 1.0.0+13 (aceita +14/+15) ---
     ok(
         "ciclo_ib_version_13",
-        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16")),
-        "version +13..+16 triple",
+        version_shipped(pubspec, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_in_ui(settings_ed, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(pack_bat, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(app_ver_ht, ("1.0.0+13", "1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        "version +13..+17 triple",
     )
     ok(
         "ciclo_ib_como_section",
@@ -6816,6 +6816,7 @@ def main() -> int:
         or "1.0.0+14" in como_ap
         or "1.0.0+15" in como_ap
         or "1.0.0+16" in como_ap
+        or "1.0.0+17" in como_ap
         or "Ciclo IB" in como_ap
         or "IDEAS-UI" in como_ap,
         "COMO HY-IB",
@@ -6829,6 +6830,7 @@ def main() -> int:
                 or "1.0.0+14" in roadmap_hm
                 or "1.0.0+15" in roadmap_hm
                 or "1.0.0+16" in roadmap_hm
+                or "1.0.0+17" in roadmap_hm
             )
         ),
         "ROADMAP HY-IB",
@@ -6882,17 +6884,18 @@ def main() -> int:
     )
     ok(
         "ciclo_if_version_14",
-        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15", "1.0.0+16"))
-        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15", "1.0.0+16")),
-        "version +14..+16 triple",
+        version_shipped(pubspec, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_in_ui(settings_ed, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(pack_bat, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(app_ver_ht, ("1.0.0+14", "1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        "version +14..+17 triple",
     )
     ok(
         "ciclo_if_como_section",
         "1.0.0+14" in como_ap
         or "1.0.0+15" in como_ap
         or "1.0.0+16" in como_ap
+        or "1.0.0+17" in como_ap
         or "Ciclo IF" in como_ap
         or "Residual IDEAS" in como_ap,
         "COMO IC-IF",
@@ -6972,23 +6975,25 @@ def main() -> int:
     )
     ok(
         "ciclo_ik_version_15",
-        version_shipped(pubspec, ("1.0.0+15", "1.0.0+16"))
-        and version_in_ui(settings_ed, ("1.0.0+15", "1.0.0+16"))
-        and version_shipped(pack_bat, ("1.0.0+15", "1.0.0+16"))
-        and version_shipped(app_ver_ht, ("1.0.0+15", "1.0.0+16")),
-        "version +15/+16 triple",
+        version_shipped(pubspec, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_in_ui(settings_ed, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(pack_bat, ("1.0.0+15", "1.0.0+16", "1.0.0+17"))
+        and version_shipped(app_ver_ht, ("1.0.0+15", "1.0.0+16", "1.0.0+17")),
+        "version +15..+17 triple",
     )
     ok(
         "ciclo_ik_como_section",
         "1.0.0+15" in como_ap
         or "1.0.0+16" in como_ap
+        or "1.0.0+17" in como_ap
         or "Ciclo IK" in como_ap
         or "hospitalidade" in como_ap.lower(),
         "COMO IG-IK",
     )
     ok(
         "ciclo_ik_roadmap",
-        "IK" in roadmap_hm and ("1.0.0+15" in roadmap_hm or "1.0.0+16" in roadmap_hm),
+        "IK" in roadmap_hm
+        and ("1.0.0+15" in roadmap_hm or "1.0.0+16" in roadmap_hm or "1.0.0+17" in roadmap_hm),
         "ROADMAP IG-IK",
     )
 
@@ -7050,21 +7055,113 @@ def main() -> int:
     )
     ok(
         "ciclo_ip_version_16",
-        "1.0.0+16" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+16",))
-        and "1.0.0+16" in pack_bat
-        and "1.0.0+16" in app_ver_ht,
-        "version +16 triple",
+        version_shipped(pubspec, ("1.0.0+16", "1.0.0+17"))
+        and version_in_ui(settings_ed, ("1.0.0+16", "1.0.0+17"))
+        and version_shipped(pack_bat, ("1.0.0+16", "1.0.0+17"))
+        and version_shipped(app_ver_ht, ("1.0.0+16", "1.0.0+17")),
+        "version +16/+17 triple",
     )
     ok(
         "ciclo_ip_como_section",
-        "1.0.0+16" in como_ap or "Ciclo IP" in como_ap or "fluxo pós-bloco" in como_ap.lower(),
+        "1.0.0+16" in como_ap
+        or "1.0.0+17" in como_ap
+        or "Ciclo IP" in como_ap
+        or "fluxo pós-bloco" in como_ap.lower(),
         "COMO IL-IP",
     )
     ok(
         "ciclo_ip_roadmap",
-        "IP" in roadmap_hm and "1.0.0+16" in roadmap_hm,
+        "IP" in roadmap_hm and ("1.0.0+16" in roadmap_hm or "1.0.0+17" in roadmap_hm),
         "ROADMAP IL-IP",
+    )
+
+    # --- Ciclo IQ–IU: front kit · ship 1.0.0+17 ---
+    kit_iq = (root / "lib" / "core" / "widgets" / "ui_kit.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    empty_iq = (root / "lib" / "core" / "widgets" / "status_widgets.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    theme_iq = (root / "lib" / "core" / "theme" / "app_theme.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    dash_is = (
+        root / "lib" / "features" / "dashboard" / "presentation" / "dashboard_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_ir = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sim_ir = (
+        root / "lib" / "features" / "simulations" / "presentation" / "simulations_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    shell_it = (
+        root / "lib" / "core" / "widgets" / "app_shell.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_iq_soft_loader",
+        "class SoftLoader" in kit_iq and "Montando o dia" in dash_is,
+        "SoftLoader kit",
+    )
+    ok(
+        "ciclo_iq_surface_soft",
+        "this.soft = true" in kit_iq and "boxShadow" in kit_iq,
+        "SurfacePanel soft",
+    )
+    ok(
+        "ciclo_iq_empty_state",
+        "auto_stories_outlined" in empty_iq and "hourglass_empty_rounded" in kit_iq,
+        "EmptyState + QuietEmpty",
+    )
+    ok(
+        "ciclo_iq_progress_theme",
+        "progressIndicatorTheme" in theme_iq and "dialogTheme" in theme_iq,
+        "theme progress/dialog",
+    )
+    ok(
+        "ciclo_ir_choice_option",
+        "class ChoiceOptionTile" in kit_iq
+        and "ChoiceOptionTile" in sess_ir
+        and "ChoiceOptionTile" in sim_ir,
+        "ChoiceOption multi-tela",
+    )
+    ok(
+        "ciclo_is_study_check",
+        "class StudyCheckRow" in kit_iq and "StudyCheckRow" in dash_is,
+        "Hoje StudyCheckRow",
+    )
+    ok(
+        "ciclo_is_hero_accent",
+        "letterSpacing: -0.8" in dash_is or "fontSize: 36" in dash_is,
+        "Hoje hero polish",
+    )
+    ok(
+        "ciclo_it_playlist_stripe",
+        "width: 4" in kit_iq and "BorderRadius.horizontal" in kit_iq,
+        "PlaylistTile stripe",
+    )
+    ok(
+        "ciclo_it_rail_border",
+        "BorderSide(color: cs.primary, width: 3)" in shell_it
+        or "width: 3" in shell_it,
+        "rail selected border",
+    )
+    ok(
+        "ciclo_iu_version_17",
+        "1.0.0+17" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+17",))
+        and "1.0.0+17" in pack_bat
+        and "1.0.0+17" in app_ver_ht,
+        "version +17 triple",
+    )
+    ok(
+        "ciclo_iu_como_section",
+        "1.0.0+17" in como_ap or "Ciclo IU" in como_ap or "polish front" in como_ap.lower(),
+        "COMO IQ-IU",
+    )
+    ok(
+        "ciclo_iu_roadmap",
+        "IU" in roadmap_hm and "1.0.0+17" in roadmap_hm,
+        "ROADMAP IQ-IU",
     )
 
     failed = [c for c in checks if not c[1]]

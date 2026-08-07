@@ -520,6 +520,14 @@ class _NavTileState extends State<_NavTile> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
                   height: 44,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: widget.selected
+                        ? Border(
+                            left: BorderSide(color: cs.primary, width: 3),
+                          )
+                        : null,
+                  ),
                   padding: EdgeInsets.symmetric(horizontal: widget.expanded ? 12 : 0),
                   child: Row(
                     mainAxisAlignment: widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,

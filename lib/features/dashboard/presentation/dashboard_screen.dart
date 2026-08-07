@@ -182,7 +182,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final focus = ref.watch(focusModeProvider);
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SoftLoader(label: 'Montando o dia…'),
       error: (e, _) => EmptyState(
         title: 'Não foi possível carregar',
         subtitle: humanApiError(e, fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
@@ -262,10 +262,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       'PAES MED AI',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             color: Colors.white,
-                            fontSize: 34,
+                            fontSize: 36,
+                            letterSpacing: -0.8,
                           ),
                     ),
-                    const SizedBox(height: 6),
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      width: 40,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       (countdown['label']?.toString().isNotEmpty == true)
                           ? countdown['label'].toString()
@@ -276,12 +286,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   : 'Prova na conta',
                       style: TextStyle(color: Colors.white.withOpacity(0.78), fontSize: 15),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
                     Text(
                       coachLine,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: Colors.white,
-                            height: 1.25,
+                            height: 1.28,
+                            fontWeight: FontWeight.w700,
                           ),
                     ),
                     if (progress.isNotEmpty) ...[
@@ -291,7 +302,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
                       ),
                     ],
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 24),
                     Wrap(
                       spacing: 10,
                       runSpacing: 10,
@@ -300,7 +311,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: AppTheme.navy,
-                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            elevation: 0,
                           ),
                           onPressed: () => context.go(sessionPath),
                           child: Text(
@@ -314,6 +326,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white70),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                             ),
                             onPressed: _discardCheckpoint,
                             child: const Text('Recomeçar'),
@@ -322,16 +335,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white70),
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                           ),
                           onPressed: () => context.go(closePath),
                           child: Text(closeLabel),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Text(
-                      'Dica: S inicia a sessão · L abre a fila',
-                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 12),
+                      'S inicia a sessão · L abre a fila',
+                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
                     ),
                   ],
                 ),
@@ -407,7 +421,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
-                          _CheckRow(
+                          StudyCheckRow(
                             done: checklist['session'] == true,
                             label: 'Sessão (~15+ min)',
                             actionLabel: 'Sessão',
@@ -417,17 +431,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             future: dueCardsFuture,
                             builder: (context, snap) {
                               if (!snap.hasData) {
-                                return _CheckRow(
+                                return const StudyCheckRow(
                                   done: false,
                                   label: 'Cards do dia…',
-                                  actionLabel: null,
-                                  onAction: null,
                                 );
                               }
                               final list = snap.data is List ? snap.data as List : const [];
                               final n = list.length;
                               final done = n == 0 || checklist['cards'] == true;
-                              return _CheckRow(
+                              return StudyCheckRow(
                                 done: done,
                                 label: n == 0 ? 'Cards em dia' : '$n card(s) para revisar',
                                 actionLabel: n == 0 ? null : 'Cards',
@@ -435,7 +447,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               );
                             },
                           ),
-                          _CheckRow(
+                          StudyCheckRow(
                             done: checklist['revisions'] == true,
                             label: gapN > 0
                                 ? '$gapN lacuna(s) aberta(s)'
@@ -443,7 +455,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Fila' : null,
                             onAction: () => context.go('/fila'),
                           ),
-                          _CheckRow(
+                          StudyCheckRow(
                             done: dayClosed,
                             label: dayClosed ? 'Dia encerrado' : 'Encerrar o dia',
                             actionLabel: dayClosed ? null : 'Fechar',
@@ -866,49 +878,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         );
       },
-    );
-  }
-}
-
-class _CheckRow extends StatelessWidget {
-  const _CheckRow({
-    required this.done,
-    required this.label,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final bool done;
-  final String label;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Icon(
-            done ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-            color: done ? cs.primary : cs.onSurface.withOpacity(0.35),
-            size: 22,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    decoration: done ? TextDecoration.lineThrough : null,
-                    color: done ? cs.onSurface.withOpacity(0.55) : null,
-                  ),
-            ),
-          ),
-          if (actionLabel != null && onAction != null && !done)
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
-        ],
-      ),
     );
   }
 }

@@ -249,6 +249,16 @@ class AppTheme {
           borderSide: BorderSide(color: scheme.primary, width: 1.4),
         ),
       ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: scheme.primary,
+        linearTrackColor: scheme.primaryContainer.withOpacity(0.55),
+        circularTrackColor: scheme.primaryContainer.withOpacity(0.55),
+      ),
+      dialogTheme: DialogTheme(
+        backgroundColor: scheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        elevation: 0,
+      ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {

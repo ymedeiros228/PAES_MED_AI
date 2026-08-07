@@ -1061,7 +1061,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
       );
     }
-    if (plan == null) return const Center(child: CircularProgressIndicator());
+    if (plan == null) return const SoftLoader(label: 'Montando sessão…');
 
     final phases = (plan!['sessionPlan'] as List? ?? [
       {'phase': 'theory', 'minutes': 20, 'title': 'Teoria do dia'},
@@ -1349,11 +1349,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ),
               const SizedBox(height: 12),
               for (var i = 0; i < (sessionQuestions[qIndex]['options'] as List? ?? []).length; i++)
-                RadioListTile<int>(
-                  value: i,
-                  groupValue: selected,
-                  onChanged: revealed ? null : (v) => setState(() => selected = v),
-                  title: Text('${'ABCDE'[i]}) ${(sessionQuestions[qIndex]['options'] as List)[i]}'),
+                Builder(
+                  builder: (_) {
+                    final correctIdx = (sessionQuestions[qIndex]['correctIndex'] as int?) ??
+                        (sessionQuestions[qIndex]['correct_index'] as int?);
+                    bool? reveal;
+                    if (revealed) {
+                      if (i == correctIdx) {
+                        reveal = true;
+                      } else if (i == selected) {
+                        reveal = false;
+                      }
+                    }
+                    return ChoiceOptionTile(
+                      index: i,
+                      label: '${(sessionQuestions[qIndex]['options'] as List)[i]}',
+                      selected: selected == i,
+                      enabled: !revealed,
+                      revealCorrect: reveal,
+                      onTap: () => setState(() => selected = i),
+                    );
+                  },
                 ),
               if (revealed) ...[
                 Text(

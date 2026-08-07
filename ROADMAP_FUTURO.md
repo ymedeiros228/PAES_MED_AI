@@ -339,6 +339,11 @@ flowchart TB
 | IN | Domínio copy humana | `ciclo_in_*` | **Feito** |
 | IO | Biblioteca/shell human | `ciclo_io_*` | **Feito** |
 | IP | Ship **1.0.0+16** pack/smoke | `ciclo_ip_*` | **Feito** |
+| IQ | Kit Surface/Empty/Loader soft | `ciclo_iq_*` | **Feito** |
+| IR | ChoiceOptionTile multi-tela | `ciclo_ir_*` | **Feito** |
+| IS | Hoje hero + checklist rows | `ciclo_is_*` | **Feito** |
+| IT | Playlist + rail polish | `ciclo_it_*` | **Feito** |
+| IU | Ship **1.0.0+17** pack/smoke | `ciclo_iu_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -346,8 +351,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IL–IP)
+## Estado (atualizado pós IQ–IU)
 
-- Rodada **IL–IP**: fluxo pós-bloco + copy Domínio/Biblioteca, ship **1.0.0+16**.
+- Rodada **IQ–IU**: polish front kit + opções, ship **1.0.0+17**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gabarito**.
 - PDFs grandes **fora** do git.

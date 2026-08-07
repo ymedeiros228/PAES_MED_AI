@@ -451,11 +451,17 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         Text(q.statement, style: Theme.of(context).textTheme.titleLarge?.copyWith(height: 1.35)),
         const SizedBox(height: 16),
         for (var i = 0; i < q.options.length; i++)
-          RadioListTile<int>(
-            value: i,
-            groupValue: selected,
-            onChanged: revealed ? null : (v) => setState(() => selected = v),
-            title: Text('${'ABCDE'[i]}) ${q.options[i]}'),
+          ChoiceOptionTile(
+            index: i,
+            label: q.options[i],
+            selected: selected == i,
+            enabled: !revealed,
+            revealCorrect: revealed
+                ? (i == q.correctIndex
+                    ? true
+                    : (i == selected ? false : null))
+                : null,
+            onTap: () => setState(() => selected = i),
           ),
         if (!revealed) ...[
           const SizedBox(height: 12),

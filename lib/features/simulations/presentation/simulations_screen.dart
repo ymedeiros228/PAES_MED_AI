@@ -1008,21 +1008,18 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           Text(q['statement']?.toString() ?? ''),
                           const SizedBox(height: 4),
                           for (var i = 0; i < opts.length; i++)
-                            RadioListTile<int>(
-                              dense: true,
-                              contentPadding: EdgeInsets.zero,
-                              value: i,
-                              groupValue: answers[id],
-                              onChanged: report != null
-                                  ? null
-                                  : (v) {
-                                      setState(() {
-                                        answers[id] = v!;
-                                        keyboardQi = qi;
-                                      });
-                                      unawaited(_saveSimCheckpoint());
-                                    },
-                              title: Text('${'ABCDE'[i]}) ${opts[i]}'),
+                            ChoiceOptionTile(
+                              index: i,
+                              label: '${opts[i]}',
+                              selected: answers[id] == i,
+                              enabled: report == null,
+                              onTap: () {
+                                setState(() {
+                                  answers[id] = i;
+                                  keyboardQi = qi;
+                                });
+                                unawaited(_saveSimCheckpoint());
+                              },
                             ),
                           if (report == null && answers.containsKey(id) && !examLocked)
                             Padding(

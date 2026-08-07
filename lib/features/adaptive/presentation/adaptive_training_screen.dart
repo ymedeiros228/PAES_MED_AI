@@ -502,21 +502,17 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           )
                         else
                           for (var i = 0; i < options.length; i++)
-                            RadioListTile<int>(
-                              dense: true,
-                              contentPadding: EdgeInsets.zero,
-                              value: i,
-                              groupValue: selected,
-                              onChanged: revealed ? null : (v) => setState(() => selected = v),
-                              title: Text('${'ABCDE'[i]}) ${options[i]}'),
-                              secondary: revealed && correctIndex != null
-                                  ? Icon(
-                                      i == correctIndex
-                                          ? Icons.check_circle
-                                          : (i == selected ? Icons.cancel : null),
-                                      color: i == correctIndex ? Colors.green : Colors.red,
-                                    )
+                            ChoiceOptionTile(
+                              index: i,
+                              label: '${options[i]}',
+                              selected: selected == i,
+                              enabled: !revealed,
+                              revealCorrect: revealed && correctIndex != null
+                                  ? (i == correctIndex
+                                      ? true
+                                      : (i == selected ? false : null))
                                   : null,
+                              onTap: () => setState(() => selected = i),
                             ),
                         if (!revealed) ...[
                           const SizedBox(height: 6),

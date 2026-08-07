@@ -67,6 +67,12 @@ Prioridade: topo = primeiro.
 - [x] Domínio/Biblioteca/shell copy humana
 - [x] Ship **1.0.0+16**
 
+## P3h · Front kit (IQ–IU)
+
+- [x] SoftLoader / EmptyState / Surface soft / ChoiceOption
+- [x] Hoje checklist + playlist/rail
+- [x] Ship **1.0.0+17**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -83,4 +89,5 @@ Prioridade: topo = primeiro.
 - IC–IF (2026-08-06): residual IDEAS-UI; residual host = gab 2014–23.
 - IG–IK (2026-08-06): hospitalidade copy/UX; ship **1.0.0+15**.
 - IL–IP (2026-08-06): fluxo pós-bloco + Domínio/Biblioteca; ship **1.0.0+16**.
-- Versão: **1.0.0+16**.
+- IQ–IU (2026-08-07): polish front kit; ship **1.0.0+17**.
+- Versão: **1.0.0+17**.

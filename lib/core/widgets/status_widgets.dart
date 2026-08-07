@@ -129,6 +129,7 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cta = action ??
         (actionLabel != null && onAction != null
             ? FilledButton(onPressed: onAction, child: Text(actionLabel!))
@@ -140,23 +141,43 @@ class EmptyState extends StatelessWidget {
       button: cta != null,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.inbox_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.28)),
-              const SizedBox(height: 12),
-              Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
-                    ),
-              ),
-              if (cta != null) ...[const SizedBox(height: 16), cta],
-            ],
+          padding: const EdgeInsets.all(36),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer.withOpacity(0.65),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.auto_stories_outlined,
+                    size: 34,
+                    color: cs.primary.withOpacity(0.9),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface.withOpacity(0.65),
+                        height: 1.4,
+                      ),
+                ),
+                if (cta != null) ...[const SizedBox(height: 20), cta],
+              ],
+            ),
           ),
         ),
       ),

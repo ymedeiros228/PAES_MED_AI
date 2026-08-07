@@ -66,9 +66,24 @@ class PageHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                 ],
-                Text(title, style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.4,
+                      ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  width: 36,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: cs.primary.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
                   Text(
                     subtitle!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -151,6 +166,7 @@ class SurfacePanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.color,
     this.margin = EdgeInsets.zero,
+    this.soft = true,
     super.key,
   });
 
@@ -158,17 +174,29 @@ class SurfacePanel extends StatelessWidget {
   final EdgeInsets padding;
   final Color? color;
   final EdgeInsets margin;
+  /// Sombra leve + borda suave (padrão hospitalidade).
+  final bool soft;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? cs.surface.withOpacity(0.92),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant.withOpacity(0.85)),
+        color: color ?? cs.surface.withOpacity(isDark ? 0.94 : 0.98),
+        borderRadius: BorderRadius.circular(soft ? 18 : 16),
+        border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.55 : 0.85)),
+        boxShadow: soft && !isDark
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF0A1628).withOpacity(0.045),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: child,
     );
@@ -219,78 +247,100 @@ class _PlaylistTileState extends State<PlaylistTile> {
       onEnter: (_) => setState(() => hover = true),
       onExit: (_) => setState(() => hover = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        margin: const EdgeInsets.only(bottom: 4),
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: widget.active
+                ? cs.primary.withOpacity(0.22)
+                : (hover ? cs.outlineVariant.withOpacity(0.65) : Colors.transparent),
+          ),
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             onTap: widget.onPlay,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: IntrinsicHeight(
               child: Row(
                 children: [
-                  Icon(
-                    widget.leadingIcon,
-                    color: widget.active ? cs.primary : cs.onSurface.withOpacity(0.45),
-                    size: 26,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: 4,
+                    decoration: BoxDecoration(
+                      color: widget.active ? cs.primary : Colors.transparent,
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+                    ),
                   ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        if (widget.subtitle != null)
-                          Text(
-                            widget.subtitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 11, 10, 11),
+                      child: Row(
+                        children: [
+                          Icon(
+                            widget.leadingIcon,
+                            color: widget.active ? cs.primary : cs.onSurface.withOpacity(0.45),
+                            size: 26,
                           ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                                if (widget.subtitle != null)
+                                  Text(
+                                    widget.subtitle!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (widget.badge != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: widget.badgeColor ?? cs.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                widget.badge!,
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: widget.badgeColor != null
+                                          ? (ThemeData.estimateBrightnessForColor(widget.badgeColor!) ==
+                                                  Brightness.dark
+                                              ? Colors.white
+                                              : cs.onSurface)
+                                          : null,
+                                    ),
+                              ),
+                            ),
+                          ],
+                          if (widget.secondary != null) ...[
+                            const SizedBox(width: 8),
+                            widget.secondary!,
+                          ] else if (widget.onPlay != null) ...[
+                            const SizedBox(width: 4),
+                            Icon(Icons.chevron_right_rounded, color: cs.onSurface.withOpacity(0.35)),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
-                  if (widget.badge != null) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: widget.badgeColor ?? cs.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        widget.badge!,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: widget.badgeColor != null
-                                  ? (ThemeData.estimateBrightnessForColor(widget.badgeColor!) ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : cs.onSurface)
-                                  : null,
-                            ),
-                      ),
-                    ),
-                  ],
-                  if (widget.secondary != null) ...[
-                    const SizedBox(width: 8),
-                    widget.secondary!,
-                  ] else if (widget.onPlay != null) ...[
-                    const SizedBox(width: 4),
-                    Icon(Icons.chevron_right_rounded, color: cs.onSurface.withOpacity(0.35)),
-                  ],
                 ],
               ),
             ),
@@ -396,9 +446,10 @@ class PhaseProgressBar extends StatelessWidget {
 }
 
 class QuietEmpty extends StatelessWidget {
-  const QuietEmpty({required this.message, this.action, super.key});
+  const QuietEmpty({required this.message, this.action, this.icon, super.key});
   final String message;
   final Widget? action;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -407,21 +458,240 @@ class QuietEmpty extends StatelessWidget {
       label: message,
       button: action != null,
       child: SurfacePanel(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
           children: [
-            Icon(Icons.horizontal_rule_rounded, color: cs.onSurface.withOpacity(0.3)),
-            const SizedBox(width: 10),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon ?? Icons.hourglass_empty_rounded,
+                size: 18,
+                color: cs.onSurface.withOpacity(0.42),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.6),
+                      color: cs.onSurface.withOpacity(0.68),
+                      height: 1.35,
                     ),
               ),
             ),
-            if (action != null) action!,
+            if (action != null) ...[const SizedBox(width: 8), action!],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Loading calmo (mint/teal) — evita spinner cru centralizado.
+class SoftLoader extends StatelessWidget {
+  const SoftLoader({this.label, this.compact = false, super.key});
+
+  final String? label;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final indicator = SizedBox(
+      width: compact ? 22 : 28,
+      height: compact ? 22 : 28,
+      child: CircularProgressIndicator(
+        strokeWidth: compact ? 2.2 : 2.6,
+        color: cs.primary,
+        backgroundColor: cs.primaryContainer.withOpacity(0.55),
+      ),
+    );
+    if (compact && label == null) {
+      return Center(child: indicator);
+    }
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(compact ? 16 : 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            indicator,
+            if (label != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                label!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurface.withOpacity(0.62),
+                    ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Alternativa A–E em painéis clicáveis (sessão / simulado).
+class ChoiceOptionTile extends StatelessWidget {
+  const ChoiceOptionTile({
+    required this.index,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.enabled = true,
+    this.revealCorrect,
+    super.key,
+  });
+
+  final int index;
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+  final bool enabled;
+  /// null = ainda sem revelar; true/false após correção.
+  final bool? revealCorrect;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final letter = index >= 0 && index < 5 ? 'ABCDE'[index] : '?';
+    Color border = cs.outlineVariant.withOpacity(0.75);
+    Color bg = cs.surface;
+    Color letterBg = cs.surfaceContainerHigh;
+    Color letterFg = cs.onSurface.withOpacity(0.75);
+    if (revealCorrect == true) {
+      border = cs.primary.withOpacity(0.55);
+      bg = cs.primaryContainer.withOpacity(0.45);
+      letterBg = cs.primary;
+      letterFg = cs.onPrimary;
+    } else if (revealCorrect == false && selected) {
+      border = cs.error.withOpacity(0.45);
+      bg = cs.errorContainer.withOpacity(0.35);
+      letterBg = cs.error;
+      letterFg = cs.onError;
+    } else if (selected) {
+      border = cs.primary.withOpacity(0.55);
+      bg = cs.primaryContainer.withOpacity(0.38);
+      letterBg = cs.primary;
+      letterFg = cs.onPrimary;
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(14),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border, width: selected || revealCorrect != null ? 1.4 : 1),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: letterBg,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Text(
+                    letter,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: letterFg,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.35),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Linha de checklist do dia (Hoje).
+class StudyCheckRow extends StatelessWidget {
+  const StudyCheckRow({
+    required this.done,
+    required this.label,
+    this.actionLabel,
+    this.onAction,
+    super.key,
+  });
+
+  final bool done;
+  final String label;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SurfacePanel(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      soft: false,
+      color: done ? cs.primaryContainer.withOpacity(0.28) : null,
+      child: Row(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: done ? cs.primary : cs.surfaceContainerHigh,
+            ),
+            child: Icon(
+              done ? Icons.check_rounded : Icons.circle_outlined,
+              size: 16,
+              color: done ? cs.onPrimary : cs.onSurface.withOpacity(0.4),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    decoration: done ? TextDecoration.lineThrough : null,
+                    color: done ? cs.onSurface.withOpacity(0.55) : null,
+                    fontWeight: done ? FontWeight.w500 : FontWeight.w600,
+                  ),
+            ),
+          ),
+          if (actionLabel != null && onAction != null && !done)
+            FilledButton.tonal(
+              onPressed: onAction,
+              style: FilledButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: Text(actionLabel!),
+            ),
+        ],
       ),
     );
   }
