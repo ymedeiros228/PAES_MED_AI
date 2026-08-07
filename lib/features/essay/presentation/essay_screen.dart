@@ -12,6 +12,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../essay_draft.dart';
+import '../essay_progress_view.dart';
 
 class EssayScreen extends ConsumerStatefulWidget {
   const EssayScreen({super.key});
@@ -132,9 +133,9 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
 
   Future<void> _loadProgress() async {
     try {
-      final data = await apiClient.get('/api/essays/progress');
+      final data = await ref.read(essayProgressProvider.future);
       if (!mounted) return;
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = Map<String, dynamic>.from(data);
       final mission = map['nextMission'];
       String? suggested;
       if (mission is Map) {
@@ -334,6 +335,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
         .toList();
     final count = progress?['count'] as int? ?? 0;
     final streak = progress?['streakDays'] as int? ?? 0;
+    final lastScores = Map<String, dynamic>.from(progress?['lastAxisScores'] as Map? ?? {});
+    final weakKey = progress == null ? null : weakestAxisKey(progress!);
 
     return CallbackShortcuts(
       bindings: {
@@ -421,18 +424,41 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const HonestBadge(),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
-                        '${streak > 0 ? ' · sequência $streak dia(s)' : ''}'
-                        '${progress!['levelLabel'] != null ? ' · ${progress!['levelLabel']}' : ''}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      const SizedBox(height: 10),
+                      StatsStrip(
+                        items: [
+                          ('Redações', '$count'),
+                          ('Média', '${progress!['meanScore'] ?? '—'}'),
+                          ('Sequência', streak > 0 ? '$streak d' : '—'),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            streak > 0 ? Icons.local_fire_department_rounded : Icons.bolt_rounded,
+                            size: 16,
+                            color: streak > 0 ? cs.tertiary : cs.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              streakLabel(streak),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: streak > 0 ? FontWeight.w700 : FontWeight.w500,
+                                    color: streak > 0 ? cs.tertiary : cs.onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       EssayRoseChart(
                         axes: axes,
                         averages: avg,
                         labels: labels,
+                        lastAxisScores: lastScores.isEmpty ? null : lastScores,
+                        weakestKey: weakKey,
                       ),
                     ],
                   ),

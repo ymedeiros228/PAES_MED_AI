@@ -420,6 +420,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
+                          SectionLabel('Seu ritmo', hint: 'treino local · não banca'),
+                          StatsStrip(
+                            items: [
+                              ('${data['streakDays'] ?? 0}', 'dias seguidos'),
+                              ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
+                              ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
                           StudyCheckRow(
                             done: checklist['session'] == true,
@@ -522,25 +532,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
-                          FutureBuilder(
-                            future: apiClient.get('/api/essays/progress'),
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) {
-                                return const SizedBox.shrink();
-                              }
-                              final prog = Map<String, dynamic>.from(snap.data as Map);
-                              final c = prog['count'] as int? ?? 0;
-                              final mission = prog['nextMission'];
-                              if (c < 1 || mission is! Map) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: PlaylistTile(
-                                  title: 'Missão de redação · ${mission['label'] ?? 'eixo'}',
-                                  subtitle: 'treino local · não banca',
-                                  badge: 'missão',
-                                  leadingIcon: Icons.edit_note_rounded,
-                                  onPlay: () => context.go('/redacao'),
-                                ),
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final async = ref.watch(essayProgressProvider);
+                              return async.when(
+                                loading: () => const SizedBox.shrink(),
+                                error: (_, __) => const SizedBox.shrink(),
+                                data: (prog) {
+                                  final c = prog['count'] as int? ?? 0;
+                                  final mission = prog['nextMission'];
+                                  if (c < 1 || mission is! Map) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: PlaylistTile(
+                                      title: 'Missão de redação · ${mission['label'] ?? 'eixo'}',
+                                      subtitle: 'treino local · não banca',
+                                      badge: 'missão',
+                                      leadingIcon: Icons.edit_note_rounded,
+                                      onPlay: () => context.go('/redacao'),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           ),
@@ -813,14 +825,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   ),
                                 ),
                               const SizedBox(height: 8),
-                              SectionLabel('Seu ritmo'),
-                              StatsStrip(
-                                items: [
-                                  ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                                  ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                                  ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                                ],
-                              ),
                               if (!focus) ...[
                                 SectionLabel('Explorar'),
                                 Wrap(

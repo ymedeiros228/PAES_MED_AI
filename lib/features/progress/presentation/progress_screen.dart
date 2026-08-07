@@ -77,6 +77,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
     final axes = (essay['axes'] as List? ?? const [])
         .map((e) => e.toString())
         .toList();
+    final lastScores = Map<String, dynamic>.from(essay['lastAxisScores'] as Map? ?? {});
+    final weakKey = essay['weakestAxis']?.toString();
     final mission = essay['nextMission'];
     final missionStatus = (mission is Map ? mission['status'] : essay['missionStatus'])
             ?.toString() ??
@@ -214,6 +216,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         axes: axes,
                         averages: avg,
                         labels: labels,
+                        lastAxisScores: lastScores.isEmpty ? null : lastScores,
+                        weakestKey: (weakKey != null && weakKey.isNotEmpty) ? weakKey : null,
                       ),
                     ),
                   ],
