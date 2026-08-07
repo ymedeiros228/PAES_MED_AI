@@ -432,7 +432,7 @@ class PhaseProgressBar extends StatelessWidget {
               ),
             InkWell(
               onTap: onSelect == null ? null : () => onSelect!(i),
-                borderRadius: BorderRadius.circular(kRadiusHighlight),
+              borderRadius: BorderRadius.circular(kRadiusHighlight),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -477,7 +477,7 @@ class QuietEmpty extends StatelessWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(kRadiusButton),
+                borderRadius: BorderRadius.circular(kRadiusButton),
               ),
               child: Icon(
                 icon ?? Icons.hourglass_empty_rounded,
@@ -605,7 +605,7 @@ class ChoiceOptionTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               color: bg,
-            borderRadius: BorderRadius.circular(kRadiusButton),
+              borderRadius: BorderRadius.circular(kRadiusButton),
               border: Border.all(color: border, width: selected || revealCorrect != null ? 1.4 : 1),
             ),
             child: Row(
@@ -617,7 +617,7 @@ class ChoiceOptionTile extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: letterBg,
-            borderRadius: BorderRadius.circular(kRadiusControl),
+                    borderRadius: BorderRadius.circular(kRadiusControl),
                   ),
                   child: Text(
                     letter,
