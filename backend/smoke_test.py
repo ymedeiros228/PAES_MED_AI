@@ -24,7 +24,11 @@ def api_source(root: Path) -> str:
     return "\n".join(f.read_text(encoding="utf-8", errors="ignore") for f in files if f.exists())
 
 
-def main() -> int:
+Check = tuple[str, bool, str]
+
+
+def run_checks() -> list[Check]:
+    """Roda a bateria inteira e devolve (nome, passou, detalhe) por verificação."""
     seed(force=True)
     client = TestClient(app)
     checks: list[tuple[str, bool, str]] = []
@@ -7168,6 +7172,11 @@ def main() -> int:
         "ROADMAP IQ-IU",
     )
 
+    return checks
+
+
+def main() -> int:
+    checks = run_checks()
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"
