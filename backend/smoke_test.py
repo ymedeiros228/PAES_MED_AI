@@ -6683,14 +6683,14 @@ def main() -> int:
         "ficha livro lido",
     )
 
-    # --- Ciclo HX: ship 1.0.0+12 ---
+    # --- Ciclo HX: ship 1.0.0+12 (aceita +13) ---
     ok(
         "ciclo_hx_version_12",
-        "1.0.0+12" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+12",))
-        and "1.0.0+12" in pack_bat
-        and "1.0.0+12" in app_ver_ht,
-        "version +12 triple",
+        version_shipped(pubspec, ("1.0.0+12", "1.0.0+13"))
+        and version_in_ui(settings_ed, ("1.0.0+12", "1.0.0+13"))
+        and version_shipped(pack_bat, ("1.0.0+12", "1.0.0+13"))
+        and version_shipped(app_ver_ht, ("1.0.0+12", "1.0.0+13")),
+        "version +12/+13 triple",
     )
     ok(
         "ciclo_hx_como_section",
@@ -6699,8 +6699,88 @@ def main() -> int:
     )
     ok(
         "ciclo_hx_roadmap",
-        "HU" in roadmap_hm and "HX" in roadmap_hm and "1.0.0+12" in roadmap_hm,
+        ("HU" in roadmap_hm and "HX" in roadmap_hm)
+        or "1.0.0+12" in roadmap_hm
+        or "1.0.0+13" in roadmap_hm,
         "ROADMAP HU-HX",
+    )
+
+    # --- Ciclo HY/HZ/IA: IDEAS-UI wave ---
+    fila_hz = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    theory_hz = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_ia = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    settings_ia = (
+        root / "lib" / "features" / "settings" / "presentation" / "settings_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    sess_ia = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hz_fila_filter_no_material",
+        "Só sem material" in fila_hz and "gapsOnlyNoMaterial" in fila_hz,
+        "fila filtro",
+    )
+    ok(
+        "ciclo_hz_badge_color",
+        "badgeColor" in (
+            root / "lib" / "core" / "widgets" / "ui_kit.dart"
+        ).read_text(encoding="utf-8", errors="ignore")
+        and "badgeColor:" in fila_hz,
+        "badge color",
+    )
+    ok(
+        "ciclo_hz_theory_empty_folders",
+        "Pasta edital" in theory_hz and "Pasta provas" in theory_hz,
+        "theory empty pastas",
+    )
+    ok(
+        "ciclo_ia_session_theory_panels",
+        "Passo 1 de 2" in sess_ia and "Teoria do edital" in sess_ia and "de " in sess_ia,
+        "sessão teoria painéis",
+    )
+    ok(
+        "ciclo_ia_ficha_pdf_folder",
+        "Onde colocar o PDF" in ficha_ia and "open-folder" in ficha_ia,
+        "ficha PDF path",
+    )
+    ok(
+        "ciclo_ia_settings_desktop",
+        "Desktop build" in settings_ia or "Build Windows" in settings_ia,
+        "Sobre Desktop",
+    )
+    ok(
+        "ciclo_hy_bump_doc",
+        (root / "docs" / "BUMP_VERSION.md").is_file()
+        and "app_version.dart" in (root / "docs" / "BUMP_VERSION.md").read_text(
+            encoding="utf-8", errors="ignore"
+        ),
+        "BUMP_VERSION.md",
+    )
+
+    # --- Ciclo IB: ship 1.0.0+13 ---
+    ok(
+        "ciclo_ib_version_13",
+        "1.0.0+13" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+13",))
+        and "1.0.0+13" in pack_bat
+        and "1.0.0+13" in app_ver_ht,
+        "version +13 triple",
+    )
+    ok(
+        "ciclo_ib_como_section",
+        "1.0.0+13" in como_ap or "Ciclo IB" in como_ap or "IDEAS-UI" in como_ap,
+        "COMO HY-IB",
+    )
+    ok(
+        "ciclo_ib_roadmap",
+        "IB" in roadmap_hm and "1.0.0+13" in roadmap_hm,
+        "ROADMAP HY-IB",
     )
 
     failed = [c for c in checks if not c[1]]

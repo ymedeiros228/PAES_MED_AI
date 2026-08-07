@@ -181,6 +181,7 @@ class PlaylistTile extends StatefulWidget {
     required this.title,
     this.subtitle,
     this.badge,
+    this.badgeColor,
     this.leadingIcon = Icons.play_circle_outline_rounded,
     this.onPlay,
     this.secondary,
@@ -191,6 +192,8 @@ class PlaylistTile extends StatefulWidget {
   final String title;
   final String? subtitle;
   final String? badge;
+  /// Cor do fundo do badge (ex.: tertiary / primary) — status sem depender só do texto.
+  final Color? badgeColor;
   final IconData leadingIcon;
   final VoidCallback? onPlay;
   final Widget? secondary;
@@ -264,12 +267,20 @@ class _PlaylistTileState extends State<PlaylistTile> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: cs.surfaceContainerHighest,
+                        color: widget.badgeColor ?? cs.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         widget.badge!,
-                        style: Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: widget.badgeColor != null
+                                  ? (ThemeData.estimateBrightnessForColor(widget.badgeColor!) ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : cs.onSurface)
+                                  : null,
+                            ),
                       ),
                     ),
                   ],

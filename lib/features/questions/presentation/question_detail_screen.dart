@@ -400,9 +400,40 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         else
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              'PDF ${q.year}: não está em data/provas (sem inventar).',
-              style: Theme.of(context).textTheme.bodySmall,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PDF ${q.year}: não está em data/provas (sem inventar).',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      await apiClient.post('/api/library/open-folder', {'folder': 'provas'});
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Pasta provas aberta — coloque o PDF do ano e reimporte na Biblioteca.'),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              humanApiError(e, fallback: 'Não abriu a pasta provas.'),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.folder_open_outlined, size: 18),
+                  label: const Text('Onde colocar o PDF'),
+                ),
+              ],
             ),
           ),
         if (q.generated)

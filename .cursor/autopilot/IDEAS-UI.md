@@ -4,41 +4,41 @@ Formato: `- [ ] [tela/área] | ideia curta | por que melhora | esforço S/M`
 
 ## Backlog
 
-- [ ] [Fila / checkpoint] | banner “Continuar sessão” com barra de fases (teoria/questões/revisão) | retoma estudo com contexto visual, menos texto cru | S
-- [ ] [Sessão / fim de bloco] | resumo em chips (acertos, cards criados, tópicos fracos) em vez de linha única | escaneabilidade no mobile | S
-- [x] [Fila / empty] | ilustração leve ou ícone maior quando fila vazia + CTA já visível acima | empty state menos “técnico”, mais acolhedor | S
-- [ ] [Sessão / teoria] | trechos do edital em cards com borda suave e contador “3 de 10” | leitura mais confortável em blocos longos | M
-- [ ] [Ficha / debrief sessão] | CTA **Ler teoria** no debrief inline (igual ficha) antes de Treinar | mesmo fluxo pós-erro em todos os pontos | S
-- [x] [Theory sheet] | barra de progresso “Passo 1 de 2” no topo do sheet | reforça sequência li → treino sem ler parágrafo | S
-- [x] [Fila / lacunas] | badge “teoria lida” no tile quando mark-read true | evita reabrir sheet à toa | S
-- [x] [Fila / lacunas] | chip contador “N sem teoria” ao lado do SectionLabel | escaneabilidade rápida | S
-- [x] [Fila / lacunas] | subtitle “· li” no tile quando read=true (além do ícone) | reforço textual no mobile | S
-- [ ] [Theory sheet] | animação suave ao marcar “li” (check + troca de CTA primário) | feedback imediato do próximo passo | S
-- [x] [Fila / lacunas] | leading livro preenchido só quando lido (já parcial HD) | reforço visual à esquerda | S
-- [ ] [Biblioteca / Semana 1] | scroll automático ao painel 2024–26 quando `?semana1=1` na rota | onboarding cai direto no CTA certo | S
-- [ ] [Ficha / Ler teoria] | ícone livro preenchido se tópico já lido (fetch reads no load) | estado consistente ficha+fila | S
-- [ ] [Onboarding / passo 3] | preview mini do painel Biblioteca (mock) antes de ir | reduz surpresa na primeira tela real | M
-- [ ] [Hoje / coach] | dismiss automático só após Semana 1 OK, não só officialN>0 | coach some no momento certo | S
-- [x] [Biblioteca / first-run] | banner Bem-vindo + painel Semana 1 destacado | guia quem veio do onboarding direto à Biblioteca | S
-- [ ] [Fila / lacunas] | filtro “só sem material” no topo da seção Lacunas | foco quando várias lacunas misturadas | S
-- [ ] [Fila / lacunas] | link direto Biblioteca com subject/topic na query (scroll futuro) | 1 clique do gap certo ao acervo | M
-- [ ] [Theory sheet] | empty mostra qual pasta abrir (edital vs provas) conforme note da API | menos adivinhação pós-lacuna | S
-- [x] [Biblioteca / msg erro PDF] | QuietEmpty com CTA Abrir provas quando open-path falha | 1 ação clara pós-erro de caminho | S
-- [x] [Theory sheet / lido] | row check “Marcado como lido” no topo do sheet | feedback visual imediato pós mark-read | S
-- [x] [Ajustes / Sobre] | chip de versão ao lado do título PAES MED AI | versão legível sem linha técnica longa | S
-- [ ] [Ship / bump] | script ou doc 1-pager “bump +N” listando 4 arquivos | evita esquecer bat ao shippar | S
-- [ ] [Ajustes / Sobre] | link “Notas desta versão” colapsável (CHANGELOG thin) | contexto do build sem poluir | M
-- [ ] [Pack / dist] | badge “Desktop build” no Sobre quando VERSION.txt detectado | usuário sabe se está no exe | M
-- [ ] [Ajustes / Sobre] | linha “Build Windows” quando launcher detecta exe empacotado | distingue dev vs Desktop | S
-- [x] [Ajustes / Sobre] | chip versão com ícone verified (build confiável) | versão escaneável sem parecer debug | S
-- [ ] [Pack / empacotar] | progresso visual no bat (passos 1/5 build, 2/5 copy…) | menos ansiedade no ship longo | M
-- [x] [Theory sheet] | barra “Passo 1 de 2” no topo do sheet | reforça sequência li → treino | S
-- [ ] [Fila / lacunas] | dots de progresso no tile (1/2 lido, 2/2 treinado futuro) | estado visual sem abrir sheet | M
-- [ ] [Sessão / teoria inline] | mesma barra Passo 1/2 quando teoria abre dentro da sessão | consistência ficha/fila/sessão | S
-- [ ] [Theory sheet] | label “Ler” vs “Treinar” com ícones distintos nos passos | escaneabilidade rápida mobile | S
-- [ ] [SectionLabel] | chip reutilizável em Revisões (“N na hora”) | padrão visual entre seções da Fila | S
-- [ ] [Fila / lacunas] | cor do badge muda: retomar vs teoria lida vs sem teoria | escaneabilidade sem ler texto | S
-- [ ] [Theory sheet] | haptic leve ao marcar “li” (mobile/desktop) | confirmação tátil do progresso | S
-- [ ] [Biblioteca / ano] | botão PDF desabilitado + tooltip quando hasProva stale mas arquivo sumiu | evita clique falso positivo | S
-- [ ] [Ficha / PDF] | link “Onde colocar o PDF” abre pasta provas se sourcePdf null | fecha loop sem jargão | S
-- [ ] [Global / open-path] | toast único padronizado (ícone + 2 linhas) em todas as telas | consistência visual | M
+- [x] [Fila / checkpoint] | banner “Continuar sessão” com barra de fases (teoria/questões/revisão) | retoma estudo com contexto visual | S · HU
+- [x] [Sessão / fim de bloco] | resumo em chips (acertos, cards, tópicos fracos) | escaneabilidade | S · HV
+- [x] [Fila / empty] | ícone maior quando fila vazia + CTA | empty acolhedor | S
+- [x] [Sessão / teoria] | trechos em painéis com contador “N de M” + barra Passo 1/2 | leitura confortável | M · IA
+- [x] [Ficha / debrief sessão] | CTA **Ler teoria** no debrief inline | fluxo pós-erro | S · HV
+- [x] [Theory sheet] | barra de progresso “Passo 1 de 2” | li → treino | S
+- [x] [Fila / lacunas] | badge “teoria lida” no tile | evita reabrir | S
+- [x] [Fila / lacunas] | chip “N sem teoria” | escaneabilidade | S
+- [x] [Fila / lacunas] | subtitle “· li” | reforço mobile | S
+- [x] [Theory sheet] | animação ao marcar “li” (AnimatedScale) | feedback imediato | S · HW
+- [x] [Fila / lacunas] | leading livro preenchido quando lido | S
+- [x] [Biblioteca / Semana 1] | scroll `?semana1=1` ao painel 2024–26 | S
+- [x] [Ficha / Ler teoria] | ícone livro se tópico lido | S · HW
+- [ ] [Onboarding / passo 3] | preview mini Biblioteca | reduz surpresa | M
+- [ ] [Hoje / coach] | dismiss só após Semana 1 OK | S
+- [x] [Biblioteca / first-run] | banner Bem-vindo + Semana 1 | S
+- [x] [Fila / lacunas] | filtro “só sem material” | S · HZ
+- [x] [Fila / lacunas] | link Biblioteca com subject/topic na query | M · HZ
+- [x] [Theory sheet] | empty com pastas edital/provas | S · HZ
+- [x] [Biblioteca / msg erro PDF] | QuietEmpty + Abrir provas | S
+- [x] [Theory sheet / lido] | row check “Marcado como lido” | S
+- [x] [Ajustes / Sobre] | chip de versão | S
+- [x] [Ship / bump] | `docs/BUMP_VERSION.md` 1-pager | S · IB
+- [x] [Ajustes / Sobre] | notas desta versão (linha curta) | S · IA
+- [x] [Pack / dist] | chip Desktop build quando VERSION.txt | S · IA
+- [x] [Ajustes / Sobre] | linha Build Windows dev vs pack | S · IA
+- [x] [Ajustes / Sobre] | chip versão com ícone verified | S
+- [ ] [Pack / empacotar] | progresso visual no bat (passos) | M
+- [x] [Theory sheet] | barra “Passo 1 de 2” | S
+- [ ] [Fila / lacunas] | dots 1/2 lido 2/2 treinado | M
+- [x] [Sessão / teoria inline] | barra Passo 1/2 na sessão | S · IA
+- [x] [Theory sheet] | labels Ler vs Treinar com ícones | S · HZ
+- [x] [SectionLabel] | chip reutilizável (já em Lacunas “N sem teoria”) | S
+- [x] [Fila / lacunas] | cor do badge por status | S · HZ
+- [x] [Theory sheet] | haptic ao marcar “li” | S · HZ
+- [ ] [Biblioteca / ano] | PDF desabilitado se arquivo sumiu | S
+- [x] [Ficha / PDF] | “Onde colocar o PDF” → pasta provas | S · IA
+- [ ] [Global / open-path] | toast único padronizado | M

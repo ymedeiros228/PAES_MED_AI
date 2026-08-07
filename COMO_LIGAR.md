@@ -1209,6 +1209,12 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. **HW** — Theory sheet com feedback visual ao marcar li; ficha com ícone livro (lida).
 4. **HX** — ship **1.0.0+12**; smoke `ciclo_hu_*`…`ciclo_hx_*`.
 
+## IDEAS-UI wave (Ciclos HY–IB · 1.0.0+13)
+
+1. **HY/HZ** — Fila: filtro só sem material, badges coloridos, link Biblioteca com subject/topic.
+2. **IA** — Sessão teoria em painéis + Passo 1/2; ficha «Onde colocar o PDF»; Sobre Desktop build.
+3. **IB** — ship **1.0.0+13**; `docs/BUMP_VERSION.md`; smoke `ciclo_hy_*`…`ciclo_ib_*`.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

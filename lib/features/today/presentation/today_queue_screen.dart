@@ -30,6 +30,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   final _focusNode = FocusNode();
   List<String> _navPaths = const [];
   String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
+  bool gapsOnlyNoMaterial = false;
 
   @override
   void initState() {
@@ -349,7 +350,23 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     hint: 'Erros recentes a retomar',
                     chip: gapNoMaterialN > 0 ? '$gapNoMaterialN sem teoria' : null,
                   ),
-                  for (final raw in gapItems.take(6))
+                  if (gapNoMaterialN > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FilterChip(
+                          label: const Text('Só sem material'),
+                          selected: gapsOnlyNoMaterial,
+                          onSelected: (v) => setState(() => gapsOnlyNoMaterial = v),
+                        ),
+                      ),
+                    ),
+                  for (final raw in gapItems.where((raw) {
+                    if (!gapsOnlyNoMaterial) return true;
+                    if (raw is! Map) return false;
+                    return raw['hasLocalMaterial'] == false;
+                  }).take(6))
                     Builder(
                       builder: (_) {
                         final g = Map<String, dynamic>.from(raw as Map);
@@ -379,10 +396,16 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                 : read
                                     ? 'teoria lida'
                                     : 'retomar';
+                            final badgeColor = !hasMaterial
+                                ? Theme.of(context).colorScheme.tertiaryContainer
+                                : read
+                                    ? Theme.of(context).colorScheme.primaryContainer
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest;
                             return PlaylistTile(
                               title: s,
                               subtitle: subtitle,
                               badge: badge,
+                              badgeColor: badgeColor,
                               active: navIndexFor(path) == selected,
                               leadingIcon: hasMaterial
                                   ? (read ? Icons.menu_book_rounded : Icons.flag_rounded)
@@ -395,16 +418,24 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                               secondary: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (!hasMaterial)
-                                    IconButton(
-                                      tooltip: 'Biblioteca — acervo 2024–26',
-                                      icon: Icon(
-                                        Icons.library_books_outlined,
-                                        size: 20,
-                                        color: Theme.of(context).colorScheme.tertiary,
-                                      ),
-                                      onPressed: () => context.go('/biblioteca'),
+                                  IconButton(
+                                    tooltip: 'Biblioteca deste tópico',
+                                    icon: Icon(
+                                      Icons.library_books_outlined,
+                                      size: 20,
+                                      color: Theme.of(context).colorScheme.tertiary,
                                     ),
+                                    onPressed: () {
+                                      final qp = <String, String>{
+                                        if (s.isNotEmpty) 'subject': s,
+                                        if (t.isNotEmpty) 'topic': t,
+                                      };
+                                      final qs = qp.entries
+                                          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+                                          .join('&');
+                                      context.go(qs.isEmpty ? '/biblioteca' : '/biblioteca?$qs');
+                                    },
+                                  ),
                                   IconButton(
                                     tooltip: read ? 'Teoria lida' : 'Ler teoria',
                                     icon: Icon(

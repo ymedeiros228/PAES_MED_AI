@@ -321,6 +321,10 @@ flowchart TB
 | HV | Sessão chips fim + debrief teoria | `ciclo_hv_*` | **Feito** |
 | HW | Theory mark-anim + ficha lido | `ciclo_hw_*` | **Feito** |
 | HX | Ship **1.0.0+12** pack/smoke | `ciclo_hx_*` | **Feito** |
+| HY | IDEAS check + Biblioteca semana1 OK | `ciclo_hy_*` | **Feito** |
+| HZ | Fila filtros/cores + theory empty | `ciclo_hz_*` | **Feito** |
+| IA | Sessão teoria painéis + Sobre Desktop | `ciclo_ia_*` | **Feito** |
+| IB | Ship **1.0.0+13** pack/smoke | `ciclo_ib_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -328,8 +332,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HU–HX)
+## Estado (atualizado pós HY–IB)
 
-- Rodada **HU–HX**: conforto de sessão/fila/teoria pós-Ápice, ship **1.0.0+12**.
+- Rodada **HY–IB**: wave IDEAS-UI (fila/theory/ficha/Sobre), ship **1.0.0+13**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
 - PDFs grandes **fora** do git.

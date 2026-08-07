@@ -1232,7 +1232,32 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
             if (isTheory) ...[
               const Divider(height: 24),
-              Text('Teoria do edital', style: Theme.of(context).textTheme.titleMedium),
+              Row(
+                children: [
+                  Text(
+                    'Teoria do edital',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const Spacer(),
+                  Text(
+                    snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: 0.45,
+                  minHeight: 4,
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
+              ),
+              const SizedBox(height: 12),
               if (snippets.isEmpty)
                 QuietEmpty(
                   message:
@@ -1242,21 +1267,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     child: const Text('Abrir Biblioteca'),
                   ),
                 )
-              else
-                for (final s in snippets.take(10))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
+              else ...[
+                for (var si = 0; si < (snippets.length > 10 ? 10 : snippets.length); si++)
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 2, right: 8),
-                          child: Icon(Icons.menu_book_outlined, size: 18),
+                        Text(
+                          '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                         ),
-                        Expanded(child: SelectableText(s)),
+                        const SizedBox(height: 6),
+                        SelectableText(snippets[si].toString()),
                       ],
                     ),
                   ),
+              ],
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
               if (study != null)
                 MediaReinforcement(

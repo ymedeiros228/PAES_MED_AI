@@ -43,6 +43,12 @@ Prioridade: topo = primeiro.
 - [x] Debrief Ler teoria + ficha lido
 - [x] Ship **1.0.0+12**
 
+## P3d · IDEAS-UI wave (HY–IB)
+
+- [x] Fila filtro/cores + theory empty + Biblioteca QP
+- [x] Sessão teoria painéis + ficha PDF path + Sobre Desktop
+- [x] Ship **1.0.0+13**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -56,5 +62,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- HU–HX (2026-08-06): conforto sessão/fila/teoria; residual = host gab 2014–23.
-- Versão: **1.0.0+12**.
+- HY–IB (2026-08-06): IDEAS-UI wave; residual = host gab 2014–23.
+- Versão: **1.0.0+13**.

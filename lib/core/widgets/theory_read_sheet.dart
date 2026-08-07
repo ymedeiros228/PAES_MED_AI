@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
@@ -80,10 +81,17 @@ Future<void> openTheoryReadSheet(
                                     ),
                               ),
                               const Spacer(),
+                              Icon(
+                                isRead ? Icons.psychology_rounded : Icons.menu_book_outlined,
+                                size: 16,
+                                color: Theme.of(ctx).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 4),
                               Text(
-                                isRead ? 'Treinar' : 'Ler teoria',
+                                isRead ? 'Treinar' : 'Ler',
                                 style: Theme.of(ctx).textTheme.labelSmall?.copyWith(
                                       color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62),
+                                      fontWeight: FontWeight.w700,
                                     ),
                               ),
                             ],
@@ -139,13 +147,60 @@ Future<void> openTheoryReadSheet(
                       QuietEmpty(
                         message: note ??
                             'Sem material local para $subject · $topic. '
-                            'Atualize o acervo na Biblioteca — o app não inventa edital.',
-                        action: FilledButton.tonal(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.go('/biblioteca');
-                          },
-                          child: const Text('Biblioteca'),
+                            'O app não inventa edital — coloque fontes nas pastas do PC.',
+                        action: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            FilledButton.tonal(
+                              onPressed: () async {
+                                try {
+                                  await apiClient.post('/api/library/open-folder', {
+                                    'folder': 'edital',
+                                  });
+                                } catch (e) {
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          humanApiError(e, fallback: 'Não abriu a pasta edital.'),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text('Pasta edital'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                try {
+                                  await apiClient.post('/api/library/open-folder', {
+                                    'folder': 'provas',
+                                  });
+                                } catch (e) {
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          humanApiError(e, fallback: 'Não abriu a pasta provas.'),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: const Text('Pasta provas'),
+                            ),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                context.go('/biblioteca');
+                              },
+                              child: const Text('Biblioteca'),
+                            ),
+                          ],
                         ),
                       ),
                     ] else ...[
@@ -318,6 +373,7 @@ Future<void> openTheoryReadSheet(
                                   readMap['at'] = m['at'];
                                   readMap['read'] = true;
                                 });
+                                HapticFeedback.lightImpact();
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

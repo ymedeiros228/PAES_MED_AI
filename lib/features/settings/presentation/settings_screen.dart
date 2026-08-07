@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io' show File, Platform;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/data/api_client.dart';
 import '../../../core/app_version.dart';
@@ -281,6 +284,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       '• Não inventa % de aprovação nem prova oficial ausente\n'
                       '• Catálogo de reforço (vídeo/leitura) não é edital da banca',
                       style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    Builder(
+                      builder: (_) {
+                        final isWin = !kIsWeb && Platform.isWindows;
+                        var desktopBuild = false;
+                        if (isWin) {
+                          try {
+                            final exe = Platform.resolvedExecutable;
+                            final dir = p.dirname(exe);
+                            // dist layout: .../app/paes_med_ai.exe → ../VERSION.txt
+                            final sibling = File(p.join(p.dirname(dir), 'VERSION.txt'));
+                            final same = File(p.join(dir, 'VERSION.txt'));
+                            desktopBuild = sibling.existsSync() || same.existsSync();
+                          } catch (_) {}
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (desktopBuild)
+                              Chip(
+                                avatar: Icon(
+                                  Icons.desktop_windows_outlined,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                label: const Text('Desktop build · pack Windows'),
+                                visualDensity: VisualDensity.compact,
+                              )
+                            else
+                              Text(
+                                isWin
+                                    ? 'Build Windows · modo desenvolvimento (flutter run)'
+                                    : 'Build de estudo',
+                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                    ),
+                              ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
+                              'e redação com missões (treino local · não banca).',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.62),
+                                  ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
