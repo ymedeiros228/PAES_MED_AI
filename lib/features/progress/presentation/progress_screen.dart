@@ -297,6 +297,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
 }
 
 const _relevoValleyThreshold = 5.5;
+const _relevoRowHeight = 42.0;
+const _relevoStackBreakpoint = 420.0;
 
 class _ReadableRelief extends StatelessWidget {
   const _ReadableRelief({
@@ -316,9 +318,7 @@ class _ReadableRelief extends StatelessWidget {
     final maxScale = ordered
         .map(_relevoMax)
         .fold<double>(0, (highest, value) => value > highest ? value : highest);
-    final rowHeight = 42.0;
-    final panelHeight = 88 + ordered.length * rowHeight;
-    final cs = Theme.of(context).colorScheme;
+    final panelHeight = 88 + ordered.length * _relevoRowHeight;
 
     return Container(
       constraints: BoxConstraints(minHeight: panelHeight),
@@ -373,7 +373,7 @@ class _ReadableRelief extends StatelessWidget {
               max: _relevoMax(peak),
               progress: progress,
               textTheme: Theme.of(context).textTheme,
-              trackColor: cs.onSurface.withOpacity(0.18),
+              trackColor: Colors.white.withOpacity(0.20),
             ),
         ],
       ),
@@ -447,59 +447,26 @@ class _ReliefRow extends StatelessWidget {
       label: 'Eixo $label, nota $note${isValley ? ', vale a treinar' : ', pico firme'}',
       child: Padding(
         padding: const EdgeInsets.only(bottom: kGap8),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 108,
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withOpacity(0.92),
-                  fontWeight: FontWeight.w700,
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = constraints.maxWidth < _relevoStackBreakpoint;
+            final labelWidget = Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.bodySmall?.copyWith(
+                color: Colors.white.withOpacity(0.92),
+                fontWeight: FontWeight.w700,
               ),
-            ),
-            const SizedBox(width: kGap8),
-            Expanded(
-              child: SizedBox(
-                height: 18,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: trackColor,
-                            borderRadius: BorderRadius.circular(kRadiusControl),
-                          ),
-                        ),
-                        FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: ratio * progress,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: barColor,
-                              borderRadius: BorderRadius.circular(kRadiusControl),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: constraints.maxWidth * thresholdRatio,
-                          top: 0,
-                          bottom: 0,
-                          child: Container(width: 2, color: AppTheme.sand.withOpacity(0.9)),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(width: kGap8),
-            SizedBox(
+            );
+            final bar = _ReliefBar(
+              ratio: ratio,
+              progress: progress,
+              thresholdRatio: thresholdRatio,
+              barColor: barColor,
+              trackColor: trackColor,
+            );
+            final valueWidget = SizedBox(
               width: 42,
               child: Text(
                 value.toStringAsFixed(1),
@@ -509,9 +476,95 @@ class _ReliefRow extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-            ),
-          ],
+            );
+
+            if (stacked) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  labelWidget,
+                  const SizedBox(height: kGap4),
+                  Row(
+                    children: [
+                      Expanded(child: bar),
+                      const SizedBox(width: kGap8),
+                      valueWidget,
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                SizedBox(width: 108, child: labelWidget),
+                const SizedBox(width: kGap8),
+                Expanded(child: bar),
+                const SizedBox(width: kGap8),
+                valueWidget,
+              ],
+            );
+          },
         ),
+      ),
+    );
+  }
+}
+
+class _ReliefBar extends StatelessWidget {
+  const _ReliefBar({
+    required this.ratio,
+    required this.progress,
+    required this.thresholdRatio,
+    required this.barColor,
+    required this.trackColor,
+  });
+
+  final double ratio;
+  final double progress;
+  final double thresholdRatio;
+  final Color barColor;
+  final Color trackColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 18,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final thresholdOffset =
+              (constraints.maxWidth * thresholdRatio).clamp(0.0, constraints.maxWidth - 2).toDouble();
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: trackColor,
+                  borderRadius: BorderRadius.circular(kRadiusControl),
+                ),
+              ),
+              FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: ratio * progress,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(kRadiusControl),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: thresholdOffset,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 2,
+                  color: Colors.white.withOpacity(0.78),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
