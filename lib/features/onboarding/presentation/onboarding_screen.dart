@@ -120,9 +120,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       onKeyEvent: _onKey,
       child: Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -133,7 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 'Medicina · PAES/UEMA',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.primary),
               ),
-              const Spacer(),
+              const SizedBox(height: 40),
               Icon(
                 [Icons.school_rounded, Icons.event_rounded, Icons.folder_open_rounded, Icons.flag_rounded][step],
                 size: 56,
@@ -143,6 +147,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(titles[step], style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 12),
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
+              const SizedBox(height: 8),
               Text(
                 '← volta · → ou Enter avança',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.5)),
@@ -152,7 +157,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 TextField(
                   controller: examCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'AAAA-MM-DD',
+                    labelText: 'Data da prova (AAAA-MM-DD)',
                     hintText: '2026-12-01',
                     border: OutlineInputBorder(),
                   ),
@@ -224,7 +229,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               ],
-              const Spacer(),
+              const SizedBox(height: 36),
               Row(
                 children: [
                   for (var i = 0; i < 4; i++)
@@ -259,6 +264,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ],
+          ),
+            ),
           ),
         ),
       ),

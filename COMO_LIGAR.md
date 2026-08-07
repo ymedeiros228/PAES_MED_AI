@@ -1238,6 +1238,14 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **IO** — Biblioteca/review + shell sem path crus e sem “sync”.
 5. **IP** — ship **1.0.0+16**.
 
+## Cliente profissional Z4
+
+1. Rail: **Estudar / Acervo / Conta** — Domínio, Banca, Aulas, Treino, Redação e Progresso em **Ajustes → Avançado → Navegação**.
+2. Biblioteca: cartões 2024–26 responsivos; Semana 1 com 2 CTAs; import/gravar em Avançado.
+3. Simulados: hero **Dia de prova** (min / N / gabarito no fim); timer retoma do checkpoint.
+4. Tutor: boas-vindas em bolha; atalhos no rodapé da lista; input sticky.
+5. Onboarding: conteúdo centrado (máx. 480px) para web/desktop largo.
+
 ## Polish front kit (Ciclos IQ–IU · 1.0.0+17)
 
 1. **IQ** — SurfacePanel soft + QuietEmpty + SoftLoader + EmptyState.

@@ -1225,9 +1225,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final anosParciais = (checklist['anosParciaisCount'] as int?) ??
         (checklist['anosParciais'] as List?)?.length ??
         0;
-    final anosCompletos = (checklist['anosCompletosCount'] as int?) ??
-        (checklist['anosCompletos'] as List?)?.length ??
-        0;
     final cs = Theme.of(context).colorScheme;
 
     final semana1Route = GoRouterState.of(context).uri.queryParameters['semana1'] == '1';
@@ -1450,28 +1447,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     Text(
                       officialN == 0
                           ? 'Atualize o acervo e estude de verdade — sem inventar prova antiga.'
-                          : 'Um toque atualiza o que estiver no PC ou no portal.'
-                              '${anosParciais > 0 ? ' · $anosParciais ano(s) só com prova (sem gabarito).' : ''}'
-                              '${anosCompletos > 0 ? ' · $anosCompletos par(es) prova+gab.' : ''}',
+                          : 'Um toque atualiza o que estiver no PC ou no portal.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     if (anosParciais > 0) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Parcial: coloque o gabarito do ano na pasta Gabaritos, depois Importar / Importar do PC. '
-                        'Sem gabarito o app não grava oficiais (não inventa resposta).',
+                        '$anosParciais ano(s) só com prova — coloque o gabarito na pasta Gabaritos para gravar oficiais.',
                         style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: busy ? null : () => _openFolder('gabaritos'),
-                            icon: const Icon(Icons.folder_open_rounded, size: 18),
-                            label: const Text('Abrir gabaritos'),
-                          ),
-                        ],
                       ),
                     ],
                     const SizedBox(height: 12),
@@ -1483,15 +1466,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           onPressed: busy ? null : _semana1Real,
                           icon: const Icon(Icons.download_rounded),
                           label: Text(officialN == 0 ? 'Atualizar 2024–26' : 'Atualizar'),
-                        ),
-                        FilledButton.tonalIcon(
-                          onPressed: busy ? null : _importAllComplete,
-                          icon: const Icon(Icons.library_add_check_rounded),
-                          label: const Text('Importar todos com gabarito'),
-                        ),
-                        OutlinedButton(
-                          onPressed: busy ? null : _commitOnDisk,
-                          child: const Text('Gravar PDFs do PC'),
                         ),
                         FilledButton.tonal(
                           onPressed: () => context.go(
@@ -1524,115 +1498,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 )
               else
-                for (final g in board)
-                  Builder(
-                    builder: (_) {
-                      final y = g['year'] as int? ?? 0;
-                      final status = g['uiStatus']?.toString() ?? 'empty';
-                      final n = g['committedCount'] as int? ?? 0;
-                      final canFetch = g['canFetch'] == true;
-                      final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                      final hasProva = onDisk['hasProva'] == true;
-                      final hasGab = onDisk['hasGabarito'] == true;
-                      final diskOk = hasProva && hasGab;
-                      final partial = hasProva && !hasGab;
-                      final ready = status == 'committed' || n > 0;
-                      final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
-                      return SurfacePanel(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: ready
-                                    ? cs.primaryContainer
-                                    : partial
-                                        ? cs.tertiaryContainer
-                                        : cs.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '$y',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: ready ? cs.primary : cs.onSurface,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
-                                  Text(
-                                    ready
-                                        ? '${n > 0 ? '$n questões · ' : ''}$label'
-                                        : label,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (ready)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Tooltip(
-                                    message: hasProva
-                                        ? 'Abrir PDF do ano $y'
-                                        : 'PDF sumiu do disco — coloque paes_$y.pdf na pasta Provas',
-                                    child: TextButton(
-                                      onPressed: busy || !hasProva ? null : () => _openYearPdf(y),
-                                      child: const Text('PDF'),
-                                    ),
-                                  ),
-                                  FilledButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () => _goStudy(
-                                              '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                            ),
-                                    child: const Text('Estudar'),
-                                  ),
-                                ],
-                              )
-                            else if (partial)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextButton(
-                                    onPressed: busy ? null : () => _openFolder('gabaritos'),
-                                    child: const Text('Gabaritos'),
-                                  ),
-                                  OutlinedButton(
-                                    onPressed: busy ? null : () => _importYear(y),
-                                    child: const Text('Preview'),
-                                  ),
-                                ],
-                              )
-                            else if (canFetch || diskOk)
-                              OutlinedButton(
-                                onPressed: busy
-                                    ? null
-                                    : () => diskOk
-                                        ? _importYearSafe(y)
-                                        : _bootstrapAndCommitYear(y),
-                                child: Text(diskOk && !canFetch ? 'Importar do PC' : 'Importar'),
-                              )
-                            else
-                              TextButton(
-                                onPressed: busy ? null : () => _fetchYear(y),
-                                child: const Text('Baixar'),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final w = constraints.maxWidth;
+                    final cols = w >= 900 ? 3 : (w >= 560 ? 2 : 1);
+                    const gap = 10.0;
+                    final cardW = cols == 1 ? w : (w - gap * (cols - 1)) / cols;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        children: [
+                          for (final g in board)
+                            SizedBox(width: cardW, child: _yearCard(context, g, cs)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
 
               if (pendingN > 0) ...[
                 SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
@@ -1797,6 +1681,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
+                    title: const Text('Importar todos com gabarito'),
+                    subtitle: const Text('Só anos com prova + gabarito no disco'),
+                    trailing: OutlinedButton(
+                      onPressed: busy ? null : _importAllComplete,
+                      child: const Text('Importar'),
+                    ),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Gravar PDFs do PC'),
+                    trailing: OutlinedButton(
+                      onPressed: busy ? null : _commitOnDisk,
+                      child: const Text('Gravar'),
+                    ),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
                     title: const Text('Sincronizar edital'),
                     trailing: OutlinedButton(onPressed: busy ? null : _syncEdital, child: const Text('Atualizar')),
                   ),
@@ -1878,5 +1779,162 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     ),
     );
   }
+
+  /// Cartão de um ano do quadro 2024–26 (grid responsivo Z4).
+  Widget _yearCard(BuildContext context, Map<String, dynamic> g, ColorScheme cs) {
+    final y = g['year'] as int? ?? 0;
+    final status = g['uiStatus']?.toString() ?? 'empty';
+    final n = g['committedCount'] as int? ?? 0;
+    final canFetch = g['canFetch'] == true;
+    final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
+    final hasProva = onDisk['hasProva'] == true;
+    final hasGab = onDisk['hasGabarito'] == true;
+    final diskOk = hasProva && hasGab;
+    final partial = hasProva && !hasGab;
+    final ready = status == 'committed' || n > 0;
+    final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
+
+    final Widget cta;
+    if (ready) {
+      cta = Row(
+        children: [
+          Tooltip(
+            message: hasProva
+                ? 'Abrir PDF do ano $y'
+                : 'PDF sumiu do disco — coloque paes_$y.pdf na pasta Provas',
+            child: OutlinedButton(
+              onPressed: busy || !hasProva ? null : () => _openYearPdf(y),
+              child: const Text('PDF'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: FilledButton(
+              onPressed: busy
+                  ? null
+                  : () => _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1'),
+              child: const Text('Estudar'),
+            ),
+          ),
+        ],
+      );
+    } else if (partial) {
+      cta = Row(
+        children: [
+          TextButton(
+            onPressed: busy ? null : () => _openFolder('gabaritos'),
+            child: const Text('Gabaritos'),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: busy ? null : () => _importYear(y),
+              child: const Text('Preview'),
+            ),
+          ),
+        ],
+      );
+    } else if (canFetch || diskOk) {
+      cta = SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: busy
+              ? null
+              : () => diskOk ? _importYearSafe(y) : _bootstrapAndCommitYear(y),
+          child: Text(diskOk && !canFetch ? 'Importar do PC' : 'Importar'),
+        ),
+      );
+    } else {
+      cta = SizedBox(
+        width: double.infinity,
+        child: TextButton(
+          onPressed: busy ? null : () => _fetchYear(y),
+          child: const Text('Baixar'),
+        ),
+      );
+    }
+
+    return SurfacePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ready
+                      ? cs.primaryContainer
+                      : partial
+                          ? cs.tertiaryContainer
+                          : cs.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$y',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: ready ? cs.primary : cs.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _YearStatusChip(label: label, ready: ready),
+          if (n > 0) ...[
+            const SizedBox(height: 4),
+            Text('$n questões', style: Theme.of(context).textTheme.bodySmall),
+          ],
+          const SizedBox(height: 12),
+          cta,
+        ],
+      ),
+    );
+  }
 }
 
+class _YearStatusChip extends StatelessWidget {
+  const _YearStatusChip({required this.label, required this.ready});
+
+  final String label;
+  final bool ready;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bg = ready ? cs.primaryContainer : cs.surfaceContainerHigh;
+    final fg = ready ? cs.onPrimaryContainer : cs.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            ready ? Icons.check_circle_rounded : Icons.hourglass_empty_rounded,
+            size: 14,
+            color: fg,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: fg,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
