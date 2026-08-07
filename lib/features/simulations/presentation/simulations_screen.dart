@@ -1277,14 +1277,14 @@ class _ModeCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: selected ? cs.primaryContainer.withOpacity(0.55) : cs.surface.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(kRadiusPanel),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(kRadiusPanel),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(kRadiusPanel),
               border: Border.all(
                 color: selected ? cs.primary.withOpacity(0.55) : cs.outlineVariant.withOpacity(0.85),
                 width: selected ? 1.5 : 1,
@@ -1302,7 +1302,7 @@ class _ModeCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.6),
+                              color: cs.onSurface.withOpacity(0.72),
                             ),
                       ),
                     ],

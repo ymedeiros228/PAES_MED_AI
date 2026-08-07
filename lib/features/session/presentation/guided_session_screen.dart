@@ -534,7 +534,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Boa volta. O próximo passo natural é a Fila do dia.'
                 : 'Houve erro neste bloco — a Fila e o treino do tópico fraco resolvem bem.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurface.withOpacity(0.7),
+                  color: cs.onSurface.withOpacity(0.72),
                 ),
           ),
           const SizedBox(height: 10),
@@ -1212,7 +1212,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ? (paused ? 'Pausado · ${current['title']}' : '${current['title']} · ${current['minutes'] ?? '?'} min')
                   : '20 teoria → 30 questões → 10 revisão',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                   ),
             ),
           ),
@@ -1310,7 +1310,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                               ),
                         ),
                         const SizedBox(height: 6),
-                        SelectableText(snippets[si].toString()),
+                        Align(
+                          alignment: Alignment.center,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 760),
+                            child: SelectableText(snippets[si].toString()),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1343,9 +1349,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
-                sessionQuestions[qIndex]['statement']?.toString() ?? '',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+              Align(
+                alignment: Alignment.center,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Text(
+                    sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               for (var i = 0; i < (sessionQuestions[qIndex]['options'] as List? ?? []).length; i++)
@@ -1469,7 +1481,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ),
             if (isRevisions && !revisionUsingQuestions) ...[
               const Divider(height: 24),
-              Text('Revisão prática', style: Theme.of(context).textTheme.titleMedium),
+              const SectionLabel('Revisão prática'),
               if (sessionCards.isEmpty)
                 QuietEmpty(
                   message:
@@ -1483,7 +1495,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               else ...[
                 Text('Card ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
                 const SizedBox(height: 8),
-                Card(
+                SurfacePanel(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     title: Text(sessionCards[cardIndex]['front']?.toString() ?? ''),
                     subtitle: cardFlipped

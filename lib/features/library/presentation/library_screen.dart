@@ -1120,7 +1120,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (busy && library == null) return const Center(child: CircularProgressIndicator());
+    if (busy && library == null) return const SoftLoader(label: 'Carregando biblioteca…');
     if (error != null) {
       return EmptyState(
         title: 'Biblioteca indisponível',
@@ -1191,11 +1191,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   color: cs.secondaryContainer.withOpacity(0.45),
                   child: Row(
                     children: [
-                      const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      const SoftLoader(compact: true),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -1807,4 +1803,3 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 }
-

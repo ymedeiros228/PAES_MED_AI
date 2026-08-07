@@ -250,7 +250,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           slivers: [
             SliverToBoxAdapter(
               child: Container(
-                constraints: const BoxConstraints(minHeight: 360),
+                constraints: const BoxConstraints(minHeight: 300),
                 padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
                 decoration: BoxDecoration(
                   gradient: AppTheme.heroGradient(Theme.of(context).brightness),
@@ -262,7 +262,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       'PAES MED AI',
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             color: Colors.white,
-                            fontSize: 36,
                             letterSpacing: -0.8,
                           ),
                     ),
@@ -284,7 +283,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               : examDays >= 0
                                   ? '$examDays dias para a prova'
                                   : 'Prova na conta',
-                      style: TextStyle(color: Colors.white.withOpacity(0.78), fontSize: 15),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.white.withOpacity(0.78),
+                          ),
                     ),
                     const SizedBox(height: 20),
                     Text(
@@ -299,7 +300,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       const SizedBox(height: 8),
                       Text(
                         progress,
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.white.withOpacity(0.72),
+                            ),
                       ),
                     ],
                     const SizedBox(height: 24),
@@ -308,12 +311,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       runSpacing: 10,
                       children: [
                         FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppTheme.navy,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            elevation: 0,
-                          ),
                           onPressed: () => context.go(sessionPath),
                           child: Text(
                             checkpoint != null
@@ -323,20 +320,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                         if (checkpoint != null)
                           OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white70),
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                            ),
                             onPressed: _discardCheckpoint,
                             child: const Text('Recomeçar'),
                           ),
                         OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white70),
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                          ),
                           onPressed: () => context.go(closePath),
                           child: Text(closeLabel),
                         ),
@@ -345,7 +332,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'S inicia a sessão · L abre a fila',
-                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withOpacity(0.72),
+                          ),
                     ),
                   ],
                 ),

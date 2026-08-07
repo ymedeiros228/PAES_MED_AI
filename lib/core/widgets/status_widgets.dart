@@ -173,7 +173,7 @@ class EmptyState extends StatelessWidget {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.65),
+                        color: cs.onSurface.withOpacity(0.72),
                         height: 1.4,
                       ),
                 ),

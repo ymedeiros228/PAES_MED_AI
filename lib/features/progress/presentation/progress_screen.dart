@@ -104,7 +104,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 if (loading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: SoftLoader(label: 'Carregando progresso…'),
                   )
                 else if (error != null)
                   QuietEmpty(
@@ -247,7 +247,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         Text(
                           'Só mostra consistência de treino local — zero previsões de aprovação.',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.withOpacity(0.6),
+                                color: cs.onSurface.withOpacity(0.72),
                               ),
                         ),
                       ],

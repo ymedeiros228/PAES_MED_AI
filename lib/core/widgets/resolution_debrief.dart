@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ui_kit.dart';
+
 /// Debrief honesto: 4 eixos se `real`; senão rascunho (Ciclo AB/AF).
 class ResolutionDebrief extends StatelessWidget {
   const ResolutionDebrief({
@@ -42,11 +44,10 @@ class ResolutionDebrief extends StatelessWidget {
       );
     }
 
-    return Card(
+    return SurfacePanel(
       color: cs.primaryContainer.withOpacity(0.55),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+      padding: const EdgeInsets.all(12),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -130,7 +131,6 @@ class ResolutionDebrief extends StatelessWidget {
             ],
           ],
         ),
-      ),
     );
   }
 }

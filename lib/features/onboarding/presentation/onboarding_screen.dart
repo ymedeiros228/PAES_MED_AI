@@ -145,7 +145,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
               Text(
                 '← volta · → ou Enter avança',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.5)),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.72)),
               ),
               if (step == 1) ...[
                 const SizedBox(height: 16),
@@ -217,7 +217,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       Text(
                         'Painel Semana 1 · oficiais 2024–26 · sem inventar ano ausente',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.6),
+                              color: cs.onSurface.withOpacity(0.72),
                             ),
                       ),
                     ],
@@ -287,7 +287,13 @@ class _MiniLibRow extends StatelessWidget {
               color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(year, style: TextStyle(fontWeight: FontWeight.w800, color: cs.primary, fontSize: 12)),
+            child: Text(
+              year,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.primary,
+                  ),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(

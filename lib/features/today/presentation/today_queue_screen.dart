@@ -212,7 +212,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ),
       );
     }
-    if (queue == null) return const Center(child: CircularProgressIndicator());
+    if (queue == null) return const SoftLoader(label: 'Carregando fila…');
 
     final revisions = (queue!['revisions'] as List? ?? []);
     final cards = (queue!['flashcards'] as List? ?? []);
@@ -669,7 +669,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
                             style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.55),
+                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72),
                                 ),
                           ),
                       ],
@@ -695,8 +695,8 @@ class _GapDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      width: 16,
-      height: 16,
+      width: 20,
+      height: 20,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -705,11 +705,10 @@ class _GapDot extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
-          color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.45),
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.72),
+            ),
       ),
     );
   }

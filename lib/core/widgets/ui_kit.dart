@@ -3,6 +3,17 @@ import 'package:flutter/material.dart';
 /// Layout padding padrão das telas âncora.
 const kPagePadding = EdgeInsets.fromLTRB(28, 20, 28, 40);
 const kPageMaxWidth = 1080.0;
+const kRadiusMicro = 4.0;
+const kRadiusControl = 10.0;
+const kRadiusButton = 12.0;
+const kRadiusPanel = 16.0;
+const kRadiusPanelSoft = 18.0;
+const kRadiusHighlight = 20.0;
+const kGap4 = 4.0;
+const kGap8 = 8.0;
+const kGap12 = 12.0;
+const kGap16 = 16.0;
+const kGap24 = 24.0;
 
 /// Centraliza o conteúdo e aplica padding — ar como apps desktop modernos.
 class PageBody extends StatelessWidget {
@@ -87,7 +98,7 @@ class PageHeader extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: cs.onSurface.withOpacity(0.62),
+                          color: cs.onSurface.withOpacity(0.72),
                           height: 1.4,
                         ),
                   ),
@@ -150,7 +161,7 @@ class SectionLabel extends StatelessWidget {
               child: Text(
                 hint!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurface.withOpacity(0.55),
+                      color: cs.onSurface.withOpacity(0.72),
                     ),
               ),
             ),
@@ -186,7 +197,7 @@ class SurfacePanel extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: color ?? cs.surface.withOpacity(isDark ? 0.94 : 0.98),
-        borderRadius: BorderRadius.circular(soft ? 18 : 16),
+        borderRadius: BorderRadius.circular(soft ? kRadiusPanelSoft : kRadiusPanel),
         border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.55 : 0.85)),
         boxShadow: soft && !isDark
             ? [
@@ -252,7 +263,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
         margin: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(kRadiusButton),
           border: Border.all(
             color: widget.active
                 ? cs.primary.withOpacity(0.22)
@@ -262,7 +273,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(kRadiusButton),
             onTap: widget.onPlay,
             child: IntrinsicHeight(
               child: Row(
@@ -421,13 +432,13 @@ class PhaseProgressBar extends StatelessWidget {
               ),
             InkWell(
               onTap: onSelect == null ? null : () => onSelect!(i),
-              borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(kRadiusHighlight),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: i == currentIndex ? cs.primary : cs.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(kRadiusHighlight),
                 ),
                 child: Text(
                   phases[i],
@@ -466,12 +477,12 @@ class QuietEmpty extends StatelessWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kRadiusButton),
               ),
               child: Icon(
                 icon ?? Icons.hourglass_empty_rounded,
                 size: 18,
-                color: cs.onSurface.withOpacity(0.42),
+                color: cs.onSurface.withOpacity(0.55),
               ),
             ),
             const SizedBox(width: 12),
@@ -479,7 +490,7 @@ class QuietEmpty extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.68),
+                      color: cs.onSurface.withOpacity(0.72),
                       height: 1.35,
                     ),
               ),
@@ -527,7 +538,7 @@ class SoftLoader extends StatelessWidget {
                 label!,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.62),
+                      color: cs.onSurface.withOpacity(0.72),
                     ),
               ),
             ],
@@ -588,13 +599,13 @@ class ChoiceOptionTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(kRadiusButton),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(kRadiusButton),
               border: Border.all(color: border, width: selected || revealCorrect != null ? 1.4 : 1),
             ),
             child: Row(
@@ -606,7 +617,7 @@ class ChoiceOptionTile extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: letterBg,
-                    borderRadius: BorderRadius.circular(9),
+            borderRadius: BorderRadius.circular(kRadiusControl),
                   ),
                   child: Text(
                     letter,
@@ -903,7 +914,7 @@ class DeltaChip extends StatelessWidget {
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(kRadiusHighlight)),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -949,7 +960,7 @@ class SoftTimeline extends StatelessWidget {
         for (var i = 0; i < items.length; i++) ...[
           InkWell(
             onTap: items[i].onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(kRadiusButton),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Row(
@@ -988,7 +999,7 @@ class SoftTimeline extends StatelessWidget {
                           Text(
                             items[i].subtitle!,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.62),
+                                  color: cs.onSurface.withOpacity(0.72),
                                 ),
                           ),
                         if (items[i].trailing != null) ...[
@@ -1088,7 +1099,7 @@ class SessionResumeBanner extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurface.withOpacity(0.65),
+                  color: cs.onSurface.withOpacity(0.72),
                 ),
           ),
           const SizedBox(height: 12),
@@ -1102,7 +1113,7 @@ class SessionResumeBanner extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
                         color: i <= step ? cs.primary : cs.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(kRadiusMicro),
                       ),
                     ),
                   ),
@@ -1119,7 +1130,7 @@ class SessionResumeBanner extends StatelessWidget {
                       child: Text(
                         '${i + 1}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: i <= step ? cs.onPrimary : cs.onSurface.withOpacity(0.55),
+                              color: i <= step ? cs.onPrimary : cs.onSurface.withOpacity(0.72),
                               fontWeight: FontWeight.w800,
                               fontSize: 10,
                             ),
@@ -1130,7 +1141,7 @@ class SessionResumeBanner extends StatelessWidget {
                       labels[i],
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             fontWeight: i == step ? FontWeight.w800 : FontWeight.w500,
-                            color: i == step ? cs.primary : cs.onSurface.withOpacity(0.55),
+                            color: i == step ? cs.primary : cs.onSurface.withOpacity(0.72),
                           ),
                     ),
                   ],

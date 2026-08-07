@@ -319,7 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ? 'Build Windows · modo desenvolvimento (flutter run)'
                                     : 'Build de estudo',
                                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                                     ),
                               ),
                             const SizedBox(height: 6),
@@ -327,7 +327,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
                               'e redação com missões (treino local · não banca).',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.62),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                                   ),
                             ),
                           ],
@@ -378,7 +378,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             return 'Prova em $d dia(s) · contagem local';
                           }(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                               ),
                         ),
                       ),
@@ -432,7 +432,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
                             : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
                       ),
-                      trailing: IconButton(onPressed: _health, icon: const Icon(Icons.refresh_rounded)),
+                      trailing: IconButton(
+                        tooltip: 'Checar backend',
+                        onPressed: _health,
+                        icon: const Icon(Icons.refresh_rounded),
+                      ),
                     ),
                     if (online && health?['curation'] is Map)
                       Builder(
@@ -455,7 +459,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               msg.isEmpty
                                   ? 'oficiais ${c['realCount'] ?? '—'} · transversais ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
-                              style: const TextStyle(fontSize: 12),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                             trailing: focus
                                 ? Tooltip(
@@ -518,7 +522,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             final at = lastBackup!['at']?.toString() ?? '—';
                             return at;
                           }(),
-                          style: const TextStyle(fontSize: 12),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
                     ],
@@ -754,7 +758,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Pasta de dados'),
-                    subtitle: Text(health?['dataDir']?.toString() ?? '—', style: const TextStyle(fontSize: 11)),
+                    subtitle: Text(
+                      health?['dataDir']?.toString() ?? '—',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
                 ],
               ),

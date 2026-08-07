@@ -436,7 +436,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       return Text(
                         'O que olho: $hint',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.65),
+                              color: cs.onSurface.withOpacity(0.72),
                             ),
                       );
                     },
@@ -471,7 +471,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 child: Text(
                   '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras · treino local',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.55),
+                        color: cs.onSurface.withOpacity(0.72),
                       ),
                 ),
               ),
@@ -487,7 +487,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   child: Text(
                     'Escreva pelo menos ~50 caracteres para corrigir.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurface.withOpacity(0.55),
+                          color: cs.onSurface.withOpacity(0.72),
                         ),
                   ),
                 ),
@@ -500,7 +500,13 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (last!['error'] != null)
-                        Text('${last!['error']}', style: TextStyle(color: cs.error))
+                        QuietEmpty(
+                          message: '${last!['error']}',
+                          action: TextButton(
+                            onPressed: () => unawaited(_grade()),
+                            child: const Text('Tentar de novo'),
+                          ),
+                        )
                       else ...[
                         TweenAnimationBuilder<double>(
                           tween: Tween(begin: 0, end: (last!['score'] as num?)?.toDouble() ?? 0),

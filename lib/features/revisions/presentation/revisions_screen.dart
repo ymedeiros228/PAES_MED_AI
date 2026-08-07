@@ -86,7 +86,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SoftLoader(label: 'Carregando revisões…'),
         error: (e, _) => EmptyState(
           title: 'Revisões indisponíveis',
           subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
