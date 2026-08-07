@@ -119,7 +119,7 @@ if not exist "%OUT%\branding\app_icon.ico" (
 )
 
 REM Ciclo CE: carimbo de versão visível no pacote
-echo 1.0.0+9> "%OUT%\VERSION.txt"
+echo 1.0.0+10> "%OUT%\VERSION.txt"
 if not exist "%OUT%\VERSION.txt" (
   echo ERRO: VERSION.txt nao gravado no dist.
   goto :erro

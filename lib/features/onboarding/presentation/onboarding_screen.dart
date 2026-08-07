@@ -212,7 +212,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     )
                   else ...[
                     FilledButton(
-                      onPressed: () => _finish(skipExam: true, path: '/biblioteca'),
+                      onPressed: () => _finish(skipExam: true, path: '/biblioteca?semana1=1'),
                       child: const Text('Semana 1 (Biblioteca)'),
                     ),
                     TextButton(

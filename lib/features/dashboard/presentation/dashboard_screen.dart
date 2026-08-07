@@ -391,7 +391,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       FilledButton(
                                         onPressed: () {
                                           _dismissFirstRunCoach();
-                                          context.go('/biblioteca');
+                                          context.go('/biblioteca?semana1=1');
                                         },
                                         child: const Text('Atualizar acervo'),
                                       ),

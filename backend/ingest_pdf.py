@@ -254,60 +254,98 @@ def year_health_from_db(year: int) -> dict[str, Any]:
 
 
 def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str = "Geral") -> list[dict[str, Any]]:
-    """Extrai blocos PAES ``QUESTÃO 01`` (ou ``01.``) e alternativas A–E (ciclo K: áreas + 01–60)."""
+    """Extrai blocos PAES ``QUESTÃO 01`` (ou ``01.``) e alternativas A–E."""
     normalized = re.sub(r"\r", "", text)
-    # Preferir QUESTÃO NN; aceitar NN. no início de linha
-    question_re = re.compile(
-        r"(?im)^\s*(?:quest(?:ão|ao)\s*n?[ºo.]?\s*)?(\d{1,3})(?:\s*[\.\-:)]+|\s+)"
+    # Prioridade 0: QUESTÃO NN; prioridade 1: NN. no início de linha + enunciado
+    strong_re = re.compile(
+        r"(?im)^\s*quest(?:ão|ao)\s*(?:n[ºo°.]?\s*)?(\d{1,3})\b\s*[\.\-:)]*\s*"
     )
-    matches = list(question_re.finditer(normalized))
-    # Deduplicar por número (ficar com o primeiro bloco 1–60 típico PAES)
-    by_number: dict[int, re.Match[str]] = {}
-    for match in matches:
+    weak_re = re.compile(
+        r"(?im)^\s*(\d{1,3})\s*[\.\-:)]+\s+(?=[A-Za-zÀ-ÿ0-9\"'«(\[])"
+    )
+    by_number: dict[int, tuple[int, re.Match[str]]] = {}
+    for match in strong_re.finditer(normalized):
+        number = int(match.group(1))
+        if 1 <= number <= 90:
+            by_number[number] = (0, match)
+    for match in weak_re.finditer(normalized):
         number = int(match.group(1))
         if number < 1 or number > 90:
             continue
-        if number not in by_number:
-            by_number[number] = match
-    ordered = sorted(by_number.items(), key=lambda x: x[0])
+        # Evita capturar anos isolados / rodapés (ex. 2024.)
+        if number >= 1900:
+            continue
+        prev = by_number.get(number)
+        if prev is None or prev[0] > 1:
+            by_number[number] = (1, match)
+    ordered = sorted(((n, m) for n, (_, m) in by_number.items()), key=lambda x: x[0])
     results: list[dict[str, Any]] = []
     for position, (number, match) in enumerate(ordered):
         end = ordered[position + 1][1].start() if position + 1 < len(ordered) else len(normalized)
         body = normalized[match.end():end].strip()
-        if len(body) < 40:
-            continue
         # Cortar lixo de rodapé / próxima área no meio
         body = re.split(
-            r"(?im)^\s*(?:LINGUAGENS|CI[EÊ]NCIAS\s+HUMANAS|MATEM[AÁ]TICA|PRODU[CÇ][AÃ]O\s+TEXTUAL)\b",
+            r"(?im)^\s*(?:LINGUAGENS|CI[EÊ]NCIAS\s+HUMANAS|MATEM[AÁ]TICA|PRODU[CÇ][AÃ]O\s+TEXTUAL|"
+            r"CI[EÊ]NCIAS\s+DA\s+NATUREZA)\b",
             body,
         )[0].strip()
-        option_re = re.compile(r"(?im)^\s*([A-E])\s*[\)\.\-:]\s*")
-        option_matches = list(option_re.finditer(body))
-        opts: list[str] = []
-        for index, option in enumerate(option_matches):
-            option_end = option_matches[index + 1].start() if index + 1 < len(option_matches) else len(body)
-            value = re.sub(r"\s+", " ", body[option.end():option_end]).strip()
+        # Alternativas: início de linha A)/A. e inline (A)
+        option_re = re.compile(
+            r"(?:^|\n)\s*(?:([A-E])\s*[\)\.\-:]\s+|\(([A-E])\)\s+)|"
+            r"(?<=[\s;])\(([A-E])\)\s+",
+            re.IGNORECASE | re.MULTILINE,
+        )
+        first_by_letter: dict[str, tuple[int, int]] = {}  # letter -> (start, end_marker)
+        for om in option_re.finditer(body):
+            letter = (om.group(1) or om.group(2) or om.group(3) or "").upper()
+            if letter not in "ABCDE" or letter in first_by_letter:
+                continue
+            first_by_letter[letter] = (om.start(), om.end())
+        by_pos = sorted(
+            ((start, letter, mend) for letter, (start, mend) in first_by_letter.items()),
+            key=lambda x: x[0],
+        )
+        opts_by_letter: dict[str, str] = {}
+        for index, (start, letter, mend) in enumerate(by_pos):
+            option_end = by_pos[index + 1][0] if index + 1 < len(by_pos) else len(body)
+            value = re.sub(r"\s+", " ", body[mend:option_end]).strip()
+            value = re.sub(r"^[\)\.\-:]\s*", "", value)
             if value:
-                opts.append(value[:800])
-        statement = body[: option_matches[0].start()].strip() if option_matches else body
+                opts_by_letter[letter] = value[:800]
+        # Sempre A–E em ordem de índice (gabarito A=0)
+        opts = [opts_by_letter.get(chr(65 + i), "") for i in range(5)]
+        statement = body[: by_pos[0][0]].strip() if by_pos else body
         statement = re.sub(r"\s+", " ", statement)[:1200]
         if not statement:
             continue
-        real_opts = sum(1 for o in opts if "(revisar)" not in o)
+        real_opts = sum(1 for o in opts if o and "(revisar)" not in o)
+        # Corpo muito curto só vale se há 4+ alternativas
+        if len(statement) < 25 and real_opts < 4:
+            continue
         confidence = 0.35
         if real_opts >= 5:
             confidence += 0.35
         elif real_opts >= 4:
-            confidence += 0.2
+            confidence += 0.25
+        elif real_opts >= 3:
+            confidence += 0.12
         if len(statement) >= 80:
             confidence += 0.2
-        if option_matches and len(option_matches) >= 5:
+        elif len(statement) >= 40:
+            confidence += 0.1
+        if real_opts >= 5:
             confidence += 0.1
         if 1 <= number <= 60:
             confidence = min(0.99, confidence + 0.05)
+        # QUESTÃO explícita no match
+        if re.search(r"(?i)quest", match.group(0) or ""):
+            confidence = min(0.99, confidence + 0.05)
         confidence = round(min(0.99, confidence), 2)
         while len(opts) < 5:
-            opts.append(f"Alternativa {chr(65 + len(opts))} (revisar)")
+            opts.append("")
+        opts = [
+            (o if o else f"Alternativa {chr(65 + i)} (revisar)") for i, o in enumerate(opts[:5])
+        ]
         q_subject = _subject_for_offset(normalized, match.start(), subject)
         if q_subject in ("Ciências da Natureza", "Biologia", "Química", "Física"):
             q_subject = refine_natureza_subject(statement, opts[:5], q_subject)
@@ -370,13 +408,15 @@ def parse_gabarito(text: str) -> dict[int, int]:
     """
     answers: dict[int, int] = {}
     patterns = (
-        r"(?im)(?:quest(?:ão|ao)\s*)?(\d{1,3})\s*[\-–—.:)]\s*\(?([A-E])\)?\b",
+        r"(?im)(?:quest(?:ão|ao)\s*)?(\d{1,3})\s*[\-–—.:)\]]+\s*\(?([A-E])\)?\b",
         r"(?im)\b(\d{1,3})\s+([A-E])\b",
+        r"(?im)\b(\d{1,2})\s*[)\].:\-–—]*\s*([A-E])\b",
+        r"(?im)(?:^|[\s|;,])(\d{1,2})([A-E])(?=[\s|;,]|$)",
     )
     for pattern in patterns:
         for number, letter in re.findall(pattern, text):
             n = int(number)
-            if 1 <= n <= 200:
+            if 1 <= n <= 90:
                 answers[n] = ord(letter.upper()) - ord("A")
     for m in re.finditer(r"(?im)\b(\d{1,3})\s+(nula|anulad[oa])\b", text):
         answers.pop(int(m.group(1)), None)

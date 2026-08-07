@@ -1164,6 +1164,29 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 1. Reimport high-conf anos com par no disco; health/yearHealth.
 2. ROADMAP HF–HI Feito; QUEUE: drop gabaritos 2014–23.
 
+## Parser + match (Ciclo HJ)
+
+1. `heuristic_parse_questions` prioriza `QUESTÃO NN`; alternativas A–E estáveis; `parse_gabarito` com mais formatos.
+2. Meta: mais `gabaritoApplied` em 2024–26 sem baixar conf. `<0.55`.
+3. Smoke: `ciclo_hj_*`.
+
+## Import todos com gab (Ciclo HK)
+
+1. `POST /api/acervo/import-all-complete` → loop `import_year_safe` + tabela por ano + `waitingYears`.
+2. Biblioteca: botão **Importar todos com gab** (feedback por ano).
+3. Inventário: checklist 2014–23. Smoke: `ciclo_hk_*`.
+
+## Estudo só com gab (Ciclo HL)
+
+1. Questões: chip **Só oficiais com gab** (`officialWithGab` + UEMA + fonte PDF).
+2. Sessão UEMA default: sem TREINO / sem nota inventada.
+3. Pós-lote: classify + toast `gabaritoPct`. Smoke: `ciclo_hl_*`.
+
+## Ship 1.0.0+10 (Ciclo HM)
+
+1. pubspec / `app_version` / pack VERSION / Sobre = **1.0.0+10**.
+2. Smoke `ciclo_hm_*` + pack gates; residual host = gab 2014–23.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  

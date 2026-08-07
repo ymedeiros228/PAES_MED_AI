@@ -2,7 +2,7 @@
 
 > **Fonte de verdade da direção.**  
 > Leia isto no início de **cada** ciclo, **antes** de STATUS/DONE.  
-> Atualizado: 2026-08-06 · produto **1.0.0+9**
+> Atualizado: 2026-08-06 · produto **1.0.0+10**
 
 ---
 

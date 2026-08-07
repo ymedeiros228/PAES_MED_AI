@@ -10,7 +10,7 @@ Ler **depois** de [PLAN.md](PLAN.md).
 | **Modo** | **A · Uso real** |
 | **Secundário** | B · Material thin (só se fila A vazia) |
 | **Evitar** | Micro-teclas R/S por tela; redesign; PDF inventado |
-| **Versão alvo** | manter **1.0.0+9** estável até próximo ship real |
+| **Versão alvo** | **1.0.0+10** (ship HJ–HM); residual = gab host 2014–23 |
 
 ## Quem mexe no quê
 
@@ -30,7 +30,7 @@ Ler **depois** de [PLAN.md](PLAN.md).
 |---|---|
 | **Agora** | — idle; ciclo 10 concluído |
 | **Próximo** | fila vazia — aguarda humano |
-| **Último feito** | Fila lacunas chip sem teoria + estado lido; smoke 720/720 |
+| **Último feito** | HJ–HM: parser, import-all, oficiais-com-gab, **1.0.0+10** |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 

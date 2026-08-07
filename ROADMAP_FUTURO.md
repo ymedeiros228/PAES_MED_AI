@@ -308,6 +308,10 @@ flowchart TB
 | HG | Commit seguro sem gabarito | `ciclo_hg_*` | **Feito** |
 | HH | Pipeline import-year-safe + gab | `ciclo_hh_*` | **Feito** |
 | HI | Reimport 2024–26 + gates | `ciclo_hi_*` | **Feito** |
+| HJ | Parser + match gab (oficiais reais) | `ciclo_hj_*` | **Feito** |
+| HK | Import todos com gab / ops acervo | `ciclo_hk_*` | **Feito** |
+| HL | Estudo só oficiais com gab | `ciclo_hl_*` | **Feito** |
+| HM | Ship **1.0.0+10** pack/smoke | `ciclo_hm_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -315,9 +319,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HF–HI)
+## Estado (atualizado pós HJ–HM)
 
-- Rodada **HF–HI**: UX parciais, trava commit sem gabarito, import-year-safe, reimport 24–26.
-- Provas 2014–25 no disco; **próximo host** = drop `gabarito_YYYY.pdf` (2014–23).
-- Versão produto permanece **1.0.0+9** (sem repack obrigatório).
-- Push host (autor: Yuri Medeiros); PDFs grandes **fora** do git.
+- Rodada **HJ–HM**: parser/match, import-all-complete, filtro «oficiais com gab», ship **1.0.0+10**.
+- Provas 2014–26 no disco; gabaritos oficiais **só 2024–26** no acervo local.
+- Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
+- PDFs grandes **fora** do git.

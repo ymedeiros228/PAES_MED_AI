@@ -887,6 +887,7 @@ def commit_on_disk(
             preview.get("questions") or [],
             high_confidence_only=True,
             min_confidence=min_confidence,
+            allow_without_gabarito=False,
         )
         inserted = int(committed_res.get("inserted") or 0)
         inserted_total += inserted
@@ -929,4 +930,115 @@ def commit_on_disk(
             if years
             else "Nenhum pares prova+gabarito no disco. Coloque paes_YYYY.pdf + gabarito_YYYY.pdf."
         ),
+    }
+
+
+def waiting_gabarito_years(*, min_year: int = 2014, max_year: int = 2030) -> list[dict[str, Any]]:
+    """Anos com prova no disco e sem gabarito (aguardando gabarito_YYYY.pdf)."""
+    out: list[dict[str, Any]] = []
+    for year in range(min_year, max_year + 1):
+        local = local_file_status(year)
+        if local.get("hasProva") and not local.get("hasGabarito"):
+            out.append(
+                {
+                    "year": year,
+                    "needsGabarito": True,
+                    "proofFile": local.get("provaPath") or local.get("prova"),
+                    "message": f"Aguardando gabarito_{year}.pdf em data/gabaritos/",
+                }
+            )
+    return out
+
+
+def import_all_complete(
+    *,
+    min_confidence: float = 0.55,
+    skip_if_committed: bool = False,
+    classify_after: bool = True,
+) -> dict[str, Any]:
+    """Ciclo HK: loop `import_year_safe` em todos os pares prova+gab no disco."""
+    years = years_complete_on_disk()
+    waiting = waiting_gabarito_years()
+    results: list[dict[str, Any]] = []
+    inserted_total = 0
+    for y in years:
+        one = import_year_safe(
+            y,
+            commit=True,
+            min_confidence=min_confidence,
+            skip_if_committed=skip_if_committed,
+        )
+        inserted = int(one.get("inserted") or 0)
+        inserted_total += inserted
+        results.append(
+            {
+                "year": y,
+                "ok": bool(one.get("ok")),
+                "inserted": inserted,
+                "skipped": one.get("skipped"),
+                "committed": bool(one.get("committed")),
+                "needsGabarito": bool(one.get("needsGabarito")),
+                "yearHealth": one.get("yearHealth"),
+                "error": one.get("error")
+                or (None if one.get("ok") else one.get("message")),
+                "message": one.get("message"),
+                "gabaritoPct": (one.get("yearHealth") or {}).get("gabaritoPct"),
+            }
+        )
+
+    classified = None
+    if classify_after and inserted_total > 0:
+        classified = {
+            "ok": True,
+            "deferred": True,
+            "message": "Chame POST /api/ingest/classify-pending após o lote (API faz isso).",
+        }
+
+    from services_core import official_curation_inventory, stats_basis
+
+    basis = stats_basis()
+    wait_years = [w["year"] for w in waiting]
+    msg = (
+        f"Import todos com gab: +{inserted_total} em {len(years)} par(es) no disco. "
+        f"Base oficial: {basis.get('officialCount', 0)}."
+    )
+    if wait_years:
+        msg += f" Aguardando gabarito: {', '.join(map(str, wait_years[:12]))}."
+    if not years and wait_years:
+        msg = (
+            "Nenhum par prova+gab no disco. "
+            f"Anos só com prova (sem gab): {', '.join(map(str, wait_years))}."
+        )
+    elif not years:
+        msg = "Nenhum par prova+gabarito no disco. Coloque paes_YYYY.pdf + gabarito_YYYY.pdf."
+
+    invent = None
+    try:
+        invent = official_curation_inventory()
+    except Exception:  # noqa: BLE001
+        invent = None
+
+    health_by_year = {
+        str(r["year"]): {
+            "inserted": r.get("inserted"),
+            "gabaritoPct": r.get("gabaritoPct"),
+            "yearHealth": r.get("yearHealth"),
+            "error": r.get("error"),
+        }
+        for r in results
+    }
+
+    return {
+        "ok": True if years else (inserted_total > 0 or not wait_years),
+        "years": results,
+        "insertedTotal": inserted_total,
+        "completeYears": years,
+        "waitingGabarito": waiting,
+        "waitingYears": wait_years,
+        "healthByYear": health_by_year,
+        "classified": classified,
+        "naturezaInventory": invent,
+        "officialCount": basis.get("officialCount", 0),
+        "sessionPath": "/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1",
+        "message": msg,
     }

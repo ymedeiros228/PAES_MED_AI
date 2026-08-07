@@ -12,7 +12,7 @@ Prioridade: topo = primeiro.
 ## P0 · acervo host (humano)
 
 - [ ] Drop `gabarito_YYYY.pdf` em `data/gabaritos/` para **2014–2023** (provas já no disco)
-- [ ] Depois de cada drop: Biblioteca → **Import seguro** no ano
+- [ ] Depois: Biblioteca → **Importar todos com gab** (ou Import seguro por ano)
 
 ## P1 · Uso real (modo A) — default
 
@@ -22,12 +22,13 @@ Prioridade: topo = primeiro.
 
 - [x] Ler teoria / mark-read / open-path honest (GR–GU + fines)
 
-## P3 · Acervo app (HF–HI)
+## P3 · Acervo app (HF–HM)
 
 - [x] UX parciais (parcial / par+gab / commitado)
 - [x] Trava commit sem gabarito
 - [x] import-year-safe + Review aviso
 - [x] Reimport path 2024–26
+- [x] Parser/match HJ + import-all HK + oficiais-com-gab HL + **1.0.0+10** HM
 
 ## P4 · Não fazer (congelado)
 
@@ -42,5 +43,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- HF–HI (2026-08-06): app pronto para engolir gabaritos sem polluir a base.
-- Versão: **1.0.0+9** estável.
+- HJ–HM (2026-08-06): engole pares com 1 clique; residual = host gab 2014–23.
+- Versão: **1.0.0+10**.

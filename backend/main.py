@@ -333,6 +333,7 @@ def api_questions(
     examBoard: str | None = None,
     similares: bool = False,
     approved: str | None = None,
+    officialWithGab: bool = False,
     limit: int | None = 200,
     offset: int = 0,
 ) -> list[dict[str, Any]]:
@@ -341,6 +342,10 @@ def api_questions(
         approved_only = True
     elif approved == "0" or approved == "false":
         approved_only = False
+    # Ciclo HL: chip «Só oficiais com gab» = UEMA + fonte PDF/ingest
+    if officialWithGab:
+        examBoard = "UEMA_PAES"
+        source = source or "oficial"
     return list_questions(
         subject,
         topic,
@@ -1782,6 +1787,42 @@ def api_acervo_commit_on_disk(payload: AcervoCommitOnDiskRequest) -> dict[str, A
     return result
 
 
+class AcervoImportAllCompleteRequest(BaseModel):
+    minConfidence: float = 0.55
+    skipIfCommitted: bool = False
+    classifyAfter: bool = True
+
+
+@app.post("/api/acervo/import-all-complete")
+def api_acervo_import_all_complete(payload: AcervoImportAllCompleteRequest) -> dict[str, Any]:
+    """Importa todos os anos com prova+gab no disco (Ciclo HK)."""
+    from acervo_fetch import import_all_complete
+
+    result = import_all_complete(
+        min_confidence=payload.minConfidence,
+        skip_if_committed=payload.skipIfCommitted,
+        classify_after=payload.classifyAfter,
+    )
+    if payload.classifyAfter and int(result.get("insertedTotal") or 0) > 0:
+        try:
+            result["classified"] = api_ingest_classify_pending()
+        except Exception as exc:  # noqa: BLE001
+            result["classified"] = {"ok": False, "error": str(exc)}
+    if int(result.get("insertedTotal") or 0) > 0:
+        try:
+            result["rag"] = index_all_questions()
+        except Exception as exc:  # noqa: BLE001
+            result["rag"] = {"ok": False, "message": f"Reindex pendente: {type(exc).__name__}"}
+        try:
+            result["professor"] = fill_professor_drafts(
+                limit=max(40, int(result.get("insertedTotal") or 20)),
+                prefer_uema=True,
+            )
+        except Exception as exc:  # noqa: BLE001
+            result["professor"] = {"ok": False, "error": str(exc)}
+    return result
+
+
 @app.get("/api/tutor/today-plan")
 def api_tutor_today_plan() -> dict[str, Any]:
     return build_tutor_day_plan()
@@ -2105,6 +2146,7 @@ def api_today(
     preferNatureza: bool | None = None,
     subject: str | None = None,
     topic: str | None = None,
+    officialWithGab: bool | None = None,
 ) -> dict[str, Any]:
     dash = dashboard_stats()
     revs = list_revisions()
@@ -2139,6 +2181,10 @@ def api_today(
     natureza_first = False
     seen: set[str] = set()
     board_filter = (examBoard or "").strip().upper() or None
+    # HL: sessão Dia de prova / oficiais só com PDF (gab no commit seguro)
+    want_oficial_gab = officialWithGab is True or (
+        officialWithGab is None and board_filter == "UEMA_PAES"
+    )
     year_filter = int(year) if year else None
     natureza_subjects = {"Biologia", "Química", "Física"}
     # Default Natureza-first quando UEMA; deep-link Natureza só se subject for Bio/Qui/Fis
@@ -2166,6 +2212,24 @@ def api_today(
                     out.append(buckets[key].pop(0))
         return out
 
+    def _official_gab_ok(q: dict[str, Any]) -> bool:
+        if q.get("generated"):
+            return False
+        board = (q.get("examBoard") or "").upper()
+        if board == "TREINO":
+            return False
+        if board == "UEMA_PAES" or q.get("isOfficial") or is_official_source(
+            q.get("source"), q.get("generated")
+        ):
+            src = (q.get("source") or "").lower()
+            return (
+                "pdf" in src
+                or "ingest" in src
+                or "oficial" in src
+                or bool(q.get("isOfficial"))
+            )
+        return False
+
     # Deep-link subject+topic: prioriza as questões do tópico
     year_widened = False
     if subject_filter and topic_filter:
@@ -2174,6 +2238,7 @@ def api_today(
             topic=topic_filter,
             exam_board=board_filter or ("UEMA_PAES" if prefer_official else None),
             year=year_filter,
+            source_kind="oficial" if want_oficial_gab else None,
             limit=20,
         )
         # AE2: year estreito demais → multi-ano do mesmo tópico
@@ -2183,6 +2248,7 @@ def api_today(
                 topic=topic_filter,
                 exam_board="UEMA_PAES",
                 year=None,
+                source_kind="oficial" if want_oficial_gab else None,
                 limit=20,
             )
             if len(multi) > len(qpool):
@@ -2193,14 +2259,23 @@ def api_today(
                 subject=subject_filter, topic=topic_filter, source_kind="oficial", limit=20
             )
             used_fallback = True
-        if not qpool:
+        if not qpool and not want_oficial_gab:
             qpool = list_questions(subject=subject_filter, topic=topic_filter, limit=20)
             if qpool:
                 used_fallback = True
+        if want_oficial_gab:
+            qpool = [q for q in qpool if _official_gab_ok(q)]
         selected = qpool[:15]
         if len(selected) < 8 and subject_filter in natureza_subjects and board_filter == "UEMA_PAES":
-            more = list_questions(subject=subject_filter, exam_board="UEMA_PAES", limit=15)
+            more = list_questions(
+                subject=subject_filter,
+                exam_board="UEMA_PAES",
+                source_kind="oficial" if want_oficial_gab else None,
+                limit=15,
+            )
             for question in more:
+                if want_oficial_gab and not _official_gab_ok(question):
+                    continue
                 if question["id"] not in {q["id"] for q in selected}:
                     selected.append(question)
                 if len(selected) >= 15:
@@ -2221,22 +2296,43 @@ def api_today(
         ]
     # Ciclo M/O/P: sessão só-oficiais (year opcional; Natureza-first)
     elif board_filter:
-        selected = list_questions(exam_board=board_filter, year=year_filter, limit=40)
+        selected = list_questions(
+            exam_board=board_filter,
+            year=year_filter,
+            source_kind="oficial" if (want_oficial_gab and board_filter == "UEMA_PAES") else None,
+            limit=40,
+        )
+        if want_oficial_gab and board_filter == "UEMA_PAES":
+            selected = [q for q in selected if _official_gab_ok(q)]
         if subject_filter:
             filtered = [q for q in selected if (q.get("subject") or "") == subject_filter]
             if filtered:
                 selected = filtered
         if year_filter and len(selected) < 5 and board_filter == "UEMA_PAES":
-            multi = list_questions(exam_board="UEMA_PAES", year=None, limit=40)
+            multi = list_questions(
+                exam_board="UEMA_PAES",
+                year=None,
+                source_kind="oficial" if want_oficial_gab else None,
+                limit=40,
+            )
+            if want_oficial_gab:
+                multi = [q for q in multi if _official_gab_ok(q)]
             if subject_filter:
                 multi = [q for q in multi if (q.get("subject") or "") == subject_filter] or multi
             if len(multi) > len(selected):
                 selected = multi
                 year_widened = True
         if not selected and board_filter == "UEMA_PAES":
-            selected = list_questions(exam_board="UEMA_PAES", limit=40)
+            selected = list_questions(
+                exam_board="UEMA_PAES",
+                source_kind="oficial" if want_oficial_gab else None,
+                limit=40,
+            )
+            if want_oficial_gab:
+                selected = [q for q in selected if _official_gab_ok(q)]
             used_fallback = bool(selected) and year_filter is not None
-        if not selected and board_filter == "UEMA_PAES":
+        # Nunca recuar para TREINO quando officialWithGab / UEMA base
+        if not selected and board_filter == "UEMA_PAES" and not want_oficial_gab:
             selected = list_questions(source_kind="oficial", year=year_filter, limit=40)
             used_fallback = True
         if board_filter == "UEMA_PAES" and want_natureza and selected:
@@ -2254,8 +2350,14 @@ def api_today(
             and prefer_official
             and len(selected) < 8
         ):
-            more = list_questions(exam_board="UEMA_PAES", limit=15)
+            more = list_questions(
+                exam_board="UEMA_PAES",
+                source_kind="oficial" if want_oficial_gab else None,
+                limit=15,
+            )
             for question in more:
+                if want_oficial_gab and not _official_gab_ok(question):
+                    continue
                 if question["id"] not in {q["id"] for q in selected}:
                     selected.append(question)
                 if len(selected) >= 15:
@@ -2270,15 +2372,17 @@ def api_today(
             questions = list_questions(subject=s, topic=t, exam_board="UEMA_PAES", limit=15)
             if not questions and prefer_official:
                 questions = list_questions(subject=s, topic=t, source_kind="oficial", limit=15)
-            if not questions:
+            if not questions and not want_oficial_gab:
                 questions = list_questions(subject=s, topic=t, exam_board="TREINO", limit=15)
                 if questions:
                     used_fallback = True
-            if not questions:
+            if not questions and not want_oficial_gab:
                 questions = list_questions(subject=s, topic=t, limit=15)
                 if questions:
                     used_fallback = True
             for question in questions:
+                if want_oficial_gab and not _official_gab_ok(question):
+                    continue
                 if question["id"] not in seen:
                     selected.append(question)
                     seen.add(question["id"])
@@ -2344,6 +2448,8 @@ def api_today(
                 or (q.get("examBoard") or "").upper() == "UEMA_PAES"
             )
         ]
+        if want_oficial_gab:
+            official_sel = [q for q in official_sel if _official_gab_ok(q)]
         if official_sel:
             selected = official_sel[:15]
 
@@ -2352,7 +2458,11 @@ def api_today(
     target_pack_min = 10
     natureza_pool_n = 0
     if prefer_official or board_filter == "UEMA_PAES":
-        nat_pool = list_questions(exam_board="UEMA_PAES", limit=80)
+        nat_pool = list_questions(
+            exam_board="UEMA_PAES",
+            source_kind="oficial" if want_oficial_gab else None,
+            limit=80,
+        )
         nat_pool = [
             q
             for q in nat_pool
@@ -2363,6 +2473,7 @@ def api_today(
                 or is_official_source(q.get("source"), q.get("generated"))
                 or (q.get("examBoard") or "").upper() == "UEMA_PAES"
             )
+            and (not want_oficial_gab or _official_gab_ok(q))
         ]
         natureza_pool_n = len(nat_pool)
         if want_natureza and natureza_pool_n >= target_pack_min and len(selected) < target_pack_min:
@@ -2436,6 +2547,7 @@ def api_today(
         "dailyRoutine": dash.get("dailyRoutine"),
         "medicineTop": (dash.get("medicineTop") or dash.get("criticalTopics") or [])[:5],
         "examBoardFilter": board_filter,
+        "officialWithGab": want_oficial_gab,
         "warning": warning,
         "editalTopics": edital_topics,
         "suggestedMinutes": 60,
@@ -2450,6 +2562,7 @@ def api_session_plan(
     preferNatureza: bool | None = None,
     subject: str | None = None,
     topic: str | None = None,
+    officialWithGab: bool | None = None,
 ) -> dict[str, Any]:
     return api_today(
         examBoard=examBoard,
@@ -2457,6 +2570,7 @@ def api_session_plan(
         preferNatureza=preferNatureza,
         subject=subject,
         topic=topic,
+        officialWithGab=officialWithGab,
     )
 
 

@@ -28,9 +28,9 @@ Atualizado: 2026-08-06 — drop Downloads (provas 2014–2025) + 2026 prévio.
 
 ## Fluxo
 
-1. Drop/commit PDFs → Biblioteca → Importar ano → **Revisar** → Commitar.
+1. Drop/commit PDFs → Biblioteca → **Importar todos com gab** (ou Import seguro por ano) → Revisar se preciso → Estudar.
 2. Anos **sem gabarito**: preview OK, mas **não** confie no `correctIndex` até colar gabarito oficial e reaplicar.
-3. 2024–26: Semana 1 / Gravar PDFs do PC.
+3. 2024–26: pares completos no disco → Importar todos com gab / Semana 1.
 4. Nunca inventar gabarito nem incidência.
 
 ## Observação
@@ -40,6 +40,20 @@ Nome canônico: `paes_YYYY.pdf`. Extras no mesmo ano: `paes_YYYY_etapa2.pdf` (im
 ## Próximo passo (prioridade)
 
 **Gabaritos 2014–23** — `data/gabaritos/gabarito_YYYY.pdf`.  
+Checklist host pós-drop:
+
+- [ ] 2014  
+- [ ] 2015  
+- [ ] 2016  
+- [ ] 2017  
+- [ ] 2018  
+- [ ] 2019  
+- [ ] 2020  
+- [ ] 2021  
+- [ ] 2022  
+- [ ] 2023  
+
 Sem isso o app marca o ano como **parcial** e **não grava oficiais** (evita inventar resposta).
 
-Fluxo com gabarito no disco: Biblioteca → Import seguro / apply gabarito → altas conf. → estudar.
+Fluxo com gabarito no disco: Biblioteca → **Importar todos com gab** (ou Import seguro) → altas conf. → estudar.  
+Opcional (host): `scripts\copy_gabaritos_from_downloads.ps1` se o nome do PDF contiver `gabarito` e o ano.

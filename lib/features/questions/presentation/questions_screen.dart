@@ -34,6 +34,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
   String? examBoard;
   bool similares = false;
   bool medicine = false;
+  bool officialWithGab = false;
   int page = 0;
   int selected = 0;
   static const pageSize = 40;
@@ -70,6 +71,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     if (examBoard != null && examBoard!.isNotEmpty) map['examBoard'] = examBoard!;
     if (similares) map['similares'] = 'true';
     if (medicine) map['medicine'] = 'true';
+    if (officialWithGab) map['officialWithGab'] = 'true';
     map['limit'] = '$pageSize';
     map['offset'] = '${page * pageSize}';
     return map;
@@ -209,8 +211,25 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     ),
                     FilterChip(
                       label: const Text('Só UEMA'),
-                      selected: examBoard == 'UEMA_PAES',
-                      onSelected: (v) => _resetPage(() => examBoard = v ? 'UEMA_PAES' : null),
+                      selected: examBoard == 'UEMA_PAES' && !officialWithGab,
+                      onSelected: (v) => _resetPage(() {
+                        officialWithGab = false;
+                        examBoard = v ? 'UEMA_PAES' : null;
+                        source = null;
+                      }),
+                    ),
+                    FilterChip(
+                      label: const Text('Só oficiais com gab'),
+                      selected: officialWithGab,
+                      onSelected: (v) => _resetPage(() {
+                        officialWithGab = v;
+                        if (v) {
+                          examBoard = 'UEMA_PAES';
+                          source = 'oficial';
+                        } else {
+                          source = null;
+                        }
+                      }),
                     ),
                     FilterChip(
                       label: const Text('Medicina'),

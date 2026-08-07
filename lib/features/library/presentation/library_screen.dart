@@ -591,6 +591,96 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  Future<void> _importAllComplete() async {
+    setState(() {
+      busy = true;
+      msg = 'Importando todos os pares com gabarito…';
+    });
+    try {
+      final data = await apiClient.post('/api/acervo/import-all-complete', {
+        'minConfidence': 0.55,
+        'skipIfCommitted': false,
+        'classifyAfter': true,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      final inserted = map['insertedTotal'] ?? 0;
+      final n = map['officialCount'] ?? 0;
+      final years = (map['years'] as List?) ?? const [];
+      final waiting = (map['waitingYears'] as List?) ?? const [];
+      final health = map['healthByYear'] is Map
+          ? Map<String, dynamic>.from(map['healthByYear'] as Map)
+          : <String, dynamic>{};
+      final perYear = years.map((raw) {
+        final y = Map<String, dynamic>.from(raw as Map);
+        final yr = y['year'];
+        final ins = y['inserted'] ?? 0;
+        final err = y['error']?.toString();
+        final pct = y['gabaritoPct'] ?? (health['$yr'] is Map ? (health['$yr'] as Map)['gabaritoPct'] : null);
+        final pctTxt = pct != null ? ' · gab ${pct}%' : '';
+        if (err != null && err.isNotEmpty) return '$yr: erro ($err)';
+        if (y['needsGabarito'] == true) return '$yr: precisa gabarito';
+        if (y['skipped'] == true || y['reason'] == 'already_committed') {
+          return '$yr: já na base · +$ins$pctTxt';
+        }
+        return '$yr: +$ins$pctTxt';
+      }).join('\n');
+      final waitLine = waiting.isEmpty
+          ? ''
+          : '\nAguardando gabarito: ${waiting.map((e) => e.toString()).join(', ')}.';
+      final sessao = map['sessionPath']?.toString() ??
+          '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1';
+      setState(
+        () => msg = map['message']?.toString() ?? 'Import todos · +$inserted · base $n',
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Import todos · +$inserted · oficiais $n'),
+          action: SnackBarAction(label: 'Estudar', onPressed: () => _goStudy(sessao)),
+          duration: const Duration(seconds: 7),
+        ),
+      );
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Importar todos com gab'),
+          content: SingleChildScrollView(
+            child: Text(
+              '${map['message'] ?? ''}\n\n$perYear$waitLine\n\n'
+              'Base oficial: $n. Abrir sessão só oficiais com gab?',
+            ),
+          ),
+          actions: [
+            if (waiting.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _openFolder('gabaritos');
+                },
+                child: const Text('Abrir gabaritos'),
+              ),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fechar')),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _goStudy(sessao);
+              },
+              child: const Text('Estudar'),
+            ),
+          ],
+        ),
+      );
+      ref.read(refreshTickProvider.notifier).state++;
+      await _load();
+    } catch (e) {
+      setState(
+        () => msg = humanApiError(e, fallback: 'Importar todos com gab falhou — tente de novo.'),
+      );
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   String _uiStatusLabel(String? s) {
     switch (s) {
       case 'committed':
@@ -1352,12 +1442,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           icon: const Icon(Icons.download_rounded),
                           label: Text(officialN == 0 ? 'Atualizar 2024–26' : 'Atualizar'),
                         ),
+                        FilledButton.tonalIcon(
+                          onPressed: busy ? null : _importAllComplete,
+                          icon: const Icon(Icons.library_add_check_rounded),
+                          label: const Text('Importar todos com gab'),
+                        ),
                         OutlinedButton(
                           onPressed: busy ? null : _commitOnDisk,
                           child: const Text('Gravar PDFs do PC'),
                         ),
                         FilledButton.tonal(
-                          onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                          onPressed: () => context.go(
+                            '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
+                          ),
                           child: const Text('Estudar agora (S)'),
                         ),
                       ],
@@ -1523,8 +1620,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       message:
                           'Falta o PDF deste intervalo (2014–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura. Sem gabarito, o app mostra prova e preview, mas não inventa resposta correta.',
                       action: TextButton(
-                        onPressed: busy ? null : _commitOnDisk,
-                        child: const Text('Gravar PDFs do PC'),
+                        onPressed: busy ? null : _importAllComplete,
+                        child: const Text('Importar todos com gab'),
                       ),
                     )
                   else
