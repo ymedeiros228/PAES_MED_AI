@@ -73,6 +73,12 @@ Prioridade: topo = primeiro.
 - [x] Hoje checklist + playlist/rail
 - [x] Ship **1.0.0+17**
 
+## P3i · Materiais por disciplina (IV–IZ)
+
+- [x] materials-pack + YouTube busca + StudyMaterialPack
+- [x] Catálogo diversificado
+- [x] Ship **1.0.0+18**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -90,4 +96,5 @@ Prioridade: topo = primeiro.
 - IG–IK (2026-08-06): hospitalidade copy/UX; ship **1.0.0+15**.
 - IL–IP (2026-08-06): fluxo pós-bloco + Domínio/Biblioteca; ship **1.0.0+16**.
 - IQ–IU (2026-08-07): polish front kit; ship **1.0.0+17**.
-- Versão: **1.0.0+17**.
+- IV–IZ (2026-08-07): materiais por disciplina + YouTube; ship **1.0.0+18**.
+- Versão: **1.0.0+18**.

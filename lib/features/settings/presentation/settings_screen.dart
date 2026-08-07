@@ -83,6 +83,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  bool _tutorModelConfigured(Map<String, dynamic>? h) {
+    if (h == null) return false;
+    if (h['openai_configured'] == true || h['ollama_configured'] == true) return true;
+    final t = h['tutor'];
+    if (t is Map && t['configured'] == true) return true;
+    return false;
+  }
+
+  String _tutorOnlineSubtitle(Map<String, dynamic>? h) {
+    if (!_tutorModelConfigured(h)) {
+      return 'Sem modelo no .env — tutor local ensina com edital/questões. '
+          'OPENAI_API_KEY ou OLLAMA_HOST em backend/.env';
+    }
+    final t = h?['tutor'];
+    final tutorMap = t is Map ? Map<String, dynamic>.from(t) : null;
+    final p = tutorMap?['provider']?.toString() ?? 'openai';
+    final m = tutorMap?['model']?.toString() ?? h?['model']?.toString() ?? '—';
+    return 'Modelo ativo: $p · $m (desligue para forçar local)';
+  }
+
   Future<void> _backups() async {
     try {
       final data = await apiClient.get('/api/backups');
@@ -570,15 +590,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Tutor com IA online'),
-                    subtitle: Text(
-                      health?['openai_configured'] == true
-                          ? 'Chave configurada'
-                          : 'Sem chave — tutor só com material local',
-                    ),
-                    value: health?['openai_configured'] == true && ref.watch(tutorOnlinePrefProvider),
-                    onChanged: health?['openai_configured'] == true
+                    subtitle: Text(_tutorOnlineSubtitle(health)),
+                    value: _tutorModelConfigured(health) && ref.watch(tutorOnlinePrefProvider),
+                    onChanged: _tutorModelConfigured(health)
                         ? (v) => ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v)
                         : null,
+                  ),
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    soft: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Como ativar o modelo',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '1) Em backend/.env: OPENAI_API_KEY=… (ou OLLAMA_HOST=http://127.0.0.1:11434).\n'
+                          '2) Opcional: OPENAI_BASE_URL (proxy/Groq/LM Studio) e OPENAI_MODEL / OLLAMA_MODEL.\n'
+                          '3) Reinicie a API · aqui em Ajustes ligue “Tutor com IA online”.\n'
+                          'Sem chave o tutor local continua ensinando com edital/questões (não inventa gabarito oficial).',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                   FutureBuilder(
                     future: apiClient.get('/api/media/prefs'),

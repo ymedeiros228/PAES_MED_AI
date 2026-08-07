@@ -7,6 +7,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
+import '../../../core/widgets/study_path_trail.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Progresso · Relevo do aluno (mapa de forças).
@@ -41,8 +42,10 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
   }
 
   Future<void> _load() async {
+    final hadData = data != null;
     setState(() {
-      loading = true;
+      // Mantém último relevo visível no reload (sem SoftLoader eterno).
+      loading = !hadData;
       error = null;
     });
     try {
@@ -51,6 +54,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
       setState(() {
         data = Map<String, dynamic>.from(raw as Map);
         loading = false;
+        error = null;
       });
       _morph.forward(from: 0);
     } catch (e) {
@@ -64,7 +68,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(refreshTickProvider);
+    ref.listen<int>(refreshTickProvider, (prev, next) {
+      if (prev != next) _load();
+    });
     final cs = Theme.of(context).colorScheme;
     final essay = Map<String, dynamic>.from(data?['essay'] as Map? ?? {});
     final peaks = (data?['peaks'] as List? ?? [])
@@ -86,6 +92,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
       'active' => MissionQuestStatus.active,
       _ => MissionQuestStatus.open,
     };
+    final pathMap = data?['path'] is Map
+        ? Map<String, dynamic>.from(data!['path'] as Map)
+        : null;
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -102,11 +111,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   subtitle: 'Seu relevo: picos firmes e vales a treinar — treino local, não % de aprovação',
                 ),
                 if (loading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
+                  SoftLoader(
+                    label: 'Montando o relevo…',
+                    onRetry: _load,
                   )
-                else if (error != null)
+                else if (error != null && data == null)
                   QuietEmpty(
                     message: error!,
                     action: Wrap(
@@ -121,7 +130,15 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ],
                     ),
                   )
-                else ...[
+                else if (data != null) ...[
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: QuietEmpty(
+                        message: 'Atualização falhou · mostrando último relevo. ${error!}',
+                        action: TextButton(onPressed: _load, child: const Text('Tentar')),
+                      ),
+                    ),
                   HeroStudyStrip(
                     eyebrow: 'Relevo do aluno',
                     title: 'Onde você sobe e onde ainda vale treinar',
@@ -131,6 +148,13 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       label: essay['levelLabel']?.toString() ?? 'treino local',
                     ),
                   ),
+                  if (pathMap != null) ...[
+                    SectionLabel(
+                      'Caminho de treino',
+                      hint: 'Q&A + redação · gamificação local',
+                    ),
+                    StudyPathTrail(path: pathMap),
+                  ],
                   AnimatedBuilder(
                     animation: _morph,
                     builder: (context, _) {
@@ -195,7 +219,21 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     const SectionLabel('Missão de redação', hint: 'treino local · não banca'),
                     MissionQuestCard(
                       title: 'Missão · ${mission['label'] ?? 'eixo'}',
-                      why: mission['prompt']?.toString() ?? 'Treine o eixo mais fraco.',
+                      why: () {
+                        final base = mission['prompt']?.toString() ?? 'Treine o eixo mais fraco.';
+                        final persona = mission['suggestedPersona']?.toString();
+                        final delta = mission['delta'];
+                        final parts = <String>[base];
+                        if (delta is num) {
+                          parts.add(
+                            'Δ eixo: ${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}',
+                          );
+                        }
+                        if (persona != null && persona.isNotEmpty) {
+                          parts.add('Mentor: $persona');
+                        }
+                        return parts.join(' · ');
+                      }(),
                       ctaLabel: questStatus == MissionQuestStatus.cleared
                           ? 'Ver redação'
                           : 'Aceitar missão',
@@ -206,7 +244,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   if ((essay['count'] as int? ?? 0) > 0) ...[
                     SectionLabel(
                       'Quinteto da redação',
-                      hint: essay['disclaimer']?.toString() ?? 'eixos 0–10',
+                      hint: essay['disclaimer']?.toString() ?? 'eixos 0–10 · radar fino',
                     ),
                     SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -214,6 +252,50 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         axes: axes,
                         averages: avg,
                         labels: labels,
+                        deltas: () {
+                          final raw = essay['axisDeltas'];
+                          if (raw is! Map) return null;
+                          final out = <String, double>{};
+                          for (final e in raw.entries) {
+                            if (e.value is num) {
+                              out[e.key.toString()] = (e.value as num).toDouble();
+                            }
+                          }
+                          return out.isEmpty ? null : out;
+                        }(),
+                      ),
+                    ),
+                  ],
+                  if (() {
+                    final tl = data?['missionTimeline'] ?? essay['missionTimeline'];
+                    return tl is List && tl.isNotEmpty;
+                  }()) ...[
+                    const SectionLabel(
+                      'Linha do tempo · missões e caminho',
+                      hint: 'treinos recentes · não banca',
+                    ),
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: SoftTimeline(
+                        items: [
+                          for (final raw in ((data?['missionTimeline'] ??
+                                      essay['missionTimeline']) as List)
+                              .take(10))
+                            if (raw is Map)
+                              SoftTimelineItem(
+                                title: raw['title']?.toString() ?? 'Evento',
+                                subtitle: [
+                                  if (raw['subtitle'] != null) raw['subtitle'].toString(),
+                                  if (raw['at'] != null) raw['at'].toString(),
+                                ].where((s) => s.isNotEmpty).join(' · '),
+                                onTap: () {
+                                  final route = raw['route']?.toString();
+                                  if (route != null && route.isNotEmpty) {
+                                    context.go(route);
+                                  }
+                                },
+                              ),
+                        ],
                       ),
                     ),
                   ],

@@ -45,6 +45,9 @@ final appRouter = GoRouter(
   },
   routes: [
     GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+    // Aliases de deep-link/antigos — evita dead-end em CTA e link legado.
+    GoRoute(path: '/hoje', redirect: (_, __) => '/dashboard'),
+    GoRoute(path: '/ajustes', redirect: (_, __) => '/configuracoes'),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
@@ -151,7 +154,7 @@ final appRouter = GoRouter(
                 ),
                 const SizedBox(height: 20),
                 FilledButton(
-                  onPressed: () => GoRouter.of(ctx).go('/hoje'),
+                  onPressed: () => GoRouter.of(ctx).go('/dashboard'),
                   child: const Text('Ir para Hoje'),
                 ),
               ],

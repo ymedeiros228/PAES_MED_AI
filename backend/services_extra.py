@@ -12,8 +12,21 @@ from typing import Any
 
 from db import DATA_DIR, connect, loads_json
 from services_core import list_questions, medicine_priority, predict_topic, stats_basis, topic_frequency
+import time
 
 ROOT = Path(__file__).resolve().parent.parent
+
+_PATH_TTL_S = 12.0
+_path_cache: dict[str, Any] = {"t": 0.0, "v": None}
+_PACK_TTL_S = 45.0
+_pack_cache: dict[str, Any] = {}  # key -> (t, value)
+
+
+def invalidate_path_cache() -> None:
+    _path_cache["t"] = 0.0
+    _path_cache["v"] = None
+    _pack_cache.clear()
+
 
 REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
     "conceito": {
@@ -177,17 +190,322 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
 
 
 TUTOR_SYSTEM = """
-Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
-Responda em português do Brasil.
+Você é o Tutor IA do PAES MED AI (UEMA/PAES — preparação para Medicina).
+Responda em português do Brasil, com tom de professor paciente e exigente.
 
-REGRAS OBRIGATÓRIAS:
-1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
-2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
-3. Nunca entregue a resposta pronta de imediato. Faça perguntas socráticas, use analogias e explique como professor.
-4. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
-5. Cite fontes do contexto (ano, id da questão, tópico do edital).
-6. Ao final, faça UMA pergunta de verificação.
+MISSÃO PEDAGÓGICA (ordem obrigatória):
+1) Elicitar: peça (ou valorize) o raciocínio do aluno antes de despejar a resposta.
+2) Ensinar: explique o conceito em passos; use o ESTILO pedido (professor/macete/mapa…).
+3) Verificar: termine com UMA pergunta de checagem (não várias).
+4) Praticar: se houver ids de questões no contexto, sugira 1–2 caminhos de treino (não invente ids).
+
+REGRAS DE INTEGRIDADE:
+1. Priorize o CONTEXTO DA BASE LOCAL (edital, questões, resoluções, aulas). Não invente gabaritos oficiais,
+   percentuais de cobrança UEMA, nem “prova de ano X” sem fonte no contexto.
+2. Com contexto parcial: ensine o que der com o que há (trecho de edital, enunciado, macete) e marque
+   o resto como raciocínio didático — nunca recuse a aula só porque a base é incompleta.
+3. Se faltar fonte local: ensine o conceito de forma geral e diga com clareza
+   "Isto é raciocínio didático, não gabarito oficial UEMA".
+4. Nunca diga que o tutor “não funciona”, “está quebrado” ou “indisponível” — sempre ensine algo útil.
+5. Frequências do contexto são ESTIMATIVAS da base de treino, não garantia de edital.
+6. Cite ids/anos do contexto quando existirem.
 """.strip()
+
+
+_STYLE_HINTS: dict[str, str] = {
+    "professor": "Explique como professor especialista, com perguntas socráticas.",
+    "medico": "Conecte com raciocínio clínico/Medicina quando fizer sentido (sem diagnosticar o aluno).",
+    "crianca": "Explique de forma simples (nível ~12 anos), sem perder precisão.",
+    "analogia": "Use analogias concretas e curtas.",
+    "mapa": "Organize como mapa mental em tópicos hierárquicos.",
+    "resumo": "Resumo em até 5 linhas + 1 pergunta de verificação.",
+    "macete": "Foque macetes de eliminação de distratores (sem inventar letra do gabarito).",
+    "flashcard": "Devolva 3–5 flashcards Frente/Verso do tema.",
+}
+
+
+def tutor_style_hint(style: str | None) -> str:
+    return _STYLE_HINTS.get((style or "professor").strip().lower(), _STYLE_HINTS["professor"])
+
+
+def _score_blob(tokens: set[str], blob: str) -> int:
+    low = blob.lower()
+    return sum(1 for t in tokens if t in low)
+
+
+def _extract_topic_candidates(message: str) -> list[tuple[str, str, int]]:
+    """Devolve [(subject, topic, score)] do syllabus + menções no texto."""
+    tokens = {t.lower() for t in re.findall(r"[A-Za-zÀ-ÿ0-9]{3,}", message)}
+    if not tokens:
+        return []
+    conn = connect()
+    try:
+        syllabus = [dict(r) for r in conn.execute("SELECT subject, topic, subtopic, weight FROM syllabus").fetchall()]
+    finally:
+        conn.close()
+    scored: list[tuple[str, str, int]] = []
+    for s in syllabus:
+        blob = f"{s.get('subject') or ''} {s.get('topic') or ''} {s.get('subtopic') or ''}"
+        sc = _score_blob(tokens, blob)
+        # peso leve do edital
+        try:
+            sc += min(2, int(s.get("weight") or 0) // 3)
+        except (TypeError, ValueError):
+            pass
+        if sc > 0:
+            scored.append((s.get("subject") or "—", s.get("topic") or "—", sc))
+    scored.sort(key=lambda x: -x[2])
+    # unique by subject+topic
+    seen: set[tuple[str, str]] = set()
+    out: list[tuple[str, str, int]] = []
+    for sub, top, sc in scored:
+        key = (sub, top)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((sub, top, sc))
+        if len(out) >= 5:
+            break
+    return out
+
+
+def build_local_tutor_reply(
+    message: str,
+    style: str | None = "professor",
+    context: str = "",
+    citations: list[dict[str, Any]] | None = None,
+    rag_mode: str = "keyword",
+) -> dict[str, Any]:
+    """
+    offline-tutor-v2: ensina com base local + pedagogia (nunca só «não funciona»).
+    Nunca inventa gabarito oficial / % de cobrança UEMA.
+    """
+    citations = list(citations or [])
+    style_hint = tutor_style_hint(style)
+    basis = stats_basis()
+    # Light path: avoid full dashboard_stats scan on every tutor turn.
+    day_subject, day_topic = "Biologia", "Genética"
+    session_path = "/sessao"
+    hot: list = []
+    day_plan: dict = {}
+    try:
+        from services_core import build_tutor_day_plan, error_hot_topics, get_study_plan
+
+        day_plan = build_tutor_day_plan() or {}
+        hot = error_hot_topics(3) or []
+        plans = get_study_plan(30) or []
+        pending = [p for p in plans if not p.get("done")]
+        if pending:
+            day_subject = (pending[0].get("subject") or day_subject).strip()
+            day_topic = (pending[0].get("topic") or day_topic).strip()
+    except Exception:  # noqa: BLE001
+        day_plan = {}
+    daily: dict = {}
+    meta = (day_plan.get("meta") or "").replace("Hoje: ", "")
+    if " · " in meta:
+        parts = meta.split(" · ")
+        day_subject = (parts[0] or day_subject).strip()
+        day_topic = (parts[1] if len(parts) > 1 else day_topic).strip()
+    session_path = day_plan.get("ctaSession") or session_path
+
+    candidates = _extract_topic_candidates(message)
+    if candidates:
+        subject, topic, _ = candidates[0]
+    else:
+        subject, topic = day_subject, day_topic
+
+    pool = (
+        list_questions(subject=subject, topic=topic, exam_board="UEMA_PAES", limit=10)
+        or list_questions(subject=subject, topic=topic, limit=10)
+        or list_questions(subject=day_subject, topic=day_topic, limit=8)
+        or list_questions(limit=8)
+    )
+    q_cites = [c for c in citations if isinstance(c, dict) and c.get("type") == "question" and c.get("id")]
+    ed_cites = [c for c in citations if isinstance(c, dict) and c.get("type") in ("edital", "lesson")]
+
+    theory_lines: list[str] = []
+    grounded_cites: list[dict[str, Any]] = []
+    for q in pool[:8]:
+        res = (q.get("resolution") or "").strip()
+        mac = (q.get("macete") or "").strip()
+        stmt = (q.get("statement") or "").strip()
+        if not res or res == "—":
+            if not mac and not stmt:
+                continue
+        qid = q.get("id")
+        board = q.get("examBoard") or q.get("exam_board") or "—"
+        year = q.get("year") or "—"
+        theory_lines.append(f"• Questão {qid} ({year} · {board}):")
+        if stmt:
+            theory_lines.append(f"  Enunciado (trecho): {stmt[:220]}")
+        if res and res != "—":
+            for ln in res.splitlines()[:5]:
+                if ln.strip():
+                    theory_lines.append(f"  {ln.strip()[:220]}")
+        elif stmt:
+            theory_lines.append(
+                "  (Sem resolução oficial na base — use o enunciado para treinar o tópico, "
+                "sem afirmar a letra.)"
+            )
+        if mac and mac != "—":
+            theory_lines.append(f"  Macete (base local): {mac[:200]}")
+        grounded_cites.append(
+            {
+                "type": "question",
+                "id": qid,
+                "label": f"{q.get('subject')} · {q.get('topic')} ({year})",
+                "snippet": stmt[:140],
+                "subject": q.get("subject"),
+                "topic": q.get("topic"),
+                "year": year,
+            }
+        )
+        if len(theory_lines) >= 18:
+            break
+
+    if len(grounded_cites) < 2:
+        for cite in q_cites[:4]:
+            if cite.get("id") in {c.get("id") for c in grounded_cites}:
+                continue
+            sn = (cite.get("snippet") or "")[:180]
+            lab = cite.get("label") or cite.get("id")
+            if sn:
+                theory_lines.append(f"• {lab}: {sn}")
+            grounded_cites.append(cite)
+
+    for cite in ed_cites[:3]:
+        if cite not in grounded_cites:
+            grounded_cites.append(cite)
+
+    try:
+        from services_edital import theory_snippets_for
+
+        snips = theory_snippets_for(subject, topic, limit=4)
+    except Exception:  # noqa: BLE001
+        snips = []
+
+    pack_summary = ""
+    try:
+        from services_media import study_materials_pack
+
+        pack = study_materials_pack(subject=subject, topic=topic)
+        if pack.get("ok"):
+            bits = []
+            for lane in (pack.get("lanes") or [])[:3]:
+                n = int(lane.get("count") or 0)
+                if n > 0:
+                    bits.append(f"{lane.get('label')}: {n}")
+            if bits:
+                pack_summary = " · ".join(bits)
+    except Exception:  # noqa: BLE001
+        pack_summary = ""
+
+    try:
+        n_q = len(list_questions(limit=1) or [])
+    except Exception:  # noqa: BLE001
+        n_q = 0
+    has_material = bool(theory_lines or snips or grounded_cites or (context or "").strip() or n_q > 0)
+
+    reason = day_plan.get("reason") or daily.get("reason") or "Prioridade do plano local / Medicina."
+    lines: list[str] = [
+        f"Tutor local (base + pedagogia) · {subject} · {topic}",
+        f"Estilo: {style_hint}",
+        "",
+        "1) O que estudar",
+        f"• Foco: {subject} · {topic}",
+        f"• Por quê: {reason}",
+    ]
+    if hot:
+        h0 = hot[0]
+        lines.append(f"• Lacuna quente: {h0.get('key')} ({h0.get('misses')} miss(es)).")
+    if day_plan.get("meta"):
+        lines.append(f"• Meta do dia: {day_plan.get('meta')}")
+    lines.append("")
+
+    lines.append("2) Como pensar o conceito")
+    lines.append(
+        "• Não afirmo letra de gabarito sem resolução na base. "
+        "Raciocínio: comando do enunciado → conceito → eliminação de distratores."
+    )
+    if snips:
+        for s in snips[:3]:
+            for ln in str(s).splitlines()[:4]:
+                if ln.strip():
+                    lines.append(f"• {ln.strip()[:240]}")
+    if theory_lines:
+        lines.extend(theory_lines[:14])
+    elif context:
+        raw_lines = [ln.strip() for ln in context.splitlines() if ln.strip()]
+        useful = [ln for ln in raw_lines if not ln.startswith("===") and len(ln) > 20][:8]
+        for ln in useful:
+            lines.append(f"• {ln[:240]}")
+    else:
+        lines.append(
+            f"• «{topic}» em {subject} está no syllabus de treino. "
+            "Método: definição → causa-efeito → exceções → descarte de distratores."
+        )
+        lines.append(
+            "• Passos PAES: (a) verbo de comando; (b) conceito-chave; "
+            "(c) elimine 2 alternativas incompatíveis; (d) só então escolha."
+        )
+
+    if style == "macete":
+        lines.append("• Macete: se a alternativa confunde definição com processo, elimine-a cedo.")
+    elif style == "mapa":
+        lines.append(f"• Mapa: {subject} → {topic} → (definição) → (mecanismo) → (exceção) → (distrator)")
+    elif style == "flashcard":
+        lines.append(f"• Frente: O que é {topic} em {subject}?")
+        lines.append("• Verso: (suas palavras; sem copiar gabarito oficial sem fonte)")
+
+    lines.append("")
+    lines.append("3) Perguntas socráticas")
+    lines.append(
+        f"• Em uma frase: o que é «{topic}» em {subject} e qual palavra costuma ser a armadilha?"
+    )
+    lines.append(
+        f"• Qual distrator você eliminaria primeiro em {topic} e por quê? "
+        "(raciocínio — sem precisar da letra final.)"
+    )
+    lines.append("")
+
+    lines.append("4) Próximo passo")
+    sample_ids = [c.get("id") for c in grounded_cites if c.get("type") == "question" and c.get("id")][:3]
+    if sample_ids:
+        lines.append(f"• Questões na base: {', '.join(str(i) for i in sample_ids)} (fontes clicáveis).")
+    lines.append(f"• Fila / sessão: {session_path}")
+    lines.append("• Lista filtrada: /questoes")
+    lines.append(f"• Treino adaptativo: /adaptativo?subject={subject}&topic={topic}")
+    if pack_summary:
+        lines.append(f"• Materiais (pack): {pack_summary} — Biblioteca ou teoria da sessão.")
+    else:
+        lines.append("• Materiais: Biblioteca + pack de reforço na sessão.")
+    lines.append("")
+
+    if not theory_lines and not snips:
+        lines.append(
+            "Obs.: base fina para este recorte — o método e o plano de hoje ainda valem; "
+            "importe provas 2024–26 na Biblioteca para enriquecer resoluções oficiais."
+        )
+    lines.append(
+        "[Aviso] offline-tutor-v2 · base local + pedagogia. "
+        "Não inventa % de cobrança UEMA nem gabarito oficial ausente."
+        + ("" if basis.get("basis") == "oficial" else " Stats ainda em treino.")
+        + " Para modelo externo: OPENAI_API_KEY (+ OPENAI_BASE_URL opcional) ou OLLAMA_MODEL no backend/.env."
+    )
+
+    answer = "\n".join(lines)
+    return {
+        "answer": answer,
+        "model": f"offline-tutor-v2-{rag_mode}",
+        "usedRag": bool(theory_lines or snips or grounded_cites or (context or "").strip()),
+        "citations": grounded_cites[:8],
+        "ragMode": rag_mode,
+        "hasLocalBase": has_material,
+        "uncited": not bool(grounded_cites or snips or theory_lines),
+        "provider": "offline",
+        "statsBasis": basis,
+    }
+
 
 
 def record_answer(
@@ -198,27 +516,38 @@ def record_answer(
     error_type: str | None = None,
     time_ms: int | None = None,
 ) -> dict[str, Any]:
+    import sqlite3
+
     now = datetime.now().isoformat(timespec="seconds")
     conn = connect()
     try:
         _ensure_study_gaps_table(conn)
-        conn.execute(
-            """
-            INSERT INTO answers (question_id, correct, subject, topic, error_type, time_ms, answered_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (question_id, 1 if correct else 0, subject, topic, error_type, time_ms, now),
-        )
         flash_info: dict[str, Any] | None = None
         gap_info: dict[str, Any] | None = None
-        if not correct:
-            _schedule_revision(conn, subject, topic)
-            flash_info = _maybe_flashcard_from_error(conn, question_id, subject, topic)
-            gap_info = _upsert_gap_on_miss(conn, subject, topic, error_type, now)
-        else:
-            gap_info = _progress_gap_on_correct(conn, subject, topic)
-        conn.commit()
-        out: dict[str, Any] = {"ok": True}
+        persisted = True
+        try:
+            conn.execute(
+                """
+                INSERT INTO answers (question_id, correct, subject, topic, error_type, time_ms, answered_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (question_id, 1 if correct else 0, subject, topic, error_type, time_ms, now),
+            )
+            if not correct:
+                _schedule_revision(conn, subject, topic)
+                flash_info = _maybe_flashcard_from_error(conn, question_id, subject, topic)
+                gap_info = _upsert_gap_on_miss(conn, subject, topic, error_type, now)
+            else:
+                gap_info = _progress_gap_on_correct(conn, subject, topic)
+            conn.commit()
+        except sqlite3.IntegrityError:
+            # Id sintético / sem linha em questions — ainda devolve pedagogia (teach)
+            try:
+                conn.rollback()
+            except Exception:  # noqa: BLE001
+                pass
+            persisted = False
+        out: dict[str, Any] = {"ok": True, "persisted": persisted}
         if gap_info:
             out["gap"] = gap_info
         if not correct:
@@ -226,6 +555,27 @@ def record_answer(
             if flash_info:
                 out["flashcardCreated"] = flash_info.get("created") is True
                 out["flashcard"] = flash_info
+        # Bloco didático honesto (nunca inventa gabarito oficial)
+        out["teach"] = build_teach_block(
+            question_id=question_id,
+            subject=subject,
+            topic=topic,
+            correct=correct,
+            error_type=error_type,
+        )
+        try:
+            from services_core import invalidate_hot_caches
+
+            invalidate_hot_caches()
+        except Exception:  # noqa: BLE001
+            try:
+                invalidate_path_cache()
+            except Exception:  # noqa: BLE001
+                pass
+        try:
+            out["path"] = study_path()
+        except Exception:
+            pass
         return out
     finally:
         conn.close()
@@ -1886,6 +2236,69 @@ def essay_progress() -> dict[str, Any]:
             streak += 1
             cursor = cursor - timedelta(days=1)
 
+    # Deltas último vs penúltimo (radar fino)
+    axis_deltas: dict[str, float | None] = {}
+    for k in _ESSAY_AXES:
+        lv = last_axis_scores.get(k)
+        pv = prev_axis_scores.get(k)
+        if lv is not None and pv is not None:
+            axis_deltas[k] = round(float(lv) - float(pv), 2)
+        else:
+            axis_deltas[k] = None
+
+    # Timeline de missões / redações recentes (UI Redação + Progresso)
+    mission_timeline: list[dict[str, Any]] = []
+    if next_mission:
+        mission_timeline.append(
+            {
+                "kind": "mission",
+                "id": f"mission_{next_mission.get('axis') or 'open'}",
+                "title": f"Missão · {next_mission.get('label') or 'eixo'}",
+                "subtitle": (
+                    f"Status: {next_mission.get('status') or 'open'}"
+                    + (
+                        f" · delta {next_mission.get('delta'):+g}"
+                        if next_mission.get("delta") is not None
+                        else ""
+                    )
+                    + (
+                        f" · mentor {next_mission.get('suggestedPersona')}"
+                        if next_mission.get("suggestedPersona")
+                        else ""
+                    )
+                ),
+                "at": last_essay_at,
+                "route": "/redacao",
+                "axis": next_mission.get("axis"),
+                "status": next_mission.get("status"),
+                "suggestedPersona": next_mission.get("suggestedPersona"),
+                "prompt": next_mission.get("prompt"),
+            }
+        )
+    for e in essays[:8]:
+        fb = e.get("feedback") if isinstance(e.get("feedback"), dict) else {}
+        focus = fb.get("focusAxis") or fb.get("personaFocus")
+        persona = fb.get("personaLabel") or fb.get("persona")
+        sc = e.get("score")
+        mission_timeline.append(
+            {
+                "kind": "essay",
+                "id": e.get("id"),
+                "title": f"Redação · {e.get('theme') or 'tema'}",
+                "subtitle": (
+                    f"Nota {sc if sc is not None else '—'}"
+                    + (f" · eixo {_ESSAY_AXIS_LABELS.get(str(focus), focus)}" if focus else "")
+                    + (f" · mentor {persona}" if persona else "")
+                    + " · treino local"
+                ),
+                "at": e.get("createdAt"),
+                "route": "/redacao",
+                "score": sc,
+                "focusAxis": focus,
+                "persona": persona,
+            }
+        )
+
     return {
         "ok": True,
         "count": len(essays),
@@ -1894,6 +2307,7 @@ def essay_progress() -> dict[str, Any]:
         "averages": averages,
         "lastAxisScores": last_axis_scores,
         "prevAxisScores": prev_axis_scores,
+        "axisDeltas": axis_deltas,
         "lastScores": last_scores[:12],
         "meanScore": round(sum(last_scores) / len(last_scores), 2) if last_scores else None,
         "movingAvg": moving_avg,
@@ -1901,6 +2315,7 @@ def essay_progress() -> dict[str, Any]:
         "weakestAxis": weakest,
         "nextMission": next_mission,
         "missionStatus": mission_status if next_mission else None,
+        "missionTimeline": mission_timeline[:12],
         "streakDays": streak,
         "lastEssayAt": last_essay_at,
         "disclaimer": "Treino local por eixos · não é nota de banca UEMA.",
@@ -1944,11 +2359,12 @@ def essay_themes() -> list[str]:
 
 
 def progress_overview() -> dict[str, Any]:
-    """Cola dashboard + redação + gaps para /progresso (Ciclo HR)."""
+    """Cola dashboard + redação + gaps + caminho para /progresso (Ciclo HR/JB)."""
     from services_core import dashboard_stats, stats_basis
 
     dash = dashboard_stats()
     essay = essay_progress()
+    path = study_path()
     basis = stats_basis()
     _raw_gaps = dash.get("openGaps") or dash.get("criticalTopics") or []
     gaps = list(_raw_gaps)[:5] if isinstance(_raw_gaps, (list, tuple)) else []
@@ -1989,9 +2405,32 @@ def progress_overview() -> dict[str, Any]:
         peaks = [
             {"id": "placeholder", "label": "Comece a treinar", "value": 2.0, "kind": "hint", "max": 10.0}
         ]
+    # Timeline unificada: missão de redação + nós do caminho concluídos
+    path_timeline: list[dict[str, Any]] = []
+    essay_tl = essay.get("missionTimeline") if isinstance(essay.get("missionTimeline"), list) else []
+    for item in essay_tl[:8]:
+        if isinstance(item, dict):
+            path_timeline.append(item)
+    nodes = path.get("nodes") if isinstance(path.get("nodes"), list) else []
+    for n in nodes:
+        if not isinstance(n, dict):
+            continue
+        if n.get("done") or n.get("status") == "done":
+            path_timeline.append(
+                {
+                    "kind": "path_node",
+                    "id": n.get("id"),
+                    "title": n.get("title") or "Nó do caminho",
+                    "subtitle": (n.get("detail") or "Concluído · treino local"),
+                    "route": n.get("route") or "/dashboard",
+                    "status": "done",
+                }
+            )
     return {
         "ok": True,
         "essay": essay,
+        "path": path,
+        "qa": path.get("qa"),
         "streakDays": dash.get("streakDays"),
         "studyMinutesToday": dash.get("studyMinutesToday"),
         "studyMinutesWeek": dash.get("studyMinutesWeek") or (dash.get("weekClose") or {}).get("studyMinutesWeek"),
@@ -2000,6 +2439,7 @@ def progress_overview() -> dict[str, Any]:
         "activity28": dash.get("activity28") or dash.get("studyCalendar") or [],
         "gaps": gaps,
         "peaks": peaks,
+        "missionTimeline": path_timeline[:14],
         "officialCount": basis.get("officialCount", 0),
         "disclaimer": "Progresso local · treino · não é % de aprovação nem banca UEMA.",
         "sessionPath": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
@@ -2009,12 +2449,13 @@ def progress_overview() -> dict[str, Any]:
 
 def create_backup() -> dict[str, Any]:
     import hashlib
+    import uuid
     import zipfile
 
     backup_dir = DATA_DIR / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    dest = backup_dir / f"backup_{stamp}"
+    dest = backup_dir / f"backup_{stamp}_{uuid.uuid4().hex[:6]}"
     dest.mkdir(parents=True, exist_ok=True)
 
     db_path = DATA_DIR / "paes_med_ai.db"
@@ -2027,9 +2468,20 @@ def create_backup() -> dict[str, Any]:
         if src.exists():
             target = dest / sub
             if target.exists():
-                shutil.rmtree(target)
-            shutil.copytree(src, target, dirs_exist_ok=True)
-            files_copied.append(sub)
+                try:
+                    shutil.rmtree(target)
+                except OSError:
+                    # Windows: arquivo preso por outro processo — usa pasta nova
+                    target = dest / f"{sub}_{uuid.uuid4().hex[:4]}"
+            try:
+                shutil.copytree(src, target, dirs_exist_ok=True)
+                files_copied.append(sub)
+            except OSError as exc:
+                return {
+                    "ok": False,
+                    "error": f"Não foi possível copiar {sub}: {exc}",
+                    "path": str(dest),
+                }
 
     zip_path = shutil.make_archive(str(dest), "zip", root_dir=dest)
     zpath = Path(zip_path)
@@ -2066,12 +2518,20 @@ def create_backup() -> dict[str, Any]:
         conn.commit()
     finally:
         conn.close()
+    folder_removed = False
+    if verify["ok"]:
+        try:
+            shutil.rmtree(dest)
+            folder_removed = True
+        except OSError:
+            folder_removed = False
     return {
         "ok": True,
         "path": zip_path,
         "folder": str(dest),
+        "folderKept": not folder_removed,
         "verify": verify,
-        "note": "PDFs em provas/gabaritos/edital também estão no zip. Restore restaura o DB; pastas PDF podem ser reabertas do zip.",
+        "note": "Backup verificado em zip. Restore restaura o DB; pastas PDF podem ser reabertas do zip.",
     }
 
 
@@ -2116,6 +2576,74 @@ def last_backup_status() -> dict[str, Any]:
         return {"ok": True, **loads_json(row["value"], {})}
     finally:
         conn.close()
+
+
+def backup_storage_summary() -> dict[str, Any]:
+    backup_dir = DATA_DIR / "backups"
+    if not backup_dir.exists():
+        return {"ok": True, "count": 0, "dirs": 0, "zips": 0, "bytes": 0, "mb": 0}
+    files = list(backup_dir.rglob("*"))
+    total = sum(p.stat().st_size for p in files if p.is_file())
+    dirs = sum(1 for p in backup_dir.iterdir() if p.is_dir())
+    zips = sum(1 for p in backup_dir.iterdir() if p.is_file() and p.suffix.lower() == ".zip")
+    return {
+        "ok": True,
+        "count": dirs + zips,
+        "dirs": dirs,
+        "zips": zips,
+        "bytes": total,
+        "mb": round(total / (1024 * 1024), 2),
+        "path": str(backup_dir),
+        "warning": (
+            "Muitos backups ocupando espaço; rode tools\\limpar_backups.ps1 primeiro para simular."
+            if total > 5 * 1024 * 1024 * 1024 or dirs + zips > 60
+            else None
+        ),
+    }
+
+
+def list_backups(limit: int = 30) -> list[dict[str, Any]]:
+    import zipfile
+
+    backup_dir = DATA_DIR / "backups"
+    if not backup_dir.exists():
+        return []
+    entries: dict[str, dict[str, Any]] = {}
+    for p in backup_dir.iterdir():
+        if p.name == "_restore_tmp":
+            continue
+        if p.is_file() and p.suffix.lower() == ".zip":
+            key = p.stem
+            stat = p.stat()
+            item: dict[str, Any] = {
+                "name": p.name,
+                "path": str(p),
+                "kind": "zip",
+                "bytes": stat.st_size,
+                "modifiedAt": datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds"),
+            }
+            try:
+                with zipfile.ZipFile(p, "r") as zf:
+                    names = zf.namelist()
+                    item["verify"] = {"ok": len(names) > 0, "members": len(names), "bytes": stat.st_size}
+            except zipfile.BadZipFile:
+                item["verify"] = {"ok": False, "error": "zip_invalido", "bytes": stat.st_size}
+            entries[key] = item
+            continue
+        if p.is_dir() and (p / "paes_med_ai.db").exists():
+            key = p.name
+            stat = p.stat()
+            entries.setdefault(
+                key,
+                {
+                    "name": p.name,
+                    "path": str(p),
+                    "kind": "folder",
+                    "bytes": sum(f.stat().st_size for f in p.rglob("*") if f.is_file()),
+                    "modifiedAt": datetime.fromtimestamp(stat.st_mtime).isoformat(timespec="seconds"),
+                },
+            )
+    return sorted(entries.values(), key=lambda item: item.get("modifiedAt", ""), reverse=True)[:limit]
 
 
 def register_ingest(filename: str, kind: str, status: str, message: str) -> None:
@@ -2191,4 +2719,874 @@ def generate_similar_question_stub(topic: str, subject: str) -> dict[str, Any]:
         "generated": True,
         "approved": False,
         "warning": "Questão gerada — pendente em Aprovar antes de simulado sério.",
+    }
+
+
+def qa_progress() -> dict[str, Any]:
+    """Progresso local de Q&A (acertos/streak) — treino, não % de aprovação UEMA."""
+    conn = connect()
+    try:
+        row = conn.execute(
+            """
+            SELECT
+              COUNT(*) AS total,
+              SUM(CASE WHEN COALESCE(correct,0)=1 THEN 1 ELSE 0 END) AS correct,
+              COUNT(DISTINCT CASE WHEN TRIM(COALESCE(subject,''))!='' THEN subject END) AS subjects,
+              COUNT(DISTINCT CASE WHEN TRIM(COALESCE(topic,''))!=''
+                THEN subject || '::' || topic END) AS topics
+            FROM answers
+            """
+        ).fetchone()
+        total = int(row["total"] or 0) if row else 0
+        correct = int(row["correct"] or 0) if row else 0
+        subjects = int(row["subjects"] or 0) if row else 0
+        topics = int(row["topics"] or 0) if row else 0
+        day_rows = conn.execute(
+            """
+            SELECT DISTINCT substr(answered_at, 1, 10) AS d
+            FROM answers
+            WHERE answered_at IS NOT NULL AND length(answered_at) >= 10
+            ORDER BY d DESC
+            """
+        ).fetchall()
+        days_set = {str(r["d"]) for r in day_rows if r["d"]}
+        last = conn.execute(
+            "SELECT answered_at FROM answers ORDER BY answered_at DESC LIMIT 1"
+        ).fetchone()
+        last_at = last["answered_at"] if last else None
+    finally:
+        conn.close()
+
+    streak = 0
+    if days_set:
+        cursor = datetime.now().date()
+        if cursor.isoformat() not in days_set:
+            cursor = cursor - timedelta(days=1)
+        while cursor.isoformat() in days_set:
+            streak += 1
+            cursor = cursor - timedelta(days=1)
+
+    accuracy = round(100.0 * correct / total, 1) if total else None
+    return {
+        "ok": True,
+        "answersTotal": int(total),
+        "answersCorrect": int(correct),
+        "accuracyPercent": accuracy,
+        "subjectsTouched": int(subjects),
+        "topicsTouched": int(topics),
+        "streakDays": streak,
+        "lastAnswerAt": last_at,
+        "disclaimer": "Treino local de questões · não é prova oficial nem garantia de aprovação.",
+    }
+
+
+def study_path() -> dict[str, Any]:
+    """
+    Caminho gamificado unificado: Q&A + redação.
+    Níveis e nós são treino local — não inventamos nota de banca.
+    """
+    now = time.monotonic()
+    cached = _path_cache.get("v")
+    if cached is not None and (now - float(_path_cache.get("t") or 0)) < _PATH_TTL_S:
+        return cached
+    result = _study_path_compute()
+    _path_cache["t"] = now
+    _path_cache["v"] = result
+    return result
+
+
+def _study_path_compute() -> dict[str, Any]:
+    qa = qa_progress()
+    essay = essay_progress()
+    n_ans = int(qa.get("answersTotal") or 0)
+    n_ok = int(qa.get("answersCorrect") or 0)
+    n_essays = int(essay.get("count") or 0)
+    qa_streak = int(qa.get("streakDays") or 0)
+    essay_streak = int(essay.get("streakDays") or 0)
+    mission = essay.get("nextMission") if isinstance(essay.get("nextMission"), dict) else None
+    mission_cleared = (mission or {}).get("status") == "cleared" or (
+        essay.get("missionStatus") == "cleared"
+    )
+
+    # XP local (heurística transparente)
+    xp = (
+        n_ans * 2
+        + n_ok * 3
+        + n_essays * 28
+        + max(qa_streak, essay_streak) * 10
+        + (25 if mission_cleared else 0)
+        + int(qa.get("topicsTouched") or 0) * 2
+    )
+    level = max(1, min(25, 1 + xp // 45))
+    if level < 3:
+        level_label = "Iniciante"
+    elif level < 6:
+        level_label = "Trilha"
+    elif level < 10:
+        level_label = "Ritmo"
+    elif level < 15:
+        level_label = "Maratonista"
+    else:
+        level_label = "Studio"
+
+    def node(
+        nid: str,
+        *,
+        kind: str,
+        title: str,
+        detail: str,
+        done: bool,
+        cta: str,
+        route: str,
+        progress: float | None = None,
+    ) -> dict[str, Any]:
+        return {
+            "id": nid,
+            "kind": kind,  # qa | essay | mix
+            "title": title,
+            "detail": detail,
+            "done": done,
+            "cta": cta,
+            "route": route,
+            "progress": progress,
+        }
+
+    raw_nodes: list[dict[str, Any]] = [
+        node(
+            "start",
+            kind="mix",
+            title="Base",
+            detail="Abra o app e comece a treinar",
+            done=n_ans > 0 or n_essays > 0,
+            cta="Ir ao Hoje",
+            route="/dashboard",
+            progress=1.0 if (n_ans > 0 or n_essays > 0) else 0.0,
+        ),
+        node(
+            "qa_10",
+            kind="qa",
+            title="10 questões",
+            detail=f"{min(n_ans, 10)}/10 respostas salvas",
+            done=n_ans >= 10,
+            cta="Banco de questões",
+            route="/questoes",
+            progress=min(1.0, n_ans / 10.0),
+        ),
+        node(
+            "essay_1",
+            kind="essay",
+            title="1ª redação",
+            detail="Corrigir pelo menos um texto (treino local)",
+            done=n_essays >= 1,
+            cta="Escrever",
+            route="/redacao",
+            progress=1.0 if n_essays >= 1 else 0.0,
+        ),
+        node(
+            "qa_topic",
+            kind="qa",
+            title="5 tópicos",
+            detail=f"{min(int(qa.get('topicsTouched') or 0), 5)}/5 temas tocados",
+            done=int(qa.get("topicsTouched") or 0) >= 5,
+            cta="Sessão",
+            route="/sessao",
+            progress=min(1.0, int(qa.get("topicsTouched") or 0) / 5.0),
+        ),
+        node(
+            "essay_mission",
+            kind="essay",
+            title="Missão de eixo",
+            detail=(
+                "Suba o eixo mais fraco na redação"
+                if not mission_cleared
+                else "Missão de eixo concluída"
+            ),
+            done=bool(mission_cleared) or n_essays >= 3,
+            cta="Missão de redação",
+            route="/redacao",
+            progress=1.0 if mission_cleared or n_essays >= 3 else (0.5 if n_essays >= 1 else 0.0),
+        ),
+        node(
+            "qa_50",
+            kind="qa",
+            title="50 questões",
+            detail=f"{min(n_ans, 50)}/50 · volume de treino",
+            done=n_ans >= 50,
+            cta="Continuar Q&A",
+            route="/questoes",
+            progress=min(1.0, n_ans / 50.0),
+        ),
+        node(
+            "essay_5",
+            kind="essay",
+            title="5 redações",
+            detail=f"{min(n_essays, 5)}/5 textos corrigidos",
+            done=n_essays >= 5,
+            cta="Nova redação",
+            route="/redacao",
+            progress=min(1.0, n_essays / 5.0),
+        ),
+        node(
+            "streak_3",
+            kind="mix",
+            title="Sequência 3 dias",
+            detail=f"Melhor streak: Q&A {qa_streak}d · redação {essay_streak}d",
+            done=max(qa_streak, essay_streak) >= 3,
+            cta="Fila do dia",
+            route="/fila",
+            progress=min(1.0, max(qa_streak, essay_streak) / 3.0),
+        ),
+        node(
+            "studio",
+            kind="mix",
+            title="Studio firme",
+            detail="50+ questões e 5+ redações (ritmo de studio)",
+            done=n_ans >= 50 and n_essays >= 5,
+            cta="Ver relevo",
+            route="/progresso",
+            progress=min(1.0, (min(n_ans, 50) / 50.0 + min(n_essays, 5) / 5.0) / 2.0),
+        ),
+    ]
+
+    nodes: list[dict[str, Any]] = []
+    found_active = False
+    for n in raw_nodes:
+        if n["done"]:
+            status = "done"
+        elif not found_active:
+            status = "active"
+            found_active = True
+        else:
+            status = "locked"
+        n2 = dict(n)
+        n2["status"] = status
+        nodes.append(n2)
+
+    current = next((n for n in nodes if n["status"] == "active"), None)
+    if current is None and nodes:
+        current = nodes[-1]
+
+    done_n = sum(1 for n in nodes if n["status"] == "done")
+    return {
+        "ok": True,
+        "xp": xp,
+        "level": level,
+        "levelLabel": level_label,
+        "nodes": nodes,
+        "current": current,
+        "doneCount": done_n,
+        "totalCount": len(nodes),
+        "pathProgress": round(done_n / len(nodes), 3) if nodes else 0.0,
+        "qa": qa,
+        "essay": {
+            "count": n_essays,
+            "levelLabel": essay.get("levelLabel"),
+            "streakDays": essay_streak,
+            "missionStatus": essay.get("missionStatus"),
+            "meanScore": essay.get("meanScore"),
+        },
+        "disclaimer": (
+            "Caminho de treino local (Q&A + redação). "
+            "Não é nota da banca UEMA nem garantia de aprovação."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Ciclo JC — ensinar de verdade (heurísticas locais, sem inventar oficial)
+# ---------------------------------------------------------------------------
+
+TEACH_DISCLAIMER = (
+    "Heurística de treino local: sugere o que estudar com base nos seus erros e materiais do PC. "
+    "Não é nota da banca UEMA nem garantia de aprovação."
+)
+
+
+def _clip_text(s: str | None, n: int = 420) -> str:
+    t = (s or "").strip()
+    if len(t) <= n:
+        return t
+    return t[: n - 1].rstrip() + "…"
+
+
+def build_teach_block(
+    *,
+    question_id: str | None = None,
+    subject: str = "",
+    topic: str = "",
+    correct: bool | None = None,
+    error_type: str | None = None,
+    question: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """
+    Bloco didático pós-resposta.
+    Usa só campos da base (resolução, eixos, macete). Nunca inventa gabarito oficial.
+    """
+    from services_core import get_question, is_official_source
+
+    q = question
+    if q is None and question_id:
+        q = get_question(question_id) or {}
+    q = q or {}
+
+    subj = (subject or q.get("subject") or "").strip()
+    top = (topic or q.get("topic") or "").strip()
+    exam_board = (q.get("examBoard") or "TREINO").strip().upper()
+    is_official = bool(q.get("isOfficial")) or is_official_source(q.get("source"), q.get("generated"))
+    quality = (q.get("resolutionQuality") or "template").strip().lower()
+    axes = q.get("resolutionAxes") if isinstance(q.get("resolutionAxes"), dict) else {}
+    resolution = (q.get("resolution") or "").strip()
+    macete = (q.get("macete") or "").strip()
+    pegadinha = (q.get("pegadinha") or "").strip()
+    banca = (q.get("bancaIntent") or q.get("banca_intent") or "").strip()
+    concept_axis = _clip_text((axes or {}).get("conceito") or "", 360)
+    comando_axis = _clip_text((axes or {}).get("comando") or "", 220)
+
+    has_stored_teach = bool(concept_axis or resolution or macete or banca)
+
+    concept_parts: list[str] = []
+    if concept_axis:
+        concept_parts.append(concept_axis)
+    elif resolution and quality == "real":
+        concept_parts.append(_clip_text(resolution, 360))
+    elif resolution:
+        concept_parts.append(_clip_text(resolution, 280))
+    if not concept_parts:
+        if top and subj:
+            concept_parts.append(
+                f"Revise o núcleo de «{top}» em {subj}: defina o conceito em 1 frase suas "
+                "e reconecte com o verbo de comando do enunciado."
+            )
+        elif top:
+            concept_parts.append(
+                f"Revise o conceito de «{top}»: escreva 1 frase + 1 exemplo simples (treino local)."
+            )
+        else:
+            concept_parts.append(
+                "Revise o tema deste item: releia o enunciado, isole o comando e elimine extremos."
+            )
+    concept = " ".join(concept_parts)
+
+    review_points: list[str] = []
+    if comando_axis:
+        review_points.append(f"Comando da questão: {comando_axis}")
+    if macete:
+        review_points.append(f"Macete local: {_clip_text(macete, 200)}")
+    if pegadinha:
+        review_points.append(f"Pegadinha típica: {_clip_text(pegadinha, 200)}")
+    if banca:
+        review_points.append(f"Intenção da banca (treino): {_clip_text(banca, 200)}")
+    if not review_points:
+        review_points = [
+            f"Releia teoria de {top or 'do tópico'} em {subj or 'a disciplina'} (2–4 min).",
+            "Escreva a ideia-central em 1 frase com suas palavras.",
+            "Faça 2–3 itens do mesmo tópico só depois da revisão do conceito.",
+        ]
+    if error_type:
+        rem = remediation_for(error_type, subj, top)
+        for step in (rem.get("steps") or [])[:2]:
+            s = str(step).strip()
+            if s and s not in review_points:
+                review_points.append(s)
+
+    # Gabarito: só o que a base já tem (índice + marca de fonte) — sem inventar
+    correct_idx = q.get("correctIndex")
+    if correct_idx is None:
+        correct_idx = q.get("correct_index")
+    letter = None
+    try:
+        if correct_idx is not None:
+            i = int(correct_idx)
+            if 0 <= i <= 4:
+                letter = "ABCDE"[i]
+    except (TypeError, ValueError):
+        letter = None
+
+    if letter is None:
+        gabarito_status = "unavailable"
+        gabarito_message = "Gabarito oficial não disponível neste item."
+    elif is_official and exam_board == "UEMA_PAES":
+        gabarito_status = "official_index"
+        gabarito_message = f"Gabarito da base (PAES-UEMA no acervo local): {letter}"
+    else:
+        gabarito_status = "training_index"
+        gabarito_message = (
+            f"Resposta da base de treino: {letter} "
+            f"({'outra banca' if exam_board == 'OUTRA' else 'treino local'} — não inventamos oficial ausente)."
+        )
+
+    theory_path = (
+        f"/questoes?subject={subj}&topic={top}" if subj else "/questoes"
+    )
+    materials_path = f"/biblioteca?subject={subj}&topic={top}" if subj else "/biblioteca"
+    adaptive_path = (
+        f"/adaptativo?subject={subj}&topic={top}" if subj else "/adaptativo"
+    )
+    force_review = correct is False
+
+    next_steps: list[dict[str, Any]] = []
+    if force_review:
+        next_steps.append(
+            {
+                "id": "review_concept",
+                "label": "Revisar conceito (prioridade)",
+                "route": None,
+                "action": "open_theory",
+                "subject": subj,
+                "topic": top,
+                "priority": 1,
+                "why": "Erro recente — priorize o conceito antes de bombardear a próxima Q.",
+            }
+        )
+        next_steps.append(
+            {
+                "id": "materials",
+                "label": "Materiais do tópico",
+                "route": materials_path,
+                "action": "materials_pack",
+                "subject": subj,
+                "topic": top,
+                "priority": 2,
+                "why": "Pacote banca/vídeo/leitura/busca — escolha o que existe no PC/web.",
+            }
+        )
+        next_steps.append(
+            {
+                "id": "same_topic",
+                "label": "Treinar mesmo tópico",
+                "route": adaptive_path,
+                "action": "adaptive",
+                "subject": subj,
+                "topic": top,
+                "priority": 3,
+                "why": "Só depois de reler o conceito.",
+            }
+        )
+    else:
+        next_steps.append(
+            {
+                "id": "same_topic",
+                "label": "Mais do tópico",
+                "route": adaptive_path,
+                "action": "adaptive",
+                "subject": subj,
+                "topic": top,
+                "priority": 1,
+                "why": "Consolidar acerto no mesmo tema.",
+            }
+        )
+        next_steps.append(
+            {
+                "id": "materials",
+                "label": "Materiais",
+                "route": materials_path,
+                "action": "materials_pack",
+                "subject": subj,
+                "topic": top,
+                "priority": 2,
+                "why": "Reforço opcional se quiser firmar o conceito.",
+            }
+        )
+
+    try:
+        from services_media import study_materials_pack
+
+        pack_meta = study_materials_pack(subject=subj or None, topic=top or None)
+        pack_hint = {
+            "suggestedLane": pack_meta.get("suggestedLane"),
+            "totalItems": pack_meta.get("totalItems"),
+            "subject": subj,
+            "topic": top,
+        }
+    except Exception:
+        pack_hint = {"subject": subj, "topic": top, "totalItems": 0}
+
+    primary = next_steps[0] if next_steps else None
+    return {
+        "ok": True,
+        "correct": correct,
+        "subject": subj,
+        "topic": top,
+        "examBoard": exam_board,
+        "isOfficial": is_official,
+        "forceReview": force_review,
+        "concept": concept,
+        "hasStoredTeach": has_stored_teach,
+        "reviewPoints": review_points[:6],
+        "quality": quality,
+        "gabarito": {
+            "status": gabarito_status,
+            "message": gabarito_message,
+            "letter": letter,
+        },
+        "materials": pack_hint,
+        "nextSteps": next_steps,
+        "primaryCta": primary,
+        "paths": {
+            "adaptive": adaptive_path,
+            "materials": materials_path,
+            "theory": theory_path,
+            "queue": "/fila",
+            "session": (
+                f"/sessao?examBoard=UEMA_PAES&subject={subj}&topic={top}"
+                if subj
+                else "/sessao?examBoard=UEMA_PAES&preferNatureza=1"
+            ),
+        },
+        "whyThisMatters": (
+            f"Você errou em {subj} · {top} — dominar o conceito reduz repetição do mesmo buraco."
+            if force_review and subj
+            else (
+                f"Acertou em {subj} · {top} — um reforço curto do tópico trava o aprendizado."
+                if correct and subj
+                else "Ligue teoria + questão + material no mesmo tópico (treino local)."
+            )
+        ),
+        "disclaimer": TEACH_DISCLAIMER,
+        "label": "treino local · ensinar de verdade",
+    }
+
+
+def _weak_topics_from_answers(*, limit: int = 6) -> list[dict[str, Any]]:
+    conn = connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT subject, topic,
+                   COUNT(*) AS n,
+                   SUM(CASE WHEN COALESCE(correct,0)=0 THEN 1 ELSE 0 END) AS misses,
+                   MAX(answered_at) AS last_at
+            FROM answers
+            WHERE TRIM(COALESCE(subject,'')) != '' AND TRIM(COALESCE(topic,'')) != ''
+            GROUP BY subject, topic
+            HAVING n >= 1
+            ORDER BY
+                (1.0 * misses / n) DESC,
+                misses DESC,
+                last_at DESC
+            LIMIT ?
+            """,
+            (max(1, min(limit, 20)),),
+        ).fetchall()
+    finally:
+        conn.close()
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        n = int(r["n"] or 0)
+        misses = int(r["misses"] or 0)
+        rate = round(100.0 * misses / n, 1) if n else 0.0
+        if misses == 0 and n < 3:
+            continue  # pouco sinal
+        out.append(
+            {
+                "subject": r["subject"],
+                "topic": r["topic"],
+                "attempts": n,
+                "misses": misses,
+                "wrongRate": rate,
+                "lastAt": r["last_at"],
+            }
+        )
+    # Prefer topics with at least one miss
+    with_miss = [x for x in out if x["misses"] > 0]
+    return (with_miss or out)[:limit]
+
+
+def study_coach() -> dict[str, Any]:
+    """
+    Coach de estudo: fracos + 1 foco Q + 1 material + 1 revisão/card se due.
+    Heurística local transparente — sem garantir aprovação.
+    """
+    from services_advanced import list_flashcards
+    from services_core import list_questions
+
+    weak = _weak_topics_from_answers(limit=5)
+    gaps_payload = list_study_gaps(status="open", limit=8)
+    gap_items = list(gaps_payload.get("items") or [])
+    revisions = list_revisions()
+    due_rev = [
+        r
+        for r in revisions
+        if isinstance(r, dict)
+        and (r.get("due") is True or r.get("status") == "due" or r.get("pending") is True)
+    ]
+    if not due_rev:
+        # fallback: first few scheduled
+        due_rev = [r for r in revisions if isinstance(r, dict)][:3]
+
+    due_cards: list[dict[str, Any]] = []
+    try:
+        raw_cards = list_flashcards(due_only=True)
+        if isinstance(raw_cards, list):
+            due_cards = [c for c in raw_cards if isinstance(c, dict)][:8]
+        elif isinstance(raw_cards, dict):
+            due_cards = list(raw_cards.get("items") or raw_cards.get("cards") or [])[:8]
+    except TypeError:
+        try:
+            raw_cards = list_flashcards()
+            due_cards = [c for c in (raw_cards or []) if isinstance(c, dict)][:5]
+        except Exception:
+            due_cards = []
+    except Exception:
+        due_cards = []
+
+    focus_subj = ""
+    focus_topic = ""
+    focus_source = "path"
+    if weak:
+        focus_subj = str(weak[0]["subject"])
+        focus_topic = str(weak[0]["topic"])
+        focus_source = "errors"
+    elif gap_items:
+        g0 = gap_items[0] if isinstance(gap_items[0], dict) else {}
+        focus_subj = str(g0.get("subject") or "")
+        focus_topic = str(g0.get("topic") or "")
+        focus_source = "gaps"
+
+    path = study_path()
+    current = path.get("current") if isinstance(path.get("current"), dict) else None
+    if (not focus_subj or not focus_topic) and current:
+        route = str(current.get("route") or "")
+        if "redacao" in route:
+            focus_source = "path_essay"
+        else:
+            focus_source = "path"
+
+    # 1 questão foco
+    focus_question: dict[str, Any] | None = None
+    if focus_subj:
+        try:
+            qs = list_questions(subject=focus_subj, topic=focus_topic or None, limit=12)
+            items = qs if isinstance(qs, list) else []
+            for it in items:
+                if not isinstance(it, dict):
+                    continue
+                if it.get("generated") and not it.get("approved"):
+                    continue
+                focus_question = {
+                    "id": it.get("id"),
+                    "subject": it.get("subject"),
+                    "topic": it.get("topic"),
+                    "year": it.get("year"),
+                    "examBoard": it.get("examBoard"),
+                    "route": f"/questoes/{it.get('id')}",
+                }
+                break
+        except Exception:
+            focus_question = None
+
+    materials_lane = {
+        "subject": focus_subj,
+        "topic": focus_topic,
+        "suggestedLane": "video",
+        "route": f"/biblioteca?subject={focus_subj}&topic={focus_topic}" if focus_subj else "/biblioteca",
+        "label": "Materiais do tópico fraco" if focus_subj else "Abrir biblioteca",
+    }
+    try:
+        from services_media import study_materials_pack
+
+        if focus_subj:
+            pack = study_materials_pack(subject=focus_subj, topic=focus_topic or None)
+            materials_lane["suggestedLane"] = pack.get("suggestedLane") or "video"
+            materials_lane["totalItems"] = pack.get("totalItems")
+    except Exception:
+        pass
+
+    revision_lane: dict[str, Any] | None = None
+    if due_cards:
+        revision_lane = {
+            "kind": "flashcard",
+            "count": len(due_cards),
+            "label": f"{len(due_cards)} card(s) due",
+            "route": "/flashcards?due=1",
+        }
+    elif due_rev:
+        r0 = due_rev[0]
+        revision_lane = {
+            "kind": "revision",
+            "subject": r0.get("subject"),
+            "topic": r0.get("topic"),
+            "label": f"Revisão · {r0.get('subject')} · {r0.get('topic')}",
+            "route": "/fila",
+        }
+    elif gap_items:
+        g0 = gap_items[0] if isinstance(gap_items[0], dict) else {}
+        revision_lane = {
+            "kind": "gap",
+            "subject": g0.get("subject"),
+            "topic": g0.get("topic"),
+            "label": f"Lacuna · {g0.get('subject')} · {g0.get('topic')}",
+            "route": (
+                f"/adaptativo?subject={g0.get('subject')}&topic={g0.get('topic')}"
+                if g0.get("subject")
+                else "/fila"
+            ),
+        }
+
+    # Primary action (one clear next move)
+    if revision_lane and revision_lane.get("kind") == "flashcard" and len(due_cards) >= 3:
+        primary = {
+            "id": "cards",
+            "label": "Revisar cards due",
+            "route": "/flashcards?due=1",
+            "why": "Há cards vencidos — fecha o ciclo SRS antes de novas questões.",
+        }
+    elif focus_question and focus_question.get("id"):
+        primary = {
+            "id": "question",
+            "label": f"Questão foco · {focus_subj} · {focus_topic}" if focus_topic else "Questão foco",
+            "route": focus_question["route"],
+            "why": (
+                "Erro recente no tópico — pratique com 1 item guiado e revise o conceito se errar."
+                if focus_source == "errors"
+                else "Próximo passo de treino local no tema prioritário."
+            ),
+            "questionId": focus_question.get("id"),
+        }
+    elif current and current.get("route"):
+        primary = {
+            "id": "path",
+            "label": current.get("cta") or current.get("title") or "Próximo nó do caminho",
+            "route": current.get("route"),
+            "why": current.get("detail") or "Continue o caminho de treino local.",
+        }
+    else:
+        primary = {
+            "id": "session",
+            "label": "Começar sessão guiada",
+            "route": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+            "why": "Ainda sem histórico de erros — a sessão monta um bloco didático do dia.",
+        }
+
+    headline = "O que estudar agora"
+    if focus_subj and focus_topic and focus_source == "errors":
+        line = f"Prioridade: {focus_subj} · {focus_topic} (erros recentes no treino local)."
+    elif focus_subj and focus_topic:
+        line = f"Foco sugerido: {focus_subj} · {focus_topic}."
+    elif current:
+        line = f"Caminho: {current.get('title')} — {current.get('detail') or 'próximo passo'}."
+    else:
+        line = "Comece com uma sessão guiada (Natureza) ou responda 5 questões."
+
+    return {
+        "ok": True,
+        "headline": headline,
+        "line": line,
+        "weakTopics": weak,
+        "openGaps": gap_items[:5],
+        "openGapsCount": int(gaps_payload.get("openCount") or len(gap_items)),
+        "focus": {
+            "subject": focus_subj,
+            "topic": focus_topic,
+            "source": focus_source,
+            "question": focus_question,
+        },
+        "materialLane": materials_lane,
+        "revisionLane": revision_lane,
+        "primary": primary,
+        "path": {
+            "current": current,
+            "level": path.get("level"),
+            "xp": path.get("xp"),
+            "pathProgress": path.get("pathProgress"),
+        },
+        "suggestions": [
+            primary,
+            {
+                "id": "materials",
+                "label": materials_lane.get("label"),
+                "route": materials_lane.get("route"),
+                "why": "Pacote de materiais (banca/vídeo/leitura/busca) do tópico.",
+            },
+            revision_lane
+            or {
+                "id": "queue",
+                "label": "Abrir fila do dia",
+                "route": "/fila",
+                "why": "Lacunas e revisões agendadas.",
+            },
+        ],
+        "disclaimer": TEACH_DISCLAIMER,
+        "label": "coach local · treino",
+    }
+
+
+def session_teach_summary(misses: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Agrupa erros da sessão por tópico + CTAs de material (honesto)."""
+    grouped: dict[tuple[str, str], int] = {}
+    for m in misses or []:
+        if not isinstance(m, dict):
+            continue
+        s = str(m.get("subject") or "").strip()
+        t = str(m.get("topic") or "").strip()
+        if not s and not t:
+            continue
+        key = (s, t)
+        grouped[key] = grouped.get(key, 0) + 1
+    topics: list[dict[str, Any]] = []
+    for (s, t), n in sorted(grouped.items(), key=lambda x: -x[1]):
+        topics.append(
+            {
+                "subject": s,
+                "topic": t,
+                "missCount": n,
+                "adaptPath": f"/adaptativo?subject={s}&topic={t}" if s else "/adaptativo",
+                "materialsPath": f"/biblioteca?subject={s}&topic={t}" if s else "/biblioteca",
+                "reviewLabel": f"Revisar materiais · {s} · {t}",
+                "trainLabel": f"Treinar · {t or s}",
+            }
+        )
+    return {
+        "ok": True,
+        "topics": topics,
+        "empty": not topics,
+        "message": (
+            "Erros agrupados por tópico — revise o material antes de bombardear a próxima lista."
+            if topics
+            else "Sem erros neste bloco — consolidar na Fila ou no próximo nó do caminho."
+        ),
+        "disclaimer": TEACH_DISCLAIMER,
+    }
+
+
+def essay_teach_after_grade(feedback: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Pós-correção: eixo fraco + missão + dica de escrita (treino local)."""
+    essay = essay_progress()
+    mission = essay.get("nextMission") if isinstance(essay.get("nextMission"), dict) else None
+    weak = essay.get("weakestAxis") or (mission or {}).get("axis")
+    labels = {
+        "grammar": "Gramática",
+        "cohesion": "Coesão",
+        "coherence": "Coerência",
+        "argumentation": "Argumentação",
+        "intervention": "Intervenção",
+    }
+    tips_local = {
+        "grammar": "Releia 1 parágrafo em voz alta e marque só acordo verbo-nome e pontuação.",
+        "cohesion": "Conecte frases com 3 conectores diferentes (contudo, além disso, assim).",
+        "coherence": "Escreva o tópico frasal de cada parágrafo em 1 linha antes de expandir.",
+        "argumentation": "Traga 1 dado/exemplo e 1 contraponto curto no parágrafo de desenvolvimento.",
+        "intervention": "Feche com agente + ação + meio + finalidade (sem utopia genérica).",
+    }
+    tip = tips_local.get(str(weak or ""), "Reescreva o parágrafo mais fraco com foco em clareza.")
+    path = study_path()
+    current = path.get("current") if isinstance(path.get("current"), dict) else None
+    return {
+        "ok": True,
+        "weakestAxis": weak,
+        "weakestLabel": labels.get(str(weak or ""), weak),
+        "tip": tip,
+        "mission": mission,
+        "pathNode": current,
+        "readingTip": {
+            "label": "Dica de escrita (treino local)",
+            "body": tip,
+            "disclaimer": "Dica gerada localmente — não é correção oficial UEMA.",
+        },
+        "cta": {
+            "label": "Reescrever no eixo fraco",
+            "route": "/redacao",
+            "path": (current or {}).get("route") if current else "/redacao",
+        },
+        "disclaimer": TEACH_DISCLAIMER,
     }

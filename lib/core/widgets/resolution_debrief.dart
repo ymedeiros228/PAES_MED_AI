@@ -105,9 +105,23 @@ class ResolutionDebrief extends StatelessWidget {
               if (!axes.values.any((v) => (v?.toString() ?? '').trim().isNotEmpty) &&
                   resolution.trim().isNotEmpty)
                 SelectableText(resolution),
+              if (!axes.values.any((v) => (v?.toString() ?? '').trim().isNotEmpty) &&
+                  resolution.trim().isEmpty)
+                Text(
+                  'Gabarito oficial não disponível neste item. Revise o conceito do tópico '
+                  'com materiais locais (vídeo/PDF/busca) — a plataforma não inventa a chave da banca.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
             ] else if (resolution.trim().isNotEmpty) ...[
               const Text('Texto', style: TextStyle(fontWeight: FontWeight.w700)),
               SelectableText(resolution),
+              const SizedBox(height: 8),
+            ] else ...[
+              Text(
+                'Sem resolução guardada — use o bloco «O que isso ensina» e o pack de materiais do tópico '
+                '(treino local; não inventamos gabarito oficial).',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               const SizedBox(height: 8),
             ],
             if (macete.trim().isNotEmpty) ...[

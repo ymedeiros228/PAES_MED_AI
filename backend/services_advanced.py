@@ -64,6 +64,23 @@ def list_flashcards(due_only: bool = False, axes_only: bool = False) -> list[dic
         conn.close()
 
 
+def count_flashcards_due() -> int:
+    """Contagem leve para dashboard — não materializa a lista completa."""
+    conn = connect()
+    try:
+        now = datetime.now().isoformat(timespec="seconds")
+        row = conn.execute(
+            """
+            SELECT COUNT(*) AS c FROM flashcards
+            WHERE next_due IS NULL OR next_due <= ?
+            """,
+            (now,),
+        ).fetchone()
+        return int(row["c"] if row else 0)
+    finally:
+        conn.close()
+
+
 def flashcard_axis_stats() -> dict[str, Any]:
     """Contagens honestas de cards de eixos (local). Sem coluna created_at: 'hoje' ≈ ainda sem review."""
     conn = connect()

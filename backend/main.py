@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import time
 from pathlib import Path
 from typing import Any, Literal
 
@@ -54,8 +55,10 @@ from services_core import (
 from services_extra import (
     TUTOR_SYSTEM,
     accept_professor_draft,
+    build_local_tutor_reply,
     build_rag_context,
     build_rag_context_with_citations,
+    build_teach_block,
     clear_session_checkpoint,
     clear_sim_checkpoint,
     complete_revision,
@@ -63,6 +66,7 @@ from services_extra import (
     create_natureza_pack,
     create_simulation,
     essay_grade_deltas,
+    essay_teach_after_grade,
     essay_themes,
     fill_professor_drafts,
     generate_similar_question_stub,
@@ -81,6 +85,7 @@ from services_extra import (
     offline_essay_axis_scores,
     parse_gate_flags,
     progress_overview,
+    qa_progress,
     record_answer,
     recover_study_gap,
     remediation_for,
@@ -88,8 +93,12 @@ from services_extra import (
     save_session_checkpoint,
     save_sim_checkpoint,
     schedule_gap_revisions,
+    session_teach_summary,
     skip_professor_draft,
     structure_lesson_from_text,
+    study_coach,
+    study_path,
+    tutor_style_hint,
 )
 from services_advanced import (
     adaptive_training,
@@ -116,6 +125,7 @@ from services_media import (
     persona_by_id,
     serper_configured,
     set_media_prefs,
+    study_materials_pack,
     youtube_configured,
 )
 from ingest_pdf import (
@@ -138,6 +148,56 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "").strip()  # OpenAI-compatible (Groq, OpenRouter, LM Studio, vLLM)
+# Ollama: OLLAMA_BASE_URL (preferido) ou OLLAMA_HOST legado; padrão 127.0.0.1:11434 se OLLAMA_MODEL set
+OLLAMA_BASE_URL = (
+    os.getenv("OLLAMA_BASE_URL", "").strip()
+    or os.getenv("OLLAMA_HOST", "").strip()
+)
+OLLAMA_HOST = OLLAMA_BASE_URL  # alias legado (health / status)
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "").strip()
+_DEFAULT_OLLAMA = "http://127.0.0.1:11434"
+
+# Último erro seguro do tutor (sem vazamento de chave)
+_TUTOR_LAST_ERROR: str | None = None
+
+# Cache curto (10s) para endpoints quentes — corte de thrash sem stale longo
+_ROUTE_TTL_SEC = 10.0
+_ROUTE_TTL_CACHE: dict[str, tuple[float, Any]] = {}
+
+
+def _route_ttl_get(key: str) -> Any | None:
+    hit = _ROUTE_TTL_CACHE.get(key)
+    if not hit:
+        return None
+    ts, val = hit
+    if time.monotonic() - ts > _ROUTE_TTL_SEC:
+        _ROUTE_TTL_CACHE.pop(key, None)
+        return None
+    return val
+
+
+def _route_ttl_set(key: str, value: Any) -> Any:
+    _ROUTE_TTL_CACHE[key] = (time.monotonic(), value)
+    return value
+
+
+def _route_ttl_clear_prefix(prefix: str = "") -> None:
+    if not prefix:
+        _ROUTE_TTL_CACHE.clear()
+        return
+    for k in list(_ROUTE_TTL_CACHE.keys()):
+        if k.startswith(prefix):
+            _ROUTE_TTL_CACHE.pop(k, None)
+
+
+# Hook: services_* invalida TTL de rota sem import circular de main.
+try:
+    import services_core as _sc
+
+    _sc._ROUTE_TTL_HOOK = lambda: _route_ttl_clear_prefix("")  # type: ignore[attr-defined]
+except Exception:  # noqa: BLE001
+    pass
 
 app = FastAPI(title="PAES MED AI API", version="1.0.0")
 app.add_middleware(
@@ -175,6 +235,10 @@ class ChatRequest(BaseModel):
         default="professor",
         description="professor|medico|crianca|analogia|mapa|resumo|macete|flashcard",
     )
+    preferOffline: bool = Field(
+        default=False,
+        description="Se true, força tutor local mesmo com chave configurada.",
+    )
 
 
 class ChatResponse(BaseModel):
@@ -185,6 +249,7 @@ class ChatResponse(BaseModel):
     ragMode: str | None = None
     hasLocalBase: bool = True
     uncited: bool = False
+    provider: str | None = None
 
 
 class AnswerRequest(BaseModel):
@@ -233,12 +298,64 @@ class GenerateQuestionRequest(BaseModel):
     topic: str
 
 
+def _openai_key_ok() -> bool:
+    return bool(OPENAI_API_KEY and OPENAI_API_KEY != "cole_sua_chave_aqui")
+
+
+def _ollama_wanted() -> bool:
+    """Ollama quando sem chave OpenAI e (host ou modelo) está definido."""
+    if _openai_key_ok():
+        return False
+    return bool(OLLAMA_BASE_URL or OLLAMA_MODEL)
+
+
+def _llm_provider_name() -> str:
+    if _openai_key_ok():
+        if OPENAI_BASE_URL:
+            return "openai"  # OpenAI-compatible ainda conta como openai p/ UI
+        return "openai"
+    if _ollama_wanted():
+        return "ollama"
+    return "offline"
+
+
+def _llm_model_name() -> str:
+    if _openai_key_ok():
+        return OPENAI_MODEL
+    if _ollama_wanted():
+        return OLLAMA_MODEL or "llama3.2"
+    return "offline-tutor-v2"
+
+
+def _llm_configured() -> bool:
+    return _openai_key_ok() or _ollama_wanted()
+
+
 def _openai_client():
-    if not OPENAI_API_KEY or OPENAI_API_KEY == "cole_sua_chave_aqui":
-        return None
+    """Cliente OpenAI-compatible: cloud OpenAI, proxy, ou Ollama local."""
     from openai import OpenAI
 
-    return OpenAI(api_key=OPENAI_API_KEY)
+    if _openai_key_ok():
+        kwargs: dict[str, Any] = {"api_key": OPENAI_API_KEY}
+        if OPENAI_BASE_URL:
+            kwargs["base_url"] = OPENAI_BASE_URL.rstrip("/")
+        return OpenAI(**kwargs)
+
+    if _ollama_wanted():
+        base = (OLLAMA_BASE_URL or _DEFAULT_OLLAMA).rstrip("/")
+        if not base.endswith("/v1"):
+            base = f"{base}/v1"
+        return OpenAI(
+            api_key=os.getenv("OLLAMA_API_KEY", "ollama").strip() or "ollama",
+            base_url=base,
+        )
+
+    return None
+
+
+def _set_tutor_error(msg: str | None) -> None:
+    global _TUTOR_LAST_ERROR
+    _TUTOR_LAST_ERROR = (msg or "")[:240] or None
 
 
 def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:
@@ -246,29 +363,87 @@ def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage]
     if client is None:
         raise HTTPException(
             status_code=503,
-            detail="OPENAI_API_KEY não configurada. Edite backend/.env",
+            detail="Nenhum modelo configurado. Defina OPENAI_API_KEY ou OLLAMA_HOST em backend/.env",
         )
-    messages = []
+    model = _llm_model_name()
+    hist_msgs = []
     for item in (history or [])[-20:]:
-        messages.append({"role": item.role, "content": item.content})
-    messages.append({"role": "user", "content": user_content})
+        hist_msgs.append({"role": item.role, "content": item.content})
+    hist_msgs.append({"role": "user", "content": user_content})
     try:
-        response = client.responses.create(
-            model=OPENAI_MODEL,
-            instructions=instructions,
-            input=messages,
-        )
-        answer = (response.output_text or "").strip()
-        if not answer:
-            raise HTTPException(status_code=502, detail="IA retornou vazio.")
-        return answer
+        # Prefer chat.completions (Ollama / proxies / OpenAI clássico)
+        chat_messages = [{"role": "system", "content": instructions}, *hist_msgs]
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=chat_messages,
+                temperature=0.4,
+            )
+            answer = ((response.choices[0].message.content) or "").strip()
+            if answer:
+                _set_tutor_error(None)
+                return answer
+        except Exception as chat_exc:  # noqa: BLE001
+            # Fallback Responses API (OpenAI recente)
+            if not hasattr(client, "responses"):
+                raise chat_exc
+            response = client.responses.create(
+                model=model,
+                instructions=instructions,
+                input=hist_msgs,
+            )
+            answer = (getattr(response, "output_text", None) or "").strip()
+            if answer:
+                _set_tutor_error(None)
+                return answer
+        raise HTTPException(status_code=502, detail="IA retornou vazio.")
     except HTTPException:
         raise
     except Exception as exc:
+        _set_tutor_error(f"{type(exc).__name__}: {str(exc)[:160]}")
         raise HTTPException(
             status_code=502,
-            detail=f"Falha OpenAI ({type(exc).__name__}).",
+            detail=f"Falha no modelo ({type(exc).__name__}). Tutor local disponível.",
         ) from exc
+
+
+def tutor_status_payload() -> dict[str, Any]:
+    provider = _llm_provider_name()
+    configured = _llm_configured()
+    model = _llm_model_name()
+    if provider == "openai":
+        message = f"Modelo: {model} · online"
+    elif provider == "ollama":
+        message = f"Ollama:{model} · local"
+    else:
+        message = "Tutor local (base + pedagogia)"
+        model = "offline-tutor-v2"
+    base = None
+    if _openai_key_ok() and OPENAI_BASE_URL:
+        base = OPENAI_BASE_URL.rstrip("/")
+    elif _ollama_wanted():
+        host = (OLLAMA_BASE_URL or _DEFAULT_OLLAMA).rstrip("/")
+        base = host if host.endswith("/v1") else f"{host}/v1"
+    return {
+        "ok": True,
+        "configured": configured,
+        "provider": provider,
+        "model": model,
+        "openai_configured": _openai_key_ok(),
+        "ollama_configured": _ollama_wanted(),
+        "base_url": base,
+        "baseUrl": base,
+        "lastError": _TUTOR_LAST_ERROR,
+        "mode": "online" if provider == "openai" else ("ollama" if provider == "ollama" else "offline"),
+        "message": message,
+        "hint": (
+            None
+            if configured
+            else "Sem chave: tutor local ensina com base/edital. "
+            "Para modelo: OPENAI_API_KEY (+ opcional OPENAI_BASE_URL/OPENAI_MODEL) "
+            "ou OLLAMA_BASE_URL/OLLAMA_MODEL em backend/.env"
+        ),
+    }
 
 
 @app.get("/")
@@ -291,10 +466,12 @@ def health() -> dict[str, Any]:
     edital = DATA_DIR / "edital"
     return {
         "status": "ok",
-        "openai_configured": bool(OPENAI_API_KEY and OPENAI_API_KEY != "cole_sua_chave_aqui"),
+        "openai_configured": _openai_key_ok(),
+        "ollama_configured": _ollama_wanted(),
+        "tutor": tutor_status_payload(),
         "youtube_configured": youtube_configured(),
         "serper_configured": serper_configured(),
-        "model": OPENAI_MODEL,
+        "model": _llm_model_name(),
         "questions": nq,
         "officialCount": basis.get("officialCount", 0),
         "statsBasis": basis.get("basis"),
@@ -318,6 +495,23 @@ def health() -> dict[str, Any]:
             "alerts": health_gate.get("alerts") or [],
         },
     }
+
+
+@app.get("/health/lite")
+def health_lite() -> dict[str, Any]:
+    """Ping rápido para banner (sem inventário completo)."""
+    conn = connect()
+    try:
+        nq = conn.execute("SELECT COUNT(*) AS c FROM questions").fetchone()["c"]
+    finally:
+        conn.close()
+    return {
+        "status": "ok",
+        "questions": nq,
+        "youtube_configured": youtube_configured(),
+        "openai_configured": bool(OPENAI_API_KEY and OPENAI_API_KEY != "cole_sua_chave_aqui"),
+    }
+
 
 
 @app.post("/api/seed")
@@ -615,7 +809,13 @@ def api_predict(subject: str, topic: str) -> dict[str, Any]:
 
 @app.get("/api/dashboard")
 def api_dashboard() -> dict[str, Any]:
-    return dashboard_stats()
+    cached = _route_ttl_get("dashboard")
+    if isinstance(cached, dict):
+        out = dict(cached)
+        out["cached"] = True
+        return out
+    data = dashboard_stats()
+    return _route_ttl_set("dashboard", data)
 
 
 @app.get("/api/remediation")
@@ -690,35 +890,53 @@ def api_simulations_grade(payload: GradeRequest) -> dict[str, Any]:
     return grade_simulation(payload.answers)
 
 
+@app.get("/api/tutor/status")
+def api_tutor_status() -> dict[str, Any]:
+    """Status do Tutor IA: provider, modelo, configurado?, último erro seguro."""
+    return tutor_status_payload()
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 def api_chat(payload: ChatRequest) -> ChatResponse:
+    force_offline = bool(payload.preferOffline) or not _llm_configured()
     citations: list[dict[str, Any]] = []
-    try:
-        context, rag_mode, citations = build_rag_context_embedded_full(payload.message)
-    except Exception:
+    rag_mode = "keyword"
+    context = ""
+    # Offline: keyword only (no embedding reindex cascade).
+    if force_offline:
         try:
             context, citations = build_rag_context_with_citations(payload.message)
             rag_mode = "keyword"
         except Exception:
-            context, rag_mode = build_rag_context(payload.message), "keyword"
+            try:
+                context = build_rag_context(payload.message)
+            except Exception:
+                context = ""
             citations = []
-    style_hint = {
-        "professor": "Explique como professor especialista, com perguntas.",
-        "medico": "Explique conectando com raciocínio clínico/Medicina quando fizer sentido.",
-        "crianca": "Explique como se o aluno tivesse 12 anos, sem perder precisão.",
-        "analogia": "Use analogias concretas.",
-        "mapa": "Organize a resposta como mapa mental em tópicos.",
-        "resumo": "Resumo em até 5 linhas + 1 pergunta.",
-        "macete": "Foque em macetes e eliminação de alternativas.",
-        "flashcard": "Devolva no formato Frente/Verso de flashcards.",
-    }.get(payload.style or "professor", "Explique como professor.")
+            rag_mode = "keyword"
+    else:
+        try:
+            context, rag_mode, citations = build_rag_context_embedded_full(payload.message)
+        except Exception:
+            try:
+                context, citations = build_rag_context_with_citations(payload.message)
+                rag_mode = "keyword"
+            except Exception:
+                try:
+                    context = build_rag_context(payload.message)
+                except Exception:
+                    context = ""
+                rag_mode = "keyword"
+                citations = []
 
+    style_hint = tutor_style_hint(payload.style)
     user_content = (
         f"ESTILO: {style_hint}\n\n"
         f"MODO_RAG: {rag_mode}\n\n"
-        f"REGRAS: Só use o CONTEXTO. Se faltar fonte, diga que não tem base local — "
-        f"não invente % de cobrança UEMA nem resolução de prova ausente. "
-        f"Cite ids de questões do contexto quando falar de itens.\n\n"
+        f"REGRAS: Priorize o CONTEXTO. Se faltar fonte, ensine o conceito geral e diga "
+        f"que não é gabarito oficial UEMA — nunca invente % de cobrança nem resolução de prova ausente. "
+        f"Cite ids de questões do contexto quando existirem. "
+        f"Nunca diga que o tutor não funciona.\n\n"
         f"CONTEXTO DA BASE LOCAL:\n{context}\n\n"
         f"PERGUNTA DO ALUNO:\n{payload.message}"
     )
@@ -730,136 +948,66 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     ]
     has_local = bool(q_cites) or bool((context or "").strip())
 
-    client = _openai_client()
-    if client is None:
-        from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
+    client = None if force_offline else _openai_client()
 
-        basis = stats_basis()
-        dash = dashboard_stats()
-        daily = dash.get("dailyRoutine") or {}
-        subject = daily.get("subject") or "Biologia"
-        topic = daily.get("topic") or "Genética"
-        session_path = daily.get("sessionPath") or "/sessao"
-        hot = dash.get("errorHotTopics") or []
-        grounded_cites: list[dict[str, Any]] = []
-        lines: list[str] = [
-            f"Tutor offline · tópico do dia: {subject} · {topic}",
-            "",
-        ]
-        # Prefer oficiais Natureza no coach Natureza; senão tópico do dia
-        prefer_nat = (subject in NATUREZA_SUBJECTS) or "natureza" in (session_path or "").lower()
-        pool = list_questions(subject=subject, topic=topic, exam_board="UEMA_PAES", limit=8) or list_questions(
-            subject=subject, topic=topic, limit=8
+    if client is None:
+        local = build_local_tutor_reply(
+            payload.message,
+            style=payload.style,
+            context=context or "",
+            citations=citations,
+            rag_mode=rag_mode,
         )
-        if prefer_nat and pool:
-            nat_pool = [q for q in pool if (q.get("subject") or "") in NATUREZA_SUBJECTS]
-            if nat_pool:
-                pool = nat_pool + [q for q in pool if q not in nat_pool]
-        grounded = 0
-        for q in pool[:5]:
-            res = (q.get("resolution") or "").strip()
-            if not res or res == "—":
-                continue
-            qid = q.get("id")
-            lines.append(f"• Questão {qid} ({q.get('year') or '—'}):")
-            for ln in res.splitlines()[:4]:
-                if ln.strip():
-                    lines.append(f"  {ln.strip()[:200]}")
-            grounded_cites.append(
-                {
-                    "type": "question",
-                    "id": qid,
-                    "label": f"{q.get('subject')} · {q.get('topic')} ({q.get('year')})",
-                    "snippet": (q.get("statement") or "")[:140],
-                    "subject": q.get("subject"),
-                    "topic": q.get("topic"),
-                }
-            )
-            grounded += 1
-            if grounded >= 2:
-                break
-        if not grounded:
-            for cite in q_cites[:3]:
-                label = cite.get("label") or cite.get("type") or "fonte"
-                snippet = (cite.get("snippet") or "")[:180]
-                if snippet:
-                    lines.append(f"• {label}: {snippet}")
-                else:
-                    lines.append(f"• {label}")
-                grounded_cites.append(cite)
-        # Merge RAG question cites not already used
-        seen_ids = {c.get("id") for c in grounded_cites}
-        for cite in q_cites:
-            if cite.get("id") not in seen_ids:
-                grounded_cites.append(cite)
-                seen_ids.add(cite.get("id"))
-        has_local_off = bool(grounded_cites)
-        if hot and has_local_off:
-            h0 = hot[0]
-            lines.append("")
-            lines.append(f"Lacuna quente: {h0.get('key')} ({h0.get('misses')} miss(es)).")
-        if not has_local_off:
-            answer = (
-                "Sem base local para esta pergunta.\n\n"
-                "Não há trechos de questões/resoluções oficiais na base alinhados ao pedido. "
-                "Abra Biblioteca (2024–26) ou a Fila com preferNatureza=1 — o tutor não inventa cobranca UEMA.\n\n"
-                f"Próximo passo: {session_path}"
-            )
-            return ChatResponse(
-                answer=answer,
-                model=f"offline-no-base-{rag_mode}",
-                usedRag=False,
-                citations=[],
-                ragMode=rag_mode,
-                hasLocalBase=False,
-                uncited=True,
-            )
-        lines.append("")
-        lines.append(f"Próximo passo: sessão em {session_path}")
-        lines.append("Pergunta: qual distrator você eliminaria primeiro e por quê?")
-        lines.append("")
-        lines.append(
-            "[Aviso] Offline grounded na base local. Não inventa % de cobrança UEMA."
-            + ("" if basis.get("basis") == "oficial" else " Stats ainda em treino.")
-            + " Configure OPENAI_API_KEY para diálogo completo."
+        return ChatResponse(
+            answer=local["answer"],
+            model=local["model"],
+            usedRag=bool(local.get("usedRag")),
+            citations=list(local.get("citations") or [])[:8],
+            ragMode=local.get("ragMode") or rag_mode,
+            hasLocalBase=bool(local.get("hasLocalBase")),
+            uncited=bool(local.get("uncited")),
+            provider="offline",
         )
-        answer = "\n".join(lines)
+
+    # Modelo online (OpenAI / compatible / Ollama): ensina com RAG; se falhar → offline-tutor-v2
+    try:
+        answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
         return ChatResponse(
             answer=answer,
-            model=f"offline-grounded-{rag_mode}",
-            usedRag=True,
-            citations=grounded_cites[:8],
+            model=_llm_model_name(),
+            usedRag=has_local,
+            citations=(q_cites or citations)[:8],
             ragMode=rag_mode,
-            hasLocalBase=True,
-            uncited=False,
+            hasLocalBase=has_local,
+            uncited=not bool(q_cites),
+            provider=_llm_provider_name(),
         )
-
-    if not has_local or not q_cites:
-        # Online sem ids reais: recusa honesta (não bola de cristal)
+    except HTTPException as exc:
+        local = build_local_tutor_reply(
+            payload.message,
+            style=payload.style,
+            context=context or "",
+            citations=citations,
+            rag_mode=rag_mode,
+        )
+        detail = ""
+        if isinstance(exc.detail, str):
+            detail = exc.detail
+        suffix = (
+            f"\n\n[Modelo externo falhou → Tutor local (base + pedagogia). {detail}]"
+            if detail
+            else "\n\n[Modelo externo falhou → Tutor local (base + pedagogia).]"
+        )
         return ChatResponse(
-            answer=(
-                "Sem base local suficiente para responder com fonte.\n\n"
-                "A busca na base não trouxe questões com id real alinhadas à pergunta. "
-                "Importe provas 2024–26 ou abra uma sessão — não invento resolução nem % de cobrança UEMA."
-            ),
-            model=f"{OPENAI_MODEL}-uncited-refuse",
-            usedRag=False,
-            citations=[],
-            ragMode=rag_mode,
-            hasLocalBase=False,
-            uncited=True,
+            answer=local["answer"] + suffix,
+            model=f"{local['model']}+fallback",
+            usedRag=bool(local.get("usedRag")),
+            citations=list(local.get("citations") or [])[:8],
+            ragMode=local.get("ragMode") or rag_mode,
+            hasLocalBase=bool(local.get("hasLocalBase")),
+            uncited=bool(local.get("uncited")),
+            provider="offline",
         )
-
-    answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
-    return ChatResponse(
-        answer=answer,
-        model=OPENAI_MODEL,
-        usedRag=True,
-        citations=q_cites[:8],
-        ragMode=rag_mode,
-        hasLocalBase=True,
-        uncited=False,
-    )
 
 
 @app.post("/api/lessons/from-text")
@@ -1366,9 +1514,14 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
             feedback["note"] = "Treino local com IA · não é nota de banca UEMA."
     saved = save_essay(payload.theme, payload.text, feedback, score)
     deltas = essay_grade_deltas(payload.theme, feedback if isinstance(feedback, dict) else {})
+    _route_ttl_clear_prefix("")  # invalida dashboard/path após correção
     out = dict(saved)
     out["deltas"] = deltas
     out["disclaimer"] = "Treino local · não banca UEMA."
+    try:
+        out["teach"] = essay_teach_after_grade(feedback if isinstance(feedback, dict) else {})
+    except Exception:
+        out["teach"] = {"ok": False}
     return out
 
 
@@ -1387,6 +1540,57 @@ def api_essays_progress() -> dict[str, Any]:
 def api_progress_overview() -> dict[str, Any]:
     """Painel Relevo — cola dashboard + redação + gaps (Ciclo HR)."""
     return progress_overview()
+
+
+@app.get("/api/study/path")
+def api_study_path() -> dict[str, Any]:
+    """Caminho gamificado Q&A + redação (treino local)."""
+    cached = _route_ttl_get("study_path")
+    if isinstance(cached, dict):
+        out = dict(cached)
+        out["cached"] = True
+        return out
+    data = study_path()
+    return _route_ttl_set("study_path", data)
+
+
+@app.get("/api/study/coach")
+def api_study_coach() -> dict[str, Any]:
+    """Coach didático: fracos + próximo passo (Ciclo JC) — treino local, sem garantia."""
+    return study_coach()
+
+
+@app.post("/api/study/session-teach")
+def api_session_teach(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Resumo didático de fim de sessão: erros por tópico + materiais."""
+    body = payload or {}
+    misses = body.get("misses") if isinstance(body.get("misses"), list) else []
+    return session_teach_summary(misses)
+
+
+@app.get("/api/study/teach")
+def api_study_teach(
+    questionId: str | None = None,
+    subject: str = "",
+    topic: str = "",
+    correct: bool | None = None,
+    errorType: str | None = None,
+) -> dict[str, Any]:
+    """Bloco didático para uma questão/tópico (sem inventar gabarito)."""
+    return build_teach_block(
+        question_id=questionId,
+        subject=subject,
+        topic=topic,
+        correct=correct,
+        error_type=errorType,
+    )
+
+
+@app.get("/api/study/qa-progress")
+def api_qa_progress() -> dict[str, Any]:
+    """Progresso local de questões respondidas."""
+    return qa_progress()
+
 
 @app.get("/api/media/videos")
 def api_media_videos(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
@@ -1467,6 +1671,10 @@ def api_media_prefs_get() -> dict[str, Any]:
 class MediaPrefsPayload(BaseModel):
     suggestVideos: bool | None = None
     suggestArticles: bool | None = None
+    preferredLane: str | None = Field(
+        default=None,
+        description="all|bank|video|article|search",
+    )
 
 
 @app.post("/api/media/prefs")
@@ -1474,6 +1682,7 @@ def api_media_prefs_set(payload: MediaPrefsPayload) -> dict[str, Any]:
     return set_media_prefs(
         suggest_videos=payload.suggestVideos,
         suggest_articles=payload.suggestArticles,
+        preferred_lane=payload.preferredLane,
     )
 
 
@@ -2062,6 +2271,19 @@ def api_library_materials(subject: str | None = None, topic: str | None = None) 
         "note": note,
         "disclaimer": "Só lista o que existe no disco ou trechos do edital local; não inventa 2017–23 nem PDF ausente.",
     }
+
+
+@app.get("/api/study/materials-pack")
+def api_study_materials_pack(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
+    """Materiais do tópico: banca local + vídeos + leituras + buscas (escolha do aluno)."""
+    bank = api_library_materials(subject=subject, topic=topic)
+    return study_materials_pack(
+        subject=subject,
+        topic=topic,
+        bank_items=list(bank.get("items") or []),
+        bank_note=bank.get("note"),
+        bank_disclaimer=bank.get("disclaimer"),
+    )
 
 
 @app.get("/api/library/year-pdf")
@@ -2901,14 +3123,14 @@ def loads_json_safe(value: Any) -> list[Any]:
 
 
 @app.get("/api/backups")
-def api_list_backups() -> list[dict[str, str]]:
-    backup_dir = DATA_DIR / "backups"
-    if not backup_dir.exists():
-        return []
-    out = []
-    for p in sorted(backup_dir.iterdir(), reverse=True):
-        if p.is_dir() and (p / "paes_med_ai.db").exists():
-            out.append({"name": p.name, "path": str(p)})
-        if p.suffix == ".zip":
-            out.append({"name": p.name, "path": str(p)})
-    return out[:30]
+def api_list_backups() -> list[dict[str, Any]]:
+    from services_extra import list_backups
+
+    return list_backups(limit=30)
+
+
+@app.get("/api/backups/summary")
+def api_backups_summary() -> dict[str, Any]:
+    from services_extra import backup_storage_summary
+
+    return backup_storage_summary()

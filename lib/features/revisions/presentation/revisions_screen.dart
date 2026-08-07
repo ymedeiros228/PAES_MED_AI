@@ -7,6 +7,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -86,7 +87,9 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
+        loading: () => const SoftLoader(label: 'Carregando revisões…'),
         error: (e, _) => EmptyState(
           title: 'Revisões indisponíveis',
           subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
@@ -143,7 +146,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                           ],
                         ),
                       )
-                    else
+                    else ...[
                       for (var i = 0; i < _items.length; i++)
                         Builder(
                           builder: (_) {
@@ -215,6 +218,24 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                             );
                           },
                         ),
+                      const SizedBox(height: 12),
+                      Builder(
+                        builder: (_) {
+                          final item = _items[selected.clamp(0, _items.length - 1)];
+                          final subject = item['subject']?.toString() ?? '';
+                          final topic = item['topic']?.toString() ?? '';
+                          if (subject.isEmpty || topic.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return MediaReinforcement(
+                            subject: subject,
+                            topic: topic,
+                            compact: true,
+                            heading: 'Reforço da revisão selecionada',
+                          );
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),

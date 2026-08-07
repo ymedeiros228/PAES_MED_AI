@@ -12,6 +12,8 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/study_path_trail.dart';
+import '../../../core/widgets/teach_loop.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
@@ -63,6 +65,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   int correctCount = 0;
   final focusNode = FocusNode();
   Map<String, dynamic>? lastRemediation;
+  Map<String, dynamic>? lastTeach;
 
   // Revision phase: flashcards
   List<Map<String, dynamic>> sessionCards = [];
@@ -611,25 +614,52 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const Text('Nenhum erro neste bloco — veja o que vem a seguir na Fila.')
           else ...[
             Text(
-              'Tópicos fracos',
+              'Tópicos fracos · revise materiais',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final g in gaps.take(6))
-                  ActionChip(
-                    label: Text('${g['subject']} · ${g['topic']}'),
-                    onPressed: () {
-                      final s = Uri.encodeComponent(g['subject'] ?? '');
-                      final t = Uri.encodeComponent(g['topic'] ?? '');
-                      context.go('/adaptativo?subject=$s&topic=$t');
-                    },
-                  ),
-              ],
-            ),
+            for (final g in gaps.take(6)) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${g['subject']} · ${g['topic']}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ActionChip(
+                          label: const Text('Materiais'),
+                          onPressed: () {
+                            openTheoryReadSheet(
+                              context,
+                              subject: g['subject'] ?? '',
+                              topic: g['topic'] ?? '',
+                              fromMistake: true,
+                              whyThisMatters:
+                                  'Erro neste bloco — firme o conceito do tópico antes da próxima leva.',
+                            );
+                          },
+                        ),
+                        ActionChip(
+                          label: const Text('Treinar'),
+                          onPressed: () {
+                            final s = Uri.encodeComponent(g['subject'] ?? '');
+                            final t = Uri.encodeComponent(g['topic'] ?? '');
+                            context.go('/adaptativo?subject=$s&topic=$t');
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 16),
           Divider(color: cs.outlineVariant.withOpacity(0.5)),
@@ -659,6 +689,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     context,
                     subject: subj,
                     topic: top,
+                    fromMistake: gaps.isNotEmpty,
                   ),
                   child: const Text('Ler teoria'),
                 ),
@@ -716,6 +747,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         lastRemediation = correct
             ? null
             : Map<String, dynamic>.from((res as Map?)?['remediation'] as Map? ?? {});
+        lastTeach = (res as Map?)?['teach'] is Map
+            ? Map<String, dynamic>.from((res as Map)['teach'] as Map)
+            : null;
         if (correct) {
           correctCount++;
         } else {
@@ -762,6 +796,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       revealed = false;
       pendingErrorPick = false;
       errorType = 'conceito';
+      lastTeach = null;
+      lastRemediation = null;
     });
     qSw
       ..reset()
@@ -1061,7 +1097,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
       );
     }
-    if (plan == null) return const SoftLoader(label: 'Montando sessão…');
+    if (plan == null) {
+      return const SoftLoader(label: 'Montando sessão…');
+    }
 
     final phases = (plan!['sessionPlan'] as List? ?? [
       {'phase': 'theory', 'minutes': 20, 'title': 'Teoria do dia'},
@@ -1113,6 +1151,18 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ),
           if (sessionComplete) ...[
             _sessionEndPanel(context),
+            ref.watch(studyPathProvider).when(
+              skipLoadingOnReload: true,
+              skipLoadingOnRefresh: true,
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (path) {
+                if (path.isEmpty || path['nodes'] is! List) {
+                  return const SizedBox.shrink();
+                }
+                return StudyPathNextStrip(path: path);
+              },
+            ),
             FilledButton.tonal(
               onPressed: () async {
                 await _clearCheckpoint();
@@ -1400,11 +1450,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                   FilledButton(onPressed: _confirmErrorAndSave, child: const Text('Salvar erro e ver explicação')),
                 ],
+                if (!pendingErrorPick && lastTeach != null) ...[
+                  const SizedBox(height: 12),
+                  DidacticTeachBlock(teach: lastTeach!, compact: true),
+                ],
                 if (!pendingErrorPick &&
                     selected !=
                         ((sessionQuestions[qIndex]['correctIndex'] as int?) ??
                             sessionQuestions[qIndex]['correct_index']) &&
-                    _professor != null) ...[
+                    _professor != null &&
+                    lastTeach == null) ...[
                   const SizedBox(height: 12),
                   _debriefForCurrent(),
                 ],
@@ -1413,7 +1468,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                         ((sessionQuestions[qIndex]['correctIndex'] as int?) ??
                             sessionQuestions[qIndex]['correct_index']) &&
                     (sessionQuestions[qIndex]['resolutionQuality']?.toString() == 'real' ||
-                        (_professor?['resolutionQuality']?.toString() == 'real'))) ...[
+                        (_professor?['resolutionQuality']?.toString() == 'real')) &&
+                    lastTeach == null) ...[
                   const SizedBox(height: 12),
                   _debriefForCurrent(),
                 ],
@@ -1432,7 +1488,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   if (!revealed)
                     FilledButton(onPressed: selected == null ? null : _submitAnswer, child: const Text('Responder (Enter)')),
                   if (revealed && !pendingErrorPick)
-                    FilledButton(onPressed: _nextQuestion, child: const Text('Próxima (N)')),
+                    FilledButton(
+                      onPressed: _nextQuestion,
+                      child: Text(
+                        (lastTeach?['forceReview'] == true)
+                            ? 'Próxima (após revisar conceito)'
+                            : 'Próxima (N)',
+                      ),
+                    ),
                 ],
               ),
               if (answerSaveError != null) ...[

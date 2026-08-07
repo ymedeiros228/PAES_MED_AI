@@ -107,19 +107,31 @@ def media_prefs() -> dict[str, Any]:
         videos = True
     if articles is None:
         articles = True
-    return {"suggestVideos": bool(videos), "suggestArticles": bool(articles)}
+    preferred = str(raw.get("preferredLane") or "all").strip().lower()
+    if preferred not in {"all", "bank", "video", "article", "search"}:
+        preferred = "all"
+    return {
+        "suggestVideos": bool(videos),
+        "suggestArticles": bool(articles),
+        "preferredLane": preferred,
+    }
 
 
 def set_media_prefs(
     *,
     suggest_videos: bool | None = None,
     suggest_articles: bool | None = None,
+    preferred_lane: str | None = None,
 ) -> dict[str, Any]:
     cur = media_prefs()
     if suggest_videos is not None:
         cur["suggestVideos"] = bool(suggest_videos)
     if suggest_articles is not None:
         cur["suggestArticles"] = bool(suggest_articles)
+    if preferred_lane is not None:
+        p = str(preferred_lane).strip().lower()
+        if p in {"all", "bank", "video", "article", "search"}:
+            cur["preferredLane"] = p
     _settings_set("media_prefs", cur)
     return {"ok": True, **cur}
 
@@ -167,7 +179,8 @@ def _match_catalog_items(
         url = str(raw.get("url") or "").strip()
         if not url:
             return None
-        return {
+        kind = str(raw.get("kind") or "").strip()
+        out = {
             "title": raw.get(title_key) or raw.get("title") or "Item",
             "channel": raw.get("channel") or raw.get("source") or "",
             "source": raw.get("source") or raw.get("channel") or source_tag,
@@ -176,6 +189,9 @@ def _match_catalog_items(
             "thumb": raw.get("thumb"),
             "origin": source_tag,
         }
+        if kind:
+            out["kind"] = kind
+        return out
 
     if key in topics and isinstance(topics[key], list):
         for raw in topics[key]:
@@ -184,29 +200,58 @@ def _match_catalog_items(
                 if n:
                     items.append(n)
         if items:
-            return items[:5]
+            return items[:8]
 
+    # Fuzzy token match
     tokens = [t.lower() for t in f"{subject or ''} {topic or ''}".split() if len(t) > 2]
-    if not tokens:
-        return []
     scored: list[tuple[int, list[dict[str, Any]]]] = []
-    for tkey, arr in topics.items():
-        if not isinstance(arr, list):
-            continue
-        low = str(tkey).lower()
-        sc = sum(1 for tok in tokens if tok in low)
-        if not sc:
-            continue
-        cleaned: list[dict[str, Any]] = []
-        for raw in arr:
+    if tokens:
+        for tkey, arr in topics.items():
+            if not isinstance(arr, list):
+                continue
+            low = str(tkey).lower()
+            sc = sum(1 for tok in tokens if tok in low)
+            if not sc:
+                continue
+            cleaned: list[dict[str, Any]] = []
+            for raw in arr:
+                if isinstance(raw, dict):
+                    n = _normalize(raw)
+                    if n:
+                        cleaned.append(n)
+            if cleaned:
+                scored.append((sc, cleaned))
+        scored.sort(key=lambda x: -x[0])
+        if scored:
+            return scored[0][1][:8]
+
+    # Fallback: qualquer tópico da mesma disciplina no catálogo
+    sub = (subject or "").strip().lower()
+    if sub:
+        for tkey, arr in topics.items():
+            if not isinstance(arr, list):
+                continue
+            if not str(tkey).lower().startswith(sub + "::"):
+                continue
+            for raw in arr:
+                if isinstance(raw, dict):
+                    n = _normalize(raw)
+                    if n:
+                        items.append(n)
+            if items:
+                return items[:8]
+
+    # Fallback genérico do catálogo (chave __default__)
+    default = topics.get("__default__")
+    if isinstance(default, list):
+        for raw in default:
             if isinstance(raw, dict):
                 n = _normalize(raw)
                 if n:
-                    cleaned.append(n)
-        if cleaned:
-            scored.append((sc, cleaned))
-    scored.sort(key=lambda x: -x[0])
-    return scored[0][1][:5] if scored else []
+                    items.append(n)
+        if items:
+            return items[:8]
+    return []
 
 
 def _cache_get(store_key: str, entry_key: str, ttl_h: int) -> list[dict[str, Any]] | None:
@@ -334,8 +379,61 @@ def _serper_search(subject: str | None, topic: str | None, limit: int = 5) -> li
     return out[:limit]
 
 
+def youtube_search_url(subject: str | None, topic: str | None, *, accent: str = "ENEM PAES") -> str:
+    q = f"{(subject or '').strip()} {(topic or '').strip()} {accent}".strip()
+    return "https://www.youtube.com/results?" + urllib.parse.urlencode({"search_query": q})
+
+
+def wikipedia_search_url(subject: str | None, topic: str | None) -> str:
+    q = f"{(subject or '').strip()} {(topic or '').strip()}".strip()
+    return "https://pt.wikipedia.org/w/index.php?" + urllib.parse.urlencode({"search": q})
+
+
+def list_material_search_actions(subject: str | None, topic: str | None) -> list[dict[str, Any]]:
+    """Ações de busca aberta — usuário escolhe o material (não inventa conteúdo)."""
+    sub = (subject or "").strip() or "assunto"
+    top = (topic or "").strip() or "tópico"
+    return [
+        {
+            "id": "yt_search",
+            "kind": "youtube_search",
+            "label": f"Buscar vídeos no YouTube · {top}",
+            "title": f"YouTube: {sub} · {top}",
+            "channel": "YouTube · busca",
+            "source": "youtube_search",
+            "url": youtube_search_url(subject, topic, accent="ENEM Natureza vestibulares"),
+            "origin": "youtube_search",
+            "snippet": "Abre a busca; você escolhe o vídeo. Não é banca UEMA.",
+        },
+        {
+            "id": "yt_search_paes",
+            "kind": "youtube_search",
+            "label": f"Buscar no YouTube · PAES / UEMA · {top}",
+            "title": f"YouTube PAES: {sub} · {top}",
+            "channel": "YouTube · busca",
+            "source": "youtube_search",
+            "url": youtube_search_url(subject, topic, accent="PAES UEMA vestibular Maranhão"),
+            "origin": "youtube_search",
+            "snippet": "Busca estreita a prova regional. Reforço — não inventa edital.",
+        },
+        {
+            "id": "wiki_search",
+            "kind": "article_search",
+            "label": f"Buscar leitura · Wikipédia · {top}",
+            "title": f"Wikipédia: {sub} · {top}",
+            "channel": "Wikipédia · busca",
+            "source": "wikipedia_search",
+            "url": wikipedia_search_url(subject, topic),
+            "origin": "wikipedia_search",
+            "snippet": "Abre a busca na Wikipédia PT; você escolhe o artigo.",
+        },
+    ]
+
+
 def list_topic_videos(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
     prefs = media_prefs()
+    search_actions = list_material_search_actions(subject, topic)
+    yt_actions = [a for a in search_actions if a.get("kind") == "youtube_search"]
     if not prefs.get("suggestVideos", True):
         return {
             "ok": True,
@@ -343,37 +441,69 @@ def list_topic_videos(subject: str | None = None, topic: str | None = None) -> d
             "topic": topic,
             "items": [],
             "count": 0,
+            "searchActions": yt_actions,
             "basis": "off",
             "disclaimer": DISCLAIMER_VIDEO,
-            "note": "Sugestão de vídeos desligada em Ajustes · Avançado.",
+            "note": "Sugestão de vídeos desligada em Ajustes · Avançado. Ainda pode buscar no YouTube.",
             "youtubeConfigured": youtube_configured(),
         }
 
-    yt = _youtube_search(subject, topic, limit=5)
+    yt = _youtube_search(subject, topic, limit=6)
     cat = _match_catalog_items("videos_catalog.json", subject, topic, source_tag="catalogo_local")
     items: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for src in yt + cat:
+    # Catálogo local primeiro (estável), depois API YouTube se houver chave
+    for src in cat + yt:
         u = (src.get("url") or "").strip()
         if not u or u in seen:
             continue
         seen.add(u)
         items.append(src)
-        if len(items) >= 5:
+        if len(items) >= 8:
             break
 
     if yt and cat:
         basis = "misto"
     elif yt:
         basis = "youtube"
-    else:
+    elif cat:
         basis = "catalogo_local"
+    else:
+        basis = "busca_aberta"
+
+    # Sempre inclui ações de busca YouTube como itens clicáveis se a lista
+    # ainda está fraca — o aluno escolhe o vídeo (não inventamos conteúdo).
+    if len(items) < 2:
+        for a in yt_actions:
+            u = (a.get("url") or "").strip()
+            if not u or u in seen:
+                continue
+            seen.add(u)
+            items.append(
+                {
+                    "title": a.get("title") or a.get("label") or "Buscar no YouTube",
+                    "channel": a.get("channel") or "YouTube · busca",
+                    "source": a.get("source") or "youtube_search",
+                    "url": u,
+                    "snippet": a.get("snippet"),
+                    "origin": "youtube_search",
+                    "kind": "youtube_search",
+                }
+            )
+            if len(items) >= 6:
+                break
 
     note = None
     if not items:
         note = (
-            f"Sem vídeos catalogados para {subject or '—'} · {topic or '—'}. "
-            "Não inventamos URL. Com YOUTUBE_API_KEY no .env a busca enriquece o catálogo."
+            f"Sem vídeo catalogado fixo para {subject or '—'} · {topic or '—'}. "
+            "Use Buscar no YouTube (você escolhe o link). "
+            "Com YOUTUBE_API_KEY no .env a busca automática enriquece a lista."
+        )
+    elif basis == "busca_aberta":
+        note = (
+            "Sem catálogo fixo deste tópico — use os botões de busca YouTube abaixo. "
+            "Opcional: YOUTUBE_API_KEY no .env para trazer links da API."
         )
 
     return {
@@ -382,6 +512,7 @@ def list_topic_videos(subject: str | None = None, topic: str | None = None) -> d
         "topic": topic,
         "items": items,
         "count": len(items),
+        "searchActions": yt_actions,
         "basis": basis,
         "disclaimer": DISCLAIMER_VIDEO,
         "note": note,
@@ -391,6 +522,7 @@ def list_topic_videos(subject: str | None = None, topic: str | None = None) -> d
 
 def list_topic_articles(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:
     prefs = media_prefs()
+    search_actions = [a for a in list_material_search_actions(subject, topic) if a.get("kind") == "article_search"]
     if not prefs.get("suggestArticles", True):
         return {
             "ok": True,
@@ -398,38 +530,64 @@ def list_topic_articles(subject: str | None = None, topic: str | None = None) ->
             "topic": topic,
             "items": [],
             "count": 0,
+            "searchActions": search_actions,
             "basis": "off",
             "disclaimer": DISCLAIMER_ARTICLE,
-            "note": "Sugestão de artigos desligada em Ajustes · Avançado.",
+            "note": "Sugestão de artigos desligada em Ajustes · Avançado. Ainda pode buscar na Wikipédia.",
             "serperConfigured": serper_configured(),
         }
 
-    web = _serper_search(subject, topic, limit=5)
+    web = _serper_search(subject, topic, limit=6)
     cat = _match_catalog_items("articles_catalog.json", subject, topic, source_tag="catalogo_local")
     items: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for src in web + cat:
+    for src in cat + web:
         u = (src.get("url") or "").strip()
         if not u or u in seen:
             continue
         seen.add(u)
         items.append(src)
-        if len(items) >= 5:
+        if len(items) >= 8:
             break
 
     if web and cat:
         basis = "misto"
     elif web:
         basis = "serper"
-    else:
+    elif cat:
         basis = "catalogo_local"
+    else:
+        basis = "busca_aberta"
+
+    if len(items) < 2:
+        for a in search_actions:
+            u = (a.get("url") or "").strip()
+            if not u or u in seen:
+                continue
+            seen.add(u)
+            items.append(
+                {
+                    "title": a.get("title") or a.get("label") or "Buscar na Wikipédia",
+                    "channel": a.get("channel") or "Wikipédia · busca",
+                    "source": a.get("source") or "wikipedia_search",
+                    "url": u,
+                    "snippet": a.get("snippet"),
+                    "origin": "wikipedia_search",
+                    "kind": "article_search",
+                }
+            )
+            if len(items) >= 5:
+                break
 
     note = None
     if not items:
         note = (
-            f"Sem artigos catalogados para {subject or '—'} · {topic or '—'}. "
-            "Não inventamos URL. Com SERPER_API_KEY no .env a busca enriquece o catálogo."
+            f"Sem artigo catalogado fixo para {subject or '—'} · {topic or '—'}. "
+            "Use Buscar na Wikipédia (você escolhe). "
+            "Com SERPER_API_KEY no .env a busca web enriquece a lista."
         )
+    elif basis == "busca_aberta":
+        note = "Sem artigo fixo deste tópico — use a busca Wikipédia (você escolhe o texto)."
 
     return {
         "ok": True,
@@ -437,11 +595,122 @@ def list_topic_articles(subject: str | None = None, topic: str | None = None) ->
         "topic": topic,
         "items": items,
         "count": len(items),
+        "searchActions": search_actions,
         "basis": basis,
         "disclaimer": DISCLAIMER_ARTICLE,
         "note": note,
         "serperConfigured": serper_configured(),
     }
+
+
+def study_materials_pack(
+    *,
+    subject: str | None,
+    topic: str | None,
+    bank_items: list[dict[str, Any]] | None = None,
+    bank_note: str | None = None,
+    bank_disclaimer: str | None = None,
+) -> dict[str, Any]:
+    """Pacote unificado: banca/local + vídeos + leituras + buscas (escolha do aluno)."""
+    # TTL curto: evita double-fetch quando lista e ficha pedem o mesmo pack.
+    cache_key = None
+    if bank_items is None:
+        try:
+            import time as _time
+            from services_extra import _PACK_TTL_S, _pack_cache
+
+            cache_key = f"{(subject or '').strip().lower()}::{(topic or '').strip().lower()}"
+            hit = _pack_cache.get(cache_key)
+            if hit:
+                t0, val = hit
+                if (_time.monotonic() - float(t0)) < float(_PACK_TTL_S):
+                    return val
+        except Exception:
+            cache_key = None
+    videos = list_topic_videos(subject, topic)
+    articles = list_topic_articles(subject, topic)
+    searches = list_material_search_actions(subject, topic)
+    bank = list(bank_items or [])
+    preferred = media_prefs().get("preferredLane") or "all"
+    if preferred not in {"all", "bank", "video", "article", "search"}:
+        preferred = "all"
+    lanes = [
+        {
+            "id": "bank",
+            "label": "Banca / material local",
+            "hint": "Edital, trechos e PDFs no PC — sem inventar oficial ausente",
+            "count": len(bank),
+            "items": bank,
+            "disclaimer": bank_disclaimer
+            or "Só o que existe no disco ou trechos locais; não é inventar gabarito.",
+            "note": bank_note,
+        },
+        {
+            "id": "video",
+            "label": "Vídeos de reforço",
+            "hint": "Catálogo local + YouTube (API opcional)",
+            "count": int(videos.get("count") or 0),
+            "items": videos.get("items") or [],
+            "searchActions": videos.get("searchActions") or [],
+            "disclaimer": videos.get("disclaimer"),
+            "note": videos.get("note"),
+            "basis": videos.get("basis"),
+            "youtubeConfigured": videos.get("youtubeConfigured"),
+        },
+        {
+            "id": "article",
+            "label": "Leituras de reforço",
+            "hint": "Catálogo + Wikipédia / Serper opcional",
+            "count": int(articles.get("count") or 0),
+            "items": articles.get("items") or [],
+            "searchActions": articles.get("searchActions") or [],
+            "disclaimer": articles.get("disclaimer"),
+            "note": articles.get("note"),
+            "basis": articles.get("basis"),
+            "serperConfigured": articles.get("serperConfigured"),
+        },
+        {
+            "id": "search",
+            "label": "Buscar na web",
+            "hint": "Abrir busca e escolher o material",
+            "count": len(searches),
+            "items": searches,
+            "disclaimer": "Você escolhe o que estudiar. Reforço — não banca UEMA.",
+            "note": None,
+        },
+    ]
+    total = sum(int(l.get("count") or 0) for l in lanes if l["id"] != "search")
+    # Sugere vídeo se não há banca local e há reforço em vídeo
+    suggested = "all"
+    if not bank and int(videos.get("count") or 0) > 0:
+        suggested = "video"
+    elif bank and int(videos.get("count") or 0) == 0 and int(articles.get("count") or 0) > 0:
+        suggested = "article"
+    out = {
+        "ok": True,
+        "subject": subject,
+        "topic": topic,
+        "preferredLane": preferred,
+        "suggestedLane": suggested,
+        "lanes": lanes,
+        "totalItems": total,
+        "searchActions": searches,
+        "youtubeConfigured": youtube_configured(),
+        "serperConfigured": serper_configured(),
+        "disclaimer": (
+            "Escolha o material: local (banca no PC), vídeo, leitura ou busca. "
+            "Nada aqui é gabarito oficial inventado pela IA."
+        ),
+    }
+    if cache_key is not None:
+        try:
+            import time as _time
+            from services_extra import _pack_cache
+
+            _pack_cache[cache_key] = (_time.monotonic(), out)
+        except Exception:
+            pass
+    return out
 
 
 def _host_allowed_for_youtube(host: str) -> bool:
@@ -590,15 +859,21 @@ def open_media_url(
         if not _host_allowed_for_youtube(host):
             return {"ok": False, "message": "Só links YouTube (youtube.com / youtu.be) para kind=video"}
         disclaimer = DISCLAIMER_VIDEO
-    elif k == "article":
+    elif k in {"article", "article_search"}:
         if not _host_allowed_for_article(host):
             return {
                 "ok": False,
                 "message": "Artigo: só wikipedia.org, scielo.br, gov.br, edu, khanacademy.org",
             }
         disclaimer = DISCLAIMER_ARTICLE
+        k = "article"
+    elif k == "youtube_search":
+        if not _host_allowed_for_youtube(host):
+            return {"ok": False, "message": "Busca YouTube: só domain youtube.com / youtu.be"}
+        disclaimer = DISCLAIMER_VIDEO
+        k = "video"
     else:
-        return {"ok": False, "message": "kind inválido (use video, article ou auto)"}
+        return {"ok": False, "message": "kind inválido (use video, article, youtube_search ou auto)"}
 
     try:
         import os as _os

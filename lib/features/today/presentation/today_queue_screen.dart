@@ -212,7 +212,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ),
       );
     }
-    if (queue == null) return const Center(child: CircularProgressIndicator());
+    if (queue == null) {
+      return const SoftLoader(label: 'Montando a fila do dia…');
+    }
 
     final revisions = (queue!['revisions'] as List? ?? []);
     final cards = (queue!['flashcards'] as List? ?? []);

@@ -44,7 +44,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _applyRouteSeed();
+      unawaited(ref.read(aiTutorControllerProvider.notifier).loadStatus());
+    });
   }
 
   void _applyRouteSeed() {
@@ -114,190 +117,249 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
       child: Focus(
         autofocus: false,
         child: SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
-            child: PageHeader(
-              eyebrow: 'Ajuda',
-              title: 'Tutor',
-              subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
-              trailing: IconButton(
-                tooltip: 'Limpar conversa',
-                onPressed: state.isLoading
-                    ? null
-                    : () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
-                icon: const Icon(Icons.delete_sweep_outlined),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
+                child: PageHeader(
+                  eyebrow: 'Ajuda',
+                  title: 'Tutor',
+                  subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis',
+                  trailing: IconButton(
+                    tooltip: 'Limpar conversa',
+                    onPressed: state.isLoading
+                        ? null
+                        : () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
+                    icon: const Icon(Icons.delete_sweep_outlined),
+                  ),
+                ),
               ),
-            ),
-          ),
-          if (state.error != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
-              child: QuietEmpty(
-                message: state.error!,
-                action: Wrap(
-                  spacing: 8,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 4, 28, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      FilterChip(
+                        avatar: Icon(
+                          state.status?.provider == 'openai'
+                              ? Icons.cloud_outlined
+                              : state.status?.provider == 'ollama'
+                                  ? Icons.computer_outlined
+                                  : Icons.menu_book_outlined,
+                          size: 16,
+                        ),
+                        label: Text(state.modeChip),
+                        selected: false,
+                        onSelected: (_) => unawaited(
+                          ref.read(aiTutorControllerProvider.notifier).loadStatus(),
+                        ),
+                      ),
+                      if (state.status?.configured != true)
+                        TextButton(
+                          onPressed: () => context.go('/configuracoes'),
+                          child: const Text('Configurar modelo'),
+                        )
+                      else if (state.status?.lastError != null)
+                        Tooltip(
+                          message: state.status!.lastError!,
+                          child: Icon(Icons.warning_amber_rounded, size: 18, color: cs.error),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (state.error != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 8, 28, 8),
+                  child: QuietEmpty(
+                    message: state.error!,
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
+                          child: const Text('Limpar'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/fila'),
+                          child: const Text('Fila'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/configuracoes'),
+                          child: const Text('Ajustes'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/questoes'),
+                          child: const Text('Questões'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/biblioteca'),
+                          child: const Text('Biblioteca'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(28, 8, 28, 8),
+                child: Row(
                   children: [
-                    TextButton(
-                      onPressed: () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
-                      child: const Text('Limpar'),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/sessao'),
-                      child: const Text('Sessão'),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/biblioteca'),
-                      child: const Text('Biblioteca'),
-                    ),
+                    for (final s in _styles)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: FilterChip(
+                          label: Text(s.$2),
+                          selected: state.style == s.$1,
+                          showCheckmark: false,
+                          onSelected: (_) =>
+                              ref.read(aiTutorControllerProvider.notifier).setStyle(s.$1),
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
-            child: Row(
-              children: [
-                for (final s in _styles)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: FilterChip(
-                      label: Text(s.$2),
-                      selected: state.style == s.$1,
-                      showCheckmark: false,
-                      onSelected: (_) => ref.read(aiTutorControllerProvider.notifier).setStyle(s.$1),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: (state.messages.length <= 1 && !state.isLoading)
-                ? Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.messages.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                state.messages.first.content,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          const QuietEmpty(
-                            message: 'Escolha um atalho ou digite abaixo.',
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.center,
+              Expanded(
+                child: (state.messages.length <= 1 && !state.isLoading)
+                    ? Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 520),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              ActionChip(
-                                label: const Text('Meta de hoje'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Qual a meta de estudo de hoje e o que priorizar?',
-                                            );
-                                      },
+                              if (state.messages.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    state.messages.first.content,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                              QuietEmpty(
+                                message: (state.status?.configured == true)
+                                    ? 'Escolha um atalho ou digite abaixo. ${state.modeChip}'
+                                    : 'Modo local: ensina com a base + pedagogia. '
+                                        'Configurar modelo: backend/.env → OPENAI_API_KEY '
+                                        '(+ OPENAI_BASE_URL opcional) ou OLLAMA_MODEL.',
                               ),
-                              ActionChip(
-                                label: const Text('Macete do tópico'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
-                                            );
-                                      },
-                              ),
-                              ActionChip(
-                                label: const Text('Abrir sessão'),
-                                onPressed: () => context.go('/sessao'),
-                              ),
-                              ActionChip(
-                                label: const Text('Biblioteca'),
-                                onPressed: () => context.go('/biblioteca'),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  ActionChip(
+                                    label: const Text('Meta de hoje'),
+                                    onPressed: state.isLoading
+                                        ? null
+                                        : () {
+                                            ref.read(aiTutorControllerProvider.notifier).send(
+                                                  'Qual a meta de estudo de hoje e o que priorizar?',
+                                                );
+                                          },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Macete do tópico'),
+                                    onPressed: state.isLoading
+                                        ? null
+                                        : () {
+                                            ref.read(aiTutorControllerProvider.notifier).send(
+                                                  'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
+                                                );
+                                          },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Fila'),
+                                    onPressed: () => context.go('/fila'),
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Ajustes'),
+                                    onPressed: () => context.go('/configuracoes'),
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Questões'),
+                                    onPressed: () => context.go('/questoes'),
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Biblioteca'),
+                                    onPressed: () => context.go('/biblioteca'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
-                    itemCount: state.messages.length + (state.isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == state.messages.length) {
-                        return const _TypingIndicator();
-                      }
-                      return _MessageBubble(message: state.messages[index]);
-                    },
-                  ),
-          ),
-          Material(
-            elevation: 6,
-            color: cs.surface,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                12,
-                20,
-                14 + MediaQuery.viewInsetsOf(context).bottom,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1080),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        minLines: 1,
-                        maxLines: 5,
-                        textInputAction: TextInputAction.send,
-                        decoration: InputDecoration(
-                          hintText: 'Sua dúvida… (Ctrl+Enter envia)',
-                          filled: true,
-                          fillColor: cs.surfaceContainerHigh.withOpacity(0.45),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
-                        onSubmitted: (_) => _send(),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
+                        itemCount: state.messages.length + (state.isLoading ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == state.messages.length) {
+                            return const _TypingIndicator();
+                          }
+                          return _MessageBubble(message: state.messages[index]);
+                        },
                       ),
+              ),
+              Material(
+                elevation: 6,
+                color: cs.surface,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    12,
+                    20,
+                    14 + MediaQuery.viewInsetsOf(context).bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1080),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            minLines: 1,
+                            maxLines: 5,
+                            textInputAction: TextInputAction.send,
+                            decoration: InputDecoration(
+                              hintText: 'Sua dúvida… (Ctrl+Enter envia)',
+                              filled: true,
+                              fillColor: cs.surfaceContainerHigh.withOpacity(0.45),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            onSubmitted: (_) => _send(),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        IconButton.filled(
+                          tooltip: 'Enviar',
+                          onPressed: state.isLoading ? null : _send,
+                          icon: state.isLoading
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.send_rounded),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    IconButton.filled(
-                      tooltip: 'Enviar',
-                      onPressed: state.isLoading ? null : _send,
-                      icon: state.isLoading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send_rounded),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
+        ),
       ),
     );
   }
@@ -353,6 +415,15 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!message.isUser && message.model != null && message.model!.isNotEmpty) ...[
+              Text(
+                message.model!,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 4),
+            ],
             if (!message.isUser && message.uncited) ...[
               Container(
                 width: double.infinity,
@@ -362,12 +433,36 @@ class _MessageBubble extends StatelessWidget {
                   color: scheme.errorContainer.withOpacity(0.55),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  'Sem base local · não inventa cobrança UEMA',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onErrorContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sem base local · não inventa cobrança UEMA',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: scheme.onErrorContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        ActionChip(
+                          label: const Text('Fila'),
+                          onPressed: () => context.go('/fila'),
+                        ),
+                        ActionChip(
+                          label: const Text('Questões'),
+                          onPressed: () => context.go('/questoes'),
+                        ),
+                        ActionChip(
+                          label: const Text('Biblioteca'),
+                          onPressed: () => context.go('/biblioteca'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -396,7 +491,6 @@ class _MessageBubble extends StatelessWidget {
                           '&topic=${Uri.encodeComponent(topic)}',
                         );
                       } else if (type == 'edital' || type == 'lesson') {
-                        // Ciclo CF: lesson never hostil /aulas sob foco
                         context.go('/sessao');
                       }
                     },

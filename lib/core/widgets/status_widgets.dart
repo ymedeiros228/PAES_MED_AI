@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,27 +18,62 @@ class BackendStatusBanner extends ConsumerStatefulWidget {
 class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   bool? online;
   String? lastError;
+  bool _checking = false;
+  Timer? _retryTimer;
 
   @override
   void initState() {
     super.initState();
-    _check();
+    unawaited(_check());
+  }
+
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleOfflineRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = Timer(const Duration(seconds: 20), () {
+      if (mounted && online != true) unawaited(_check());
+    });
   }
 
   Future<void> _check() async {
+    if (_checking) return;
+    _checking = true;
     try {
-      await apiClient.get('/health');
-      if (mounted) setState(() {
-        online = true;
-        lastError = null;
-      });
-    } catch (e) {
+      // Lite primeiro, timeout curto — não trava o shell no /health pesado.
+      await apiClient.get('/health/lite', null, ApiClient.healthTimeout);
       if (mounted) {
         setState(() {
-          online = false;
-          lastError = humanApiError(e, fallback: 'API local offline.');
+          online = true;
+          lastError = null;
         });
       }
+      _retryTimer?.cancel();
+    } catch (_) {
+      try {
+        await apiClient.get('/health', null, ApiClient.listTimeout);
+        if (mounted) {
+          setState(() {
+            online = true;
+            lastError = null;
+          });
+        }
+        _retryTimer?.cancel();
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            online = false;
+            lastError = humanApiError(e, fallback: 'API local offline.');
+          });
+        }
+        _scheduleOfflineRetry();
+      }
+    } finally {
+      _checking = false;
     }
   }
 
@@ -63,8 +100,8 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
               style: TextStyle(color: cs.onErrorContainer.withOpacity(0.9), fontSize: 12),
             ),
             trailing: FilledButton(
-              onPressed: _check,
-              child: const Text('Tentar'),
+              onPressed: _checking ? null : () => unawaited(_check()),
+              child: Text(_checking ? '…' : 'Tentar'),
             ),
           ),
         ),
