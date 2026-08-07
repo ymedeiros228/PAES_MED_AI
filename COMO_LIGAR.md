@@ -1143,7 +1143,7 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 
 ## Biblioteca parciais (Ciclo HF)
 
-1. Badge **Parcial · sem gabarito** vs **Par com gab** vs **Commitado**.
+1. Badge **Parcial · sem gabarito** vs **Par com gab** vs **No acervo**.
 2. Contadores `anosParciais` / `anosCompletos` + Abrir gabaritos.
 3. Smoke: `ciclo_hf_*`.
 
@@ -1186,6 +1186,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 
 1. pubspec / `app_version` / pack VERSION / Sobre = **1.0.0+10**.
 2. Smoke `ciclo_hm_*` + pack gates; residual host = gab 2014–23.
+
+## Conforto UX (Ciclo UX)
+
+1. Textos em português de estudante (sem “commit”, “due”, “hot errors”).
+2. CTAs calmos: Começar sessão / Estudar agora / Só as boas / Gravar no acervo.
+3. Atalhos de teclado reduzidos nas subtítulos; error types com rótulos legíveis.
+4. Biblioteca: banner busy + mensagem de sucesso com Estudar / Fila.
 
 ## Roadmap futuro (não é ciclo atual)
 

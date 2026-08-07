@@ -104,7 +104,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
               if (due != null) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Cards due: $due',
+                  'Cards para revisar: $due',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: cs.onSurface.withOpacity(0.65),
                       ),

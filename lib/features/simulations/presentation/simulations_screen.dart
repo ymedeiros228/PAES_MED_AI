@@ -54,7 +54,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     ('dia_prova', 'Dia de prova', 'Cronômetro e sem gabarito até terminar', Icons.timer_outlined),
     ('prova_completa', 'Prova completa', 'Treino com o recorte usual da prova', Icons.assignment_outlined),
     ('medicina', 'Medicina', 'Foco em Natureza e raciocínio biomédico', Icons.biotech_outlined),
-    ('revisao', 'Revisão', 'O que já está na fila / due', Icons.replay_rounded),
+    ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
     ('incidencia', 'Por incidência', 'Tópicos que mais caem (quando houver base)', Icons.insights_outlined),
     ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
   ];

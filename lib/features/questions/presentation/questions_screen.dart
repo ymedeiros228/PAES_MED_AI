@@ -172,7 +172,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 PageHeader(
                   eyebrow: 'Banco',
                   title: 'Questões',
-                  subtitle: '↑/↓ J/K · Enter abre · [/] páginas · R atualiza · S sessão',
+                  subtitle: 'Filtre e abra o que quiser treinar com calma',
                   trailing: FilledButton.tonal(
                     onPressed: () => context.go('/sessao'),
                     child: const Text('Sessão'),

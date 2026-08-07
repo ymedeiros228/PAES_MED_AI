@@ -233,8 +233,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 eyebrow: 'Planejar',
                 title: 'Plano de estudos',
                 subtitle: until == null
-                    ? 'Defina a data da prova em Ajustes · S hoje · R atualiza · ↑/↓ Enter · Espaço marca'
-                    : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'} · S hoje · R atualiza · ↑/↓ Enter · E export',
+                    ? 'Defina a data da prova em Ajustes'
+                    : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'}',
                 trailing: FilledButton.tonal(
                   onPressed: loading ? null : () => _load(regenerate: true),
                   child: const Text('Regenerar'),
@@ -403,14 +403,14 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                             Text('Foco da semana', style: Theme.of(context).textTheme.titleSmall),
                             const SizedBox(height: 4),
                             Text(
-                              '${revs.length} revisões · hot errors abaixo',
+                              '${revs.length} revisões · erros recentes abaixo',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             for (final raw in hot)
                               PlaylistTile(
                                 title: (raw as Map)['key']?.toString() ?? '',
-                                subtitle: '${raw['misses']} misses',
-                                badge: 'hot',
+                                subtitle: '${raw['misses']} erros',
+                                badge: 'foco',
                                 leadingIcon: Icons.whatshot_rounded,
                                 onPlay: () {
                                   final key = raw['key']?.toString() ?? '';
@@ -423,7 +423,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               ),
                             if (hot.isEmpty)
                               QuietEmpty(
-                                message: 'Sem hot errors — treine a fila.',
+                                message: 'Sem erros recentes — treine a fila.',
                                 action: TextButton(
                                   onPressed: () => context.go('/fila'),
                                   child: const Text('Fila'),

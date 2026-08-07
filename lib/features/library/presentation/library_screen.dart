@@ -347,12 +347,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ? '/sessao?examBoard=UEMA_PAES&year=$year&preferNatureza=1'
               : '/sessao?examBoard=UEMA_PAES&preferNatureza=1');
       setState(() {
-        msg = map['message']?.toString() ?? 'Commit OK · $inserted oficiais · base $n$healthLine';
+        msg = map['message']?.toString() ?? 'Gravamos $inserted oficiais · base $n$healthLine';
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('1 clique OK · $inserted UEMA · oficiais $n$healthLine'),
+          content: Text('Pronto · $inserted oficiais · total $n$healthLine'),
           action: SnackBarAction(
             label: 'Estudar agora',
             onPressed: () => _goStudy(
@@ -364,8 +364,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
       );
       await _showPostCommitCta(
-        title: 'Oficiais gravadas',
-        body: 'Commit OK · $inserted · base $n$healthLine$packLine\nEstudar Natureza/UEMA agora?',
+        title: 'Oficiais no acervo',
+        body: 'Gravamos $inserted · base $n$healthLine$packLine\nEstudar Natureza/UEMA agora?',
         sessaoPath: sessao,
         professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
         yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
@@ -377,7 +377,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() {
         msg = humanApiError(
           e,
-          fallback: 'Bootstrap+commit falhou — use Baixar e revisar, ou Manual / Abrir provas.',
+          fallback: 'Importação falhou — use Baixar e revisar, ou Abrir provas.',
         );
       });
     } finally {
@@ -466,7 +466,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _semana1Real() async {
     setState(() {
       busy = true;
-      msg = 'Semana 1 real: fetch+commit found 2024–26…';
+      msg = 'Semana 1: atualizando 2024–26…';
     });
     try {
       final data = await apiClient.post('/api/acervo/bootstrap-and-commit-available', {
@@ -511,7 +511,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       }
 
       await _showPostCommitCta(
-        title: 'Semana 1 real',
+        title: 'Semana 1 concluída',
         body: '$body\nEstudar Natureza agora?',
         sessaoPath: sessao,
         professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
@@ -684,7 +684,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String _uiStatusLabel(String? s) {
     switch (s) {
       case 'committed':
-        return 'Commitado';
+        return 'No acervo';
       case 'onDisk':
         return 'Par com gab · pode gravar';
       case 'partial':
@@ -881,8 +881,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = map['message']?.toString() ?? 'OK · $inserted · base $n$healthLine');
       if (!mounted) return;
       await _showPostCommitCta(
-        title: 'PAES $year commitado',
-        body: 'Commit OK · $inserted · base $n$healthLine$packLine\nEstudar Natureza agora?',
+        title: 'PAES $year no acervo',
+        body: 'Gravamos $inserted · base $n$healthLine$packLine\nEstudar Natureza agora?',
         sessaoPath: sessao,
         professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
         yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
@@ -891,7 +891,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Commit $year falhou — tente de novo.'));
+      setState(() => msg = humanApiError(e, fallback: 'Gravação $year falhou — tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -1226,8 +1226,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 eyebrow: 'Acervo',
                 title: 'Biblioteca',
                 subtitle: officialN > 0
-                    ? '$officialN oficiais · ↑/↓ J/K resultados · Enter abre · S sessão · R atualiza'
-                    : 'Monte 2024–26 · busca Enter · S sessão · R atualiza',
+                    ? '$officialN oficiais · coloque provas e engula com um clique'
+                    : 'Semana 1: importe 2024–26 e comece a estudar de verdade',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: busy ? null : _load,
@@ -1236,6 +1236,28 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       : const Icon(Icons.refresh_rounded),
                 ),
               ),
+
+              if (busy)
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: cs.secondaryContainer.withOpacity(0.45),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          msg ?? 'Trabalhando no acervo… pode demorar um pouco.',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               if (showFirstRunCoach && officialN == 0) ...[
                 SurfacePanel(
@@ -1455,7 +1477,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           onPressed: () => context.go(
                             '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
                           ),
-                          child: const Text('Estudar agora (S)'),
+                          child: const Text('Estudar agora'),
                         ),
                       ],
                     ),
@@ -1646,7 +1668,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             subtitle: partial
                                 ? 'Parcial · sem gabarito · use gabarito_$y.pdf'
                                 : ready
-                                    ? 'Commitado ($n qs)'
+                                    ? 'No acervo ($n qs)'
                                     : label,
                             badge: _uiBadge(
                               status,
@@ -1784,7 +1806,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ],
               ),
 
-              if (msg != null) ...[
+              if (msg != null && !busy) ...[
                 const SizedBox(height: 12),
                 if (msg!.contains('sumiu') ||
                     msg!.contains('não abriu') ||
@@ -1793,8 +1815,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   QuietEmpty(
                     message: msg!,
                     action: FilledButton.tonal(
-                      onPressed: busy ? null : () => unawaited(_openFolder('provas')),
+                      onPressed: () => unawaited(_openFolder('provas')),
                       child: const Text('Abrir provas'),
+                    ),
+                  )
+                else if (msg!.toLowerCase().contains('oficiais') ||
+                    msg!.toLowerCase().contains('grav') ||
+                    msg!.toLowerCase().contains('import') ||
+                    msg!.toLowerCase().contains('base'))
+                  QuietEmpty(
+                    message: msg!,
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        FilledButton(
+                          onPressed: () => _goStudy(
+                            '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
+                          ),
+                          child: const Text('Estudar agora'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/fila'),
+                          child: const Text('Abrir fila'),
+                        ),
+                      ],
                     ),
                   )
                 else

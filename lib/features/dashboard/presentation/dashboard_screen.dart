@@ -303,8 +303,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           onPressed: () => context.go(sessionPath),
                           child: Text(
                             checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)} (S)'
-                                : 'Começar sessão (S)',
+                                ? 'Continuar · ${_checkpointShort(checkpoint!)}'
+                                : 'Começar sessão',
                           ),
                         ),
                         if (checkpoint != null)
@@ -322,13 +322,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             side: const BorderSide(color: Colors.white70),
                           ),
                           onPressed: () => context.go(closePath),
-                          child: Text('$closeLabel (L)'),
+                          child: Text(closeLabel),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'S sessão · L fila · R atualiza · Enter',
+                      'Dica: S inicia a sessão · L abre a fila',
                       style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 12),
                     ),
                   ],
@@ -393,7 +393,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           _dismissFirstRunCoach();
                                           context.go('/biblioteca?semana1=1');
                                         },
-                                        child: const Text('Atualizar acervo'),
+                                        child: const Text('Ir à Semana 1'),
                                       ),
                                       TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
                                     ],

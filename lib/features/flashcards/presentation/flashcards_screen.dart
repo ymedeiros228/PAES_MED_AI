@@ -163,10 +163,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                   eyebrow: 'Estudar',
                   title: 'Cards',
                   subtitle: axesOnly
-                      ? 'Só eixos · Space vira · L/1 · E/2 · R atualiza · S sessão'
+                      ? 'Só eixos de resolução · toque para virar'
                       : dueOnly
-                          ? 'Só due · Space vira · L/1 · E/2 · R atualiza · S sessão'
-                          : 'Todos · Space vira · L/1 · E/2 · R atualiza · S sessão',
+                          ? 'Só o que é para revisar hoje'
+                          : 'Todos os cards · toque para virar',
                   trailing: Wrap(
                     spacing: 4,
                     children: [
@@ -186,7 +186,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                             showBack = false;
                             currentId = null;
                           }),
-                          child: Text(dueOnly ? 'Ver todos' : 'Só due'),
+                          child: Text(dueOnly ? 'Ver todos' : 'Só para revisar'),
                         ),
                     ],
                   ),
@@ -220,10 +220,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     _itemIds = ids;
                     if (items.isEmpty) {
                       return EmptyState(
-                        title: dueOnly ? 'Nenhum card due' : 'Nenhum card ainda',
+                        title: dueOnly ? 'Nada para revisar agora' : 'Nenhum card ainda',
                         subtitle: dueOnly
-                            ? 'Fila de revisão vazia — errou na sessão? Volte amanhã ou veja todos.'
-                            : 'Erre na sessão, importe uma aula ou crie um manualmente abaixo.',
+                            ? 'Quando errar na sessão, os cards aparecem aqui. Ou veja todos.'
+                            : 'Estude uma sessão: ao errar, criamos cards para você.',
                         action: Wrap(
                           spacing: 8,
                           alignment: WrapAlignment.center,

@@ -187,7 +187,7 @@ class AppShell extends ConsumerWidget {
                         _RailControl(
                           expanded: expanded,
                           icon: focus ? Icons.visibility_rounded : Icons.center_focus_strong_rounded,
-                          label: focus ? 'Foco on' : 'Foco',
+                          label: focus ? 'Foco ligado' : 'Foco',
                           active: focus,
                           onTap: () => ref.read(focusModeProvider.notifier).setFocus(!focus),
                         ),
@@ -202,7 +202,7 @@ class AppShell extends ConsumerWidget {
                         if (expanded) ...[
                           const SizedBox(height: 10),
                           Text(
-                            'F foco · Ctrl+T tema',
+                            'Tecla F: modo foco',
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                   color: cs.onSurface.withOpacity(0.42),
                                   fontSize: 11,

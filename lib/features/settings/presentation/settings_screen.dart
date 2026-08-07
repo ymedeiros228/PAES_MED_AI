@@ -489,7 +489,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   title: const Text('Restaurar backup?'),
                                   content: Text(
                                     'Substitui o progresso atual por:\n\n$name'
-                                    '${sha.isNotEmpty ? '\n\nVerify: $sha' : ''}'
+                                    '${sha.isNotEmpty ? '\n\nVerificação: $sha' : ''}'
                                     '\n\nSó confirme se tiver certeza.',
                                   ),
                                   actions: [
@@ -698,7 +698,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: const Text('POST reprocess — frequência/perfil na leitura'),
                     trailing: FilledButton.tonal(onPressed: _reprocess, child: const Text('Rodar')),
                   ),
-                  SectionLabel('Paths', hint: 'Onde ficam os dados'),
+                  SectionLabel('Pastas', hint: 'Onde ficam os dados'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Pasta de dados'),

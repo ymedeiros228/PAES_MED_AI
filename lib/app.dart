@@ -125,7 +125,39 @@ final appRouter = GoRouter(
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
-    body: Center(child: Text('Página não encontrada: ${state.uri}')),
+    body: Builder(
+      builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Essa página não existe',
+                  style: Theme.of(ctx).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Volte ao início e siga pelo menu. Se veio de um link antigo, abra Hoje.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface.withOpacity(0.65),
+                      ),
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: () => GoRouter.of(ctx).go('/hoje'),
+                  child: const Text('Ir para Hoje'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
   ),
 );
 

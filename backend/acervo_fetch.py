@@ -555,11 +555,11 @@ def acervo_year_grid(*, min_year: int = 2014, max_year: int = 2026) -> list[dict
                 "previewNeedsOcr": bool((preview or {}).get("needsOcr")),
                 "previewCount": (preview or {}).get("count", 0),
                 "labelHint": {
-                    "committed": f"Commitado ({committed} qs)",
+                    "committed": f"No acervo ({committed} qs)",
                     "onDisk": "Par com gab · pode gravar",
                     "partial": "Parcial · sem gabarito",
                     "partialGab": "Só gabarito · falta prova",
-                    "preview": "Preview · revisar",
+                    "preview": "Precisa revisar",
                     "found": "Pode baixar (portal)",
                     "needs_manual": "Baixar à mão",
                     "empty": "Vazio",

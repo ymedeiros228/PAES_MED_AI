@@ -156,17 +156,17 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Commitar altas confianças agora?'),
+        title: const Text('Gravar as boas agora?'),
         content: Text(
           high > 0
-              ? 'Há $high questões em alta confiança com gabarito. '
-                  'Dois cliques: Sim grava oficiais estudáveis e libera a sessão UEMA.'
-              : 'Nenhuma em alta confiança ainda — revise gabaritos/suspeitas e use Altas conf. depois.',
+              ? 'Há $high questões boas (alta confiança + gabarito). '
+                  'Confirme para colocar no acervo e estudar na sessão UEMA.'
+              : 'Ainda não há questões boas o suficiente — confira gabarito e use “Só as boas” depois.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, 'review'), child: const Text('Revisar primeiro')),
           if (high > 0)
-            FilledButton(onPressed: () => Navigator.pop(ctx, 'commit'), child: const Text('Sim')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, 'commit'), child: const Text('Sim, gravar')),
         ],
       ),
     );
@@ -231,10 +231,10 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           ? ''
           : ' · gab ${health['gabaritoPct'] ?? '—'}% · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}';
       final toast =
-          'Commit OK · $inserted UEMA_PAES'
-          '${skipped is int && skipped > 0 ? ' · $skipped fora' : ''}'
-          ' · oficiais na base: $nInt$healthBit'
-          '${nInt >= 10 ? ' · base oficial ativa.' : ' · ainda até ≥10 oficiais.'}';
+          'Gravamos $inserted oficiais no acervo'
+          '${skipped is int && skipped > 0 ? ' · $skipped ficaram de fora (baixa confiança)' : ''}'
+          ' · total na base: $nInt$healthBit'
+          '${nInt >= 10 ? ' · base oficial pronta.' : ' · falta um pouco para ≥10 oficiais.'}';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(toast),
@@ -248,12 +248,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       final choice = await showDialog<String>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Oficiais gravadas'),
-          content: Text('$toast\n\nEstudar Natureza/UEMA agora?'),
+          title: const Text('Oficiais no acervo'),
+          content: Text('$toast\n\nQuer estudar Natureza/UEMA agora?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, 'professor'),
-              child: const Text('Rascunhos professor'),
+              child: const Text('Preparar explicações'),
             ),
             TextButton(onPressed: () => Navigator.pop(ctx, 'later'), child: const Text('Depois')),
             FilledButton(onPressed: () => Navigator.pop(ctx, 'study'), child: const Text('Estudar agora')),
@@ -282,7 +282,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         context.go('/biblioteca');
       }
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para commitar — revise e tente de novo.'));
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para gravar — revise e tente de novo.'));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -355,11 +355,11 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
             onPressed: busy || questions.isEmpty || highN == 0
                 ? null
                 : () => _commit(highConfidenceOnly: true),
-            child: Text('Altas conf. ($highN)'),
+            child: Text('Só as boas ($highN)'),
           ),
           FilledButton(
             onPressed: busy || questions.isEmpty || !hasGab ? null : () => _commit(),
-            child: const Text('Commitar tudo'),
+            child: const Text('Gravar todas no acervo'),
           ),
           const SizedBox(width: 8),
         ],
@@ -508,7 +508,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Teclado: ←/J anterior · →/K próxima · 1–5 gabarito · H altas conf. · E editar · S sessão',
+                        'Dica: setas mudam a questão · 1–5 marca gabarito · H grava só as boas',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
                             ),

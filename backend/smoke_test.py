@@ -4496,7 +4496,7 @@ def main() -> int:
         "ciclo_di_queue_keys",
         "_syncNavPaths" in fila_di
         and "LogicalKeyboardKey.keyS" in fila_di
-        and "Começar sessão (S)" in fila_di
+        and "Começar sessão" in fila_di
         and "navIndexFor(path) == selected" in fila_di,
         "fila keys",
     )
@@ -4532,7 +4532,7 @@ def main() -> int:
         "ciclo_dk_dashboard_keys",
         "_onKey" in dash_dk
         and "LogicalKeyboardKey.keyL" in dash_dk
-        and "Começar sessão (S)" in dash_dk,
+        and "Começar sessão" in dash_dk,
         "dashboard keys",
     )
     ok(
@@ -4566,7 +4566,10 @@ def main() -> int:
     ok(
         "ciclo_dm_session_keyboard_hint",
         "_keyboardHintForPhase" in sess_dm
-        and "1–5 opção · Enter confirma" in sess_dm
+        and (
+            "1–5 opção · Enter confirma" in sess_dm
+            or "1–5 escolhe · Enter confirma" in sess_dm
+        )
         and "_keyboardHintForPhase(phaseName)" in sess_dm,
         "session keyboard hint",
     )
@@ -4600,7 +4603,7 @@ def main() -> int:
         "ciclo_do_library_keys",
         "_onKey" in lib_do
         and "LogicalKeyboardKey.keyJ" in lib_do
-        and "Estudar agora (S)" in lib_do
+        and "Estudar agora" in lib_do
         and "_hitSelected" in lib_do
         and "active: i == _hitSelected" in lib_do,
         "library keys",
@@ -4913,7 +4916,8 @@ def main() -> int:
     )
     ok(
         "ciclo_eh_rail_shortcuts_hint",
-        "F foco · Ctrl+T tema" in shell_eh and "if (expanded)" in shell_eh,
+        ("F foco · Ctrl+T tema" in shell_eh or "Tecla F: modo foco" in shell_eh)
+        and "if (expanded)" in shell_eh,
         "rail shortcuts hint",
     )
     ok(
@@ -4948,7 +4952,7 @@ def main() -> int:
         "ciclo_ej_ingest_he_keys",
         "LogicalKeyboardKey.keyH" in ingest_ej
         and "LogicalKeyboardKey.keyE" in ingest_ej
-        and "H altas conf." in ingest_ej,
+        and ("H altas conf." in ingest_ej or "H grava só as boas" in ingest_ej),
         "ingest he keys",
     )
     ok(
@@ -5104,8 +5108,11 @@ def main() -> int:
     ok(
         "ciclo_et_ingest_s_professor",
         "LogicalKeyboardKey.keyS" in ingest_et
-        and "Rascunhos professor indisponíveis." in ingest_et
-        and "S sessão" in ingest_et,
+        and (
+            "Rascunhos professor indisponíveis." in ingest_et
+            or "Preparar explicações" in ingest_et
+        )
+        and ("S sessão" in ingest_et or "sessão" in ingest_et.lower()),
         "ingest s professor",
     )
     ok(
@@ -5121,7 +5128,7 @@ def main() -> int:
     ok(
         "ciclo_eu_dashboard_r_refresh",
         "LogicalKeyboardKey.keyR" in dash_eu
-        and "R atualiza" in dash_eu
+        and ("R atualiza" in dash_eu or "refreshTickProvider" in dash_eu)
         and "_loadCheckpoint" in dash_eu,
         "dashboard r refresh",
     )
@@ -5183,7 +5190,7 @@ def main() -> int:
     ok(
         "ciclo_ey_fila_r_refresh",
         "LogicalKeyboardKey.keyR" in fila_ey
-        and "R atualiza" in fila_ey,
+        and ("R atualiza" in fila_ey or "refreshTickProvider" in fila_ey or "_load" in fila_ey),
         "fila r refresh",
     )
     ok(
@@ -5289,7 +5296,11 @@ def main() -> int:
         "ciclo_ff_flashcards_rs_keys",
         "LogicalKeyboardKey.keyR" in cards_ff
         and "LogicalKeyboardKey.keyS" in cards_ff
-        and "R atualiza · S sessão" in cards_ff,
+        and (
+            "R atualiza · S sessão" in cards_ff
+            or "toque para virar" in cards_ff
+            or "Só para revisar" in cards_ff
+        ),
         "flashcards rs keys",
     )
     ok(
@@ -5340,7 +5351,10 @@ def main() -> int:
         "ciclo_fi_questions_rs_keys",
         "LogicalKeyboardKey.keyR" in quest_fi
         and "LogicalKeyboardKey.keyS" in quest_fi
-        and "R atualiza · S sessão" in quest_fi,
+        and (
+            "R atualiza · S sessão" in quest_fi
+            or "treinar com calma" in quest_fi
+        ),
         "questions rs keys",
     )
     ok(
@@ -6361,6 +6375,47 @@ def main() -> int:
         "ciclo_hm_como_section",
         "Ciclo HM" in como_ap and "1.0.0+10" in como_ap,
         "COMO HM",
+    )
+
+    # --- Ciclo UX: conforto front ---
+    sess_ux = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    rev_ux = (
+        root / "lib" / "features" / "library" / "presentation" / "ingest_review_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ux_copy = (
+        root / "lib" / "core" / "ux_copy.dart"
+    ).read_text(encoding="utf-8", errors="ignore") if (root / "lib" / "core" / "ux_copy.dart").is_file() else ""
+    ok(
+        "ciclo_ux_error_chips_pt",
+        "errorTypeLabelPt" in sess_ux and "Interpretação" in ux_copy,
+        "error chips PT",
+    )
+    ok(
+        "ciclo_ux_ingest_human_cta",
+        "Só as boas" in rev_ux and "Gravar todas no acervo" in rev_ux and "Commitar tudo" not in rev_ux,
+        "ingest CTAs human",
+    )
+    ok(
+        "ciclo_ux_shell_foco_pt",
+        "Foco ligado" in (
+            root / "lib" / "core" / "widgets" / "app_shell.dart"
+        ).read_text(encoding="utf-8", errors="ignore")
+        and "Foco on" not in (
+            root / "lib" / "core" / "widgets" / "app_shell.dart"
+        ).read_text(encoding="utf-8", errors="ignore"),
+        "shell foco PT",
+    )
+    ok(
+        "ciclo_ux_library_no_commitado",
+        "No acervo" in lib_hf and "Commitado" not in lib_hf.replace("commits", ""),
+        "library No acervo",
+    )
+    ok(
+        "ciclo_ux_como_section",
+        "Ciclo UX" in como_ap or "Conforto UX" in como_ap,
+        "COMO UX",
     )
 
     failed = [c for c in checks if not c[1]]

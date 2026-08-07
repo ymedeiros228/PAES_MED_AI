@@ -13,6 +13,7 @@ import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/training_basis_banner.dart';
+import '../../../core/ux_copy.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 const _errorTypes = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
@@ -641,7 +642,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         flashcardsCreated++;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Flashcard criado para revisão (due amanhã).'),
+            content: Text('Card criado para revisar amanhã.'),
             duration: Duration(seconds: 3),
           ),
         );
@@ -820,12 +821,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
     if (phaseName == 'theory') return ' · Enter avança';
     if (isRevPhase && !revisionUsingQuestions) {
-      return ' · Space vira · L/1 lembrei · E/2 errei';
+      return ' · Espaço vira o card';
     }
-    if (pendingErrorPick) return ' · 1–5 tipo erro · Enter confirma';
-    if (revealed) return ' · N/Enter próxima';
+    if (pendingErrorPick) return ' · Escolha o tipo de erro';
+    if (revealed) return ' · Enter próxima';
     if (phaseName == 'questions' || (isRevPhase && revisionUsingQuestions)) {
-      return ' · 1–5 opção · Enter confirma';
+      return ' · 1–5 escolhe · Enter confirma';
     }
     return '';
   }
@@ -1251,7 +1252,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     children: [
                       for (final t in _errorTypes)
                         ChoiceChip(
-                          label: Text(t),
+                          label: Text(errorTypeLabelPt(t)),
                           selected: errorType == t,
                           onSelected: (_) => setState(() => errorType = t),
                         ),

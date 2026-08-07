@@ -262,10 +262,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   eyebrow: 'Estudar',
                   title: 'Fila',
                   subtitle: coach != null
-                      ? '$coach · S sessão · R atualiza · ↑/↓ J/K · Enter item'
-                      : 'O que fazer a seguir · ~$minutes min · S sessão · R atualiza · ↑/↓ Enter',
+                      ? coach
+                      : 'Próximo passo do dia · cerca de $minutes min',
                   trailing: IconButton(
-                    tooltip: 'Atualizar',
+                    tooltip: 'Atualizar fila',
                     onPressed: _load,
                     icon: const Icon(Icons.refresh_rounded),
                     ),
@@ -274,7 +274,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 FilledButton.icon(
                   onPressed: () => context.go(sessionPath),
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Começar sessão (S)'),
+                  label: const Text('Começar sessão'),
                 ),
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
@@ -472,9 +472,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         final due = (queue!['axisCardsDue'] as int?) ?? 0;
                         final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
                         if (due > 0 && neu > 0) {
-                          return '$due due · $neu dos eixos sem revisão';
+                          return '$due para revisar · $neu dos eixos sem revisão';
                         }
-                        if (due > 0) return '$due card(s) dos eixos due';
+                        if (due > 0) return '$due card(s) dos eixos para revisar';
                         return '$neu card(s) dos eixos (ainda sem revisão)';
                       }(),
                       badge: 'eixos',
