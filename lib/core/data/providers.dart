@@ -44,6 +44,12 @@ final essaysProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
   return await apiClient.get('/api/essays') as List<dynamic>;
 });
 
+final essayProgressProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  ref.watch(refreshTickProvider);
+  final data = await apiClient.get('/api/essays/progress');
+  return Map<String, dynamic>.from(data as Map);
+});
+
 final revisionsApiProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
   ref.watch(refreshTickProvider);
   return await apiClient.get('/api/revisions') as List<dynamic>;

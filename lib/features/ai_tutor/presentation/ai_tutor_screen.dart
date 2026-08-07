@@ -329,6 +329,49 @@ String _citeLine(Map<String, dynamic> c) {
   return '$tag $label';
 }
 
+/// Aviso compacto dentro de uma bolha do assistente (sem base / sem citação).
+class _TutorNotice extends StatelessWidget {
+  const _TutorNotice({
+    required this.icon,
+    required this.text,
+    required this.bg,
+    required this.fg,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color bg;
+  final Color fg;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: fg),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: fg,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message});
 
@@ -353,22 +396,19 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!message.isUser && message.uncited) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: scheme.errorContainer.withOpacity(0.55),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Sem base local · não inventa cobrança UEMA',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onErrorContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
+            if (!message.isUser && !message.hasLocalBase) ...[
+              _TutorNotice(
+                icon: Icons.info_outline_rounded,
+                text: 'Sem base local para citar — resposta geral; confira no material oficial.',
+                bg: scheme.tertiaryContainer.withOpacity(0.55),
+                fg: scheme.onTertiaryContainer,
+              ),
+            ] else if (!message.isUser && message.uncited) ...[
+              _TutorNotice(
+                icon: Icons.warning_amber_rounded,
+                text: 'Sem base local · não inventa cobrança UEMA',
+                bg: scheme.errorContainer.withOpacity(0.55),
+                fg: scheme.onErrorContainer,
               ),
             ],
             SelectableText(message.content),

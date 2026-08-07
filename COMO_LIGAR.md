@@ -1245,6 +1245,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 3. **Limpar rascunho** apaga o salvo; após **Corrigir**, o rascunho some sozinho.
 4. Smoke: `ciclo_iv_essay_draft_*`.
 
+## Feedback honesto Z5
+
+1. **Tutor**: distingue “sem base local” (info) de “uncited” (aviso) — não inventa cobrança UEMA.
+2. **Redação**: radar média vs última + eixo “focar” + streak; progresso via `essayProgressProvider` (compartilhado com Hoje/Fila).
+3. **Hoje**: “Seu ritmo” acima da checklist do dia.
+4. **Progresso**: mesmo radar (última + eixo fraco).
+
 ## Polish front kit (Ciclos IQ–IU · 1.0.0+17)
 
 1. **IQ** — SurfacePanel soft + QuietEmpty + SoftLoader + EmptyState.
