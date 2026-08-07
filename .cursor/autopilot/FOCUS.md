@@ -28,9 +28,9 @@ Ler **depois** de [PLAN.md](PLAN.md).
 
 | | |
 |---|---|
-| **Agora** | — idle; ciclo 10 concluído |
-| **Próximo** | fila vazia — aguarda humano |
-| **Último feito** | HJ–HM: parser, import-all, oficiais-com-gab, **1.0.0+10** |
+| **Agora** | — idle; ciclo IV concluído |
+| **Próximo** | gap real de uso Mode A · ou Mode E se fila vazia |
+| **Último feito** | IV: Redação rascunho offline (SharedPreferences) |
 
 ## Prompt curto para missões novas (cole no Auto-Pilot)
 
