@@ -14,6 +14,7 @@ import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
+import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 const _errorTypes = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
@@ -512,7 +513,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final toppedOff = plan?['toppedOff'] == true;
     final yearWidened = plan?['yearWidened'] == true;
     final total = answeredIds.length;
+    final wrong = (total - correctCount).clamp(0, total);
     final cs = Theme.of(context).colorScheme;
+    final study = plan?['studyToday'] as Map? ?? {};
+    final subj = study['subject']?.toString() ?? '';
+    final top = study['topic']?.toString() ?? '';
     return SurfacePanel(
       margin: const EdgeInsets.only(bottom: 16),
       color: cs.primaryContainer.withOpacity(0.4),
@@ -523,14 +528,42 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             'Bloco encerrado',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Acertos $correctCount/$total'
-            '${flashcardsCreated > 0 ? ' · $flashcardsCreated card(s) criados' : ''}',
-            style: Theme.of(context).textTheme.titleMedium,
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              Chip(
+                avatar: Icon(Icons.check_circle_rounded, size: 18, color: cs.primary),
+                label: Text('$correctCount acerto${correctCount == 1 ? '' : 's'}'),
+                visualDensity: VisualDensity.compact,
+              ),
+              Chip(
+                avatar: Icon(Icons.radio_button_unchecked, size: 18, color: cs.tertiary),
+                label: Text('$wrong erro${wrong == 1 ? '' : 's'}'),
+                visualDensity: VisualDensity.compact,
+              ),
+              Chip(
+                avatar: const Icon(Icons.quiz_outlined, size: 18),
+                label: Text('$total respondida${total == 1 ? '' : 's'}'),
+                visualDensity: VisualDensity.compact,
+              ),
+              if (flashcardsCreated > 0)
+                Chip(
+                  avatar: Icon(Icons.style_outlined, size: 18, color: cs.primary),
+                  label: Text('$flashcardsCreated card${flashcardsCreated == 1 ? '' : 's'}'),
+                  visualDensity: VisualDensity.compact,
+                ),
+              if (cardsDone > 0)
+                Chip(
+                  avatar: const Icon(Icons.replay_rounded, size: 18),
+                  label: Text('$cardsDone revisão${cardsDone == 1 ? '' : 'ões'}'),
+                  visualDensity: VisualDensity.compact,
+                ),
+            ],
           ),
           if (officialInPack != null) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               'Oficiais no pack: $officialInPack'
               '${toppedOff ? ' · pack completado com oficiais' : ''}'
@@ -556,7 +589,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               'Tópicos fracos',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
-            for (final g in gaps.take(6)) Text('· ${g['subject']} / ${g['topic']}'),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final g in gaps.take(6))
+                  ActionChip(
+                    label: Text('${g['subject']} · ${g['topic']}'),
+                    onPressed: () {
+                      final s = Uri.encodeComponent(g['subject'] ?? '');
+                      final t = Uri.encodeComponent(g['topic'] ?? '');
+                      context.go('/adaptativo?subject=$s&topic=$t');
+                    },
+                  ),
+              ],
+            ),
           ],
           const SizedBox(height: 16),
           Divider(color: cs.outlineVariant.withOpacity(0.5)),
@@ -578,9 +626,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   },
                   child: const Text('Treinar tópico fraco'),
                 ),
+              if (subj.isNotEmpty && top.isNotEmpty)
+                OutlinedButton(
+                  onPressed: () => openTheoryReadSheet(
+                    context,
+                    subject: subj,
+                    topic: top,
+                  ),
+                  child: const Text('Ler teoria da meta'),
+                ),
               TextButton(
                 onPressed: () => context.go('/flashcards?due=1'),
                 child: const Text('Revisar cards'),
+              ),
+              TextButton(
+                onPressed: () => context.go('/progresso'),
+                child: const Text('Ver relevo'),
               ),
               OutlinedButton(
                 onPressed: _closeStudyDay,
@@ -934,6 +995,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         spacing: 8,
         runSpacing: 8,
         children: [
+          if (s.isNotEmpty && t.isNotEmpty)
+            FilledButton.tonal(
+              onPressed: () => openTheoryReadSheet(
+                context,
+                subject: s,
+                topic: t,
+                trainPath:
+                    '/adaptativo?subject=${Uri.encodeComponent(s)}&topic=${Uri.encodeComponent(t)}',
+              ),
+              child: const Text('Ler teoria'),
+            ),
           TextButton(
             onPressed: () => context.go(
               '/adaptativo?subject=${Uri.encodeComponent(s)}&topic=${Uri.encodeComponent(t)}',
@@ -1038,21 +1110,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
             const SizedBox(height: 8),
           ] else if (pendingCheckpoint != null && !started) ...[
-            SurfacePanel(
-              margin: const EdgeInsets.only(bottom: 12),
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.45),
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Sessão em andamento encontrada'),
-                subtitle: Text(_checkpointLabel(pendingCheckpoint!)),
-                trailing: Wrap(
-                  spacing: 4,
-                  children: [
-                    TextButton(onPressed: restoring ? null : _clearCheckpoint, child: const Text('Descartar')),
-                    FilledButton(onPressed: restoring ? null : _restoreCheckpoint, child: const Text('Continuar')),
-                  ],
-                ),
-              ),
+            SessionResumeBanner(
+              phaseName: pendingCheckpoint!['phaseName']?.toString() ?? '',
+              subtitle: _checkpointLabel(pendingCheckpoint!),
+              onContinue: restoring ? () {} : () => unawaited(_restoreCheckpoint()),
+              onDiscard: restoring ? null : () => unawaited(_clearCheckpoint()),
             ),
           ],
           if (checkpointSaveError != null && started) ...[

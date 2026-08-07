@@ -3723,7 +3723,7 @@ def main() -> int:
     )
     ok(
         "ciclo_cg_fila_continuar_label",
-        "Continuar ·" in fila_cg and "phaseName" in fila_cg,
+        (("Continuar ·" in fila_cg or "SessionResumeBanner" in fila_cg) and "phaseName" in fila_cg),
         "fila continuar",
     )
     ok(
@@ -6389,16 +6389,14 @@ def main() -> int:
     # --- Ciclo HM: ship 1.0.0+10 (aceita +11) ---
     ok(
         "ciclo_hm_version_10",
-        any(v in pubspec for v in ("1.0.0+10", "1.0.0+11"))
-        and version_in_ui(settings_ed, ("1.0.0+10", "1.0.0+11"))
-        and any(v in pack_bat for v in ("1.0.0+10", "1.0.0+11"))
-        and any(
-            v in (root / "lib" / "core" / "app_version.dart").read_text(
-                encoding="utf-8", errors="ignore"
-            )
-            for v in ("1.0.0+10", "1.0.0+11")
+        version_shipped(pubspec, ("1.0.0+10", "1.0.0+11", "1.0.0+12"))
+        and version_in_ui(settings_ed, ("1.0.0+10", "1.0.0+11", "1.0.0+12"))
+        and version_shipped(pack_bat, ("1.0.0+10", "1.0.0+11", "1.0.0+12"))
+        and version_shipped(
+            (root / "lib" / "core" / "app_version.dart").read_text(encoding="utf-8", errors="ignore"),
+            ("1.0.0+10", "1.0.0+11", "1.0.0+12"),
         ),
-        "version +10/+11 triple",
+        "version +10..+12 triple",
     )
     roadmap_hm = (root / "ROADMAP_FUTURO.md").read_text(encoding="utf-8", errors="ignore")
     ok(
@@ -6604,21 +6602,21 @@ def main() -> int:
         "Hoje mission card",
     )
 
-    # --- Ciclo HT: ship 1.0.0+11 ---
+    # --- Ciclo HT: ship 1.0.0+11 (aceita +12) ---
     app_ver_ht = (root / "lib" / "core" / "app_version.dart").read_text(
         encoding="utf-8", errors="ignore"
     )
     ok(
         "ciclo_ht_version_11",
-        "1.0.0+11" in pubspec
-        and version_in_ui(settings_ed, ("1.0.0+11",))
-        and "1.0.0+11" in pack_bat
-        and "1.0.0+11" in app_ver_ht,
-        "version +11 triple",
+        version_shipped(pubspec, ("1.0.0+11", "1.0.0+12"))
+        and version_in_ui(settings_ed, ("1.0.0+11", "1.0.0+12"))
+        and version_shipped(pack_bat, ("1.0.0+11", "1.0.0+12"))
+        and version_shipped(app_ver_ht, ("1.0.0+11", "1.0.0+12")),
+        "version +11/+12 triple",
     )
     ok(
         "ciclo_ht_como_section",
-        ("Ciclo HT" in como_ap or "1.0.0+11" in como_ap)
+        ("Ciclo HT" in como_ap or "1.0.0+11" in como_ap or "1.0.0+12" in como_ap)
         and ("Ciclo HP" in como_ap or "Relevo" in como_ap or "Ápice" in como_ap or "Apice" in como_ap),
         "COMO HP-HT",
     )
@@ -6626,8 +6624,83 @@ def main() -> int:
         "ciclo_ht_roadmap",
         ("HP" in roadmap_hm and "HT" in roadmap_hm)
         or "1.0.0+11" in roadmap_hm
+        or "1.0.0+12" in roadmap_hm
         or "Relevo" in roadmap_hm,
         "ROADMAP apice",
+    )
+
+    # --- Ciclo HU: SessionResumeBanner ---
+    ui_kit_hu = (root / "lib" / "core" / "widgets" / "ui_kit.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    fila_hu = (
+        root / "lib" / "features" / "today" / "presentation" / "today_queue_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hu_session_resume_banner",
+        "class SessionResumeBanner" in ui_kit_hu
+        and "Teoria" in ui_kit_hu
+        and "Questões" in ui_kit_hu
+        and "Revisão" in ui_kit_hu,
+        "SessionResumeBanner kit",
+    )
+    ok(
+        "ciclo_hu_fila_banner",
+        "SessionResumeBanner" in fila_hu,
+        "Fila usa banner",
+    )
+
+    # --- Ciclo HV: sessão chips + debrief teoria ---
+    sess_hv = (
+        root / "lib" / "features" / "session" / "presentation" / "guided_session_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hv_end_chips",
+        "acerto" in sess_hv and "Chip(" in sess_hv and "Bloco encerrado" in sess_hv,
+        "chips fim de bloco",
+    )
+    ok(
+        "ciclo_hv_debrief_ler_teoria",
+        "Ler teoria" in sess_hv and "openTheoryReadSheet" in sess_hv,
+        "debrief Ler teoria",
+    )
+
+    # --- Ciclo HW: theory mark + ficha ---
+    theory_hw = (
+        root / "lib" / "core" / "widgets" / "theory_read_sheet.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ficha_hw = (
+        root / "lib" / "features" / "questions" / "presentation" / "question_detail_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    ok(
+        "ciclo_hw_theory_anim",
+        "AnimatedScale" in theory_hw and "Marquei como li" in theory_hw,
+        "theory mark anim",
+    )
+    ok(
+        "ciclo_hw_ficha_theory_read",
+        "theoryRead" in ficha_hw and "Teoria (lida)" in ficha_hw,
+        "ficha livro lido",
+    )
+
+    # --- Ciclo HX: ship 1.0.0+12 ---
+    ok(
+        "ciclo_hx_version_12",
+        "1.0.0+12" in pubspec
+        and version_in_ui(settings_ed, ("1.0.0+12",))
+        and "1.0.0+12" in pack_bat
+        and "1.0.0+12" in app_ver_ht,
+        "version +12 triple",
+    )
+    ok(
+        "ciclo_hx_como_section",
+        "Ciclo HU" in como_ap or "1.0.0+12" in como_ap or "SessionResumeBanner" in como_ap,
+        "COMO HU-HX",
+    )
+    ok(
+        "ciclo_hx_roadmap",
+        "HU" in roadmap_hm and "HX" in roadmap_hm and "1.0.0+12" in roadmap_hm,
+        "ROADMAP HU-HX",
     )
 
     failed = [c for c in checks if not c[1]]

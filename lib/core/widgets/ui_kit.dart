@@ -739,3 +739,132 @@ class SoftTimelineItem {
   final Widget? trailing;
   final VoidCallback? onTap;
 }
+
+/// Banner “Continuar sessão” com fases teoria → questões → revisão (Ciclo HU).
+class SessionResumeBanner extends StatelessWidget {
+  const SessionResumeBanner({
+    required this.phaseName,
+    required this.subtitle,
+    required this.onContinue,
+    this.onDiscard,
+    super.key,
+  });
+
+  final String phaseName;
+  final String subtitle;
+  final VoidCallback onContinue;
+  final VoidCallback? onDiscard;
+
+  static int phaseStep(String phaseName) {
+    return switch (phaseName) {
+      'theory' => 0,
+      'questions' => 1,
+      'revisions' || 'review' || 'cards' => 2,
+      _ => 0,
+    };
+  }
+
+  static String phaseLabel(String phaseName) {
+    return switch (phaseName) {
+      'theory' => 'Teoria',
+      'questions' => 'Questões',
+      'revisions' || 'review' || 'cards' => 'Revisão',
+      _ => phaseName.isEmpty ? 'Sessão' : phaseName,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final step = phaseStep(phaseName);
+    const labels = ['Teoria', 'Questões', 'Revisão'];
+    return SurfacePanel(
+      margin: const EdgeInsets.only(top: 10, bottom: 4),
+      color: cs.primaryContainer.withOpacity(0.42),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.history_edu_rounded, color: cs.primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Continuar sessão',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ),
+              if (onDiscard != null)
+                TextButton(
+                  onPressed: onDiscard,
+                  child: const Text('Descartar'),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurface.withOpacity(0.65),
+                ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              for (var i = 0; i < labels.length; i++) ...[
+                if (i > 0)
+                  Expanded(
+                    child: Container(
+                      height: 3,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: i <= step ? cs.primary : cs.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                Column(
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: i <= step ? cs.primary : cs.surfaceContainerHighest,
+                      ),
+                      child: Text(
+                        '${i + 1}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: i <= step ? cs.onPrimary : cs.onSurface.withOpacity(0.55),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      labels[i],
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: i == step ? FontWeight.w800 : FontWeight.w500,
+                            color: i == step ? cs.primary : cs.onSurface.withOpacity(0.55),
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            onPressed: onContinue,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text('Continuar · ${phaseLabel(phaseName)}'),
+          ),
+        ],
+      ),
+    );
+  }
+}

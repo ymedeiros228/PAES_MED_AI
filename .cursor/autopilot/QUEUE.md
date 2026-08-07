@@ -37,6 +37,12 @@ Prioridade: topo = primeiro.
 - [x] `/progresso` Relevo + overview API
 - [x] Polimento satélite + ship **1.0.0+11**
 
+## P3c · Conforto pós-Ápice (HU–HX)
+
+- [x] SessionResumeBanner + chips fim de bloco
+- [x] Debrief Ler teoria + ficha lido
+- [x] Ship **1.0.0+12**
+
 ## P4 · Não fazer (congelado)
 
 - ~~Teclado R/S/F5 em mais telas~~
@@ -50,5 +56,5 @@ Prioridade: topo = primeiro.
 
 ## Notas
 
-- HP–HT (2026-08-06): Ápice UX — redação + relevo; residual = host gab 2014–23.
-- Versão: **1.0.0+11**.
+- HU–HX (2026-08-06): conforto sessão/fila/teoria; residual = host gab 2014–23.
+- Versão: **1.0.0+12**.

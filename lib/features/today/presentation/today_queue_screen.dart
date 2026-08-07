@@ -290,23 +290,15 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     final cp = snap.hasData ? (snap.data as Map)['checkpoint'] : null;
                     if (cp is! Map || cp['started'] != true) return const SizedBox.shrink();
                     final phase = cp['phaseName']?.toString() ?? '';
-                    final phaseLabel = switch (phase) {
-                      'theory' => 'Teoria',
-                      'questions' => 'Questões',
-                      'revisions' || 'review' || 'cards' => 'Revisão',
-                      _ => phase.isEmpty ? 'Sessão' : phase,
-                    };
+                    final phaseLabel = SessionResumeBanner.phaseLabel(phase);
                     final q = (cp['qIndex'] as num?)?.toInt();
                     final sub = phase == 'questions' && q != null
-                        ? '$phaseLabel · item ${q + 1}'
-                        : phaseLabel;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.go(sessionPath),
-                        icon: const Icon(Icons.history_rounded),
-                        label: Text('Continuar · $sub'),
-                      ),
+                        ? '$phaseLabel · item ${q + 1} · treino local'
+                        : '$phaseLabel · retomamos de onde parou';
+                    return SessionResumeBanner(
+                      phaseName: phase,
+                      subtitle: sub,
+                      onContinue: () => context.go(sessionPath),
                     );
                   },
                 ),

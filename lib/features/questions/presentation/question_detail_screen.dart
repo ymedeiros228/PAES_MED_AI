@@ -46,6 +46,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   bool professorBusy = false;
   String? saveError;
   String? adaptiveLoadError;
+  bool theoryRead = false;
 
   @override
   void initState() {
@@ -119,7 +120,22 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   Future<void> _load() async {
     try {
       final data = await apiClient.get('/api/questions/${widget.questionId}');
-      setState(() => question = Question.fromJson(Map<String, dynamic>.from(data as Map)));
+      final q = Question.fromJson(Map<String, dynamic>.from(data as Map));
+      var read = false;
+      if (q.subject.isNotEmpty && q.topic.isNotEmpty) {
+        try {
+          final rr = await apiClient.get('/api/study/reads', {
+            'subject': q.subject,
+            'topic': q.topic,
+          });
+          read = (rr as Map)['read'] == true;
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      setState(() {
+        question = q;
+        theoryRead = read;
+      });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para abrir a ficha. Tente de novo.'));
     }
@@ -475,14 +491,35 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               runSpacing: 8,
               children: [
                 FilledButton.tonal(
-                  onPressed: () => openTheoryReadSheet(
-                    context,
-                    subject: q.subject,
-                    topic: q.topic,
-                    trainPath: '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
-                        '&topic=${Uri.encodeComponent(q.topic)}',
+                  onPressed: () async {
+                    await openTheoryReadSheet(
+                      context,
+                      subject: q.subject,
+                      topic: q.topic,
+                      trainPath: '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
+                          '&topic=${Uri.encodeComponent(q.topic)}',
+                    );
+                    if (!mounted) return;
+                    try {
+                      final rr = await apiClient.get('/api/study/reads', {
+                        'subject': q.subject,
+                        'topic': q.topic,
+                      });
+                      if (!mounted) return;
+                      setState(() => theoryRead = (rr as Map)['read'] == true);
+                    } catch (_) {}
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        theoryRead ? Icons.menu_book_rounded : Icons.menu_book_outlined,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(theoryRead ? 'Teoria (lida)' : 'Ler teoria'),
+                    ],
                   ),
-                  child: const Text('Ler teoria'),
                 ),
                 TextButton(
                   onPressed: () => context.go(

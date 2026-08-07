@@ -317,6 +317,10 @@ flowchart TB
 | HR | Progresso · Relevo `/progresso` | `ciclo_hr_*` | **Feito** |
 | HS | Polimento debrief/empties/satélites | `ciclo_hs_*` | **Feito** |
 | HT | Ship **1.0.0+11** pack/smoke | `ciclo_ht_*` | **Feito** |
+| HU | Fila Continuar sessão (fases) | `ciclo_hu_*` | **Feito** |
+| HV | Sessão chips fim + debrief teoria | `ciclo_hv_*` | **Feito** |
+| HW | Theory mark-anim + ficha lido | `ciclo_hw_*` | **Feito** |
+| HX | Ship **1.0.0+12** pack/smoke | `ciclo_hx_*` | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -324,8 +328,8 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós HP–HT / Ápice UX)
+## Estado (atualizado pós HU–HX)
 
-- Rodada **HP–HT**: kit visual, redação gamificada (missão/delta/5 personas), **Relevo** em `/progresso`, ship **1.0.0+11**.
+- Rodada **HU–HX**: conforto de sessão/fila/teoria pós-Ápice, ship **1.0.0+12**.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gab**.
 - PDFs grandes **fora** do git.

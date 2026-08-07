@@ -1202,6 +1202,13 @@ Na raiz do projeto (dev): `PAES_MED_AI_Iniciar.bat` também sobe API + Release d
 4. **HS** — empties com CTA; debrief «Este tópico no relevo»; missão leve no Hoje/Fila.
 5. **HT** — ship **1.0.0+11** (pubspec / app_version / pack VERSION / Sobre); smoke `ciclo_hp_*`…`ciclo_ht_*`.
 
+## Conforto pós-Ápice (Ciclos HU–HX · 1.0.0+12)
+
+1. **HU** — Fila: `SessionResumeBanner` com fases teoria → questões → revisão.
+2. **HV** — Sessão: fim de bloco em chips + Ler teoria / relevo no debrief e encerramento.
+3. **HW** — Theory sheet com feedback visual ao marcar li; ficha com ícone livro (lida).
+4. **HX** — ship **1.0.0+12**; smoke `ciclo_hu_*`…`ciclo_hx_*`.
+
 ## Roadmap futuro (não é ciclo atual)
 
 Pedidos agendados com **melhor solução por item** (tutor com fonte, acervo UEMA/PDF, vídeos do plano, redação gamificada, artigos): ver **[ROADMAP_FUTURO.md](ROADMAP_FUTURO.md)**.  
