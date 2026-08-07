@@ -12,6 +12,8 @@ import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/study_path_trail.dart';
+import '../../../core/widgets/teach_loop.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
 
@@ -28,6 +30,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String? checkpointLoadError;
   bool showFirstRunCoach = false;
   final _focusNode = FocusNode();
+  /// Futures estáveis — evita re-GET a cada rebuild do CustomScrollView.
+  Future<dynamic>? _essayProgressFuture;
+  Future<dynamic>? _backupLastFuture;
+  int _secondaryEpoch = -1;
 
   @override
   void initState() {
@@ -41,6 +47,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         unawaited(ref.read(examDateProvider.notifier).retrySync());
       }
     });
+  }
+
+  void _ensureSecondaryFutures() {
+    final tick = ref.read(refreshTickProvider);
+    if (_secondaryEpoch != tick || _essayProgressFuture == null || _backupLastFuture == null) {
+      _secondaryEpoch = tick;
+      _essayProgressFuture = apiClient.get('/api/essays/progress');
+      _backupLastFuture = apiClient.get('/api/backup/last');
+    }
   }
 
   @override
@@ -64,6 +79,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
     if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
       ref.read(refreshTickProvider.notifier).state++;
+      _essayProgressFuture = null;
+      _backupLastFuture = null;
       _loadCheckpoint();
       return KeyEventResult.handled;
     }
@@ -177,12 +194,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(dashboardProvider);
+    final pathAsync = ref.watch(studyPathProvider);
+    final coachAsync = ref.watch(studyCoachProvider);
     final examDaysLocal = ref.watch(examDateProvider.notifier).daysUntilExam;
     final exam = ref.watch(examDateProvider).date;
     final focus = ref.watch(focusModeProvider);
 
     return async.when(
-      loading: () => const SoftLoader(label: 'Montando o dia…'),
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
+      loading: () => SoftLoader(
+        label: 'Montando o dia…',
+        onRetry: () => ref.read(refreshTickProvider.notifier).state++,
+      ),
       error: (e, _) => EmptyState(
         title: 'Não foi possível carregar',
         subtitle: humanApiError(e, fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
@@ -202,6 +226,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
       data: (data) {
+        _ensureSecondaryFutures();
         final routine = Map<String, dynamic>.from(data['dailyRoutine'] as Map? ?? {});
         final checklist = Map<String, dynamic>.from(routine['checklist'] as Map? ?? {});
         final sessionPath = routine['sessionPath']?.toString() ??
@@ -239,7 +264,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
         final hot = (data['errorHotTopics'] as List? ?? []).take(2).toList();
-        final dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
+        // Prefer payload do dashboard (evita 2º GET pesado de flashcards no paint).
+        final dueFromDash = data['flashcardsDueCount'];
+        final dueCardsN = dueFromDash is num
+            ? dueFromDash.toInt()
+            : (checklist['cardsDue'] is num ? (checklist['cardsDue'] as num).toInt() : null);
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
 
@@ -362,6 +391,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          pathAsync.when(
+                            skipLoadingOnReload: true,
+                            skipLoadingOnRefresh: true,
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (path) {
+                              if (path.isEmpty || (path['nodes'] as List? ?? []).isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              // Compacto: próximo nó + CTA; trilha completa no Progresso.
+                              return StudyPathNextStrip(path: path);
+                            },
+                          ),
                           if (checkpointLoadError != null)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 12),
@@ -420,6 +462,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
+                          // Trilha completa fica no Progresso; aqui só coach + strip (acima).
+                          coachAsync.when(
+                            skipLoadingOnReload: true,
+                            skipLoadingOnRefresh: true,
+                            loading: () => const SizedBox.shrink(),
+                            error: (e, _) => QuietEmpty(
+                              message: humanApiError(
+                                e,
+                                fallback: 'Coach de estudo indisponível.',
+                              ),
+                              action: TextButton(
+                                onPressed: () =>
+                                    ref.read(refreshTickProvider.notifier).state++,
+                                child: const Text('Tentar'),
+                              ),
+                            ),
+                            data: (coach) {
+                              if (coach.isEmpty || coach['ok'] == false) {
+                                return const SizedBox.shrink();
+                              }
+                              return StudyCoachCard(
+                                coach: coach,
+                                onRetry: () =>
+                                    ref.read(refreshTickProvider.notifier).state++,
+                              );
+                            },
+                          ),
+
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
                           StudyCheckRow(
                             done: checklist['session'] == true,
@@ -427,17 +497,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             actionLabel: 'Sessão',
                             onAction: () => context.go(sessionPath),
                           ),
-                          FutureBuilder(
-                            future: dueCardsFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData) {
-                                return const StudyCheckRow(
-                                  done: false,
+                          Builder(
+                            builder: (_) {
+                              // Contagem vem do /api/dashboard; se faltar, gate honesto (sem spinner eterno).
+                              if (dueCardsN == null) {
+                                return const SoftLoader(
                                   label: 'Cards do dia…',
+                                  compact: true,
                                 );
                               }
-                              final list = snap.data is List ? snap.data as List : const [];
-                              final n = list.length;
+                              final n = dueCardsN;
                               final done = n == 0 || checklist['cards'] == true;
                               return StudyCheckRow(
                                 done: done,
@@ -523,7 +592,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           FutureBuilder(
-                            future: apiClient.get('/api/essays/progress'),
+                            future: _essayProgressFuture,
                             builder: (context, snap) {
                               if (!snap.hasData || snap.data is! Map) {
                                 return const SizedBox.shrink();
@@ -599,7 +668,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 },
                               ),
                               FutureBuilder(
-                                future: apiClient.get('/api/backup/last'),
+                                future: _backupLastFuture,
                                 builder: (context, snap) {
                                   if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
                                   final last = Map<String, dynamic>.from(snap.data as Map);

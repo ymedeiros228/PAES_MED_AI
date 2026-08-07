@@ -1192,7 +1192,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (busy && library == null) return const Center(child: CircularProgressIndicator());
+    if (busy && library == null) {
+      return const SoftLoader(label: 'Abrindo biblioteca…');
+    }
+    if (!busy && library == null && error == null) {
+      return EmptyState(
+        title: 'Biblioteca',
+        subtitle: 'Ainda sem dados. Toque para carregar o acervo local.',
+        action: FilledButton(onPressed: _load, child: const Text('Carregar')),
+      );
+    }
     if (error != null) {
       return EmptyState(
         title: 'Biblioteca indisponível',

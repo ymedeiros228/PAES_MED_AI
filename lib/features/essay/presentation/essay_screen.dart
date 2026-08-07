@@ -10,6 +10,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
+import '../../../core/widgets/study_path_trail.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../essay_draft.dart';
 
@@ -36,6 +37,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
   Future<void> _reloadSetup() async {
     setState(() => setupError = null);
     await Future.wait([_loadThemes(), _loadProgress(), _loadPersonas()]);
+    ref.read(refreshTickProvider.notifier).state++;
   }
 
   @override
@@ -186,6 +188,26 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       // Redação corrigida: o rascunho local já cumpriu seu papel.
       unawaited(_clearDraft());
       await _loadProgress();
+      if (!mounted) return;
+      try {
+        final path = await ref.read(studyPathProvider.future);
+        final xp = path['xp'];
+        final level = path['level'];
+        final label = path['levelLabel']?.toString() ?? 'treino';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                xp != null
+                    ? 'Redação salva · treino local · Nv.$level $label · $xp XP'
+                    : 'Redação salva · treino local · Nv.$level $label',
+              ),
+            ),
+          );
+        }
+      } catch (_) {
+        // path é bônus
+      }
     } catch (e) {
       setState(() => last = {
             'error': humanApiError(e, fallback: 'Não deu para corrigir a redação. Tente de novo.'),
@@ -374,6 +396,18 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 subtitle: 'Ctrl+Enter corrige · missões sobem o eixo mais fraco',
                 trailing: const HonestBadge(),
               ),
+              ref.watch(studyPathProvider).when(
+                skipLoadingOnReload: true,
+                skipLoadingOnRefresh: true,
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (path) {
+                  if (path.isEmpty || path['nodes'] is! List) {
+                    return const SizedBox.shrink();
+                  }
+                  return StudyPathTrail(path: path, compact: true);
+                },
+              ),
               if (setupError != null) ...[
                 QuietEmpty(
                   message: setupError!,
@@ -401,8 +435,20 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 if (progress!['nextMission'] is Map) ...[
                   MissionQuestCard(
                     title: 'Missão · ${(progress!['nextMission'] as Map)['label'] ?? 'eixo'}',
-                    why: (progress!['nextMission'] as Map)['prompt']?.toString() ??
-                        'Treine o eixo mais fraco.',
+                    why: () {
+                      final m = progress!['nextMission'] as Map;
+                      final base = m['prompt']?.toString() ?? 'Treine o eixo mais fraco.';
+                      final persona = m['suggestedPersona']?.toString();
+                      final delta = m['delta'];
+                      final parts = <String>[base];
+                      if (delta is num) {
+                        parts.add('Último Δ no eixo: ${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}');
+                      }
+                      if (persona != null && persona.isNotEmpty) {
+                        parts.add('Mentor sugerido: $persona');
+                      }
+                      return parts.join(' · ');
+                    }(),
                     ctaLabel:
                         (progress!['nextMission'] as Map)['status']?.toString() == 'cleared'
                             ? 'Nova redação'
@@ -433,10 +479,49 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         axes: axes,
                         averages: avg,
                         labels: labels,
+                        deltas: () {
+                          final raw = progress!['axisDeltas'];
+                          if (raw is! Map) return null;
+                          final out = <String, double>{};
+                          for (final e in raw.entries) {
+                            if (e.value is num) {
+                              out[e.key.toString()] = (e.value as num).toDouble();
+                            }
+                          }
+                          return out.isEmpty ? null : out;
+                        }(),
                       ),
                     ],
                   ),
                 ),
+                if ((progress!['missionTimeline'] as List?)?.isNotEmpty == true) ...[
+                  const SectionLabel(
+                    'Linha do tempo · missões',
+                    hint: 'redações e missão atual · treino local',
+                  ),
+                  SurfacePanel(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: SoftTimeline(
+                      items: [
+                        for (final raw in (progress!['missionTimeline'] as List).take(8))
+                          if (raw is Map)
+                            SoftTimelineItem(
+                              title: raw['title']?.toString() ?? 'Evento',
+                              subtitle: [
+                                if (raw['subtitle'] != null) raw['subtitle'].toString(),
+                                if (raw['at'] != null) raw['at'].toString(),
+                              ].where((s) => s.isNotEmpty).join(' · '),
+                              onTap: () {
+                                final route = raw['route']?.toString();
+                                if (route != null && route.isNotEmpty) {
+                                  context.go(route);
+                                }
+                              },
+                            ),
+                      ],
+                    ),
+                  ),
+                ],
               ] else if (progress != null) ...[
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -667,6 +752,73 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                     '${fb['note']}',
                                     style: Theme.of(context).textTheme.bodySmall,
                                   ),
+                                if (last!['teach'] is Map) ...[
+                                  const SizedBox(height: 12),
+                                  Builder(
+                                    builder: (_) {
+                                      final teach = Map<String, dynamic>.from(
+                                        last!['teach'] as Map,
+                                      );
+                                      final weakLab =
+                                          teach['weakestLabel']?.toString() ??
+                                          teach['weakestAxis']?.toString() ??
+                                          'eixo fraco';
+                                      final tipRaw = teach['tip']?.toString();
+                                      final reading = teach['readingTip'] is Map
+                                          ? Map<String, dynamic>.from(teach['readingTip'] as Map)
+                                          : null;
+                                      final tip = (tipRaw != null && tipRaw.isNotEmpty)
+                                          ? tipRaw
+                                          : reading?['body']?.toString();
+                                      final mission = teach['mission'] is Map
+                                          ? Map<String, dynamic>.from(teach['mission'] as Map)
+                                          : null;
+                                      final node = teach['pathNode'] is Map
+                                          ? Map<String, dynamic>.from(teach['pathNode'] as Map)
+                                          : null;
+                                      return SurfacePanel(
+                                        soft: true,
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Ensinar de verdade · $weakLab',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleSmall
+                                                  ?.copyWith(fontWeight: FontWeight.w800),
+                                            ),
+                                            if (tip != null && tip.isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Text(tip),
+                                            ],
+                                            if (mission != null) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                'Missão: ${mission['label'] ?? mission['prompt'] ?? ''}',
+                                                style: Theme.of(context).textTheme.bodySmall,
+                                              ),
+                                            ],
+                                            if (node != null) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Caminho: ${node['title'] ?? node['cta'] ?? ''}',
+                                                style: Theme.of(context).textTheme.labelMedium,
+                                              ),
+                                            ],
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              teach['disclaimer']?.toString() ??
+                                                  'Treino local · não é nota de banca UEMA.',
+                                              style: Theme.of(context).textTheme.labelSmall,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                                 const SizedBox(height: 12),
                                 Wrap(
                                   spacing: 8,

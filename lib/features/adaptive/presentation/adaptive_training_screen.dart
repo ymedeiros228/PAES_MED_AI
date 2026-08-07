@@ -9,6 +9,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
+import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -607,6 +608,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 ),
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          MediaReinforcement(
+                            subject: (q['subject'] ?? subject).toString(),
+                            topic: (q['topic'] ?? topic).toString(),
+                            compact: true,
+                            heading: 'Vídeos e leituras do tópico',
                           ),
                           ],
                         ],

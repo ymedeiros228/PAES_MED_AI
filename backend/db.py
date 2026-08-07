@@ -211,6 +211,22 @@ def init_db() -> None:
             WHERE exam_board IS NULL OR TRIM(exam_board)=''
             """
         )
+        # Índices de leitura quente (dashboard / path / lista)
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_answers_answered_at ON answers(answered_at)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_answers_subject ON answers(subject)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_answers_subject_topic ON answers(subject, topic)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_questions_subject_topic ON questions(subject, topic)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_questions_year_subject ON questions(year, subject)"
+        )
         conn.commit()
     finally:
         conn.close()
