@@ -14,10 +14,7 @@ from fastapi import (
 )
 
 from api_helpers import _save_upload
-from db import (
-    DATA_DIR,
-    connect,
-)
+from db import DATA_DIR, db
 from ingest_pdf import (
     apply_gabarito,
     classify_questions_by_syllabus,
@@ -167,8 +164,7 @@ def api_ingest_classify_pending() -> dict[str, Any]:
     subject_changed = 0
     cross_fixed = 0
     n_candidates = 0
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             """
             SELECT id, subject, topic, subtopic, statement, options_json, source, generated, exam_board
@@ -283,8 +279,6 @@ def api_ingest_classify_pending() -> dict[str, Any]:
                 if new_subj != original.get("subject"):
                     subject_changed += 1
         conn.commit()
-    finally:
-        conn.close()
 
     inv = official_curation_inventory()
     residual = int(inv.get("crossDomainCount") or 0)
@@ -327,8 +321,7 @@ def api_ingest_apply_gabarito(payload: ApplyGabaritoRequest) -> dict[str, Any]:
     gabarito = parse_gabarito(extract_pdf_text(Path(candidates[-1]["path"])))
     if not gabarito:
         raise HTTPException(422, "Não foi possível identificar respostas A–E no gabarito.")
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             """
             SELECT id, source, correct_index FROM questions
@@ -349,8 +342,6 @@ def api_ingest_apply_gabarito(payload: ApplyGabaritoRequest) -> dict[str, Any]:
                 conn.execute("UPDATE questions SET correct_index=? WHERE id=?", (question["correctIndex"], question["id"]))
                 updated += 1
         conn.commit()
-    finally:
-        conn.close()
     return {"ok": True, "year": payload.year, "answersFound": len(gabarito), "updated": updated}
 
 @router.post("/api/ingest/preview/update")

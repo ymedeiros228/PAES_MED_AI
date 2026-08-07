@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from db import connect
+from db import db
 from schemas import (
     AdaptiveRequest,
     ExamDatePayload,
@@ -51,6 +51,7 @@ from services_extra import (
     list_revisions,
     save_session_checkpoint,
 )
+from timeutil import now_iso
 
 router = APIRouter(tags=["estudo"])
 
@@ -160,7 +161,7 @@ def api_today(
 ) -> dict[str, Any]:
     dash = dashboard_stats()
     revs = list_revisions()
-    now = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+    now = now_iso()
     due_revs = [r for r in revs if (r.get("next_due") or "") <= now]
     cards = list_flashcards(due_only=True)
     study_today = dash.get("studyToday")
@@ -422,16 +423,13 @@ def api_today(
     edital_topics: list[dict[str, Any]] = []
     theory_snippets: list[str] = []
     if study_today:
-        conn = connect()
-        try:
+        with db() as conn:
             edital_topics = [
                 dict(row) for row in conn.execute(
                     "SELECT subject, topic, subtopic, weight FROM syllabus WHERE subject=? ORDER BY topic, subtopic",
                     (study_today["subject"],),
                 ).fetchall()
             ]
-        finally:
-            conn.close()
         theory_snippets = theory_snippets_for(
             study_today.get("subject"),
             study_today.get("topic"),

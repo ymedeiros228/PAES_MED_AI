@@ -5,7 +5,7 @@ import hashlib
 import re
 from typing import Any
 
-from db import DATA_DIR, connect
+from db import DATA_DIR, db
 from ingest_pdf import extract_pdf_text
 from services_core import is_official_source
 
@@ -59,8 +59,7 @@ def sync_syllabus_from_edital_file() -> dict[str, Any]:
         entries.extend(parse_edital_markdown(extract_pdf_text(path)))
         sources.append(path.name)
     unique = {(e["subject"], e["topic"], e.get("subtopic")): e for e in entries}
-    conn = connect()
-    try:
+    with db() as conn:
         for entry in unique.values():
             conn.execute(
                 """INSERT INTO syllabus (id, subject, topic, subtopic, weight) VALUES (?, ?, ?, ?, ?)
@@ -69,8 +68,6 @@ def sync_syllabus_from_edital_file() -> dict[str, Any]:
                 (_entry_id(entry), entry["subject"], entry["topic"], entry.get("subtopic"), entry["weight"]),
             )
         conn.commit()
-    finally:
-        conn.close()
     return {"ok": True, "sources": sources, "upserted": len(unique)}
 
 
@@ -125,8 +122,7 @@ def theory_snippets_for(subject: str | None, topic: str | None, limit: int = 6) 
                 break
 
     if subject:
-        conn = connect()
-        try:
+        with db() as conn:
             rows = conn.execute(
                 """
                 SELECT topic, subtopic, weight FROM syllabus
@@ -147,8 +143,6 @@ def theory_snippets_for(subject: str | None, topic: str | None, limit: int = 6) 
                     """,
                     (subject, topic),
                 ).fetchall()
-        finally:
-            conn.close()
         for row in rows:
             label = f"{subject} · {row['topic']}"
             if row["subtopic"]:
@@ -175,8 +169,7 @@ def edital_coverage() -> dict[str, Any]:
     pdf_files = list(edital_dir.glob("*.pdf"))
     has_files = bool(md_files or pdf_files)
 
-    conn = connect()
-    try:
+    with db() as conn:
         syllabus = [dict(row) for row in conn.execute(
             "SELECT id, subject, topic, subtopic, weight FROM syllabus ORDER BY subject, topic, subtopic"
         )]
@@ -184,8 +177,6 @@ def edital_coverage() -> dict[str, Any]:
             "SELECT subject, topic, source, generated FROM questions"
         )]
         syl_n = len(syllabus)
-    finally:
-        conn.close()
     counts: dict[tuple[str, str], int] = {}
     for question in questions:
         if is_official_source(question["source"], question["generated"]):

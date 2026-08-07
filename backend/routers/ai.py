@@ -12,7 +12,7 @@ from api_helpers import (
     _openai_client,
 )
 from config import OPENAI_MODEL
-from db import connect
+from db import db
 from schemas import (
     ChatRequest,
     ChatResponse,
@@ -263,8 +263,7 @@ def api_professor_generate(payload: ProfessorGenerateRequest) -> dict[str, Any]:
 
 @router.post("/api/professor/accept")
 def api_professor_accept(payload: ProfessorAcceptRequest) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT id FROM questions WHERE id=?", (payload.questionId,)).fetchone()
         if not row:
             raise HTTPException(404, "Questão não encontrada")
@@ -284,8 +283,6 @@ def api_professor_accept(payload: ProfessorAcceptRequest) -> dict[str, Any]:
         )
         conn.commit()
         return {"ok": True, "questionId": payload.questionId, "message": "Blocos do professor salvos."}
-    finally:
-        conn.close()
 
 @router.post("/api/professor/batch-fill")
 def api_professor_batch(payload: ProfessorBatchRequest) -> dict[str, Any]:

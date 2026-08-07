@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from db import connect
+from db import db
 from schemas import (
     AnswerRequest,
     ApprovalRequest,
@@ -68,8 +68,7 @@ def api_questions_pending(limit: int = 50) -> list[dict[str, Any]]:
 
 @router.post("/api/approval/decide")
 def api_questions_approve(payload: ApprovalRequest) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT id FROM questions WHERE id=?", (payload.questionId,)).fetchone()
         if not row:
             raise HTTPException(404, "Questão não encontrada")
@@ -80,8 +79,6 @@ def api_questions_approve(payload: ApprovalRequest) -> dict[str, Any]:
         conn.execute("DELETE FROM questions WHERE id=?", (payload.questionId,))
         conn.commit()
         return {"ok": True, "questionId": payload.questionId, "deleted": True}
-    finally:
-        conn.close()
 
 @router.get("/api/questions/{question_id}")
 def api_question(question_id: str) -> dict[str, Any]:
@@ -92,11 +89,8 @@ def api_question(question_id: str) -> dict[str, Any]:
 
 @router.get("/api/syllabus")
 def api_syllabus() -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         return [dict(r) for r in conn.execute("SELECT * FROM syllabus ORDER BY subject, topic").fetchall()]
-    finally:
-        conn.close()
 
 @router.post("/api/answers")
 def api_answers(payload: AnswerRequest) -> dict[str, Any]:

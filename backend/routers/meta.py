@@ -10,10 +10,7 @@ from config import (
     OPENAI_API_KEY,
     OPENAI_MODEL,
 )
-from db import (
-    DATA_DIR,
-    connect,
-)
+from db import DATA_DIR, db
 from seed import seed
 from services_core import (
     curation_health,
@@ -34,11 +31,8 @@ def root() -> dict[str, str]:
 
 @router.get("/health")
 def health() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         nq = conn.execute("SELECT COUNT(*) AS c FROM questions").fetchone()["c"]
-    finally:
-        conn.close()
     basis = stats_basis()
     cur = official_curation_inventory()
     health_gate = curation_health()

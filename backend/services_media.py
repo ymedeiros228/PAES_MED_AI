@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import urlparse
 
-from db import DATA_DIR, connect, loads_json
+from db import DATA_DIR, db, loads_json
+from timeutil import now, now_iso
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "").strip()
 SERPER_API_KEY = os.getenv("SERPER_API_KEY", "").strip()
@@ -71,19 +72,15 @@ ESSAY_PERSONAS: list[dict[str, Any]] = [
 
 
 def _settings_get(key: str, default: Any = None) -> Any:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
         if not row:
             return default
         return loads_json(row["value"], default)
-    finally:
-        conn.close()
 
 
 def _settings_set(key: str, value: Any) -> None:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO settings(key, value) VALUES(?, ?)
@@ -92,8 +89,6 @@ def _settings_set(key: str, value: Any) -> None:
             (key, json.dumps(value, ensure_ascii=False) if not isinstance(value, str) else value),
         )
         conn.commit()
-    finally:
-        conn.close()
 
 
 def media_prefs() -> dict[str, Any]:
@@ -220,7 +215,7 @@ def _cache_get(store_key: str, entry_key: str, ttl_h: int) -> list[dict[str, Any
         ts = datetime.fromisoformat(str(at))
     except Exception:  # noqa: BLE001
         return None
-    if datetime.now() - ts > timedelta(hours=ttl_h):
+    if now() - ts > timedelta(hours=ttl_h):
         return None
     items = entry.get("items")
     return items if isinstance(items, list) else None
@@ -230,7 +225,7 @@ def _cache_set(store_key: str, entry_key: str, items: list[dict[str, Any]], max_
     cache = _settings_get(store_key, {}) or {}
     if not isinstance(cache, dict):
         cache = {}
-    cache[entry_key] = {"at": datetime.now().isoformat(timespec="seconds"), "items": items}
+    cache[entry_key] = {"at": now_iso(), "items": items}
     if len(cache) > max_keys:
         keys = sorted(cache.keys(), key=lambda k: str((cache.get(k) or {}).get("at") or ""))
         for k in keys[: max(0, len(cache) - max_keys)]:
@@ -508,7 +503,7 @@ def mark_media_read(
     reads = _settings_get("media_reads", {}) or {}
     if not isinstance(reads, dict):
         reads = {}
-    at = datetime.now().isoformat(timespec="seconds")
+    at = now_iso()
     entry = {
         "url": raw_url,
         "subject": (subject or "").strip() or None,
@@ -615,7 +610,7 @@ def open_media_url(
     except OSError as exc:
         return {"ok": False, "message": f"Não foi possível abrir: {exc}"}
 
-    at = datetime.now().isoformat(timespec="seconds")
+    at = now_iso()
     entry = {
         "url": raw,
         "kind": k,

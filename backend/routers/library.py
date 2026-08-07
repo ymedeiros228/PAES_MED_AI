@@ -8,10 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from db import (
-    DATA_DIR,
-    connect,
-)
+from db import DATA_DIR, db
 from ingest_pdf import (
     compute_year_statuses,
     list_pdf_inventory,
@@ -87,8 +84,7 @@ def api_library() -> dict[str, Any]:
     from acervo_fetch import manifest_with_local
 
     acervo = manifest_with_local()
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute("SELECT year, source, generated, COUNT(*) AS c FROM questions GROUP BY year, source, generated").fetchall()
         by_year: dict[int, dict[str, Any]] = {
             item["year"]: {
@@ -175,8 +171,6 @@ def api_library() -> dict[str, Any]:
                 "root": str(DATA_DIR),
             },
         }
-    finally:
-        conn.close()
 
 @router.post("/api/library/open-folder")
 def api_library_open_folder(payload: OpenFolderRequest) -> dict[str, Any]:
