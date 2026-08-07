@@ -412,10 +412,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     try {
                       await apiClient.post('/api/library/open-folder', {'folder': 'provas'});
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('Pasta provas aberta — coloque o PDF do ano e reimporte na Biblioteca.'),
                           ),
@@ -423,7 +424,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               humanApiError(e, fallback: 'Não abriu a pasta provas.'),

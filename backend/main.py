@@ -13,7 +13,33 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from db import DATA_DIR, connect, init_db
+from ingest_pdf import (
+    apply_gabarito,
+    classify_questions_by_syllabus,
+    commit_preview,
+    compute_year_statuses,
+    extract_pdf_text,
+    get_preview,
+    import_and_commit_year,
+    import_year_pair,
+    list_pdf_inventory,
+    pair_prova_gabarito,
+    parse_gabarito,
+    parse_pdf_file,
+    update_preview,
+)
 from seed import seed
+from services_advanced import (
+    adaptive_training,
+    build_rag_context_embedded_full,
+    create_flashcard,
+    delete_flashcard,
+    flashcard_axis_stats,
+    index_all_questions,
+    list_flashcards,
+    review_flashcard,
+    set_plan_day_done,
+)
 from services_core import (
     bank_profile,
     build_exam_countdown,
@@ -50,6 +76,7 @@ from services_core import (
     topic_read_status,
     year_pdf_info,
 )
+from services_edital import edital_coverage, sync_syllabus_from_edital_file, theory_snippets_for
 from services_extra import (
     TUTOR_SYSTEM,
     accept_professor_draft,
@@ -62,6 +89,7 @@ from services_extra import (
     create_natureza_pack,
     create_simulation,
     essay_grade_deltas,
+    essay_progress,
     essay_themes,
     fill_professor_drafts,
     generate_similar_question_stub,
@@ -69,14 +97,12 @@ from services_extra import (
     get_sim_checkpoint,
     grade_simulation,
     ingest_pdf_placeholder,
-    essay_progress,
     list_essays,
     list_lessons,
     list_pending_ingest_previews,
     list_professor_draft_queue,
     list_revisions,
     list_study_gaps,
-    mark_gap_card_remembered,
     offline_essay_axis_scores,
     parse_gate_flags,
     progress_overview,
@@ -90,19 +116,6 @@ from services_extra import (
     skip_professor_draft,
     structure_lesson_from_text,
 )
-from services_advanced import (
-    adaptive_training,
-    build_rag_context_embedded,
-    build_rag_context_embedded_full,
-    create_flashcard,
-    delete_flashcard,
-    flashcard_axis_stats,
-    index_all_questions,
-    list_flashcards,
-    review_flashcard,
-    set_plan_day_done,
-)
-from services_edital import edital_coverage, sync_syllabus_from_edital_file, theory_snippets_for
 from services_media import (
     essay_personas,
     list_media_opens,
@@ -116,21 +129,6 @@ from services_media import (
     serper_configured,
     set_media_prefs,
     youtube_configured,
-)
-from ingest_pdf import (
-    apply_gabarito,
-    classify_questions_by_syllabus,
-    commit_preview,
-    compute_year_statuses,
-    extract_pdf_text,
-    get_preview,
-    import_and_commit_year,
-    import_year_pair,
-    list_pdf_inventory,
-    pair_prova_gabarito,
-    parse_gabarito,
-    parse_pdf_file,
-    update_preview,
 )
 
 load_dotenv()
@@ -1165,7 +1163,7 @@ def api_ingest_classify_pending() -> dict[str, Any]:
             "ecologia": "Biologia",
             "citologia": "Biologia",
         }
-        for original, question in zip(questions, classified):
+        for original, question in zip(questions, classified, strict=False):
             new_subj = question.get("subject")
             new_topic = question.get("topic")
             if (new_subj or "") in humanas and is_cross_domain(new_subj, new_topic):
@@ -2443,7 +2441,7 @@ def api_today(
             years_in = sorted({int(q.get("year") or 0) for q in selected if q.get("year")})
             years_in = [y for y in years_in if y > 0]
             session_plan[1]["title"] = (
-                f"Só oficiais UEMA_PAES · multi-ano"
+                "Só oficiais UEMA_PAES · multi-ano"
                 + (f" ({', '.join(map(str, years_in[:4]))})" if years_in else "")
             )
         else:

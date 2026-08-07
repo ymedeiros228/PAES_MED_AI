@@ -276,6 +276,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           }
         }
       }
+      if (!mounted) return;
       if (highConfidenceOnly) {
         setState(() => msg = toast);
       } else {

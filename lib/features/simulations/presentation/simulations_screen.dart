@@ -35,6 +35,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   final Set<String> debriefLoading = {};
   String defaultErrorType = 'conceito';
   final sw = Stopwatch();
+
+  /// Tempo já corrido antes de retomar um checkpoint (Stopwatch sempre parte do zero).
+  Duration resumeOffset = Duration.zero;
+  Duration get elapsed => sw.elapsed + resumeOffset;
   Timer? ticker;
   bool examLocked = false;
   Duration? diaProvaHardCap;
@@ -263,7 +267,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         'questionIds': ids,
         'questions': qs,
         'currentIndex': keyboardQi,
-        'elapsedSec': sw.elapsed.inSeconds,
+        'elapsedSec': elapsed.inSeconds,
         'examLocked': examLocked,
         'preflightDone': preflightDone,
         'basis': lastSimMeta?['basis'],
@@ -410,9 +414,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         errorTypes[e.key.toString()] = e.value.toString();
       }
     }
-    final elapsed = (cp['elapsedSec'] as num?)?.toInt() ?? 0;
+    final elapsedSec = (cp['elapsedSec'] as num?)?.toInt() ?? 0;
     ticker?.cancel();
     setState(() {
+      resumeOffset = Duration(seconds: elapsedSec);
       mode = cp['mode']?.toString() ?? mode;
       limit = (cp['limit'] as num?)?.toInt() ?? limit;
       subject = cp['subject']?.toString();
@@ -508,6 +513,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         keyboardQi = 0;
         examLocked = mode == 'dia_prova';
         preflightDone = mode == 'dia_prova';
+        resumeOffset = Duration.zero;
         sw
           ..reset()
           ..start();
@@ -530,7 +536,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .map((e) => {
               'questionId': e.key,
               'selectedIndex': e.value,
-              'timeMs': sw.elapsedMilliseconds ~/ answers.length.clamp(1, 999),
+              'timeMs': elapsed.inMilliseconds ~/ answers.length.clamp(1, 999),
               'errorType': errorTypes[e.key] ?? defaultErrorType,
             })
         .toList();
@@ -666,7 +672,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   }
 
   String get _clock {
-    final e = sw.elapsed;
+    final e = elapsed;
     return '${e.inMinutes.toString().padLeft(2, '0')}:${(e.inSeconds % 60).toString().padLeft(2, '0')}';
   }
 
@@ -676,7 +682,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   String get _timeRemainingLabel {
     final cap = diaProvaHardCap;
     if (cap == null) return '';
-    final left = cap - sw.elapsed;
+    final left = cap - elapsed;
     if (!left.isNegative && left.inSeconds <= 0) return '00:00';
     final safe = left.isNegative ? Duration.zero : left;
     return '${safe.inMinutes.toString().padLeft(2, '0')}:${(safe.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -688,12 +694,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final cap = diaProvaHardCap;
-      if (cap != null && sw.elapsed >= cap && report == null) {
+      if (cap != null && elapsed >= cap && report == null) {
         _grade();
         return;
       }
       setState(() {});
-      if (sw.elapsed.inSeconds % 5 == 0) {
+      if (elapsed.inSeconds % 5 == 0) {
         unawaited(_saveSimCheckpoint());
       }
     });
@@ -1010,7 +1016,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           for (var i = 0; i < opts.length; i++)
                             ChoiceOptionTile(
                               index: i,
-                              label: '${opts[i]}',
+                              label: opts[i].toString(),
                               selected: answers[id] == i,
                               enabled: report == null,
                               onTap: () {

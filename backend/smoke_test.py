@@ -1590,9 +1590,6 @@ def main() -> int:
         r.status_code == 200 and (cod.get("ok") is True or "years" in cod or "items" in cod or "message" in cod),
         str(list(cod.keys())[:10]),
     )
-    years_used = None
-    if isinstance(cod.get("yearsUsed"), list):
-        years_used = cod["yearsUsed"]
     inv_years = inv_l.get("yearsUsed") if isinstance(inv_l.get("yearsUsed"), list) else None
     ok(
         "ciclo_m_years_used_present_only",
@@ -3843,7 +3840,7 @@ def main() -> int:
     )
     ok(
         "ciclo_ck_folder_no_exception",
-        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and "\$e" not in onb_ck,
+        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and r"\$e" not in onb_ck,
         "folder human",
     )
     ok(
@@ -6195,7 +6192,9 @@ def main() -> int:
     )
 
     # --- Drop acervo provas 2014–25 (host PDFs) ---
-    from ingest_pdf import list_pdf_inventory as _inv_ac, pair_prova_gabarito as _pair_ac, compute_year_statuses as _st_ac
+    from ingest_pdf import compute_year_statuses as _st_ac
+    from ingest_pdf import list_pdf_inventory as _inv_ac
+    from ingest_pdf import pair_prova_gabarito as _pair_ac
 
     inv_ac = _inv_ac()
     provas_years_ac = {i.get("year") for i in inv_ac if i.get("kind") == "prova"}
@@ -6317,7 +6316,8 @@ def main() -> int:
     )
 
     # --- Ciclo HJ: parser + match gabarito ---
-    from ingest_pdf import heuristic_parse_questions as _hpq_hj, parse_gabarito as _pg_hj
+    from ingest_pdf import heuristic_parse_questions as _hpq_hj
+    from ingest_pdf import parse_gabarito as _pg_hj
 
     sample_hj = (
         "QUESTÃO 01\nSobre o DNA:\n"

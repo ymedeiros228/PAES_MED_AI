@@ -195,7 +195,7 @@ def fetch_year(year: int, *, dry_run: bool = False, overwrite: bool = False) -> 
         "retry": True,
         "commitOnDisk": bool(local.get("hasProva") and local.get("hasGabarito")),
         "portal": entry.get("portal"),
-        "manualDrop": "Coloque paes_{year}.pdf e gabarito_{year}.pdf nas pastas e Commitar.".format(year=year),
+        "manualDrop": f"Coloque paes_{year}.pdf e gabarito_{year}.pdf nas pastas e Commitar.",
     }
     if ok_any and local["hasProva"] and local["hasGabarito"]:
         results["message"] = "PDFs salvos. Próximo passo: Biblioteca → Revisar → Commitar."

@@ -1,4 +1,5 @@
 /// Copy amigável para o aluno (PAES/UEMA) — sem jargão de git/dev/SRS em inglês.
+library;
 
 /// Tipos de erro na sessão / simulado.
 const Map<String, String> kErrorTypeLabelsPt = {

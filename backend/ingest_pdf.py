@@ -306,7 +306,7 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
             key=lambda x: x[0],
         )
         opts_by_letter: dict[str, str] = {}
-        for index, (start, letter, mend) in enumerate(by_pos):
+        for index, (_start, letter, mend) in enumerate(by_pos):
             option_end = by_pos[index + 1][0] if index + 1 < len(by_pos) else len(body)
             value = re.sub(r"\s+", " ", body[mend:option_end]).strip()
             value = re.sub(r"^[\)\.\-:]\s*", "", value)

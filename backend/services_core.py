@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
-from datetime import datetime, timedelta
 import json
 import re
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
 from db import DATA_DIR, connect, loads_json
-from pathlib import Path
-
 
 NATUREZA_SUBJECTS = frozenset({"Biologia", "Química", "Física"})
 HUMANAS_SUBJECTS = frozenset({"História", "Geografia", "Filosofia", "Sociologia"})
@@ -508,7 +507,6 @@ def curation_health() -> dict[str, Any]:
     other_real = max(0, real_n - nat_real)
     other_pct = round(100.0 * other_real / other_n, 1) if other_n else 0.0
     by_subject = inv.get("bySubject") or {}
-    natureza_q = inv.get("naturezaResolutionQuality") or {}
     # saúde por eixo (subject → official count already; real needs pass)
     axle = official_axle_health()
     status = "ok" if natureza_floor_ok and cross <= 2 else ("warn" if natureza_floor_ok else "attention")
@@ -1876,7 +1874,7 @@ def bank_profile(official_only: bool | None = None) -> dict[str, Any]:
         study_ctas.append(
             {
                 "label": f"Sessão {subj}",
-                "path": f"/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+                "path": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
                 "subject": subj,
                 "count": n,
             }

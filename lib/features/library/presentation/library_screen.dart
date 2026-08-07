@@ -323,68 +323,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _bootstrapAndCommit() async {
-    setState(() {
-      busy = true;
-      msg = 'Baixando… commitando altas confianças…';
-    });
-    try {
-      final data = await apiClient.post('/api/acervo/bootstrap-and-commit', {
-        'dryRun': false,
-        'overwrite': false,
-        'minConfidence': 0.55,
-        'autoProfessor': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      final year = map['year'] as int? ?? 0;
-      final inserted = map['inserted'] ?? 0;
-      final n = map['officialCount'] ?? 0;
-      final healthLine = _healthLine(map, inserted: inserted);
-      final pack = map['naturezaPack'] is Map ? Map<String, dynamic>.from(map['naturezaPack'] as Map) : null;
-      final packLine = _naturezaPackLine(pack);
-      final sessao = map['sessionPath']?.toString() ??
-          (year > 0
-              ? '/sessao?examBoard=UEMA_PAES&year=$year&preferNatureza=1'
-              : '/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      setState(() {
-        msg = map['message']?.toString() ?? 'Gravamos $inserted oficiais · base $n$healthLine';
-      });
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Pronto · $inserted oficiais · total $n$healthLine'),
-          action: SnackBarAction(
-            label: 'Estudar agora',
-            onPressed: () => _goStudy(
-              sessao,
-              yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
-            ),
-          ),
-          duration: const Duration(seconds: 6),
-        ),
-      );
-      await _showPostCommitCta(
-        title: 'Oficiais no acervo',
-        body: 'Gravamos $inserted · base $n$healthLine$packLine\nEstudar Natureza/UEMA agora?',
-        sessaoPath: sessao,
-        professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
-        yearHealth: map['yearHealth'] is Map ? Map<String, dynamic>.from(map['yearHealth'] as Map) : null,
-        naturezaPack: pack,
-      );
-      ref.read(refreshTickProvider.notifier).state++;
-      await _load();
-    } catch (e) {
-      setState(() {
-        msg = humanApiError(
-          e,
-          fallback: 'Importação falhou — use Baixar e revisar, ou Abrir provas.',
-        );
-      });
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
   Future<void> _showFetchPlaybook({
     required String title,
     required String body,
@@ -543,10 +481,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _commitFoundAvailable() async {
-    await _semana1Real();
-  }
-
   Future<void> _commitOnDisk() async {
     setState(() {
       busy = true;
@@ -616,7 +550,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         final ins = y['inserted'] ?? 0;
         final err = y['error']?.toString();
         final pct = y['gabaritoPct'] ?? (health['$yr'] is Map ? (health['$yr'] as Map)['gabaritoPct'] : null);
-        final pctTxt = pct != null ? ' · gabarito ${pct}%' : '';
+        final pctTxt = pct != null ? ' · gabarito $pct%' : '';
         if (err != null && err.isNotEmpty) return '$yr: erro ($err)';
         if (y['needsGabarito'] == true) return '$yr: precisa gabarito';
         if (y['skipped'] == true || y['reason'] == 'already_committed') {
@@ -895,12 +829,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     } finally {
       if (mounted) setState(() => busy = false);
     }
-  }
-
-  Future<void> _commitOnDiskYear(int year) async {
-    // Reusa import+commit via bootstrap-and-commit (disco skip fetch) ou commit-on-disk lote.
-    // Preferir bootstrap-and-commit com year — ele usa PDFs no disco se existirem.
-    await _bootstrapAndCommitYear(year);
   }
 
   Future<void> _importYear(int year) async {

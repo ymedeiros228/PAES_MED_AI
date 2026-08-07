@@ -262,9 +262,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 PageHeader(
                   eyebrow: 'Estudar',
                   title: 'Fila',
-                  subtitle: coach != null
-                      ? coach
-                      : 'Próximo passo do dia · cerca de $minutes min',
+                  subtitle: coach ?? 'Próximo passo do dia · cerca de $minutes min',
                   trailing: IconButton(
                     tooltip: 'Atualizar fila',
                     onPressed: _load,

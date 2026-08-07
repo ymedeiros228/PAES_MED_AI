@@ -26,10 +26,12 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   Future<void> _check() async {
     try {
       await apiClient.get('/health');
-      if (mounted) setState(() {
-        online = true;
-        lastError = null;
-      });
+      if (mounted) {
+        setState(() {
+          online = true;
+          lastError = null;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
