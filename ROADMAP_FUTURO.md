@@ -344,6 +344,7 @@ flowchart TB
 | IS | Hoje hero + checklist rows | `ciclo_is_*` | **Feito** |
 | IT | Playlist + rail polish | `ciclo_it_*` | **Feito** |
 | IU | Ship **1.0.0+17** pack/smoke | `ciclo_iu_*` | **Feito** |
+| Z4 | Cliente profissional: nav · Biblioteca cards · Sim hero · Tutor · onboarding | — | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -351,8 +352,9 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IQ–IU)
+## Estado (atualizado pós Z4)
 
 - Rodada **IQ–IU**: polish front kit + opções, ship **1.0.0+17**.
+- **Z4**: nav enxuta, Biblioteca em cartões 2024–26, hero Dia de prova, Tutor em chat, onboarding centrado.
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gabarito**.
 - PDFs grandes **fora** do git.

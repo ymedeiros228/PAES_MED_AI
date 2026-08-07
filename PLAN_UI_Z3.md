@@ -74,7 +74,7 @@ Não mexer em backend de curadoria a não ser para esconder na UI.
 | Banner API some quando online | Done |
 | Banner treino humano + silencioso se OK | Done |
 | Nav sem “após acervo” / Aprovar | Done (Simplificada) |
-| Biblioteca / Tutor / Simulados IA | Pendente Z4 |
+| Biblioteca / Tutor / Simulados / Onboarding | **Feito (Z4)** |
 
 ## Aceite mental
 
@@ -83,8 +83,13 @@ Não vê: realCount, cross-domain, dataDir, DEMO TREINO, JSON, SRS 1/3/7.
 
 ## Z4 (próximo plan)
 
-1. Biblioteca: cards por ano 2024–26 sem playbook verbose.
-2. Simulados: um card “Dia de prova”.
-3. Tutor: bolhas + input.
-4. Remover rotas internas da nav (só Avançado em Ajustes).
+1. Biblioteca: cards por ano 2024–26 sem playbook verbose. **Feito**
+2. Simulados: um card “Dia de prova”. **Feito** (hero + timer resume)
+3. Tutor: bolhas + input. **Feito** (greeting em bolha; atalhos no rodapé)
+4. Remover rotas internas da nav (só Avançado em Ajustes). **Feito**
+5. Onboarding centrado (web). **Feito**
+
+## Aceite mental Z4
+
+Estudante vê: Estudar / Acervo / Conta na rail. Biblioteca em cartões 2024–26. Simulado com hero Dia de prova. Tutor parece chat.
 

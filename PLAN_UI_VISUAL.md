@@ -14,7 +14,7 @@
 | **Sessão** phase bar + painel de questão | Done |
 | **Domínio/Medicina** playlist + rascunhos horizontais | Done |
 | **Hoje** stats strip + seções | Done (parcial hero) |
-| Biblioteca / Simulados / Tutor / Onboarding | **Pendente Z3–Z4** |
+| Biblioteca / Simulados / Tutor / Onboarding | **Feito (Z4)** |
 
 ## Z2 aceite
 
