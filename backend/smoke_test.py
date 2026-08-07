@@ -16,6 +16,14 @@ from main import app
 from seed import seed
 
 
+def api_source(root: Path) -> str:
+    """Codigo da API (main.py + routers + schemas/helpers) num texto so."""
+    backend = root / "backend"
+    files = [backend / "main.py", backend / "schemas.py", backend / "api_helpers.py"]
+    files += sorted((backend / "routers").glob("*.py"))
+    return "\n".join(f.read_text(encoding="utf-8", errors="ignore") for f in files if f.exists())
+
+
 def main() -> int:
     seed(force=True)
     client = TestClient(app)
@@ -5987,9 +5995,7 @@ def main() -> int:
     api_gy = (
         root / "lib" / "core" / "data" / "api_error.dart"
     ).read_text(encoding="utf-8", errors="ignore")
-    main_gy = (
-        root / "backend" / "main.py"
-    ).read_text(encoding="utf-8", errors="ignore")
+    main_gy = api_source(root)
     core_gy = (
         root / "backend" / "services_core.py"
     ).read_text(encoding="utf-8", errors="ignore")
@@ -6242,9 +6248,7 @@ def main() -> int:
     acervo_hh = (
         root / "backend" / "acervo_fetch.py"
     ).read_text(encoding="utf-8", errors="ignore")
-    main_hh = (
-        root / "backend" / "main.py"
-    ).read_text(encoding="utf-8", errors="ignore")
+    main_hh = api_source(root)
     ok(
         "ciclo_hf_partial_labels",
         "Parcial · sem gabarito" in lib_hf
@@ -6523,7 +6527,7 @@ def main() -> int:
     services_media = (root / "backend" / "services_media.py").read_text(
         encoding="utf-8", errors="ignore"
     )
-    main_py = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    main_py = api_source(root)
     ok(
         "ciclo_hq_offline_axes",
         "def offline_essay_axis_scores" in services_ex
