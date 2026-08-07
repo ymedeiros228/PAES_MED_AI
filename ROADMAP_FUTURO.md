@@ -345,6 +345,8 @@ flowchart TB
 | IT | Playlist + rail polish | `ciclo_it_*` | **Feito** |
 | IU | Ship **1.0.0+17** pack/smoke | `ciclo_iu_*` | **Feito** |
 | IV | Redação rascunho offline (SharedPreferences) | `ciclo_iv_*` | **Feito** |
+| Z4 | Cliente profissional: nav · Biblioteca cards · Sim hero · Tutor · onboarding | — | **PR #22** |
+| Z5 | Feedback honesto: Tutor · Redação dual-radar · Hoje ritmo · provider | — | **Feito** |
 
 ## O que **não** entra neste roadmap
 - SaaS cobrando aluno  
@@ -352,9 +354,11 @@ flowchart TB
 - Inventar edital PDF ou prova ausente  
 - Reescrever top-off AE salvo bug  
 
-## Estado (atualizado pós IV)
+## Estado (atualizado pós Z5)
 
 - Rodada **IQ–IU**: polish front kit + opções, ship **1.0.0+17**.
-- **IV**: rascunho da Redação persiste no PC (restaura ao reabrir; limpa ao corrigir).
+- **IV**: rascunho da Redação (merged).
+- **Z4**: nav/Biblioteca/Sim/Tutor/onboarding (PR #22).
+- **Z5**: loop de feedback honesto (Tutor + Redação + Hoje + Progresso).
 - Residual host: drop `gabarito_YYYY.pdf` (2014–23) → **Importar todos com gabarito**.
 - PDFs grandes **fora** do git.
