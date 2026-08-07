@@ -131,25 +131,14 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       label: essay['levelLabel']?.toString() ?? 'treino local',
                     ),
                   ),
-                  AnimatedBuilder(
-                    animation: _morph,
-                    builder: (context, _) {
-                      return SizedBox(
-                        height: 200,
-                        child: CustomPaint(
-                          painter: RelevoPainter(
-                            peaks: peaks,
-                            t: Curves.easeOut.transform(_morph.value),
-                            teal: AppTheme.teal,
-                            navy: AppTheme.navy,
-                            sand: AppTheme.sand,
-                            isDark: Theme.of(context).brightness == Brightness.dark,
-                          ),
-                          child: const SizedBox.expand(),
-                        ),
-                      );
-                    },
-                  ),
+                  if (peaks.isNotEmpty && !(peaks.length == 1 && peaks.first['kind'] == 'hint'))
+                    AnimatedBuilder(
+                      animation: _morph,
+                      builder: (context, _) => _ReadableRelief(
+                        peaks: peaks,
+                        progress: Curves.easeOut.transform(_morph.value),
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   if (peaks.isEmpty || (peaks.length == 1 && peaks.first['kind'] == 'hint'))
                     QuietEmpty(
@@ -166,20 +155,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         ],
                       ),
                     )
-                  else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final p in peaks.take(8))
-                        Chip(
-                          label: Text(
-                            '${p['label']}: ${(p['value'] as num?)?.toStringAsFixed(1) ?? '—'}',
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                    ],
-                  ),
+                  else const SizedBox.shrink(),
                   const SizedBox(height: 16),
                   StatsStrip(
                     items: [
@@ -320,92 +296,231 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
   }
 }
 
-class RelevoPainter extends CustomPainter {
-  RelevoPainter({
+const _relevoValleyThreshold = 5.5;
+
+class _ReadableRelief extends StatelessWidget {
+  const _ReadableRelief({
     required this.peaks,
-    required this.t,
-    required this.teal,
-    required this.navy,
-    required this.sand,
-    required this.isDark,
+    required this.progress,
   });
 
   final List<Map<String, dynamic>> peaks;
-  final double t;
-  final Color teal;
-  final Color navy;
-  final Color sand;
-  final bool isDark;
+  final double progress;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final bg = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: isDark
-            ? [navy.withOpacity(0.95), const Color(0xFF0E1726)]
-            : [const Color(0xFF0B1F33), const Color(0xFF0F4A42)],
-      ).createShader(Offset.zero & size);
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      const Radius.circular(16),
-    );
-    canvas.drawRRect(rrect, bg);
+  Widget build(BuildContext context) {
+    final ordered = [...peaks]
+      ..sort(
+        (a, b) => _relevoValue(b).compareTo(_relevoValue(a)),
+      );
+    final maxScale = ordered
+        .map(_relevoMax)
+        .fold<double>(0, (highest, value) => value > highest ? value : highest);
+    final rowHeight = 42.0;
+    final panelHeight = 88 + ordered.length * rowHeight;
+    final cs = Theme.of(context).colorScheme;
 
-    if (peaks.isEmpty) return;
-    final n = peaks.length;
-    final path = Path();
-    final midY = size.height * 0.72;
-    path.moveTo(0, size.height);
-    path.lineTo(0, midY);
-    for (var i = 0; i < n; i++) {
-      final x = size.width * (i + 0.5) / n;
-      final raw = (peaks[i]['value'] as num?)?.toDouble() ?? 2.0;
-      final maxV = (peaks[i]['max'] as num?)?.toDouble() ?? 10.0;
-      final h = (raw / maxV).clamp(0.08, 1.0) * size.height * 0.55 * t;
-      final y = midY - h;
-      final prevX = i == 0 ? 0.0 : size.width * (i - 0.5) / n;
-      final cx = (prevX + x) / 2;
-      if (i == 0) {
-        path.lineTo(x, y);
-      } else {
-        path.quadraticBezierTo(cx, midY - h * 0.2, x, y);
-      }
-    }
-    path.lineTo(size.width, midY);
-    path.lineTo(size.width, size.height);
-    path.close();
-
-    final fill = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          teal.withOpacity(0.75),
-          teal.withOpacity(0.15),
-          sand.withOpacity(0.05),
+    return Container(
+      constraints: BoxConstraints(minHeight: panelHeight),
+      padding: const EdgeInsets.all(kGap16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.navy,
+            Color.alphaBlend(AppTheme.teal.withOpacity(0.45), AppTheme.navy),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(kRadiusPanel),
+        border: Border.all(color: AppTheme.teal.withOpacity(0.55)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Escala: 0–${maxScale.toStringAsFixed(0)}',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Colors.white.withOpacity(0.92),
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: kGap8),
+              Wrap(
+                spacing: kGap12,
+                runSpacing: kGap4,
+                children: [
+                  _ReliefLegend(
+                    color: AppTheme.teal,
+                    label: 'Pico firme',
+                  ),
+                  _ReliefLegend(
+                    color: AppTheme.sand,
+                    label: 'Vale a treinar (< 5.5)',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: kGap12),
+          for (final peak in ordered)
+            _ReliefRow(
+              label: peak['label']?.toString() ?? 'Eixo',
+              value: _relevoValue(peak),
+              max: _relevoMax(peak),
+              progress: progress,
+              textTheme: Theme.of(context).textTheme,
+              trackColor: cs.onSurface.withOpacity(0.18),
+            ),
         ],
-      ).createShader(Offset.zero & size);
-    canvas.drawPath(path, fill);
-
-    final stroke = Paint()
-      ..color = teal.withOpacity(0.95)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2;
-    canvas.drawPath(path, stroke);
-
-    // valley soft markers
-    final valleyPaint = Paint()..color = sand.withOpacity(0.35);
-    for (var i = 0; i < n; i++) {
-      final raw = (peaks[i]['value'] as num?)?.toDouble() ?? 2.0;
-      if (raw >= 5.5) continue;
-      final x = size.width * (i + 0.5) / n;
-      canvas.drawCircle(Offset(x, midY + 8), 3.5, valleyPaint);
-    }
+      ),
+    );
   }
+}
+
+class _ReliefLegend extends StatelessWidget {
+  const _ReliefLegend({
+    required this.color,
+    required this.label,
+  });
+
+  final Color color;
+  final String label;
 
   @override
-  bool shouldRepaint(covariant RelevoPainter oldDelegate) =>
-      oldDelegate.t != t || oldDelegate.peaks != peaks;
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(kRadiusMicro),
+          ),
+        ),
+        const SizedBox(width: kGap4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Colors.white.withOpacity(0.78),
+              ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+        ),
+      ],
+    );
+  }
+}
+
+class _ReliefRow extends StatelessWidget {
+  const _ReliefRow({
+    required this.label,
+    required this.value,
+    required this.max,
+    required this.progress,
+    required this.textTheme,
+    required this.trackColor,
+  });
+
+  final String label;
+  final double value;
+  final double max;
+  final double progress;
+  final TextTheme textTheme;
+  final Color trackColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final isValley = value < _relevoValleyThreshold;
+    final barColor = isValley ? AppTheme.sand : AppTheme.teal;
+    final ratio = (value / max).clamp(0.0, 1.0);
+    final thresholdRatio = (_relevoValleyThreshold / max).clamp(0.0, 1.0);
+    final note = '${value.toStringAsFixed(1)} de ${max.toStringAsFixed(0)}';
+
+    return Semantics(
+      label: 'Eixo $label, nota $note${isValley ? ', vale a treinar' : ', pico firme'}',
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: kGap8),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 108,
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withOpacity(0.92),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: kGap8),
+            Expanded(
+              child: SizedBox(
+                height: 18,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: trackColor,
+                            borderRadius: BorderRadius.circular(kRadiusControl),
+                          ),
+                        ),
+                        FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: ratio * progress,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: barColor,
+                              borderRadius: BorderRadius.circular(kRadiusControl),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: constraints.maxWidth * thresholdRatio,
+                          top: 0,
+                          bottom: 0,
+                          child: Container(width: 2, color: AppTheme.sand.withOpacity(0.9)),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: kGap8),
+            SizedBox(
+              width: 42,
+              child: Text(
+                value.toStringAsFixed(1),
+                textAlign: TextAlign.right,
+                style: textTheme.labelLarge?.copyWith(
+                  color: Colors.white.withOpacity(0.92),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+double _relevoValue(Map<String, dynamic> peak) =>
+    (peak['value'] as num?)?.toDouble() ?? 2.0;
+
+double _relevoMax(Map<String, dynamic> peak) {
+  final max = (peak['max'] as num?)?.toDouble();
+  return max != null && max > 0 ? max : 10.0;
 }
