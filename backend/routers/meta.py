@@ -4,15 +4,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from config import (
-    GEMINI_API_KEY,
-    GEMINI_MODEL,
-    OPENAI_API_KEY,
-    OPENAI_MODEL,
+from ai_state import (
+    configure_provider,
+    provider_configured,
+    provider_key,
+    provider_model,
+    validate_secret,
 )
+from ai_state import state as ai_state
+from api_helpers import validate_gemini_key, validate_openai_key
 from db import DATA_DIR, db
+from schemas import AIProviderConfigRequest
 from seed import seed
 from services_core import (
     curation_health,
@@ -43,12 +47,12 @@ def health() -> dict[str, Any]:
     edital = DATA_DIR / "edital"
     return {
         "status": "ok",
-        "openai_configured": bool(OPENAI_API_KEY and OPENAI_API_KEY != "cole_sua_chave_aqui"),
-        "gemini_configured": bool(GEMINI_API_KEY and GEMINI_API_KEY != "cole_sua_chave_aqui"),
+        "openai_configured": provider_configured("openai"),
+        "gemini_configured": provider_configured("gemini"),
         "youtube_configured": youtube_configured(),
         "serper_configured": serper_configured(),
-        "model": OPENAI_MODEL,
-        "gemini_model": GEMINI_MODEL,
+        "model": provider_model("openai"),
+        "gemini_model": provider_model("gemini"),
         "questions": nq,
         "officialCount": basis.get("officialCount", 0),
         "statsBasis": basis.get("basis"),
@@ -71,6 +75,70 @@ def health() -> dict[str, Any]:
             "message": health_gate.get("message") or cur.get("message"),
             "alerts": health_gate.get("alerts") or [],
         },
+    }
+
+
+@router.get("/api/ai/config")
+def api_ai_config() -> dict[str, Any]:
+    return {"ok": True, **ai_state()}
+
+
+@router.post("/api/ai/config")
+def api_ai_configure(payload: AIProviderConfigRequest) -> dict[str, Any]:
+    try:
+        api_key = validate_secret(payload.apiKey)
+        if payload.provider == "gemini":
+            model = validate_gemini_key(api_key, payload.model)
+        else:
+            model = validate_openai_key(api_key)
+        configure_provider(payload.provider, api_key, payload.model or model)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {
+        "ok": True,
+        "message": f"Provedor {payload.provider} configurado e validado.",
+        **ai_state(),
+    }
+
+
+@router.post("/api/ai/test")
+def api_ai_test() -> dict[str, Any]:
+    provider = ai_state().get("activeProvider")
+    if provider is None:
+        return {
+            "ok": False,
+            "status": "not_configured",
+            "message": "Nenhum provedor de IA está configurado.",
+            **ai_state(),
+        }
+    try:
+        if provider == "gemini":
+            model = validate_gemini_key(provider_key("gemini"))
+            if model != provider_model("gemini"):
+                configure_provider("gemini", provider_key("gemini"), model)
+        else:
+            model = validate_openai_key(provider_key("openai"))
+    except HTTPException as exc:
+        detail = str(exc.detail)
+        if "recusada" in detail:
+            status = "key_rejected"
+        elif "cota" in detail or "limite" in detail:
+            status = "quota"
+        elif "conectar" in detail or "alcançar" in detail:
+            status = "connection"
+        else:
+            status = "unavailable"
+        return {
+            "ok": False,
+            "status": status,
+            "message": detail,
+            **ai_state(),
+        }
+    return {
+        "ok": True,
+        "status": "working",
+        "message": f"{provider.capitalize()} funcionando com {model}.",
+        **ai_state(),
     }
 
 @router.post("/api/seed")

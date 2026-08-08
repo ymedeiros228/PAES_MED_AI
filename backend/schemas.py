@@ -34,6 +34,13 @@ class ChatResponse(BaseModel):
     hasLocalBase: bool = True
     uncited: bool = False
 
+
+class AIProviderConfigRequest(BaseModel):
+    provider: Literal["gemini", "openai"]
+    apiKey: str = Field(min_length=1, max_length=512)
+    model: str | None = Field(default=None, max_length=160)
+
+
 class AnswerRequest(BaseModel):
     questionId: str
     correct: bool

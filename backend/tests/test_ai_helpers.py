@@ -44,6 +44,58 @@ def test_ask_gemini_traduz_limite_gratuito(monkeypatch: pytest.MonkeyPatch) -> N
     assert "limite gratuito" in str(raised.value.detail)
 
 
+def test_ask_gemini_tenta_modelos_indisponiveis_e_para_no_sucesso(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_request(api_key: str, model: str, *_: object) -> str:
+        calls.append(model)
+        if model == "modelo-inicial":
+            raise api_helpers.GeminiValidationError("unavailable", "indisponível")
+        if model == "gemini-flash-latest":
+            raise api_helpers.GeminiValidationError("quota", "cota")
+        return "resposta"
+
+    monkeypatch.setattr(api_helpers, "_gemini_configured", lambda: True)
+    monkeypatch.setattr(api_helpers, "provider_key", lambda _: "fake-key")
+    monkeypatch.setattr(
+        api_helpers,
+        "gemini_candidates",
+        lambda: ["modelo-inicial", "gemini-flash-latest", "gemini-3-flash-preview"],
+    )
+    monkeypatch.setattr(api_helpers, "_gemini_request", fake_request)
+
+    assert api_helpers._ask_gemini("instruções", "pergunta") == "resposta"
+    assert calls == ["modelo-inicial", "gemini-flash-latest", "gemini-3-flash-preview"]
+
+
+def test_ask_gemini_para_imediatamente_em_chave_invalida(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_request(api_key: str, model: str, *_: object) -> str:
+        calls.append(model)
+        raise api_helpers.GeminiValidationError("key", "chave recusada")
+
+    monkeypatch.setattr(api_helpers, "_gemini_configured", lambda: True)
+    monkeypatch.setattr(api_helpers, "provider_key", lambda _: "fake-key")
+    monkeypatch.setattr(
+        api_helpers,
+        "gemini_candidates",
+        lambda: ["gemini-flash-latest", "gemini-3-flash-preview"],
+    )
+    monkeypatch.setattr(api_helpers, "_gemini_request", fake_request)
+
+    with pytest.raises(HTTPException) as raised:
+        api_helpers._ask_gemini("instruções", "pergunta")
+
+    assert raised.value.status_code == 502
+    assert "chave recusada" in str(raised.value.detail)
+    assert calls == ["gemini-flash-latest"]
+
+
 def test_ask_gemini_traduz_api_key_invalid_em_400(monkeypatch: pytest.MonkeyPatch) -> None:
     response = SimpleNamespace(
         status_code=400,

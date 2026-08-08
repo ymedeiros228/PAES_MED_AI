@@ -7,13 +7,13 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
+from ai_state import provider_model
 from api_helpers import (
     _ask_gemini,
     _ask_openai,
     _configured_provider,
     _openai_client,
 )
-from config import GEMINI_MODEL, OPENAI_MODEL
 from db import db
 from schemas import (
     ChatRequest,
@@ -207,15 +207,21 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         )
 
     if not has_local or not q_cites:
-        # Online sem ids reais: recusa honesta (não bola de cristal)
-        configured_model = GEMINI_MODEL if provider == "gemini" else OPENAI_MODEL
+        # Sem questão local: ensina o conceito, mas não atribui incidência oficial.
+        uncited_content = (
+            f"{user_content}\n\n"
+            "AVISO DE FONTE: não há questão local alinhada a esta pergunta. "
+            "Ensine o conceito geral com clareza, sem inventar fonte. "
+            "É PROIBIDO afirmar percentual de cobrança, incidência UEMA, "
+            "gabarito ou resolução de prova que não estejam no contexto."
+        )
+        if provider == "gemini":
+            answer = _ask_gemini(TUTOR_SYSTEM, uncited_content, payload.history)
+        else:
+            answer = _ask_openai(TUTOR_SYSTEM, uncited_content, payload.history)
         return ChatResponse(
-            answer=(
-                "Sem base local suficiente para responder com fonte.\n\n"
-                "A busca na base não trouxe questões com id real alinhadas à pergunta. "
-                "Importe provas 2024–26 ou abra uma sessão — não invento resolução nem % de cobrança UEMA."
-            ),
-            model=f"{configured_model}-uncited-refuse",
+            answer=answer,
+            model=provider_model(provider),
             usedRag=False,
             citations=[],
             ragMode=rag_mode,
@@ -225,10 +231,9 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
 
     if provider == "gemini":
         answer = _ask_gemini(TUTOR_SYSTEM, user_content, payload.history)
-        model = GEMINI_MODEL
     else:
         answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
-        model = OPENAI_MODEL
+    model = provider_model(provider)
     return ChatResponse(
         answer=answer,
         model=model,
