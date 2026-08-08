@@ -88,9 +88,15 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     user_content = (
         f"ESTILO: {style_hint}\n\n"
         f"MODO_RAG: {rag_mode}\n\n"
-        f"REGRAS: Só use o CONTEXTO. Se faltar fonte, diga que não tem base local — "
-        f"não invente % de cobrança UEMA nem resolução de prova ausente. "
-        f"Cite ids de questões do contexto quando falar de itens.\n\n"
+        "REGRAS: Ensine diretamente o conceito, a teoria, o raciocínio ou a "
+        "resolução pedida, mesmo que o CONTEXTO não contenha uma explicação pronta. "
+        "Use o CONTEXTO para ancorar afirmações sobre provas e a banca e cite apenas "
+        "ids reais de questões. Não invente gabarito, resolução de questão específica, "
+        "id, percentual de cobrança, incidência, frequência, estatística, tendência "
+        "ou o que vai cair. Só informe um percentual se ele estiver explicitamente "
+        "sustentado pelo CONTEXTO; nunca converta uma frequência em percentual. "
+        "Se faltar suporte para um dado de prova, explique o conteúdo relacionado e "
+        "acrescente uma ressalva curta, sem substituir o ensino.\n\n"
         f"CONTEXTO DA BASE LOCAL:\n{context}\n\n"
         f"PERGUNTA DO ALUNO:\n{payload.message}"
     )
@@ -211,9 +217,10 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         uncited_content = (
             f"{user_content}\n\n"
             "AVISO DE FONTE: não há questão local alinhada a esta pergunta. "
-            "Ensine o conceito geral com clareza, sem inventar fonte. "
-            "É PROIBIDO afirmar percentual de cobrança, incidência UEMA, "
-            "gabarito ou resolução de prova que não estejam no contexto."
+            "Isso não impede o ensino do conteúdo geral: explique-o com clareza "
+            "e, se o aluno tiver pedido um dado sobre a prova ou a banca, diga "
+            "apenas que a base local não sustenta esse dado. Não substitua a "
+            "explicação por uma recusa."
         )
         if provider == "gemini":
             answer = _ask_gemini(TUTOR_SYSTEM, uncited_content, payload.history)

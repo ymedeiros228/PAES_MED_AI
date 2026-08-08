@@ -17,6 +17,7 @@ from routers import (  # noqa: E402
     meta,
 )
 from schemas import AIProviderConfigRequest, ChatRequest  # noqa: E402
+from services_extra import TUTOR_SYSTEM  # noqa: E402
 
 
 def test_grava_env_preservando_outras_chaves_e_sem_expor_segredo(
@@ -81,13 +82,19 @@ def test_configuracao_rejeita_quebra_de_linha() -> None:
 def test_tutor_ensina_sem_citacao_quando_provedor_esta_configurado(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    prompts: list[tuple[str, str]] = []
+
+    def fake_gemini(system: str, content: str, *_args: object) -> str:
+        prompts.append((system, content))
+        return "Explicação conceitual."
+
     monkeypatch.setattr(
         ai,
         "build_rag_context_embedded_full",
         lambda _: ("", "embedded", []),
     )
     monkeypatch.setattr(ai, "_configured_provider", lambda: "gemini")
-    monkeypatch.setattr(ai, "_ask_gemini", lambda *_args: "Explicação conceitual.")
+    monkeypatch.setattr(ai, "_ask_gemini", fake_gemini)
     monkeypatch.setattr(ai, "provider_model", lambda _: "gemini-flash-latest")
 
     result = ai.api_chat(ChatRequest(message="Explique osmose."))
@@ -97,6 +104,17 @@ def test_tutor_ensina_sem_citacao_quando_provedor_esta_configurado(
     assert result.citations == []
     assert result.hasLocalBase is False
     assert result.uncited is True
+    assert prompts[0][0] == TUTOR_SYSTEM
+    assert "Ensine diretamente o conceito" in prompts[0][1]
+    assert "Isso não impede o ensino do conteúdo geral" in prompts[0][1]
+    assert "Não invente gabarito" in prompts[0][1]
+
+
+def test_prompt_do_tutor_separa_ensino_de_afirmacoes_da_prova() -> None:
+    assert "Use seu conhecimento geral" in TUTOR_SYSTEM
+    assert "É PROIBIDO inventar" in TUTOR_SYSTEM
+    assert "Entregue primeiro a explicação útil" in TUTOR_SYSTEM
+    assert "Não há essa informação na base local." not in TUTOR_SYSTEM
 
 
 def test_tutor_offline_sem_provedor_mantem_recusa_sem_base(
