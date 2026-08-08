@@ -270,18 +270,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ),
                 ),
 
-                MissionQuestCard(
-                  title: 'Missão de redação',
-                  why: 'Treine o eixo fraco com persona e delta honesto — treino local, não banca.',
-                  ctaLabel: 'Abrir redação',
-                  status: MissionQuestStatus.open,
-                  onCta: () => context.go('/redacao'),
-                ),
-
-                FilledButton.icon(
-                  onPressed: () => context.go(sessionPath),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Começar sessão'),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => context.go(sessionPath),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Começar sessão'),
+                  ),
                 ),
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
@@ -300,6 +295,43 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       onContinue: () => context.go(sessionPath),
                     );
                   },
+                ),
+
+                SectionLabel(
+                  'Outras ações',
+                  hint: 'Complementos do dia, abaixo da sessão principal',
+                ),
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 2),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.edit_note_rounded,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Missão de redação',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            Text(
+                              'Treino local · não banca',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/redacao'),
+                        child: const Text('Abrir'),
+                      ),
+                    ],
+                  ),
                 ),
 
                 if (officialUnlocked && coachSubject != null && coachTopic != null) ...[

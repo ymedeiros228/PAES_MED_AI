@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:paes_med_ai/features/ai_tutor/application/ai_tutor_controller.dart';
 import 'package:paes_med_ai/features/ai_tutor/domain/chat_message.dart';
 
+import '../../../core/data/api_client.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class AiTutorScreen extends ConsumerStatefulWidget {
@@ -28,6 +29,7 @@ class AiTutorScreen extends ConsumerStatefulWidget {
 class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  late final Future<dynamic> _aiConfigFuture;
   bool _seedApplied = false;
 
   static const _styles = <(String, String)>[
@@ -44,6 +46,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   @override
   void initState() {
     super.initState();
+    _aiConfigFuture = apiClient.get('/api/ai/config');
     WidgetsBinding.instance.addPostFrameCallback((_) => _applyRouteSeed());
   }
 
@@ -134,6 +137,30 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     icon: const Icon(Icons.delete_sweep_outlined),
                   ),
                 ),
+              ),
+              FutureBuilder<dynamic>(
+                future: _aiConfigFuture,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data is! Map) {
+                    return const SizedBox.shrink();
+                  }
+                  final config = Map<String, dynamic>.from(snapshot.data as Map);
+                  final configured = config['geminiConfigured'] == true ||
+                      config['openaiConfigured'] == true;
+                  if (configured) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+                    child: QuietEmpty(
+                      icon: Icons.cloud_off_outlined,
+                      message:
+                          'Modo offline com base local. Configure uma chave em Ajustes para conversar com a IA online.',
+                      action: TextButton(
+                        onPressed: () => context.go('/configuracoes'),
+                        child: const Text('Abrir Ajustes'),
+                      ),
+                    ),
+                  );
+                },
               ),
               if (state.error != null)
                 Padding(

@@ -550,7 +550,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                           ExpansionTile(
                             tilePadding: EdgeInsets.zero,
-                            initiallyExpanded: false,
+                            initiallyExpanded: true,
                             title: Text('Mais do dia', style: Theme.of(context).textTheme.titleSmall),
                             subtitle: const Text('semana, pulso, relevo e ritmo'),
                             children: [
