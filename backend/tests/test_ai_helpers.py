@@ -15,6 +15,33 @@ sys.path.insert(0, str(BACKEND))
 import api_helpers  # noqa: E402
 
 
+def test_ask_gemini_retorna_texto_da_resposta(monkeypatch: pytest.MonkeyPatch) -> None:
+    response = SimpleNamespace(
+        status_code=200,
+        json=lambda: {
+            "candidates": [
+                {"content": {"parts": [{"text": "  resposta Gemini  "}]}}
+            ]
+        },
+    )
+    monkeypatch.setattr(api_helpers, "_gemini_configured", lambda: True)
+    monkeypatch.setattr("httpx.post", lambda *args, **kwargs: response)
+
+    assert api_helpers._ask_gemini("instruções", "pergunta") == "resposta Gemini"
+
+
+def test_ask_gemini_traduz_limite_gratuito(monkeypatch: pytest.MonkeyPatch) -> None:
+    response = SimpleNamespace(status_code=429, json=lambda: {})
+    monkeypatch.setattr(api_helpers, "_gemini_configured", lambda: True)
+    monkeypatch.setattr("httpx.post", lambda *args, **kwargs: response)
+
+    with pytest.raises(HTTPException) as raised:
+        api_helpers._ask_gemini("instruções", "pergunta")
+
+    assert raised.value.status_code == 502
+    assert "limite gratuito" in str(raised.value.detail)
+
+
 def test_ask_openai_retorna_texto_do_responses(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_client = SimpleNamespace(
         responses=SimpleNamespace(

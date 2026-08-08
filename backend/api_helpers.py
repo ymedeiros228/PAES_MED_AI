@@ -12,6 +12,8 @@ from fastapi import (
 )
 
 from config import (
+    GEMINI_API_KEY,
+    GEMINI_MODEL,
     MAX_UPLOAD_BYTES,
     OPENAI_API_KEY,
     OPENAI_MODEL,
@@ -26,6 +28,92 @@ def _openai_client():
     from openai import OpenAI
 
     return OpenAI(api_key=OPENAI_API_KEY, timeout=OPENAI_TIMEOUT_SECONDS, max_retries=1)
+
+
+def _gemini_configured() -> bool:
+    return bool(GEMINI_API_KEY and GEMINI_API_KEY != "cole_sua_chave_aqui")
+
+
+def _configured_provider() -> str | None:
+    if _gemini_configured():
+        return "gemini"
+    if _openai_client() is not None:
+        return "openai"
+    return None
+
+
+def _gemini_messages(
+    user_content: str,
+    history: list[ChatMessage] | None,
+) -> list[dict[str, object]]:
+    messages: list[dict[str, object]] = []
+    for item in (history or [])[-20:]:
+        role = "model" if item.role == "assistant" else "user"
+        messages.append({"role": role, "parts": [{"text": item.content}]})
+    messages.append({"role": "user", "parts": [{"text": user_content}]})
+    return messages
+
+
+def _ask_gemini(
+    instructions: str,
+    user_content: str,
+    history: list[ChatMessage] | None = None,
+) -> str:
+    if not _gemini_configured():
+        raise HTTPException(
+            status_code=503,
+            detail="GEMINI_API_KEY não configurada.",
+        )
+
+    import httpx
+
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GEMINI_MODEL}:generateContent"
+    )
+    body = {
+        "systemInstruction": {"parts": [{"text": instructions}]},
+        "contents": _gemini_messages(user_content, history),
+        "generationConfig": {"temperature": 0.2},
+    }
+    try:
+        response = httpx.post(
+            url,
+            headers={"x-goog-api-key": GEMINI_API_KEY},
+            json=body,
+            timeout=OPENAI_TIMEOUT_SECONDS,
+        )
+        if response.status_code >= 400:
+            if response.status_code == 429:
+                detail = "O Gemini atingiu o limite gratuito de uso. Tente novamente mais tarde."
+            elif response.status_code in {401, 403}:
+                detail = "A chave Gemini foi recusada. Verifique se ela está ativa."
+            else:
+                detail = f"Falha Gemini (HTTP {response.status_code})."
+            raise HTTPException(status_code=502, detail=detail)
+        data = response.json()
+        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+        answer = "\n".join(
+            part.get("text", "").strip()
+            for part in parts
+            if isinstance(part, dict) and part.get("text")
+        ).strip()
+        if not answer:
+            raise HTTPException(status_code=502, detail="O Gemini retornou uma resposta vazia.")
+        return answer
+    except HTTPException:
+        raise
+    except httpx.TimeoutException as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Não foi possível alcançar o Gemini dentro do tempo limite.",
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Não foi possível conectar ao Gemini.",
+        ) from exc
+
 
 def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:
     client = _openai_client()

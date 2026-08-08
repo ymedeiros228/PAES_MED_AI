@@ -7,6 +7,8 @@ from typing import Any
 from fastapi import APIRouter
 
 from config import (
+    GEMINI_API_KEY,
+    GEMINI_MODEL,
     OPENAI_API_KEY,
     OPENAI_MODEL,
 )
@@ -42,9 +44,11 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "openai_configured": bool(OPENAI_API_KEY and OPENAI_API_KEY != "cole_sua_chave_aqui"),
+        "gemini_configured": bool(GEMINI_API_KEY and GEMINI_API_KEY != "cole_sua_chave_aqui"),
         "youtube_configured": youtube_configured(),
         "serper_configured": serper_configured(),
         "model": OPENAI_MODEL,
+        "gemini_model": GEMINI_MODEL,
         "questions": nq,
         "officialCount": basis.get("officialCount", 0),
         "statsBasis": basis.get("basis"),

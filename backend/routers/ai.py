@@ -8,10 +8,12 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from api_helpers import (
+    _ask_gemini,
     _ask_openai,
+    _configured_provider,
     _openai_client,
 )
-from config import OPENAI_MODEL
+from config import GEMINI_MODEL, OPENAI_MODEL
 from db import db
 from schemas import (
     ChatRequest,
@@ -79,8 +81,8 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     ]
     has_local = bool(q_cites) or bool((context or "").strip())
 
-    client = _openai_client()
-    if client is None:
+    provider = _configured_provider()
+    if provider is None:
         from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
 
         basis = stats_basis()
@@ -170,7 +172,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         lines.append(
             "[Aviso] Offline grounded na base local. Não inventa % de cobrança UEMA."
             + ("" if basis.get("basis") == "oficial" else " Stats ainda em treino.")
-            + " Configure OPENAI_API_KEY para diálogo completo."
+            + " Configure GEMINI_API_KEY ou OPENAI_API_KEY para diálogo completo."
         )
         answer = "\n".join(lines)
         return ChatResponse(
@@ -185,13 +187,14 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
 
     if not has_local or not q_cites:
         # Online sem ids reais: recusa honesta (não bola de cristal)
+        configured_model = GEMINI_MODEL if provider == "gemini" else OPENAI_MODEL
         return ChatResponse(
             answer=(
                 "Sem base local suficiente para responder com fonte.\n\n"
                 "A busca na base não trouxe questões com id real alinhadas à pergunta. "
                 "Importe provas 2024–26 ou abra uma sessão — não invento resolução nem % de cobrança UEMA."
             ),
-            model=f"{OPENAI_MODEL}-uncited-refuse",
+            model=f"{configured_model}-uncited-refuse",
             usedRag=False,
             citations=[],
             ragMode=rag_mode,
@@ -199,10 +202,15 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
             uncited=True,
         )
 
-    answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
+    if provider == "gemini":
+        answer = _ask_gemini(TUTOR_SYSTEM, user_content, payload.history)
+        model = GEMINI_MODEL
+    else:
+        answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
+        model = OPENAI_MODEL
     return ChatResponse(
         answer=answer,
-        model=OPENAI_MODEL,
+        model=model,
         usedRag=True,
         citations=q_cites[:8],
         ragMode=rag_mode,

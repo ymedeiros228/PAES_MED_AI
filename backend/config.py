@@ -18,6 +18,9 @@ try:
 except ValueError:
     OPENAI_TIMEOUT_SECONDS = 45.0
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview").strip()
+
 # Origens locais (app desktop, Flutter web em porta aleatoria, emulador Android).
 # Sites externos abertos no navegador do usuario nao podem falar com a API local.
 LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1|\[::1\]|10\.0\.2\.2)(:\d+)?$"
