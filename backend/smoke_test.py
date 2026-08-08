@@ -2297,7 +2297,8 @@ def run_checks() -> list[Check]:
     ).exists() else ""
     ok(
         "ciclo_as_tutor_ui_uncited_banner",
-        "uncited" in tutor_ui and "Sem base local" in tutor_ui,
+        "uncited" in tutor_ui
+        and ("Conteúdo geral" in tutor_ui or "sem questão da base local" in tutor_ui),
         "tutor UI uncited",
     )
     ok(

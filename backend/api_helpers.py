@@ -22,6 +22,9 @@ from ai_state import (
 from config import MAX_UPLOAD_BYTES, OPENAI_TIMEOUT_SECONDS
 from schemas import ChatMessage
 
+GEMINI_PROBE_TIMEOUT_SECONDS = 15
+MAX_GEMINI_CANDIDATES_PER_REQUEST = 3
+
 
 def _openai_client():
     if not provider_configured("openai"):
@@ -68,6 +71,7 @@ def _gemini_request(
     instructions: str,
     user_content: str,
     history: list[ChatMessage] | None = None,
+    timeout_seconds: float = OPENAI_TIMEOUT_SECONDS,
 ) -> str:
     import httpx
 
@@ -85,7 +89,7 @@ def _gemini_request(
             url,
             headers={"x-goog-api-key": api_key},
             json=body,
-            timeout=OPENAI_TIMEOUT_SECONDS,
+            timeout=timeout_seconds,
         )
         if response.status_code >= 400:
             invalid_key = False
@@ -162,7 +166,7 @@ def _ask_gemini(
             detail="GEMINI_API_KEY não configurada.",
         )
     last: GeminiValidationError | None = None
-    for model in gemini_candidates():
+    for index, model in enumerate(gemini_candidates()[:MAX_GEMINI_CANDIDATES_PER_REQUEST]):
         try:
             answer = _gemini_request(
                 provider_key("gemini"),
@@ -170,6 +174,11 @@ def _ask_gemini(
                 instructions,
                 user_content,
                 history,
+                timeout_seconds=(
+                    OPENAI_TIMEOUT_SECONDS
+                    if index == 0
+                    else GEMINI_PROBE_TIMEOUT_SECONDS
+                ),
             )
             if model != provider_model("gemini"):
                 remember_model("gemini", model)
@@ -195,13 +204,14 @@ def _ask_gemini(
 
 def validate_gemini_key(api_key: str, initial_model: str | None = None) -> str:
     last: GeminiValidationError | None = None
-    for model in gemini_candidates(initial_model):
+    for model in gemini_candidates(initial_model)[:MAX_GEMINI_CANDIDATES_PER_REQUEST]:
         try:
             _gemini_request(
                 api_key,
                 model,
                 "Responda apenas com OK.",
                 "Teste de configuração.",
+                timeout_seconds=GEMINI_PROBE_TIMEOUT_SECONDS,
             )
             return model
         except GeminiValidationError as error:

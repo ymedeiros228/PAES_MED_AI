@@ -49,7 +49,7 @@ def test_ask_gemini_tenta_modelos_indisponiveis_e_para_no_sucesso(
 ) -> None:
     calls: list[str] = []
 
-    def fake_request(api_key: str, model: str, *_: object) -> str:
+    def fake_request(api_key: str, model: str, *args: object, **kwargs: object) -> str:
         calls.append(model)
         if model == "modelo-inicial":
             raise api_helpers.GeminiValidationError("unavailable", "indisponível")
@@ -70,12 +70,48 @@ def test_ask_gemini_tenta_modelos_indisponiveis_e_para_no_sucesso(
     assert calls == ["modelo-inicial", "gemini-flash-latest", "gemini-3-flash-preview"]
 
 
+def test_ask_gemini_limita_tres_candidatos_e_sonda_em_15_segundos(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, float]] = []
+
+    def fake_request(
+        api_key: str,
+        model: str,
+        instructions: str,
+        user_content: str,
+        history: list[ChatMessage] | None = None,
+        *,
+        timeout_seconds: float,
+    ) -> str:
+        calls.append((model, timeout_seconds))
+        raise api_helpers.GeminiValidationError("unavailable", "indisponível")
+
+    monkeypatch.setattr(api_helpers, "_gemini_configured", lambda: True)
+    monkeypatch.setattr(api_helpers, "provider_key", lambda _: "fake-key")
+    monkeypatch.setattr(
+        api_helpers,
+        "gemini_candidates",
+        lambda: ["um", "dois", "tres", "quatro", "cinco"],
+    )
+    monkeypatch.setattr(api_helpers, "_gemini_request", fake_request)
+
+    with pytest.raises(HTTPException):
+        api_helpers._ask_gemini("instruções", "pergunta")
+
+    assert calls == [
+        ("um", api_helpers.OPENAI_TIMEOUT_SECONDS),
+        ("dois", 15),
+        ("tres", 15),
+    ]
+
+
 def test_ask_gemini_para_imediatamente_em_chave_invalida(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
 
-    def fake_request(api_key: str, model: str, *_: object) -> str:
+    def fake_request(api_key: str, model: str, *args: object, **kwargs: object) -> str:
         calls.append(model)
         raise api_helpers.GeminiValidationError("key", "chave recusada")
 

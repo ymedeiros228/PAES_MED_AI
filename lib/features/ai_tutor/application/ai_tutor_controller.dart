@@ -88,6 +88,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
             citations: answer.citations,
             uncited: answer.uncited,
             hasLocalBase: answer.hasLocalBase,
+            model: answer.model,
           ),
         ],
         isLoading: false,
@@ -104,7 +105,8 @@ class AiTutorController extends StateNotifier<AiTutorState> {
       messages: const [
         ChatMessage(
           role: ChatRole.assistant,
-          content: 'Conversa reiniciada. Qual conteúdo do edital/provas deseja estudar agora?',
+          content:
+              'Conversa reiniciada. Qual conteúdo do edital/provas deseja estudar agora?',
         ),
       ],
     );

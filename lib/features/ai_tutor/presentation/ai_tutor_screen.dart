@@ -392,15 +392,36 @@ class _MessageBubble extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: scheme.errorContainer.withOpacity(0.55),
+                  color: scheme.primaryContainer.withOpacity(0.55),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Sem base local · não inventa cobrança UEMA',
+                  'Conteúdo geral · sem questão da base local',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onErrorContainer,
+                        color: scheme.onPrimaryContainer,
                         fontWeight: FontWeight.w700,
                       ),
+                ),
+              ),
+            ],
+            if (!message.isUser &&
+                message.model != null &&
+                message.model!.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Chip(
+                  avatar: Icon(
+                    message.model!.startsWith('offline-')
+                        ? Icons.cloud_off_outlined
+                        : Icons.auto_awesome_outlined,
+                    size: 16,
+                  ),
+                  label: Text(
+                    message.model!.startsWith('offline-')
+                        ? 'Modo offline'
+                        : 'IA online · ${message.model}',
+                  ),
+                  visualDensity: VisualDensity.compact,
                 ),
               ),
             ],
