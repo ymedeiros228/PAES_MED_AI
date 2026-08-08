@@ -7175,6 +7175,47 @@ def run_checks() -> list[Check]:
         "ROADMAP IQ-IU",
     )
 
+    # --- IV: Redação rascunho offline (SharedPreferences) ---
+    essay_iv = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    draft_iv = (root / "lib" / "features" / "essay" / "essay_draft.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    draft_unit = (root / "test" / "unit" / "essay_draft_test.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    draft_widget = (root / "test" / "widget" / "essay_draft_restore_test.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_iv_essay_draft_store",
+        "class EssayDraft" in draft_iv
+        and "saveEssayDraft" in draft_iv
+        and "loadEssayDraft" in draft_iv
+        and "essay_draft_v1" in draft_iv,
+        "essay_draft store",
+    )
+    ok(
+        "ciclo_iv_essay_draft_wire",
+        "_restoreDraft" in essay_iv
+        and "_scheduleDraftSave" in essay_iv
+        and "Rascunho restaurado" in essay_iv
+        and "unawaited(_clearDraft())" in essay_iv,
+        "essay_screen draft wire",
+    )
+    ok(
+        "ciclo_iv_essay_draft_tests",
+        "save depois load" in draft_unit
+        and "Rascunho restaurado" in draft_widget,
+        "essay draft unit+widget",
+    )
+    ok(
+        "ciclo_iv_roadmap",
+        "IV" in roadmap_hm and ("rascunho" in roadmap_hm.lower() or "essay_draft" in roadmap_hm),
+        "ROADMAP IV",
+    )
+
     return checks
 
 
