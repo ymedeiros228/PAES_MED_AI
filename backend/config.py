@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()
+try:
+    OPENAI_TIMEOUT_SECONDS = max(5.0, float(os.getenv("OPENAI_TIMEOUT_SECONDS", "45")))
+except ValueError:
+    OPENAI_TIMEOUT_SECONDS = 45.0
 
 # Origens locais (app desktop, Flutter web em porta aleatoria, emulador Android).
 # Sites externos abertos no navegador do usuario nao podem falar com a API local.

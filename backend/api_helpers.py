@@ -15,6 +15,7 @@ from config import (
     MAX_UPLOAD_BYTES,
     OPENAI_API_KEY,
     OPENAI_MODEL,
+    OPENAI_TIMEOUT_SECONDS,
 )
 from schemas import ChatMessage
 
@@ -24,7 +25,7 @@ def _openai_client():
         return None
     from openai import OpenAI
 
-    return OpenAI(api_key=OPENAI_API_KEY)
+    return OpenAI(api_key=OPENAI_API_KEY, timeout=OPENAI_TIMEOUT_SECONDS, max_retries=1)
 
 def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:
     client = _openai_client()
@@ -50,9 +51,18 @@ def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage]
     except HTTPException:
         raise
     except Exception as exc:
+        kind = type(exc).__name__
+        if kind == "RateLimitError":
+            detail = "A chave OpenAI foi aceita, mas atingiu o limite de uso ou cota."
+        elif kind in {"AuthenticationError", "PermissionDeniedError"}:
+            detail = "A chave OpenAI foi recusada. Verifique se ela está ativa e autorizada."
+        elif kind in {"APITimeoutError", "APIConnectionError"}:
+            detail = "Não foi possível alcançar a OpenAI dentro do tempo limite."
+        else:
+            detail = f"Falha OpenAI ({kind})."
         raise HTTPException(
             status_code=502,
-            detail=f"Falha OpenAI ({type(exc).__name__}).",
+            detail=detail,
         ) from exc
 
 async def _save_upload(file: UploadFile, folder: Path, default_name: str) -> Path:

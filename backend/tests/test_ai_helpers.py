@@ -1,0 +1,54 @@
+"""Regressões da configuração e dos erros da integração OpenAI."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+from fastapi import HTTPException
+
+BACKEND = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BACKEND))
+
+import api_helpers  # noqa: E402
+
+
+def test_ask_openai_retorna_texto_do_responses(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_client = SimpleNamespace(
+        responses=SimpleNamespace(
+            create=lambda **_: SimpleNamespace(output_text="  resposta grounded  ")
+        )
+    )
+    monkeypatch.setattr(api_helpers, "_openai_client", lambda: fake_client)
+
+    assert api_helpers._ask_openai("instruções", "pergunta") == "resposta grounded"
+
+
+@pytest.mark.parametrize(
+    ("error_name", "expected"),
+    [
+        ("RateLimitError", "atingiu o limite de uso ou cota"),
+        ("AuthenticationError", "foi recusada"),
+        ("APITimeoutError", "tempo limite"),
+    ],
+)
+def test_ask_openai_traduz_erros_operacionais(
+    monkeypatch: pytest.MonkeyPatch,
+    error_name: str,
+    expected: str,
+) -> None:
+    error_type = type(error_name, (Exception,), {})
+    fake_client = SimpleNamespace(
+        responses=SimpleNamespace(
+            create=lambda **_: (_ for _ in ()).throw(error_type())
+        )
+    )
+    monkeypatch.setattr(api_helpers, "_openai_client", lambda: fake_client)
+
+    with pytest.raises(HTTPException) as raised:
+        api_helpers._ask_openai("instruções", "pergunta")
+
+    assert raised.value.status_code == 502
+    assert expected in str(raised.value.detail)
