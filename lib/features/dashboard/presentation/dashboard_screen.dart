@@ -514,13 +514,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           FutureBuilder(
                             future: apiClient.get('/api/essays/progress'),
                             builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) {
-                                return const SizedBox.shrink();
+                              if (snap.connectionState == ConnectionState.waiting) {
+                                return const CompactStatus(
+                                  message: 'Carregando missão de redação…',
+                                  icon: Icons.hourglass_empty_rounded,
+                                );
+                              }
+                              if (snap.hasError || snap.data is! Map) {
+                                return const CompactStatus(
+                                  message: 'Missão de redação indisponível no momento.',
+                                  icon: Icons.sync_problem_outlined,
+                                );
                               }
                               final prog = Map<String, dynamic>.from(snap.data as Map);
                               final c = prog['count'] as int? ?? 0;
                               final mission = prog['nextMission'];
-                              if (c < 1 || mission is! Map) return const SizedBox.shrink();
+                              if (c < 1 || mission is! Map) {
+                                return const CompactStatus(
+                                  message: 'Nenhuma missão de redação disponível.',
+                                  icon: Icons.edit_note_outlined,
+                                );
+                              }
                               return Padding(
                                 padding: const EdgeInsets.only(top: 4),
                                 child: PlaylistTile(
@@ -773,15 +787,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                     );
                                                   },
                                                   borderRadius: BorderRadius.circular(2),
-                                                  child: Container(
-                                                    width: 12,
-                                                    height: 12,
-                                                    decoration: BoxDecoration(
-                                                      color: bg,
-                                                      borderRadius: BorderRadius.circular(2),
-                                                      border: isToday
-                                                          ? Border.all(color: cs.primary, width: 1.5)
-                                                          : null,
+                                                  child: SizedBox(
+                                                    width: 44,
+                                                    height: 44,
+                                                    child: Center(
+                                                      child: Container(
+                                                        width: 12,
+                                                        height: 12,
+                                                        decoration: BoxDecoration(
+                                                          color: bg,
+                                                          borderRadius: BorderRadius.circular(2),
+                                                          border: isToday
+                                                              ? Border.all(color: cs.primary, width: 1.5)
+                                                              : null,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
                                                 ),

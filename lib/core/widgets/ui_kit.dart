@@ -503,6 +503,43 @@ class QuietEmpty extends StatelessWidget {
   }
 }
 
+/// Estado secundário compacto para não fazer uma seção desaparecer em silêncio.
+class CompactStatus extends StatelessWidget {
+  const CompactStatus({
+    required this.message,
+    this.icon = Icons.info_outline_rounded,
+    super.key,
+  });
+
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      label: message,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(icon, size: 17, color: cs.onSurface.withOpacity(0.58)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onSurface.withOpacity(0.72),
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Loading calmo (mint/teal) — evita spinner cru centralizado.
 class SoftLoader extends StatelessWidget {
   const SoftLoader({this.label, this.compact = false, super.key});

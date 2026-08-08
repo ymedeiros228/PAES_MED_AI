@@ -131,7 +131,11 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                   icon: const Icon(Icons.refresh_rounded),
                 ),
               ),
-              if (loading) const LinearProgressIndicator(),
+              if (loading)
+                const SoftLoader(
+                  compact: true,
+                  label: 'Carregando fila de aprovação…',
+                ),
               if (error != null)
                 QuietEmpty(
                   message: error!,

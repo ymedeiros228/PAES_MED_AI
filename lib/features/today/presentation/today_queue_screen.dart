@@ -495,7 +495,12 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 Builder(
                   builder: (_) {
                     final wc = Map<String, dynamic>.from(queue!['weekClose'] as Map? ?? const {});
-                    if (wc.isEmpty) return const SizedBox.shrink();
+                    if (wc.isEmpty) {
+                      return const CompactStatus(
+                        message: 'Sem fechamento da semana para exibir.',
+                        icon: Icons.event_note_outlined,
+                      );
+                    }
                     return WeekClosePanel(weekClose: wc, onCloseWeek: _closeWeek);
                   },
                 ),
@@ -605,11 +610,27 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 FutureBuilder(
                   future: apiClient.get('/api/essays/progress'),
                   builder: (context, snap) {
-                    if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                    if (snap.connectionState == ConnectionState.waiting) {
+                      return const CompactStatus(
+                        message: 'Carregando missão de redação…',
+                        icon: Icons.hourglass_empty_rounded,
+                      );
+                    }
+                    if (snap.hasError || snap.data is! Map) {
+                      return const CompactStatus(
+                        message: 'Missão de redação indisponível no momento.',
+                        icon: Icons.sync_problem_outlined,
+                      );
+                    }
                     final prog = Map<String, dynamic>.from(snap.data as Map);
                     final count = prog['count'] as int? ?? 0;
                     final mission = prog['nextMission'];
-                    if (count < 1 || mission is! Map) return const SizedBox.shrink();
+                    if (count < 1 || mission is! Map) {
+                      return const CompactStatus(
+                        message: 'Nenhuma missão de redação disponível.',
+                        icon: Icons.edit_note_outlined,
+                      );
+                    }
                     final label = mission['label']?.toString() ?? 'eixo';
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -346,7 +346,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ],
               if (loading) ...[
                 const SizedBox(height: 12),
-                const LinearProgressIndicator(minHeight: 2),
+                const SoftLoader(
+                  compact: true,
+                  label: 'Carregando plano de estudo…',
+                ),
               ],
               if (error != null) ...[
                 const SizedBox(height: 8),

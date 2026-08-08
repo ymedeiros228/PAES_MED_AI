@@ -239,11 +239,27 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         key: ValueKey('drafts-$tick'),
                         future: apiClient.get('/api/professor/draft-queue?limit=5'),
                         builder: (context, snap) {
-                          if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const CompactStatus(
+                              message: 'Carregando rascunhos para revisar…',
+                              icon: Icons.hourglass_empty_rounded,
+                            );
+                          }
+                          if (snap.hasError || snap.data is! Map) {
+                            return const CompactStatus(
+                              message: 'Rascunhos indisponíveis no momento.',
+                              icon: Icons.sync_problem_outlined,
+                            );
+                          }
                           final q = Map<String, dynamic>.from(snap.data as Map);
                           final draftItems = q['items'] as List? ?? const [];
                           final n = q['count'] as int? ?? draftItems.length;
-                          if (n == 0) return const SizedBox.shrink();
+                          if (n == 0) {
+                            return const CompactStatus(
+                              message: 'Nenhum rascunho para revisar.',
+                              icon: Icons.inbox_outlined,
+                            );
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -303,11 +319,27 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         key: ValueKey('dirty-$tick'),
                         future: apiClient.get('/api/curation/dirty-labels?limit=8'),
                         builder: (context, snap) {
-                          if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const CompactStatus(
+                              message: 'Carregando labels para revisar…',
+                              icon: Icons.hourglass_empty_rounded,
+                            );
+                          }
+                          if (snap.hasError || snap.data is! Map) {
+                            return const CompactStatus(
+                              message: 'Labels suspeitas indisponíveis no momento.',
+                              icon: Icons.sync_problem_outlined,
+                            );
+                          }
                           final d = Map<String, dynamic>.from(snap.data as Map);
                           final n = d['count'] as int? ?? 0;
                           final dirtyItems = d['items'] as List? ?? const [];
-                          if (n == 0) return const SizedBox.shrink();
+                          if (n == 0) {
+                            return const CompactStatus(
+                              message: 'Nenhuma label suspeita encontrada.',
+                              icon: Icons.label_outline_rounded,
+                            );
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

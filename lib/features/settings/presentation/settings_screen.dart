@@ -641,13 +641,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           FutureBuilder(
                             future: apiClient.get('/api/media/opens', {'limit': '8'}),
                             builder: (context, openSnap) {
-                              if (!openSnap.hasData || openSnap.data is! Map) {
-                                return const SizedBox.shrink();
+                              if (openSnap.connectionState == ConnectionState.waiting) {
+                                return const CompactStatus(
+                                  message: 'Carregando histórico de mídia…',
+                                  icon: Icons.hourglass_empty_rounded,
+                                );
+                              }
+                              if (openSnap.hasError || openSnap.data is! Map) {
+                                return const CompactStatus(
+                                  message: 'Histórico de mídia indisponível no momento.',
+                                  icon: Icons.sync_problem_outlined,
+                                );
                               }
                               final om = Map<String, dynamic>.from(openSnap.data as Map);
                               final items =
                                   (om['items'] as List? ?? []).whereType<Map>().toList();
-                              if (items.isEmpty) return const SizedBox.shrink();
+                              if (items.isEmpty) {
+                                return const CompactStatus(
+                                  message: 'Nenhuma abertura de mídia registrada.',
+                                  icon: Icons.history_outlined,
+                                );
+                              }
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
