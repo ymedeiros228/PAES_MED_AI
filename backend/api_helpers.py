@@ -84,9 +84,24 @@ def _ask_gemini(
             timeout=OPENAI_TIMEOUT_SECONDS,
         )
         if response.status_code >= 400:
+            invalid_key = False
+            try:
+                error_payload = response.json()
+            except (ValueError, TypeError):
+                error_payload = {}
+            if isinstance(error_payload, dict):
+                error = error_payload.get("error")
+                if isinstance(error, dict):
+                    code = str(error.get("status") or error.get("code") or "").upper()
+                    message = str(error.get("message") or "").lower()
+                    invalid_key = (
+                        "API_KEY_INVALID" in code
+                        or "api key not valid" in message
+                        or ("invalid_argument" in code.lower() and "api key" in message)
+                    )
             if response.status_code == 429:
                 detail = "O Gemini atingiu o limite gratuito de uso. Tente novamente mais tarde."
-            elif response.status_code in {401, 403}:
+            elif response.status_code in {401, 403} or invalid_key:
                 detail = "A chave Gemini foi recusada. Verifique se ela está ativa."
             else:
                 detail = f"Falha Gemini (HTTP {response.status_code})."

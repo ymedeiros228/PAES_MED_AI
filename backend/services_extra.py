@@ -65,6 +65,19 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
     },
 }
 
+RAG_CITATION_LIMIT = 12
+
+
+def prioritize_rag_citations(
+    citations: list[dict[str, Any]],
+    question_limit: int,
+) -> list[dict[str, Any]]:
+    questions = [c for c in citations if c.get("type") == "question"]
+    others = [c for c in citations if c.get("type") != "question"]
+    question_count = min(question_limit, len(questions))
+    remaining = max(0, RAG_CITATION_LIMIT - question_count)
+    return questions[:question_count] + others[:remaining]
+
 
 def remediation_for(error_type: str | None, subject: str = "", topic: str = "") -> dict[str, Any]:
     key = (error_type or "conceito").strip().lower()
@@ -172,7 +185,7 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             f"{f['subject']}/{f['topic']}: {f['frequency']}x anos={f['years']}"
         )
 
-    return "\n\n".join(chunks), citations[:12]
+    return "\n\n".join(chunks), prioritize_rag_citations(citations, limit)
 
 
 TUTOR_SYSTEM = """

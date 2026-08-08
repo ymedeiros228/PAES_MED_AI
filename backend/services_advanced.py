@@ -319,7 +319,7 @@ def build_rag_context_embedded(query: str, limit: int = 8) -> tuple[str, str]:
 def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, str, list[dict[str, Any]]]:
     """Retorna (contexto, modo, citações)."""
     from services_core import is_official_source, stats_basis
-    from services_extra import build_rag_context_with_citations
+    from services_extra import build_rag_context_with_citations, prioritize_rag_citations
 
     basis = stats_basis()
     prefer_official = basis["officialCount"] >= 10
@@ -419,4 +419,4 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
                 }
             )
 
-    return "\n\n".join(chunks), mode, citations[:12]
+    return "\n\n".join(chunks), mode, prioritize_rag_citations(citations, limit)

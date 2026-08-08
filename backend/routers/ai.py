@@ -40,18 +40,39 @@ from services_extra import (
 
 router = APIRouter(tags=["ia"])
 
+_FOLLOW_UP_PREFIXES = (
+    "explique a resposta anterior",
+    "faça uma pergunta curta para testar meu entendimento",
+    "transforme a resposta anterior em até 3 flashcards",
+)
+
+
+def retrieval_query(message: str, history: list[Any] | None) -> str:
+    """Mantém os atalhos do Tutor ancorados na pergunta original do aluno."""
+    normalized = message.strip().lower()
+    if not any(normalized.startswith(prefix) for prefix in _FOLLOW_UP_PREFIXES):
+        return message
+    for item in reversed(history or []):
+        if getattr(item, "role", None) != "user":
+            continue
+        candidate = getattr(item, "content", "").strip()
+        if candidate and not any(candidate.lower().startswith(prefix) for prefix in _FOLLOW_UP_PREFIXES):
+            return candidate
+    return message
+
 
 @router.post("/api/chat", response_model=ChatResponse)
 def api_chat(payload: ChatRequest) -> ChatResponse:
     citations: list[dict[str, Any]] = []
+    rag_query = retrieval_query(payload.message, payload.history)
     try:
-        context, rag_mode, citations = build_rag_context_embedded_full(payload.message)
+        context, rag_mode, citations = build_rag_context_embedded_full(rag_query)
     except Exception:
         try:
-            context, citations = build_rag_context_with_citations(payload.message)
+            context, citations = build_rag_context_with_citations(rag_query)
             rag_mode = "keyword"
         except Exception:
-            context, rag_mode = build_rag_context(payload.message), "keyword"
+            context, rag_mode = build_rag_context(rag_query), "keyword"
             citations = []
     style_hint = {
         "professor": "Explique como professor especialista, com perguntas.",
