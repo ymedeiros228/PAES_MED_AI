@@ -6609,8 +6609,10 @@ def run_checks() -> list[Check]:
         "rail Progresso",
     )
     ok(
-        "ciclo_hr_relevo_painter",
-        "RelevoPainter" in prog_hr and "CustomPaint" in prog_hr and "HeroStudyStrip" in prog_hr,
+        "ciclo_hr_relevo_visual",
+        "_ReadableRelief" in prog_hr
+        and "_relevoValleyThreshold" in prog_hr
+        and "HeroStudyStrip" in prog_hr,
         "Relevo visual",
     )
     ok(
