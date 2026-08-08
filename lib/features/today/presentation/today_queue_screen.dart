@@ -495,12 +495,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 Builder(
                   builder: (_) {
                     final wc = Map<String, dynamic>.from(queue!['weekClose'] as Map? ?? const {});
-                    if (wc.isEmpty) {
-                      return const CompactStatus(
-                        message: 'Sem fechamento da semana para exibir.',
-                        icon: Icons.event_note_outlined,
-                      );
-                    }
+                    if (wc.isEmpty) return const SizedBox.shrink();
                     return WeekClosePanel(weekClose: wc, onCloseWeek: _closeWeek);
                   },
                 ),

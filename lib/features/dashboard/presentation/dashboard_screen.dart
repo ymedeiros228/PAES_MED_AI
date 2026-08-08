@@ -786,10 +786,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                       },
                                                     );
                                                   },
-                                                  borderRadius: BorderRadius.circular(2),
+                                                  borderRadius: BorderRadius.circular(8),
                                                   child: SizedBox(
-                                                    width: 44,
-                                                    height: 44,
+                                                    width: 32,
+                                                    height: 32,
                                                     child: Center(
                                                       child: Container(
                                                         width: 12,
