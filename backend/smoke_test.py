@@ -3848,7 +3848,9 @@ def run_checks() -> list[Check]:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ck_onboarding_finish_paths",
-        "Ir ao Hoje" in onb_ck and "/dashboard" in onb_ck and "Semana 1 (Biblioteca)" in onb_ck,
+        "Ir para Hoje" in onb_ck
+        and "/dashboard" in onb_ck
+        and "Começar pela Biblioteca" in onb_ck,
         "onboarding paths",
     )
     ok(
@@ -5985,7 +5987,7 @@ def run_checks() -> list[Check]:
         "first_run_coach_pending" in lib_gw
         and "Bem-vindo — Semana 1" in lib_gw
         and "Primeiro passo: Semana 1" in dash_gw
-        and "Atualizar 2024–26" in onb_ck,
+        and "Abrir provas" in onb_ck,
         "first run semana1 soft landing",
     )
     ok(
