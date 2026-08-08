@@ -107,197 +107,219 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
           if (!state.isLoading) unawaited(_send());
         },
-        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true): () {
+        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true):
+            () {
           if (!state.isLoading) unawaited(_send());
         },
       },
       child: Focus(
         autofocus: false,
         child: SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
-            child: PageHeader(
-              eyebrow: 'Ajuda',
-              title: 'Tutor',
-              subtitle: 'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
-              trailing: IconButton(
-                tooltip: 'Limpar conversa',
-                onPressed: state.isLoading
-                    ? null
-                    : () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
-                icon: const Icon(Icons.delete_sweep_outlined),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
+                child: PageHeader(
+                  eyebrow: 'Ajuda',
+                  title: 'Tutor',
+                  subtitle:
+                      'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
+                  trailing: IconButton(
+                    tooltip: 'Limpar conversa',
+                    onPressed: state.isLoading
+                        ? null
+                        : () => ref
+                            .read(aiTutorControllerProvider.notifier)
+                            .clearConversation(),
+                    icon: const Icon(Icons.delete_sweep_outlined),
+                  ),
+                ),
               ),
-            ),
-          ),
-          if (state.error != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
-              child: QuietEmpty(
-                message: state.error!,
-                action: Wrap(
-                  spacing: 8,
+              if (state.error != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+                  child: QuietEmpty(
+                    message: state.error!,
+                    action: Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () => ref
+                              .read(aiTutorControllerProvider.notifier)
+                              .clearConversation(),
+                          child: const Text('Limpar'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/sessao'),
+                          child: const Text('Sessão'),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/biblioteca'),
+                          child: const Text('Biblioteca'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+                child: Row(
                   children: [
-                    TextButton(
-                      onPressed: () => ref.read(aiTutorControllerProvider.notifier).clearConversation(),
-                      child: const Text('Limpar'),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/sessao'),
-                      child: const Text('Sessão'),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/biblioteca'),
-                      child: const Text('Biblioteca'),
-                    ),
+                    for (final s in _styles)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: FilterChip(
+                          label: Text(s.$2),
+                          selected: state.style == s.$1,
+                          showCheckmark: false,
+                          onSelected: (_) => ref
+                              .read(aiTutorControllerProvider.notifier)
+                              .setStyle(s.$1),
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
-            child: Row(
-              children: [
-                for (final s in _styles)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: FilterChip(
-                      label: Text(s.$2),
-                      selected: state.style == s.$1,
-                      showCheckmark: false,
-                      onSelected: (_) => ref.read(aiTutorControllerProvider.notifier).setStyle(s.$1),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: (state.messages.length <= 1 && !state.isLoading)
-                ? Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.messages.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                state.messages.first.content,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          const QuietEmpty(
-                            message: 'Escolha um atalho ou digite abaixo.',
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.center,
+              Expanded(
+                child: (state.messages.length <= 1 && !state.isLoading)
+                    ? Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              ActionChip(
-                                label: const Text('Meta de hoje'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Qual a meta de estudo de hoje e o que priorizar?',
-                                            );
-                                      },
+                              if (state.messages.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    state.messages.first.content,
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                              const QuietEmpty(
+                                message: 'Escolha um atalho ou digite abaixo.',
                               ),
-                              ActionChip(
-                                label: const Text('Macete do tópico'),
-                                onPressed: state.isLoading
-                                    ? null
-                                    : () {
-                                        ref.read(aiTutorControllerProvider.notifier).send(
-                                              'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
-                                            );
-                                      },
-                              ),
-                              ActionChip(
-                                label: const Text('Abrir sessão'),
-                                onPressed: () => context.go('/sessao'),
-                              ),
-                              ActionChip(
-                                label: const Text('Biblioteca'),
-                                onPressed: () => context.go('/biblioteca'),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  ActionChip(
+                                    label: const Text('Meta de hoje'),
+                                    onPressed: state.isLoading
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(aiTutorControllerProvider
+                                                    .notifier)
+                                                .send(
+                                                  'Qual a meta de estudo de hoje e o que priorizar?',
+                                                );
+                                          },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Macete do tópico'),
+                                    onPressed: state.isLoading
+                                        ? null
+                                        : () {
+                                            ref
+                                                .read(aiTutorControllerProvider
+                                                    .notifier)
+                                                .send(
+                                                  'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
+                                                );
+                                          },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Abrir sessão'),
+                                    onPressed: () => context.go('/sessao'),
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Biblioteca'),
+                                    onPressed: () => context.go('/biblioteca'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
-                    itemCount: state.messages.length + (state.isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == state.messages.length) {
-                        return const _TypingIndicator();
-                      }
-                      return _MessageBubble(message: state.messages[index]);
-                    },
-                  ),
-          ),
-          Material(
-            elevation: 6,
-            color: cs.surface,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                12,
-                20,
-                14 + MediaQuery.viewInsetsOf(context).bottom,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1080),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        minLines: 1,
-                        maxLines: 5,
-                        textInputAction: TextInputAction.send,
-                        decoration: InputDecoration(
-                          hintText: 'Sua dúvida… (Ctrl+Enter envia)',
-                          filled: true,
-                          fillColor: cs.surfaceContainerHigh.withOpacity(0.45),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
-                        onSubmitted: (_) => _send(),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
+                        itemCount:
+                            state.messages.length + (state.isLoading ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == state.messages.length) {
+                            return const _TypingIndicator();
+                          }
+                          return _MessageBubble(
+                            message: state.messages[index],
+                            onPrompt: state.isLoading ? null : _sendPrompt,
+                          );
+                        },
                       ),
+              ),
+              Material(
+                elevation: 6,
+                color: cs.surface,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    12,
+                    20,
+                    14 + MediaQuery.viewInsetsOf(context).bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1080),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            minLines: 1,
+                            maxLines: 5,
+                            textInputAction: TextInputAction.send,
+                            decoration: InputDecoration(
+                              hintText: 'Sua dúvida… (Ctrl+Enter envia)',
+                              filled: true,
+                              fillColor:
+                                  cs.surfaceContainerHigh.withOpacity(0.45),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                            ),
+                            onSubmitted: (_) => _send(),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        IconButton.filled(
+                          tooltip: 'Enviar',
+                          onPressed: state.isLoading ? null : _send,
+                          icon: state.isLoading
+                              ? const SizedBox.square(
+                                  dimension: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.send_rounded),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    IconButton.filled(
-                      tooltip: 'Enviar',
-                      onPressed: state.isLoading ? null : _send,
-                      icon: state.isLoading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send_rounded),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
+        ),
       ),
     );
   }
@@ -307,6 +329,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     if (text.trim().isEmpty) return;
     _controller.clear();
     await ref.read(aiTutorControllerProvider.notifier).send(text);
+  }
+
+  Future<void> _sendPrompt(String prompt) async {
+    await ref.read(aiTutorControllerProvider.notifier).send(prompt);
   }
 
   void _scrollToBottom() {
@@ -330,9 +356,13 @@ String _citeLine(Map<String, dynamic> c) {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({
+    required this.message,
+    this.onPrompt,
+  });
 
   final ChatMessage message;
+  final ValueChanged<String>? onPrompt;
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +374,9 @@ class _MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: message.isUser ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+          color: message.isUser
+              ? scheme.primaryContainer
+              : scheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(18).copyWith(
             bottomRight: message.isUser ? const Radius.circular(4) : null,
             bottomLeft: message.isUser ? null : const Radius.circular(4),
@@ -356,7 +388,8 @@ class _MessageBubble extends StatelessWidget {
             if (!message.isUser && message.uncited) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
                   color: scheme.errorContainer.withOpacity(0.55),
@@ -372,11 +405,55 @@ class _MessageBubble extends StatelessWidget {
               ),
             ],
             SelectableText(message.content),
+            if (!message.isUser && onPrompt != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                'Próximo passo',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface.withOpacity(0.78),
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  _TutorAction(
+                    label: 'Explicar mais simples',
+                    icon: Icons.lightbulb_outline_rounded,
+                    onPressed: () => onPrompt!(
+                      'Explique a resposta anterior de forma mais simples, '
+                      'com um exemplo curto e sem inventar informação fora da base local.',
+                    ),
+                  ),
+                  _TutorAction(
+                    label: 'Testar meu entendimento',
+                    icon: Icons.quiz_outlined,
+                    onPressed: () => onPrompt!(
+                      'Faça uma pergunta curta para testar meu entendimento da resposta anterior. '
+                      'Não mostre a resposta ainda.',
+                    ),
+                  ),
+                  _TutorAction(
+                    label: 'Virar flashcards',
+                    icon: Icons.style_outlined,
+                    onPressed: () => onPrompt!(
+                      'Transforme a resposta anterior em até 3 flashcards de pergunta e resposta, '
+                      'usando somente a base local quando houver.',
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (message.citations.isNotEmpty) ...[
               const SizedBox(height: 10),
               Text(
                 'Fontes na base (clique abre ficha/treino)',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
               for (final c in message.citations.take(5))
@@ -390,7 +467,8 @@ class _MessageBubble extends StatelessWidget {
                       final topic = c['topic']?.toString() ?? '';
                       if (type == 'question' && id != null && id.isNotEmpty) {
                         context.go('/questoes/$id');
-                      } else if ((type == 'edital' || type == 'lesson') && subject.isNotEmpty) {
+                      } else if ((type == 'edital' || type == 'lesson') &&
+                          subject.isNotEmpty) {
                         context.go(
                           '/adaptativo?subject=${Uri.encodeComponent(subject)}'
                           '&topic=${Uri.encodeComponent(topic)}',
@@ -413,6 +491,28 @@ class _MessageBubble extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TutorAction extends StatelessWidget {
+  const _TutorAction({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
     );
   }
 }
