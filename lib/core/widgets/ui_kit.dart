@@ -632,42 +632,91 @@ class CompactStatus extends StatelessWidget {
 }
 
 /// Loading calmo (mint/teal) — evita spinner cru centralizado.
-class SoftLoader extends StatelessWidget {
+/// Usa pulse animation em vez de spinner rotativo — mais suave e moderno.
+class SoftLoader extends StatefulWidget {
   const SoftLoader({this.label, this.compact = false, super.key});
 
   final String? label;
   final bool compact;
 
   @override
+  State<SoftLoader> createState() => _SoftLoaderState();
+}
+
+class _SoftLoaderState extends State<SoftLoader> with TickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final indicator = SizedBox(
-      width: compact ? 22 : 28,
-      height: compact ? 22 : 28,
-      child: CircularProgressIndicator(
-        strokeWidth: compact ? 2.2 : 2.6,
-        color: cs.primary,
-        backgroundColor: cs.primaryContainer.f55,
-      ),
+    final size = widget.compact ? 22.0 : 28.0;
+    final indicator = AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        final t = Curves.easeInOut.transform(_pulse.value);
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: cs.primary.withOpacity(0.3 + t * 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: cs.primary.withOpacity(0.15 + t * 0.2),
+                blurRadius: 8 + t * 8,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Container(
+              width: size * 0.5,
+              height: size * 0.5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: cs.primary,
+              ),
+            ),
+          ),
+        );
+      },
     );
-    if (compact && label == null) {
+    if (widget.compact && widget.label == null) {
       return Center(child: indicator);
     }
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(compact ? 16 : 28),
+        padding: EdgeInsets.all(widget.compact ? 16 : 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             indicator,
-            if (label != null) ...[
+            if (widget.label != null) ...[
               const SizedBox(height: 14),
-              Text(
-                label!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.f72,
-                    ),
+              AnimatedBuilder(
+                animation: _pulse,
+                builder: (context, _) => Text(
+                  widget.label!,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurface.withOpacity(0.55 + _pulse.value * 0.25),
+                      ),
+                ),
               ),
             ],
           ],

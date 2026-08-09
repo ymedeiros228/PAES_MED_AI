@@ -129,6 +129,10 @@ class AppShell extends ConsumerWidget {
         const SingleActivator(LogicalKeyboardKey.keyT, control: true): () {
           ref.read(themeModeProvider.notifier).cycle();
         },
+        // Ctrl+K: busca global (vai para Biblioteca com foco na busca)
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): () {
+          context.go('/biblioteca');
+        },
       },
       child: Focus(
         autofocus: true,
@@ -204,6 +208,7 @@ class AppShell extends ConsumerWidget {
                         if (expanded) ...[
                           const SizedBox(height: 10),
                           // Barra de atalhos visível — descobre atalhos sem ler docs.
+                          _ShortcutHint(label: 'Ctrl+K', desc: 'Buscar'),
                           _ShortcutHint(label: 'F', desc: 'Foco'),
                           _ShortcutHint(label: 'Ctrl+T', desc: 'Tema'),
                           _ShortcutHint(label: 'R', desc: 'Recarregar'),

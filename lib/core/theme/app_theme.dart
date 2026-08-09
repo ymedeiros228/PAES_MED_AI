@@ -249,6 +249,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surfaceContainerLow,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.outlineVariant),
@@ -259,7 +260,21 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: scheme.primary, width: 1.4),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error, width: 1.2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.error, width: 2),
+        ),
+        hintStyle: body.copyWith(color: scheme.onSurface.withOpacity(0.4)),
+        labelStyle: body.copyWith(color: scheme.onSurface.withOpacity(0.6)),
+        floatingLabelStyle: body.copyWith(
+          color: scheme.primary,
+          fontWeight: FontWeight.w600,
         ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
