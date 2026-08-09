@@ -261,8 +261,14 @@ def cosine(a: list[float], b: list[float]) -> float:
     return dot / (na * nb)
 
 
-def upsert_embedding(ref_type: str, ref_id: str, text: str) -> str:
-    vec = openai_embedding(text)
+def upsert_embedding(
+    ref_type: str,
+    ref_id: str,
+    text: str,
+    *,
+    allow_remote: bool = True,
+) -> str:
+    vec = openai_embedding(text) if allow_remote else None
     model = "text-embedding-3-small" if vec else "local-hash-64"
     if vec is None:
         vec = local_embedding(text)
@@ -283,7 +289,11 @@ def upsert_embedding(ref_type: str, ref_id: str, text: str) -> str:
         return model
 
 
-def index_all_questions(limit: int = 500) -> dict[str, Any]:
+def index_all_questions(
+    limit: int = 500,
+    *,
+    allow_remote: bool = True,
+) -> dict[str, Any]:
     from services_core import is_official_source, stats_basis
 
     with db() as conn:
@@ -299,13 +309,18 @@ def index_all_questions(limit: int = 500) -> dict[str, Any]:
         if prefer_official and not is_official_source(r["source"], r["generated"]):
             continue
         blob = f"{r['subject']} {r['topic']} {r['statement']} {r['resolution'] or ''} {r['macete'] or ''}"
-        model = upsert_embedding("question", r["id"], blob)
+        model = upsert_embedding("question", r["id"], blob, allow_remote=allow_remote)
         n += 1
     # Index edital/syllabus as dedicated chunks
     edital_n = 0
     for i, s in enumerate(syllabus[:200]):
         blob = f"EDITAL {s['subject']} {s['topic']} {s.get('subtopic') or ''} peso={s.get('weight')}"
-        upsert_embedding("edital", f"syl-{i}-{s['subject'][:12]}-{s['topic'][:20]}", blob)
+        upsert_embedding(
+            "edital",
+            f"syl-{i}-{s['subject'][:12]}-{s['topic'][:20]}",
+            blob,
+            allow_remote=allow_remote,
+        )
         edital_n += 1
     return {"indexed": n, "editalChunks": edital_n, "model": model, "preferOfficial": prefer_official}
 
