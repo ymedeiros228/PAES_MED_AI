@@ -73,8 +73,11 @@ _EXAM_HEADER_RE = re.compile(
     re.IGNORECASE,
 )
 _PDF_GID_RE = re.compile(r"(?:/gid\d+\s*)+", re.IGNORECASE)
-_HEADER_PAGE_RE = re.compile(
-    r"(?:19|20)\d{2}\s+\d{1,3}\s+|\b\d{1,3}\s+(?=[A-ZÀ-Ý\"“])"
+_PDF_ARTIFACT_MARKER = "\ue000"
+_HEADER_PAGE_AFTER_ARTIFACT_RE = re.compile(
+    rf"{re.escape(_PDF_ARTIFACT_MARKER)}"
+    rf"(?:\s+{re.escape(_PDF_ARTIFACT_MARKER)})*"
+    r"\s*(?:(?:19|20)\d{2}\s+)?\d{1,3}(?=\s+[A-ZÀ-Ý\"“])"
 )
 
 
@@ -82,12 +85,13 @@ def clean_question_statement(statement: str) -> str:
     """Remove artefatos de cabeçalho do PDF sem tocar nos números do conteúdo."""
     cleaned = statement.replace("\r", " ")
     had_pdf_header = bool(_EXAM_HEADER_RE.search(cleaned) or _PDF_GID_RE.search(cleaned))
-    cleaned = _EXAM_HEADER_RE.sub(" ", cleaned)
-    cleaned = _PDF_GID_RE.sub(" ", cleaned)
+    cleaned = _EXAM_HEADER_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
+    cleaned = _PDF_GID_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
-    # Após retirar o cabeçalho e os /gid, sobra ``ano página`` no início.
+    # O número de página só pode ser removido imediatamente após o artefato.
     if had_pdf_header:
-        cleaned = _HEADER_PAGE_RE.sub("", cleaned, count=1)
+        cleaned = _HEADER_PAGE_AFTER_ARTIFACT_RE.sub("", cleaned)
+    cleaned = cleaned.replace(_PDF_ARTIFACT_MARKER, " ")
     return re.sub(r"\s+", " ", cleaned).strip()
 
 NATUREZA_BIO = re.compile(
