@@ -422,7 +422,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               if (!snap.hasData) {
                                 return const StudyCheckRow(
                                   done: false,
-                                  label: 'Cards do dia…',
+                                  label: 'Cartões do dia…',
                                 );
                               }
                               final list = snap.data is List ? snap.data as List : const [];
@@ -430,8 +430,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               final done = n == 0 || checklist['cards'] == true;
                               return StudyCheckRow(
                                 done: done,
-                                label: n == 0 ? 'Cards em dia' : '$n card(s) para revisar',
-                                actionLabel: n == 0 ? null : 'Cards',
+                                label: n == 0 ? 'Cartões em dia' : '$n cartão(ões) para revisar',
+                                actionLabel: n == 0 ? null : 'Cartões',
                                 onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
                               );
                             },

@@ -264,13 +264,13 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       ref.read(refreshTickProvider.notifier).state++;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cards: ${(data as Map)['created'] ?? data}')),
+          SnackBar(content: Text('Cartões criados: ${(data as Map)['created'] ?? data}')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar cards.'))),
+          SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar cartões.'))),
         );
       }
     }
@@ -586,7 +586,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   },
                   child: const Text('Perguntar ao tutor'),
                 ),
-                TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar card')),
+                TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar cartão')),
               ],
             ),
           ),
@@ -607,7 +607,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             title: Text('Prioridade local (não é incidência UEMA)', style: Theme.of(context).textTheme.titleSmall),
             children: [
               Text(
-                'Score ${chance['priorityScore'] ?? chance['probability'] ?? '—'}'
+                'Prioridade ${chance['priorityScore'] ?? chance['probability'] ?? '—'}'
                 ' · ${chance['confidence'] ?? '—'}\n'
                 '${chance['reason'] ?? ''}\n${chance['disclaimer'] ?? ''}',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -623,7 +623,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 onPressed: professorBusy ? null : _generateProfessor,
                 child: const Text('Rascunho IA'),
               ),
-              FilledButton.tonal(onPressed: _cardsFromQuestion, child: const Text('Criar cards')),
+              FilledButton.tonal(onPressed: _cardsFromQuestion, child: const Text('Criar cartões')),
               FilledButton.tonal(
                 onPressed: adaptiveLoading ? null : _adaptive,
                 child: const Text('Mais do tópico'),

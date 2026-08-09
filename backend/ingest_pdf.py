@@ -48,7 +48,7 @@ def extract_pdf_text(path: Path) -> str:
         return (
             text
             + "\n\n[NEEDS_OCR] Pouco texto extraído — PDF pode ser escaneado. "
-            "Instale pytesseract + pdf2image (e Tesseract) ou envie texto revisado."
+            "A leitura automática do PDF não está disponível. Envie o texto revisado."
         )
     return text
 
@@ -412,7 +412,7 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
                 "difficulty": "Média",
                 "resolution": "Revise manualmente.",
                 "bancaIntent": "Importação incompleta.",
-                "macete": "Cole texto ou use OCR.",
+                "macete": "Cole o texto ou use a leitura automática.",
                 "pegadinha": "PDF imagem.",
                 "relatedTopics": [],
                 "keywords": [],
@@ -871,8 +871,8 @@ def import_year_pair(year: int, *, include_extra_provas: bool = True) -> dict[st
     preview["classified"] = sum(1 for q in questions if (q.get("topic") or "") != "A classificar")
     preview["message"] = (
         f"Preview {year}: {len(questions)} questões · {len(files_used)} PDF(s) · confiança média {avg_conf}"
-        + (" — PDF parece escaneado (OCR recomendado)." if needs_ocr or gabarito_ocr else "")
-        + (" — OCR não disponível/falhou." if ocr_failed else "")
+        + (" — PDF parece escaneado (leitura automática recomendada)." if needs_ocr or gabarito_ocr else "")
+        + (" — leitura automática não disponível ou falhou." if ocr_failed else "")
         + (" — sem gabarito no disco." if not answers else "")
     )
     return preview

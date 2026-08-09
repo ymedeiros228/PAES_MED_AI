@@ -38,7 +38,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     ('resumo', 'Resumo'),
     ('analogia', 'Analogia'),
     ('mapa', 'Mapa'),
-    ('flashcard', 'Flashcard'),
+    ('flashcard', 'Cartão de estudo'),
     ('medico', 'Médico'),
     ('crianca', 'Simples'),
   ];
@@ -153,7 +153,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     child: QuietEmpty(
                       icon: Icons.cloud_off_outlined,
                       message:
-                          'Modo offline com base local. Configure uma chave em Ajustes para conversar com a IA online.',
+                          'Modo sem internet com base local. Configure uma chave em Ajustes para conversar com a IA conectada.',
                       action: TextButton(
                         onPressed: () => context.go('/configuracoes'),
                         child: const Text('Abrir Ajustes'),
@@ -445,8 +445,8 @@ class _MessageBubble extends StatelessWidget {
                   ),
                   label: Text(
                     message.model!.startsWith('offline-')
-                        ? 'Modo offline'
-                        : 'IA online · ${message.model}',
+                        ? 'Modo sem internet'
+                        : 'IA conectada · ${message.model}',
                   ),
                   visualDensity: VisualDensity.compact,
                 ),
@@ -484,10 +484,10 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   ),
                   _TutorAction(
-                    label: 'Virar flashcards',
+                    label: 'Virar cartões de estudo',
                     icon: Icons.style_outlined,
                     onPressed: () => onPrompt!(
-                      'Transforme a resposta anterior em até 3 flashcards de pergunta e resposta, '
+                      'Transforme a resposta anterior em até 3 cartões de estudo de pergunta e resposta, '
                       'usando somente a base local quando houver.',
                     ),
                   ),

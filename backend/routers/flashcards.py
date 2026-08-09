@@ -112,5 +112,5 @@ def api_flashcards_from_question(payload: FlashcardsFromQuestionRequest) -> dict
         "created": len(cards),
         "cards": cards,
         "fromAxes": from_axes,
-        "note": "Cards didáticos locais — não oficiais da banca.",
+        "note": "Cartões didáticos locais — não oficiais da banca.",
     }

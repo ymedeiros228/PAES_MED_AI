@@ -287,7 +287,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     final phaseLabel = SessionResumeBanner.phaseLabel(phase);
                     final q = (cp['qIndex'] as num?)?.toInt();
                     final sub = phase == 'questions' && q != null
-                        ? '$phaseLabel · item ${q + 1} · treino local'
+                        ? '$phaseLabel · questão ${q + 1} · treino local'
                         : '$phaseLabel · retomamos de onde parou';
                     return SessionResumeBanner(
                       phaseName: phase,
@@ -540,15 +540,15 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   if ((((queue!['axisCardsDue'] as int?) ?? 0) > 0) ||
                       (((queue!['axisCardsCreatedToday'] as int?) ?? 0) > 0))
                     PlaylistTile(
-                      title: 'Cards do debrief',
+                      title: 'Cartões da revisão',
                       subtitle: () {
                         final due = (queue!['axisCardsDue'] as int?) ?? 0;
                         final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
                         if (due > 0 && neu > 0) {
                           return '$due para revisar · $neu dos eixos sem revisão';
                         }
-                        if (due > 0) return '$due card(s) dos eixos para revisar';
-                        return '$neu card(s) dos eixos (ainda sem revisão)';
+                        if (due > 0) return '$due cartões dos eixos para revisar';
+                        return '$neu cartões dos eixos (ainda sem revisão)';
                       }(),
                       badge: 'eixos',
                       active: navIndexFor('/flashcards?due=1') == selected,
@@ -582,9 +582,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ),
                   if (cards.isNotEmpty)
                     PlaylistTile(
-                      title: '${cards.length} flashcards',
+                      title: '${cards.length} cartões de estudo',
                       subtitle: 'Revisão rápida',
-                      badge: 'cards',
+                      badge: 'cartões',
                       active: navIndexFor('/flashcards?due=1') == selected,
                       leadingIcon: Icons.style_rounded,
                       onPlay: () {

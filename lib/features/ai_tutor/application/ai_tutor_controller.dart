@@ -49,7 +49,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
                 role: ChatRole.assistant,
                 content:
                     'Olá! Sou seu tutor calibrado no PAES/UEMA (base local + edital). '
-                    'Não invento estatísticas. Posso explicar como professor, fazer macetes, mapas e flashcards. O que estudamos?',
+                    'Não invento estatísticas. Posso explicar como professor, fazer macetes, mapas e cartões de estudo. O que estudamos?',
               ),
             ],
           ),
@@ -79,12 +79,16 @@ class AiTutorController extends StateNotifier<AiTutorState> {
         history: previousHistory,
         style: state.style,
       );
+      final localizedAnswer = answer.answer.replaceAllMapped(
+        RegExp(r'\bStep\s+(\d+)\b', caseSensitive: false),
+        (match) => 'Passo ${match.group(1)}',
+      );
       state = state.copyWith(
         messages: [
           ...state.messages,
           ChatMessage(
             role: ChatRole.assistant,
-            content: answer.answer,
+            content: localizedAnswer,
             citations: answer.citations,
             uncited: answer.uncited,
             hasLocalBase: answer.hasLocalBase,

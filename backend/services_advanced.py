@@ -111,7 +111,7 @@ def review_flashcard(card_id: int, remembered: bool) -> dict[str, Any]:
     with db() as conn:
         row = conn.execute("SELECT * FROM flashcards WHERE id=?", (card_id,)).fetchone()
         if not row:
-            return {"ok": False, "message": "Flashcard não encontrado"}
+            return {"ok": False, "message": "Cartão não encontrado"}
         reviews = row["reviews"] + (1 if remembered else 0)
         idx = min(reviews, len(INTERVALS) - 1) if remembered else 0
         interval = INTERVALS[idx]
