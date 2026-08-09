@@ -1165,6 +1165,201 @@ class _SeededRandom {
   }
 }
 
+/// Notificação gamificada de conquista — aparece como overlay temporário.
+///
+/// Mostra um ícone, título e subtítulo com animação de entrada (slide + scale)
+/// e saída automática após [duration]. Use [AchievementToast.show] para exibir.
+class AchievementToast {
+  AchievementToast._();
+
+  static OverlayEntry? _current;
+
+  /// Exibe uma conquista por [duration] (default 4s).
+  static void show(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    Color color = const Color(0xFFFFD700),
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    _current?.remove();
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final entry = OverlayEntry(
+      builder: (ctx) => _AchievementOverlay(
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
+        duration: duration,
+        onDismiss: () {
+          _current?.remove();
+          _current = null;
+        },
+      ),
+    );
+    _current = entry;
+    overlay.insert(entry);
+  }
+}
+
+class _AchievementOverlay extends StatefulWidget {
+  const _AchievementOverlay({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.duration,
+    required this.onDismiss,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final Duration duration;
+  final VoidCallback onDismiss;
+
+  @override
+  State<_AchievementOverlay> createState() => _AchievementOverlayState();
+}
+
+class _AchievementOverlayState extends State<_AchievementOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+  late final Animation<Offset> _slide;
+  bool _dismissing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _scale = Tween(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+    _slide = Tween(
+      begin: const Offset(0, -1.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+
+    // Auto-dismiss após duration
+    Future.delayed(widget.duration, () {
+      if (!mounted) return;
+      _dismiss();
+    });
+  }
+
+  void _dismiss() {
+    if (_dismissing) return;
+    _dismissing = true;
+    _controller.reverse().then((_) {
+      if (mounted) widget.onDismiss();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 80,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: SlideTransition(
+          position: _slide,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 360),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      widget.color.withOpacity(0.15),
+                      Colors.black.withOpacity(0.85),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: widget.color, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.color.withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Ícone com glow
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.color.withOpacity(0.2),
+                        border: Border.all(color: widget.color, width: 2),
+                      ),
+                      child: Icon(widget.icon, color: widget.color, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'CONQUISTA DESBLOQUEADA',
+                            style: TextStyle(
+                              color: widget.color.withOpacity(0.7),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            widget.subtitle,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class StaggeredFadeIn extends StatefulWidget {
   const StaggeredFadeIn({
     required this.children,

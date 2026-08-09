@@ -23,6 +23,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
   String? error;
   bool loading = true;
   late final AnimationController _morph;
+  int? _lastStreakLevel;
 
   @override
   void initState() {
@@ -53,6 +54,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
         loading = false;
       });
       _morph.forward(from: 0);
+      _checkLevelUp();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -60,6 +62,44 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
         loading = false;
       });
     }
+  }
+
+  /// Verifica se o streak subiu de nível desde a última carga.
+  /// Se sim, mostra uma notificação gamificada de conquista.
+  void _checkLevelUp() {
+    final streak = (data?['streakDays'] as num?)?.toInt() ?? 0;
+    final level = _streakLevel(streak);
+    if (_lastStreakLevel != null && level > _lastStreakLevel!) {
+      final (title, subtitle, icon, color) = _levelAchievement(level);
+      AchievementToast.show(
+        context,
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
+      );
+    }
+    _lastStreakLevel = level;
+  }
+
+  /// Converte streak em nível (0-4).
+  int _streakLevel(int streak) {
+    if (streak >= 30) return 4;
+    if (streak >= 14) return 3;
+    if (streak >= 7) return 2;
+    if (streak >= 3) return 1;
+    return 0;
+  }
+
+  /// Retorna (título, subtítulo, ícone, cor) para o nível desbloqueado.
+  (String, String, IconData, Color) _levelAchievement(int level) {
+    return switch (level) {
+      1 => ('Observador!', '3 dias seguidos — padrões surgindo', Icons.visibility_outlined, const Color(0xFF80CBC4)),
+      2 => ('Astrônomo!', '7 dias seguidos — constelação visível', Icons.auto_awesome, const Color(0xFF4FC3F7)),
+      3 => ('Cartógrafo Celeste!', '14 dias seguidos — mapeando o céu', Icons.map_outlined, const Color(0xFFB39DDB)),
+      4 => ('Mestre das Estrelas!', '30 dias seguidos — domínio total', Icons.emoji_events_rounded, const Color(0xFFFFD700)),
+      _ => ('Explorador!', 'Começou a jornada', Icons.explore, const Color(0xFF90A4AE)),
+    };
   }
 
   /// Extrai a lista de dias ativos (true/false) do activity28 retornado pela API.
