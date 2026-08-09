@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 title PAES MED AI
 
 REM Launcher unico: sobe API local e o exe Windows.
@@ -76,14 +76,14 @@ if not exist "%HERE%\.venv\Scripts\python.exe" if "%PY%"=="python" (
     pause
     exit /b 1
   )
-  set "PY=%HERE%\.venv\Scripts\python.exe"
-  "%PY%" -m pip install -r "%BACKEND%\requirements.txt" >> "%LOG%" 2>&1
+  "%HERE%\.venv\Scripts\python.exe" -m pip install -r "%BACKEND%\requirements.txt" >> "%LOG%" 2>&1
   if errorlevel 1 (
     echo ERRO: faltam dependencias do backend e a instalacao falhou.
     echo Veja o diagnostico em: %LOG%
     pause
     exit /b 1
   )
+  set "PY=%HERE%\.venv\Scripts\python.exe"
 )
 
 echo ========================================
