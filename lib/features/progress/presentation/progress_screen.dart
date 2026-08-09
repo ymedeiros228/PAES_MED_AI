@@ -209,15 +209,20 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         const SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
-                          child: LinearProgressIndicator(
-                            value: () {
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.0, end: () {
                               final r = data?['readiness'];
                               if (r is! num) return 0.0;
                               final v = r.toDouble();
                               return (v > 1 ? v / 100.0 : v).clamp(0.0, 1.0);
-                            }(),
-                            minHeight: 10,
-                            backgroundColor: cs.surfaceContainerHighest,
+                            }()),
+                            duration: const Duration(milliseconds: 800),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, _) => LinearProgressIndicator(
+                              value: value,
+                              minHeight: 10,
+                              backgroundColor: cs.surfaceContainerHighest,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),

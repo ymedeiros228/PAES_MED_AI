@@ -159,6 +159,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                               leadingIcon: Icons.replay_rounded,
                               active: i == selected,
                               onPlay: () {
+                                HapticFeedback.selectionClick();
                                 setState(() => selected = i);
                                 _openItem(i);
                               },
@@ -169,6 +170,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                     tooltip: 'Marcar feita',
                                     icon: const Icon(Icons.check_circle_outline),
                                     onPressed: () async {
+                                      HapticFeedback.lightImpact();
                                       await apiClient.post(
                                         '/api/revisions/complete'
                                         '?subject=${Uri.encodeComponent(subject)}'
@@ -183,6 +185,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                     icon: const Icon(Icons.flag_outlined),
                                     onPressed: () async {
                                       try {
+                                        HapticFeedback.mediumImpact();
                                         await apiClient.post('/api/gaps/recover', {
                                           'subject': subject,
                                           'topic': topic,
@@ -198,6 +201,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                           );
                                         }
                                       } catch (e) {
+                                        HapticFeedback.heavyImpact();
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(

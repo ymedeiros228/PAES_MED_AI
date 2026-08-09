@@ -45,6 +45,8 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   Duration? diaProvaHardCap;
   bool preflightDone = false;
   bool running = false;
+  bool starting = false;
+  bool grading = false;
   Map<String, dynamic>? pendingSimCheckpoint;
   String? startError;
   String? checkpointLoadError;
@@ -485,7 +487,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       final ok = await _preflightDiaProva();
       if (!ok) return;
     }
-    setState(() => startError = null);
+    HapticFeedback.mediumImpact();
+    setState(() {
+      startError = null;
+      starting = true;
+    });
     try {
       final data = await apiClient.post('/api/simulations', {
         'mode': mode,
@@ -498,6 +504,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         setState(() {
           startError = 'Nenhuma questão neste modo — monte o acervo na Biblioteca.';
           running = false;
+          starting = false;
         });
         return;
       }
@@ -511,6 +518,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         debriefLoading.clear();
         report = null;
         running = true;
+        starting = false;
         keyboardQi = 0;
         examLocked = mode == 'dia_prova';
         preflightDone = mode == 'dia_prova';
@@ -523,16 +531,20 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       unawaited(_saveSimCheckpoint());
       _requestSessionFocus();
     } catch (e) {
+      HapticFeedback.heavyImpact();
       setState(() {
         startError = humanApiError(e, fallback: 'Não deu para iniciar o simulado.');
         running = false;
+        starting = false;
       });
     }
   }
 
   Future<void> _grade() async {
+    HapticFeedback.mediumImpact();
     sw.stop();
     ticker?.cancel();
+    setState(() => grading = true);
     final payload = answers.entries
         .map((e) => {
               'questionId': e.key,
@@ -541,20 +553,30 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               'errorType': errorTypes[e.key] ?? defaultErrorType,
             })
         .toList();
-    final data = await apiClient.post('/api/simulations/grade', {'answers': payload});
-    ref.read(refreshTickProvider.notifier).state++;
-    await _clearSimCheckpoint();
-    setState(() {
-      report = Map<String, dynamic>.from(data as Map);
-      running = false;
-      examLocked = false;
-      diaProvaHardCap = null;
-    });
-    for (final raw in (report?['results'] as List? ?? [])) {
-      final r = Map<String, dynamic>.from(raw as Map);
-      if (r['correct'] == true) continue;
-      final id = r['questionId']?.toString();
-      if (id != null && id.isNotEmpty) unawaited(_ensureDebrief(id));
+    try {
+      final data = await apiClient.post('/api/simulations/grade', {'answers': payload});
+      ref.read(refreshTickProvider.notifier).state++;
+      await _clearSimCheckpoint();
+      setState(() {
+        report = Map<String, dynamic>.from(data as Map);
+        running = false;
+        examLocked = false;
+        diaProvaHardCap = null;
+        grading = false;
+      });
+      HapticFeedback.lightImpact();
+      for (final raw in (report?['results'] as List? ?? [])) {
+        final r = Map<String, dynamic>.from(raw as Map);
+        if (r['correct'] == true) continue;
+        final id = r['questionId']?.toString();
+        if (id != null && id.isNotEmpty) unawaited(_ensureDebrief(id));
+      }
+    } catch (e) {
+      HapticFeedback.heavyImpact();
+      setState(() {
+        startError = humanApiError(e, fallback: 'Não deu para corrigir o simulado.');
+        grading = false;
+      });
     }
   }
 
@@ -919,11 +941,22 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ),
                 const SizedBox(height: 8),
                 FilledButton.icon(
-                  onPressed: (mode == 'disciplina' && (subject == null || subject!.isEmpty))
+                  onPressed: starting ||
+                          (mode == 'disciplina' && (subject == null || subject!.isEmpty))
                       ? null
                       : _start,
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: Text(mode == 'dia_prova' ? 'Começar dia de prova' : 'Iniciar simulado'),
+                  icon: starting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.play_arrow_rounded),
+                  label: Text(starting
+                      ? 'Carregando questões…'
+                      : mode == 'dia_prova'
+                          ? 'Começar dia de prova'
+                          : 'Iniciar simulado'),
                 ),
               ],
 
@@ -1021,6 +1054,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                               selected: answers[id] == i,
                               enabled: report == null,
                               onTap: () {
+                                HapticFeedback.selectionClick();
                                 setState(() {
                                   answers[id] = i;
                                   keyboardQi = qi;
@@ -1053,12 +1087,25 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               if (questions.isNotEmpty && report == null) ...[
                 const SizedBox(height: 4),
                 FilledButton.tonal(
-                  onPressed: answers.length < questions.length ? null : _grade,
-                  child: Text(
-                    answers.length < questions.length
-                        ? 'Responda todas (${answers.length}/${questions.length})'
-                        : 'Finalizar e corrigir',
-                  ),
+                  onPressed: (answers.length < questions.length || grading) ? null : _grade,
+                  child: grading
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            const SizedBox(width: 8),
+                            Text('Corrigindo ${answers.length} questões…'),
+                          ],
+                        )
+                      : Text(
+                          answers.length < questions.length
+                              ? 'Responda todas (${answers.length}/${questions.length})'
+                              : 'Finalizar e corrigir',
+                        ),
                 ),
               ],
 

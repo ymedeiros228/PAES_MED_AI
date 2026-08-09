@@ -77,6 +77,8 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   }
 
   Future<void> _review(int id, bool remembered) async {
+    // Haptic feedback ao revisar cartão
+    HapticFeedback.lightImpact();
     try {
       await apiClient.post('/api/flashcards/$id/review', {'remembered': remembered});
       setState(() {
@@ -87,6 +89,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
       _ensureCardsFocus();
     } catch (e) {
       if (!mounted) return;
+      HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar o cartão.'))),
       );
@@ -96,6 +99,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   void _flipTop() {
     if (_itemIds.isEmpty) return;
     final id = currentId ?? _itemIds.first;
+    HapticFeedback.selectionClick();
     setState(() {
       if (currentId == id) {
         showBack = !showBack;
@@ -242,6 +246,24 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     }
                     return Column(
                       children: [
+                        // Indicador de progresso: X cartões para revisar
+                        if (items.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                Icon(Icons.style_outlined, size: 16, color: cs.primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${items.length} cartão${items.length > 1 ? "ões" : ""} para revisar',
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                        color: cs.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
                         for (final raw in items)
                           Builder(
                             builder: (_) {
@@ -284,19 +306,60 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     InkWell(
-                                      onTap: () => setState(() {
-                                        if (currentId == id) {
-                                          showBack = !showBack;
-                                        } else {
-                                          currentId = id;
-                                          showBack = false;
-                                        }
-                                      }),
-                                      child: Text(
-                                        flipped
-                                            ? (item['back']?.toString() ?? '')
-                                            : (item['front']?.toString() ?? ''),
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(height: 1.35),
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        setState(() {
+                                          if (currentId == id) {
+                                            showBack = !showBack;
+                                          } else {
+                                            currentId = id;
+                                            showBack = false;
+                                          }
+                                        });
+                                      },
+                                      borderRadius: BorderRadius.circular(kRadiusButton),
+                                      child: AnimatedSwitcher(
+                                        duration: const Duration(milliseconds: 280),
+                                        transitionBuilder: (child, anim) {
+                                          // Efeito de virar carta: fade + slide vertical
+                                          final offset = Tween<Offset>(
+                                            begin: const Offset(0, 0.12),
+                                            end: Offset.zero,
+                                          ).animate(anim);
+                                          return FadeTransition(
+                                            opacity: anim,
+                                            child: SlideTransition(
+                                              position: offset,
+                                              child: child,
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          key: ValueKey('${id}_$flipped'),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: flipped
+                                                ? cs.primaryContainer.f38
+                                                : cs.surfaceContainerHigh.f38,
+                                            borderRadius: BorderRadius.circular(kRadiusButton),
+                                            border: Border.all(
+                                              color: flipped ? cs.primary.f38 : cs.outlineVariant.f38,
+                                            ),
+                                          ),
+                                          width: double.infinity,
+                                          child: Text(
+                                            flipped
+                                                ? (item['back']?.toString() ?? '')
+                                                : (item['front']?.toString() ?? ''),
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                  height: 1.4,
+                                                  color: flipped ? cs.onPrimaryContainer : null,
+                                                ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -311,14 +374,16 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                     const SizedBox(height: 10),
                                     Row(
                                       children: [
-                                        FilledButton.tonal(
+                                        FilledButton.tonalIcon(
                                           onPressed: () => _review(id, true),
-                                          child: const Text('Lembrei (L)'),
+                                          icon: const Icon(Icons.check_rounded, size: 18),
+                                          label: const Text('Lembrei (L)'),
                                         ),
                                         const SizedBox(width: 8),
-                                        OutlinedButton(
+                                        OutlinedButton.icon(
                                           onPressed: () => _review(id, false),
-                                          child: const Text('Esqueci (E)'),
+                                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                                          label: const Text('Esqueci (E)'),
                                         ),
                                         const Spacer(),
                                         IconButton(

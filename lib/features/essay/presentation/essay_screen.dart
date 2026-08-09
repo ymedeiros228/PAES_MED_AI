@@ -158,6 +158,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
 
   Future<void> _grade() async {
     if (theme == null || textCtrl.text.trim().length < 50) return;
+    HapticFeedback.mediumImpact();
     setState(() => busy = true);
     try {
       final body = <String, dynamic>{
@@ -184,10 +185,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       final data = await apiClient.post('/api/essay/grade', body);
       ref.read(refreshTickProvider.notifier).state++;
       setState(() => last = Map<String, dynamic>.from(data as Map));
-      // Redação corrigida: o rascunho local já cumpriu seu papel.
+      // Redação corrigida: o rascunho local já cumpriu seu propósito.
       unawaited(_clearDraft());
       await _loadProgress();
+      HapticFeedback.lightImpact();
     } catch (e) {
+      HapticFeedback.heavyImpact();
       setState(() => last = {
             'error': humanApiError(e, fallback: 'Não deu para corrigir a redação. Tente de novo.'),
           });
@@ -522,29 +525,55 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 6, bottom: 4),
-                child: Text(
-                  '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras · treino local',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurface.f72,
+                child: Row(
+                  children: [
+                    Text(
+                      '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: cs.onSurface.f72,
+                          ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Barra de progresso visual para mínimo de caracteres
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: (textCtrl.text.trim().length / 50).clamp(0.0, 1.0),
+                          minHeight: 4,
+                          backgroundColor: cs.surfaceContainerHigh,
+                          color: textCtrl.text.trim().length >= 50
+                              ? cs.primary
+                              : cs.tertiary,
+                        ),
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      textCtrl.text.trim().length >= 50
+                          ? 'pronto para corrigir'
+                          : '${50 - textCtrl.text.trim().length} chars',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: textCtrl.text.trim().length >= 50
+                                ? cs.primary
+                                : cs.onSurface.f55,
+                          ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),
               FilledButton.icon(
                 onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
-                icon: const Icon(Icons.rate_review_outlined),
+                icon: busy
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.rate_review_outlined),
                 label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
               ),
-              if (textCtrl.text.trim().isNotEmpty && textCtrl.text.trim().length < 50)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: Text(
-                    'Escreva pelo menos ~50 caracteres para corrigir.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurface.f72,
-                        ),
-                  ),
-                ),
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Row(
