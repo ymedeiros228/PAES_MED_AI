@@ -1324,12 +1324,15 @@ _SECTION_HEADER_RE = re.compile(
 )
 
 
-def _clean_option_contamination(option_text: str) -> str:
+def _clean_option_contamination(option_text: str, other_opts: list[str] | None = None) -> str:
     """Remove texto da questão seguinte que ficou colado na última opção.
 
     O parser heurístico pega todo o texto até a próxima 'QUESTÃO N', mas a
     opção E não tem delimitador de fim — então o enunciado da próxima questão
     aparece colado nela. Esta função detecta e corta essa contaminação.
+
+    Se other_opts for fornecido, usa o tamanho médio das outras opções como
+    referência para detectar contaminação (opção E muito maior que as demais).
     """
     if not option_text or len(option_text) < 50:
         return option_text
@@ -1349,26 +1352,38 @@ def _clean_option_contamination(option_text: str) -> str:
             cleaned = re.sub(r'[\s,;:\-–—]+$', '', cleaned)
             if len(cleaned) >= 30:
                 return cleaned
-    # Heurística final: opções muito longas (>400 chars) sem padrão detectável
-    # provavelmente têm texto de apoio colado. Cortar no último delimitador
-    # natural antes de 350 chars para preservar o conteúdo legítimo da opção.
-    if len(option_text) > 400:
-        cutoff = option_text[:350]
-        # Procura por vários delimitadores naturais (ponto, ponto-e-vírgula, aspas fechando)
-        last_delim = max(
-            cutoff.rfind(". "),
-            cutoff.rfind('." '),
-            cutoff.rfind('.” '),
-            cutoff.rfind("; "),
-            cutoff.rfind('. '),
-        )
-        if last_delim > 80:
-            cleaned = option_text[:last_delim + 1].rstrip()
-            # Remove aspas órfãs no final
-            cleaned = re.sub(r'["”]+$', '', cleaned).rstrip()
-            return cleaned
-        # Se não encontrou delimitador, corta em 350 com reticências
-        return option_text[:350].rstrip() + "…"
+    # Heurística por tamanho relativo: se a opção é muito maior que as outras
+    # (2.5x o tamanho médio), provavelmente tem contaminação.
+    if other_opts and len(other_opts) >= 3:
+        valid_sizes = [len(o) for o in other_opts if o and len(o) > 0]
+        if valid_sizes:
+            avg = sum(valid_sizes) / len(valid_sizes)
+            if len(option_text) > avg * 2.5 and len(option_text) > 100:
+                # Procura delimitadores naturais a partir da metade do tamanho médio
+                search_start = max(1, int(avg * 0.5))
+                # Tenta ponto final primeiro
+                best_cut = -1
+                for delim in ['. ', '.\t', '.\n', '; ', ': ']:
+                    idx = option_text.find(delim, search_start)
+                    if idx >= 0 and (best_cut < 0 or idx < best_cut):
+                        best_cut = idx + 1
+                if best_cut > 0:
+                    cleaned = option_text[:best_cut].rstrip()
+                    cleaned = re.sub(r'[\s,;:\-–—["”]+$', '', cleaned).rstrip()
+                    if len(cleaned) >= 5 and len(cleaned) <= max(int(avg * 6), 200):
+                        return cleaned
+                # Se não encontrou delimitador natural, tenta detectar mudança de
+                # contexto: número/expressão curta seguida de texto explicativo
+                # (ex: "90 m e 45 m O pêndulo simples..." → cortar em "90 m e 45 m")
+                if avg < 50:  # outras opções são curtas (números, expressões)
+                    # Procura por letra maiúscula após espaço (início de frase)
+                    upper_re = re.compile(r'\s+(?=[A-ZÀ-Ý])')
+                    m = upper_re.search(option_text, max(1, int(avg * 0.8)))
+                    if m and m.start() > 3:
+                        cleaned = option_text[:m.start()].rstrip()
+                        cleaned = re.sub(r'[\s,;:\-–—["”]+$', '', cleaned).rstrip()
+                        if len(cleaned) >= 3 and len(cleaned) <= max(int(avg * 3), 80):
+                            return cleaned
     return option_text
 
 
@@ -1416,12 +1431,13 @@ def sanitize_questions_full() -> dict[str, int]:
             except Exception:
                 opts = []
             cleaned_opts = []
-            for opt in opts:
-                original_opt = str(opt) if opt else ""
-                # Primeiro limpa artefatos de PDF (cabeçalhos, GIDs, etc.)
-                opt_str = clean_question_statement(original_opt)
-                # Depois remove contaminação da próxima questão
-                cleaned_opt = _clean_option_contamination(opt_str)
+            # Primeiro passa clean_question_statement em todas
+            pre_cleaned = [clean_question_statement(str(opt) if opt else "") for opt in opts]
+            for i, opt_str in enumerate(pre_cleaned):
+                # Passa as outras opções como referência para detectar contaminação
+                other_opts = [pre_cleaned[j] for j in range(len(pre_cleaned)) if j != i]
+                cleaned_opt = _clean_option_contamination(opt_str, other_opts)
+                original_opt = str(opts[i]) if i < len(opts) else ""
                 if cleaned_opt != original_opt:
                     opts_changed = True
                 cleaned_opts.append(cleaned_opt)
