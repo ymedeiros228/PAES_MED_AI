@@ -1117,9 +1117,27 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${((report!['accuracy'] as num) * 100).toStringAsFixed(0)}% de acerto',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                      // Anima o número de 0 até a porcentagem final
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: ((report!['accuracy'] as num) * 100).toDouble()),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          final pct = value.toStringAsFixed(0);
+                          // Cor muda conforme acerto: vermelho <40, laranja <70, verde >=70
+                          final color = value >= 70
+                              ? cs.primary
+                              : value >= 40
+                                  ? cs.tertiary
+                                  : cs.error;
+                          return Text(
+                            '$pct% de acerto',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: color,
+                                ),
+                          );
+                        },
                       ),
                       Text(
                         '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
