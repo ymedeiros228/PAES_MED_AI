@@ -14,6 +14,7 @@ from ingest_pdf import (
     list_pdf_inventory,
     pair_prova_gabarito,
     sanitize_question_statements,
+    sanitize_questions_full,
 )
 from schemas import (
     OpenFolderRequest,
@@ -441,13 +442,15 @@ def api_edital_coverage() -> dict[str, Any]:
 
 @router.post("/api/library/reprocess")
 def api_library_reprocess() -> dict[str, Any]:
-    """Limpa enunciados persistidos e reindexa a base."""
+    """Limpa enunciados e opções persistidos e reindexa a base."""
+    full = sanitize_questions_full()
     sanitized = sanitize_question_statements()
     indexed = index_all_questions(allow_remote=False)
     return {
         "ok": True,
-        "message": "Base reprocessada e enunciados saneados.",
+        "message": "Base reprocessada, enunciados e opções saneados.",
         "sanitizedStatements": sanitized,
+        "sanitizedFull": full,
         "rag": indexed,
     }
 
