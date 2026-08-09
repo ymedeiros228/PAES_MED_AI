@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import services_advanced  # noqa: E402
 from services_advanced import (
+    _build_lexical_rag_context,
     _infer_subject,
     _lexical_question_score,
     build_rag_context_embedded_full,
@@ -105,3 +106,16 @@ def test_pergunta_sem_relacao_nao_produz_citacao() -> None:
         "zangão quasar inexistente pluma"
     )
     assert not [item for item in citations if item.get("type") == "question"]
+
+
+def test_conceito_curto_recupera_materia_existente() -> None:
+    _context, _mode, citations = _build_lexical_rag_context(
+        "O que é genótipo e fenótipo?",
+        8,
+    )
+    question_citations = [
+        item for item in citations if item.get("type") == "question"
+    ]
+    assert question_citations
+    assert all(item.get("subject") == "Biologia" for item in question_citations)
+    assert all(item.get("topic") == "Genética" for item in question_citations)

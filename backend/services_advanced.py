@@ -462,11 +462,18 @@ def _build_lexical_rag_context(
 
     if scored:
         chunks.append("=== QUESTÕES (busca lexical) ===")
-    for score, question in scored[:limit]:
-        if prefer_official and not is_official_source(
-            question.get("source"), question.get("generated")
-        ):
-            continue
+    official_scored = [
+        item
+        for item in scored
+        if is_official_source(item[1].get("source"), item[1].get("generated"))
+    ]
+    # Quando há uma questão oficial alinhada, não misture treino na resposta.
+    # Se o acervo oficial ainda não cobre o conceito, aproveite a melhor questão
+    # local semanticamente alinhada em vez de silenciar uma matéria que existe.
+    selected_questions = (
+        official_scored if prefer_official and official_scored else scored
+    )
+    for score, question in selected_questions[:limit]:
         chunks.append(
             f"[score={score:.3f}] [{question['year']}] "
             f"{question['subject']}/{question['topic']} id={question['id']}\n"
