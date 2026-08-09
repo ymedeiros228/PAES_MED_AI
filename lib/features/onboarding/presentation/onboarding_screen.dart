@@ -125,11 +125,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       onKeyEvent: _onKey,
       child: Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
               Text(
                 'PAES MED AI',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -239,40 +244,53 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ],
               const Spacer(),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (var i = 0; i < 4; i++)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: i == step ? 22 : 10,
-                      height: 10,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: i == step ? cs.primary : cs.outlineVariant,
-                      ),
-                    ),
-                  const Spacer(),
-                  if (step == 1)
-                    TextButton(
-                      onPressed: () => setState(() => step++),
-                      child: const Text('Definir depois'),
-                    ),
-                  if (step < 3)
-                    FilledButton(
-                      onPressed: _advance,
-                      child: const Text('Continuar'),
-                    )
-                  else ...[
-                    FilledButton(
-                      onPressed: () => _finish(skipExam: true, path: '/biblioteca?semana1=1'),
-                      child: const Text('Começar pela Biblioteca'),
-                    ),
-                    TextButton(
-                      onPressed: () => _finish(path: '/dashboard'),
-                      child: const Text('Ir para Hoje'),
-                    ),
-                  ],
+                  Row(
+                    children: [
+                      for (var i = 0; i < 4; i++)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: i == step ? 22 : 10,
+                          height: 10,
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: i == step ? cs.primary : cs.outlineVariant,
+                          ),
+                        ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (step == 1)
+                        TextButton(
+                          onPressed: () => setState(() => step++),
+                          child: const Text('Definir depois'),
+                        ),
+                      if (step < 3)
+                        FilledButton(
+                          onPressed: _advance,
+                          child: const Text('Continuar'),
+                        )
+                      else ...[
+                        FilledButton(
+                          onPressed: () => _finish(skipExam: true, path: '/biblioteca?semana1=1'),
+                          child: const Text('Começar pela Biblioteca'),
+                        ),
+                        TextButton(
+                          onPressed: () => _finish(path: '/dashboard'),
+                          child: const Text('Ir para Hoje'),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -280,7 +298,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
       ),
     ),
-    );
+  ),
+  ),
+  ),
+  ),
+  );
   }
 }
 
