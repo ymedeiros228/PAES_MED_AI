@@ -54,5 +54,17 @@ void main() {
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
   };
-  runApp(const ProviderScope(child: PaesMedAiApp()));
+  runApp(
+    MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+      ],
+      home: ProviderScope(child: PaesMedAiApp()),
+    ),
+  );
 }
