@@ -16,12 +16,14 @@ class TutorAnswer {
     this.ragMode,
     this.uncited = false,
     this.hasLocalBase = true,
+    this.model,
   });
   final String answer;
   final List<Map<String, dynamic>> citations;
   final String? ragMode;
   final bool uncited;
   final bool hasLocalBase;
+  final String? model;
 }
 
 class AiTutorRepository {
@@ -50,11 +52,13 @@ class AiTutorRepository {
         ragMode: map['ragMode']?.toString(),
         uncited: map['uncited'] == true,
         hasLocalBase: map['hasLocalBase'] != false,
+        model: map['model']?.toString(),
       );
     } on ApiException catch (e) {
       throw AiTutorException(e.message);
     } catch (e) {
-      throw AiTutorException(humanApiError(e, fallback: 'Não deu para falar com o Tutor IA.'));
+      throw AiTutorException(
+          humanApiError(e, fallback: 'Não deu para falar com o Tutor IA.'));
     }
   }
 }

@@ -26,10 +26,12 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   Future<void> _check() async {
     try {
       await apiClient.get('/health');
-      if (mounted) setState(() {
-        online = true;
-        lastError = null;
-      });
+      if (mounted) {
+        setState(() {
+          online = true;
+          lastError = null;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -171,7 +173,7 @@ class EmptyState extends StatelessWidget {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.65),
+                        color: cs.onSurface.withOpacity(0.72),
                         height: 1.4,
                       ),
                 ),

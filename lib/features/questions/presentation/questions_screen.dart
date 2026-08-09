@@ -298,12 +298,12 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CircularProgressIndicator(),
+                    const SoftLoader(compact: true),
                     const SizedBox(height: 16),
                     Text(
                       'Carregando questões do acervo local…',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurface.withOpacity(0.6),
+                            color: cs.onSurface.withOpacity(0.72),
                           ),
                     ),
                   ],
@@ -418,7 +418,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                           Text(
                             'Página ${page + 1} · ${selected + 1} de ${items.length}',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.65),
+                                  color: cs.onSurface.withOpacity(0.72),
                                 ),
                           ),
                           TextButton(

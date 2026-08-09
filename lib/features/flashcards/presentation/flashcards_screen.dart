@@ -193,7 +193,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                   ),
                 ),
                 async.when(
-                  loading: () => const LinearProgressIndicator(),
+                  loading: () => const SoftLoader(
+                    compact: true,
+                    label: 'Carregando cards…',
+                  ),
                   error: (e, _) => QuietEmpty(
                     message: humanApiError(e, fallback: 'Não deu para carregar os cards.'),
                     action: Wrap(

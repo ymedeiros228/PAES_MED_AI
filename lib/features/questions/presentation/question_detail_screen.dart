@@ -363,7 +363,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       );
     }
     final q = question;
-    if (q == null) return const Center(child: CircularProgressIndicator());
+    if (q == null) return const SoftLoader(label: 'Carregando questão…');
 
     final pm = q.professorMode ?? {};
     final freq = pm['frequency'] as Map<String, dynamic>? ?? {};
@@ -378,7 +378,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         Text(
           kSoftAtalhosHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurface.withOpacity(0.55),
+                color: cs.onSurface.withOpacity(0.72),
               ),
         ),
         if (saveError != null) ...[
@@ -412,10 +412,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     try {
                       await apiClient.post('/api/library/open-folder', {'folder': 'provas'});
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('Pasta provas aberta — coloque o PDF do ano e reimporte na Biblioteca.'),
                           ),
@@ -423,7 +424,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               humanApiError(e, fallback: 'Não abriu a pasta provas.'),
@@ -473,9 +474,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
               color: selected == q.correctIndex ? Colors.green : Colors.red,
-            ),
+            ).copyWith(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize),
           ),
           if (pendingErrorPick) ...[
             const SizedBox(height: 8),
@@ -676,17 +676,43 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       child: wide
           ? Row(
               children: [
-                Expanded(flex: 3, child: questionPane),
+                Expanded(
+                  flex: 3,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 760),
+                      child: questionPane,
+                    ),
+                  ),
+                ),
                 const VerticalDivider(width: 1),
-                Expanded(flex: 2, child: professorPane),
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 760),
+                      child: professorPane,
+                    ),
+                  ),
+                ),
               ],
             )
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                SizedBox(height: 420, child: questionPane),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: SizedBox(height: 420, child: questionPane),
+                  ),
+                ),
                 const Divider(),
-                SizedBox(height: 520, child: professorPane),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: SizedBox(height: 520, child: professorPane),
+                  ),
+                ),
               ],
             ),
     );

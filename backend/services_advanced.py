@@ -6,14 +6,14 @@ import json
 import math
 import os
 import re
-import struct
-import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
-from db import connect, loads_json
+from db import db, loads_json
 from services_core import list_questions, stats_basis
 from services_extra import generate_similar_question_stub
+from timeutil import iso_in, now_iso
+from timeutil import now as time_now
 
 INTERVALS = [1, 3, 7, 15, 30, 60, 120]
 
@@ -34,10 +34,9 @@ def ensure_embeddings_table(conn) -> None:
 
 
 def list_flashcards(due_only: bool = False, axes_only: bool = False) -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute("SELECT * FROM flashcards ORDER BY id DESC LIMIT 300").fetchall()
-        now = datetime.now().isoformat(timespec="seconds")
+        now = now_iso()
         out = []
         for r in rows:
             item = dict(r)
@@ -60,15 +59,12 @@ def list_flashcards(due_only: bool = False, axes_only: bool = False) -> list[dic
                 }
             )
         return out
-    finally:
-        conn.close()
 
 
 def flashcard_axis_stats() -> dict[str, Any]:
     """Contagens honestas de cards de eixos (local). Sem coluna created_at: 'hoje' ≈ ainda sem review."""
-    conn = connect()
-    try:
-        now = datetime.now().isoformat(timespec="seconds")
+    with db() as conn:
+        now = now_iso()
         rows = conn.execute("SELECT source, next_due, reviews FROM flashcards").fetchall()
         axis_due = 0
         axis_new = 0
@@ -83,14 +79,11 @@ def flashcard_axis_stats() -> dict[str, Any]:
             if reviews == 0:
                 axis_new += 1
         return {"axisCardsDue": axis_due, "axisCardsCreatedToday": axis_new}
-    finally:
-        conn.close()
 
 
 def create_flashcard(front: str, back: str, subject: str | None, topic: str | None, source: str = "manual") -> dict[str, Any]:
-    conn = connect()
-    try:
-        now = datetime.now()
+    with db() as conn:
+        now = time_now()
         # Cards de eixos (debrief) entram due na hora para aparecer no loop do aluno (Ciclo AK).
         if (source or "").startswith("axis:"):
             due = now.isoformat(timespec="seconds")
@@ -112,20 +105,17 @@ def create_flashcard(front: str, back: str, subject: str | None, topic: str | No
         )
         conn.commit()
         return {"id": cur.lastrowid, "front": front, "back": back, "source": source, "next_due": due}
-    finally:
-        conn.close()
 
 
 def review_flashcard(card_id: int, remembered: bool) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT * FROM flashcards WHERE id=?", (card_id,)).fetchone()
         if not row:
             return {"ok": False, "message": "Flashcard não encontrado"}
         reviews = row["reviews"] + (1 if remembered else 0)
         idx = min(reviews, len(INTERVALS) - 1) if remembered else 0
         interval = INTERVALS[idx]
-        next_due = (datetime.now() + timedelta(days=interval)).isoformat(timespec="seconds")
+        next_due = iso_in(interval)
         conn.execute(
             "UPDATE flashcards SET reviews=?, next_due=? WHERE id=?",
             (reviews if remembered else row["reviews"], next_due, card_id),
@@ -143,31 +133,23 @@ def review_flashcard(card_id: int, remembered: bool) -> dict[str, Any]:
         if gap:
             out["gap"] = gap
         return out
-    finally:
-        conn.close()
 
 
 def delete_flashcard(card_id: int) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute("DELETE FROM flashcards WHERE id=?", (card_id,))
         conn.commit()
         return {"ok": True}
-    finally:
-        conn.close()
 
 
 def set_plan_day_done(days: int, day_index: int, done: bool) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             "UPDATE study_plan SET done=? WHERE plan_days=? AND day_index=?",
             (1 if done else 0, days, day_index),
         )
         conn.commit()
         return {"ok": True, "days": days, "day": day_index, "done": done}
-    finally:
-        conn.close()
 
 
 def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: int = 20, n_generated: int = 0) -> dict[str, Any]:
@@ -185,8 +167,7 @@ def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: i
             n_similar = min(n_similar + 3, 15)
             boosted = True
         # Dominant error type for this topic (recent wrong answers)
-        conn = connect()
-        try:
+        with db() as conn:
             rows = conn.execute(
                 """
                 SELECT error_type FROM answers
@@ -195,8 +176,6 @@ def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: i
                 """,
                 (subject, topic),
             ).fetchall()
-        finally:
-            conn.close()
         if rows:
             from collections import Counter
 
@@ -276,7 +255,7 @@ def cosine(a: list[float], b: list[float]) -> float:
         return 0.0
     a = a[:n]
     b = b[:n]
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
     na = math.sqrt(sum(x * x for x in a)) or 1.0
     nb = math.sqrt(sum(x * x for x in b)) or 1.0
     return dot / (na * nb)
@@ -287,8 +266,7 @@ def upsert_embedding(ref_type: str, ref_id: str, text: str) -> str:
     model = "text-embedding-3-small" if vec else "local-hash-64"
     if vec is None:
         vec = local_embedding(text)
-    conn = connect()
-    try:
+    with db() as conn:
         ensure_embeddings_table(conn)
         conn.execute(
             """
@@ -299,26 +277,21 @@ def upsert_embedding(ref_type: str, ref_id: str, text: str) -> str:
               vector_json=excluded.vector_json,
               updated_at=excluded.updated_at
             """,
-            (ref_type, ref_id, model, json.dumps(vec), datetime.now().isoformat(timespec="seconds")),
+            (ref_type, ref_id, model, json.dumps(vec), now_iso()),
         )
         conn.commit()
         return model
-    finally:
-        conn.close()
 
 
 def index_all_questions(limit: int = 500) -> dict[str, Any]:
     from services_core import is_official_source, stats_basis
 
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             "SELECT id, subject, topic, statement, resolution, macete, source, generated FROM questions LIMIT ?",
             (limit,),
         ).fetchall()
         syllabus = [dict(r) for r in conn.execute("SELECT subject, topic, subtopic, weight FROM syllabus").fetchall()]
-    finally:
-        conn.close()
     n = 0
     model = "local"
     prefer_official = stats_basis()["officialCount"] >= 10
@@ -346,29 +319,23 @@ def build_rag_context_embedded(query: str, limit: int = 8) -> tuple[str, str]:
 def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, str, list[dict[str, Any]]]:
     """Retorna (contexto, modo, citações)."""
     from services_core import is_official_source, stats_basis
-    from services_extra import build_rag_context_with_citations
+    from services_extra import build_rag_context_with_citations, prioritize_rag_citations
 
     basis = stats_basis()
     prefer_official = basis["officialCount"] >= 10
     qvec = openai_embedding(query) or local_embedding(query)
-    conn = connect()
-    try:
+    with db() as conn:
         ensure_embeddings_table(conn)
         emb_rows = conn.execute("SELECT * FROM embeddings WHERE ref_type IN ('question','edital')").fetchall()
         questions = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()}
         syllabus = [dict(r) for r in conn.execute("SELECT * FROM syllabus").fetchall()]
         lessons = [dict(r) for r in conn.execute("SELECT * FROM lessons ORDER BY created_at DESC LIMIT 10").fetchall()]
-    finally:
-        conn.close()
 
     if not emb_rows:
         index_all_questions(200)
-        conn = connect()
-        try:
+        with db() as conn:
             emb_rows = conn.execute("SELECT * FROM embeddings WHERE ref_type IN ('question','edital')").fetchall()
             questions = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()}
-        finally:
-            conn.close()
 
     scored: list[tuple[float, str, str]] = []
     for e in emb_rows:
@@ -452,4 +419,4 @@ def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, st
                 }
             )
 
-    return "\n\n".join(chunks), mode, citations[:12]
+    return "\n\n".join(chunks), mode, prioritize_rag_citations(citations, limit)

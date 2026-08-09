@@ -107,12 +107,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final cs = Theme.of(context).colorScheme;
     final examState = ref.watch(examDateProvider);
 
-    final titles = ['Bem-vindo', 'Data da prova', 'Provas no PC', 'Seu dia a dia'];
+    final titles = [
+      'Bem-vindo ao seu plano de estudos',
+      'Defina a data da sua prova',
+      'Use seu acervo local',
+      'Escolha como começar seus estudos',
+    ];
     final bodies = [
-      'Hub pessoal para Medicina na UEMA — acervo, sessão e revisão no seu ritmo.',
-      'Calibra o plano e a contagem. Pode pular e definir depois em Ajustes.',
-      'Importe 2024–26 na Biblioteca (Atualizar 2024–26) ou abra as pastas e coloque os PDFs à mão.',
-      'Semana 1 na Biblioteca → depois Hoje ou Sessão. Simulado quando quiser medir.',
+      'Organize sua preparação para Medicina na UEMA com provas, sessões e revisões no seu ritmo.',
+      'Informe quando será a prova para que o plano e a contagem regressiva acompanhem sua preparação. Você também pode fazer isso depois em Ajustes.',
+      'Use as provas e os materiais que já estão no seu computador. Na Biblioteca, você pode abrir as pastas e adicionar PDFs quando precisar.',
+      'Comece pela Biblioteca para conhecer o material e, depois, escolha Hoje ou Sessão para estudar. O Tutor IA fica mais completo quando você informa uma chave gratuita em Ajustes. O app abre no modo foco, mostrando só o essencial; desligue o foco para liberar os recursos avançados.',
     ];
 
     return Focus(
@@ -120,11 +125,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       onKeyEvent: _onKey,
       child: Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 28, 32, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
               Text(
                 'PAES MED AI',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -144,8 +154,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(height: 12),
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
               Text(
-                '← volta · → ou Enter avança',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.5)),
+                'Use as setas do teclado ou Enter para avançar',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.72)),
               ),
               if (step == 1) ...[
                 const SizedBox(height: 16),
@@ -178,9 +188,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    FilledButton.tonal(onPressed: () => _openFolder('provas'), child: const Text('Provas')),
-                    FilledButton.tonal(onPressed: () => _openFolder('gabaritos'), child: const Text('Gabaritos')),
-                    OutlinedButton(onPressed: () => _openFolder('edital'), child: const Text('Edital')),
+                    FilledButton.tonal(
+                      onPressed: () => _openFolder('provas'),
+                      child: const Text('Abrir provas'),
+                    ),
+                    FilledButton.tonal(
+                      onPressed: () => _openFolder('gabaritos'),
+                      child: const Text('Abrir gabaritos'),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => _openFolder('edital'),
+                      child: const Text('Abrir edital'),
+                    ),
                   ],
                 ),
                 if (folderMsg != null) ...[
@@ -215,9 +234,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       _MiniLibRow(year: '2026', status: 'Atualizar se faltar'),
                       const SizedBox(height: 6),
                       Text(
-                        'Painel Semana 1 · oficiais 2024–26 · sem inventar ano ausente',
+                        'Consulte os materiais disponíveis e adicione outros quando precisar.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.6),
+                              color: cs.onSurface.withOpacity(0.72),
                             ),
                       ),
                     ],
@@ -225,37 +244,53 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ],
               const Spacer(),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (var i = 0; i < 4; i++)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: i == step ? 22 : 10,
-                      height: 10,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: i == step ? cs.primary : cs.outlineVariant,
-                      ),
-                    ),
-                  const Spacer(),
-                  if (step == 1)
-                    TextButton(onPressed: () => setState(() => step++), child: const Text('Pular data')),
-                  if (step < 3)
-                    FilledButton(
-                      onPressed: _advance,
-                      child: const Text('Continuar (Enter)'),
-                    )
-                  else ...[
-                    FilledButton(
-                      onPressed: () => _finish(skipExam: true, path: '/biblioteca?semana1=1'),
-                      child: const Text('Semana 1 (Biblioteca)'),
-                    ),
-                    TextButton(
-                      onPressed: () => _finish(path: '/dashboard'),
-                      child: const Text('Ir ao Hoje'),
-                    ),
-                  ],
+                  Row(
+                    children: [
+                      for (var i = 0; i < 4; i++)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: i == step ? 22 : 10,
+                          height: 10,
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: i == step ? cs.primary : cs.outlineVariant,
+                          ),
+                        ),
+                      const Spacer(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (step == 1)
+                        TextButton(
+                          onPressed: () => setState(() => step++),
+                          child: const Text('Definir depois'),
+                        ),
+                      if (step < 3)
+                        FilledButton(
+                          onPressed: _advance,
+                          child: const Text('Continuar'),
+                        )
+                      else ...[
+                        FilledButton(
+                          onPressed: () => _finish(skipExam: true, path: '/biblioteca?semana1=1'),
+                          child: const Text('Começar pela Biblioteca'),
+                        ),
+                        TextButton(
+                          onPressed: () => _finish(path: '/dashboard'),
+                          child: const Text('Ir para Hoje'),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -263,7 +298,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
       ),
     ),
-    );
+  ),
+  ),
+  ),
+  ),
+  );
   }
 }
 
@@ -287,7 +326,13 @@ class _MiniLibRow extends StatelessWidget {
               color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(year, style: TextStyle(fontWeight: FontWeight.w800, color: cs.primary, fontSize: 12)),
+            child: Text(
+              year,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.primary,
+                  ),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(

@@ -346,11 +346,20 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ],
               if (loading) ...[
                 const SizedBox(height: 12),
-                const LinearProgressIndicator(minHeight: 2),
+                const SoftLoader(
+                  compact: true,
+                  label: 'Carregando plano de estudo…',
+                ),
               ],
               if (error != null) ...[
                 const SizedBox(height: 8),
-                Text(error!, style: TextStyle(color: cs.error)),
+                QuietEmpty(
+                  message: error!,
+                  action: TextButton(
+                    onPressed: () => unawaited(_load()),
+                    child: const Text('Tentar de novo'),
+                  ),
+                ),
               ],
 
               const SizedBox(height: 8),
@@ -360,7 +369,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   apiClient.get('/api/dashboard'),
                 ]),
                 builder: (context, snap) {
-                  if (!snap.hasData) return const SizedBox.shrink();
+                  if (!snap.hasData) return const SoftLoader(compact: true);
                   final revs = (snap.data![0] as List?) ?? [];
                   final dash = Map<String, dynamic>.from(snap.data![1] as Map);
                   final hot = (dash['errorHotTopics'] as List? ?? []).take(3).toList();
@@ -489,7 +498,6 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               '${item['day']}',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: 13,
                                 color: fromErrors ? cs.onTertiaryContainer : cs.onSurface,
                               ),
                             ),

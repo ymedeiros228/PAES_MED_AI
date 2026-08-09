@@ -8,7 +8,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from db import DATA_DIR
+from db import DATA_DIR, db
 
 MANIFEST_PATH = DATA_DIR / "ACERVO_MANIFEST.json"
 # Fallback: manifesto ao lado do código (repo) se data/ ainda não tiver cópia
@@ -195,7 +195,7 @@ def fetch_year(year: int, *, dry_run: bool = False, overwrite: bool = False) -> 
         "retry": True,
         "commitOnDisk": bool(local.get("hasProva") and local.get("hasGabarito")),
         "portal": entry.get("portal"),
-        "manualDrop": "Coloque paes_{year}.pdf e gabarito_{year}.pdf nas pastas e Commitar.".format(year=year),
+        "manualDrop": f"Coloque paes_{year}.pdf e gabarito_{year}.pdf nas pastas e Commitar.",
     }
     if ok_any and local["hasProva"] and local["hasGabarito"]:
         results["message"] = "PDFs salvos. Próximo passo: Biblioteca → Revisar → Commitar."
@@ -462,10 +462,8 @@ def bootstrap_and_commit(
 
 
 def _uema_count_for_year(year: int) -> int:
-    from db import connect
 
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute(
             """
             SELECT COUNT(*) AS c FROM questions
@@ -474,8 +472,6 @@ def _uema_count_for_year(year: int) -> int:
             (int(year),),
         ).fetchone()
         return int(row["c"] or 0)
-    finally:
-        conn.close()
 
 
 def found_years() -> list[int]:

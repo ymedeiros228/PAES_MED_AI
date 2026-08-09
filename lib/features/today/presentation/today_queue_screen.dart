@@ -212,7 +212,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ),
       );
     }
-    if (queue == null) return const Center(child: CircularProgressIndicator());
+    if (queue == null) return const SoftLoader(label: 'Carregando fila…');
 
     final revisions = (queue!['revisions'] as List? ?? []);
     final cards = (queue!['flashcards'] as List? ?? []);
@@ -262,9 +262,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 PageHeader(
                   eyebrow: 'Estudar',
                   title: 'Fila',
-                  subtitle: coach != null
-                      ? coach
-                      : 'Próximo passo do dia · cerca de $minutes min',
+                  subtitle: coach ?? 'Próximo passo do dia · cerca de $minutes min',
                   trailing: IconButton(
                     tooltip: 'Atualizar fila',
                     onPressed: _load,
@@ -272,18 +270,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ),
                 ),
 
-                MissionQuestCard(
-                  title: 'Missão de redação',
-                  why: 'Treine o eixo fraco com persona e delta honesto — treino local, não banca.',
-                  ctaLabel: 'Abrir redação',
-                  status: MissionQuestStatus.open,
-                  onCta: () => context.go('/redacao'),
-                ),
-
-                FilledButton.icon(
-                  onPressed: () => context.go(sessionPath),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Começar sessão'),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => context.go(sessionPath),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Começar sessão'),
+                  ),
                 ),
                 FutureBuilder(
                   future: apiClient.get('/api/session/checkpoint'),
@@ -302,6 +295,43 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       onContinue: () => context.go(sessionPath),
                     );
                   },
+                ),
+
+                SectionLabel(
+                  'Outras ações',
+                  hint: 'Complementos do dia, abaixo da sessão principal',
+                ),
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 2),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.edit_note_rounded,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Missão de redação',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            Text(
+                              'Treino local · não banca',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.go('/redacao'),
+                        child: const Text('Abrir'),
+                      ),
+                    ],
+                  ),
                 ),
 
                 if (officialUnlocked && coachSubject != null && coachTopic != null) ...[
@@ -607,11 +637,27 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 FutureBuilder(
                   future: apiClient.get('/api/essays/progress'),
                   builder: (context, snap) {
-                    if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                    if (snap.connectionState == ConnectionState.waiting) {
+                      return const CompactStatus(
+                        message: 'Carregando missão de redação…',
+                        icon: Icons.hourglass_empty_rounded,
+                      );
+                    }
+                    if (snap.hasError || snap.data is! Map) {
+                      return const CompactStatus(
+                        message: 'Missão de redação indisponível no momento.',
+                        icon: Icons.sync_problem_outlined,
+                      );
+                    }
                     final prog = Map<String, dynamic>.from(snap.data as Map);
                     final count = prog['count'] as int? ?? 0;
                     final mission = prog['nextMission'];
-                    if (count < 1 || mission is! Map) return const SizedBox.shrink();
+                    if (count < 1 || mission is! Map) {
+                      return const CompactStatus(
+                        message: 'Nenhuma missão de redação disponível.',
+                        icon: Icons.edit_note_outlined,
+                      );
+                    }
                     final label = mission['label']?.toString() ?? 'eixo';
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -671,7 +717,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
                             style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.55),
+                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72),
                                 ),
                           ),
                       ],
@@ -697,8 +743,8 @@ class _GapDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      width: 16,
-      height: 16,
+      width: 20,
+      height: 20,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -707,11 +753,10 @@ class _GapDot extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
-          color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.45),
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.72),
+            ),
       ),
     );
   }

@@ -91,7 +91,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
       focusNode: _focusNode,
       onKeyEvent: (node, event) => _onKey(node, event, _officialN),
       child: async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SoftLoader(label: 'Carregando domínio…'),
       error: (e, _) => EmptyState(
         title: 'Domínio indisponível',
         subtitle: humanApiError(e, fallback: 'Tente de novo em instantes.'),
@@ -239,11 +239,27 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         key: ValueKey('drafts-$tick'),
                         future: apiClient.get('/api/professor/draft-queue?limit=5'),
                         builder: (context, snap) {
-                          if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const CompactStatus(
+                              message: 'Carregando rascunhos para revisar…',
+                              icon: Icons.hourglass_empty_rounded,
+                            );
+                          }
+                          if (snap.hasError || snap.data is! Map) {
+                            return const CompactStatus(
+                              message: 'Rascunhos indisponíveis no momento.',
+                              icon: Icons.sync_problem_outlined,
+                            );
+                          }
                           final q = Map<String, dynamic>.from(snap.data as Map);
                           final draftItems = q['items'] as List? ?? const [];
                           final n = q['count'] as int? ?? draftItems.length;
-                          if (n == 0) return const SizedBox.shrink();
+                          if (n == 0) {
+                            return const CompactStatus(
+                              message: 'Nenhum rascunho para revisar.',
+                              icon: Icons.inbox_outlined,
+                            );
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -303,11 +319,27 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         key: ValueKey('dirty-$tick'),
                         future: apiClient.get('/api/curation/dirty-labels?limit=8'),
                         builder: (context, snap) {
-                          if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const CompactStatus(
+                              message: 'Carregando labels para revisar…',
+                              icon: Icons.hourglass_empty_rounded,
+                            );
+                          }
+                          if (snap.hasError || snap.data is! Map) {
+                            return const CompactStatus(
+                              message: 'Labels suspeitas indisponíveis no momento.',
+                              icon: Icons.sync_problem_outlined,
+                            );
+                          }
                           final d = Map<String, dynamic>.from(snap.data as Map);
                           final n = d['count'] as int? ?? 0;
                           final dirtyItems = d['items'] as List? ?? const [];
-                          if (n == 0) return const SizedBox.shrink();
+                          if (n == 0) {
+                            return const CompactStatus(
+                              message: 'Nenhuma label suspeita encontrada.',
+                              icon: Icons.label_outline_rounded,
+                            );
+                          }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -338,7 +370,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Inventário (base local)', style: Theme.of(context).textTheme.titleSmall),
+                            const SectionLabel('Inventário (base local)'),
                             const SizedBox(height: 6),
                             Text(
                               'Oficiais: $officialN · Natureza: $natN\n'
@@ -352,13 +384,13 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               Text(
                                 curation['message'].toString(),
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.withOpacity(0.6),
+                                      color: cs.onSurface.withOpacity(0.72),
                                     ),
                               ),
                             ],
-                            const Text(
+                            Text(
                               'Números da base — sem inventar % de incidência.',
-                              style: TextStyle(fontSize: 11),
+                              style: Theme.of(context).textTheme.labelSmall,
                             ),
                           ],
                         ),

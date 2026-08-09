@@ -107,6 +107,12 @@ class AppTheme {
     // Display Georgia (editorial) + corpo Segoe (UI limpa)
     final display = TextStyle(
       fontFamily: 'Georgia',
+      fontFamilyFallback: const [
+        'Times New Roman',
+        'Liberation Serif',
+        'DejaVu Serif',
+        'Noto Serif',
+      ],
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
       height: 1.12,
@@ -114,6 +120,13 @@ class AppTheme {
     );
     final body = TextStyle(
       fontFamily: 'Segoe UI',
+      fontFamilyFallback: const [
+        'Roboto',
+        'Liberation Sans',
+        'DejaVu Sans',
+        'Noto Sans',
+        'Helvetica',
+      ],
       color: scheme.onSurface,
       height: 1.45,
       letterSpacing: 0.1,
@@ -138,7 +151,7 @@ class AppTheme {
         titleSmall: body.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
         bodyLarge: body.copyWith(fontSize: 16),
         bodyMedium: body.copyWith(fontSize: 14, color: scheme.onSurface.withOpacity(0.88)),
-        bodySmall: body.copyWith(fontSize: 12, color: scheme.onSurface.withOpacity(0.62)),
+        bodySmall: body.copyWith(fontSize: 12, color: scheme.onSurface.withOpacity(0.72)),
         labelLarge: body.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
         labelMedium: body.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
         labelSmall: body.copyWith(fontWeight: FontWeight.w500, fontSize: 11, letterSpacing: 0.4),

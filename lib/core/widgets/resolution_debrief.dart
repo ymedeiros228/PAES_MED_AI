@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ui_kit.dart';
+
 /// Debrief honesto: 4 eixos se `real`; senão rascunho (Ciclo AB/AF).
 class ResolutionDebrief extends StatelessWidget {
   const ResolutionDebrief({
@@ -42,94 +44,92 @@ class ResolutionDebrief extends StatelessWidget {
       );
     }
 
-    return Card(
+    return SurfacePanel(
       color: cs.primaryContainer.withOpacity(0.55),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    isReal ? 'Explicação (4 eixos)' : 'Rascunho / modelo',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-                  ),
-                ),
-                if (label.isNotEmpty || isReal)
-                  Chip(
-                    label: Text(
-                      isReal
-                          ? 'Explicação completa'
-                          : (label == 'rascunho' ? 'Rascunho didático' : 'Modelo de apoio'),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-              ],
-            ),
-            Builder(
-              builder: (context) {
-                final board = (prof['examBoard'] ?? question['examBoard'] ?? 'TREINO').toString().toUpperCase();
-                final similar = prof['similarityOf'] ?? question['similarityOf'];
-                final blabel = board == 'UEMA_PAES'
-                    ? 'Oficial PAES-UEMA'
-                    : board == 'OUTRA'
-                        ? 'Outra banca (reforço — não oficial UEMA)'
-                        : 'Treino rotulado (não oficial UEMA)';
-                return Text(
-                  similar != null ? '$blabel · similar a $similar' : blabel,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: board == 'UEMA_PAES' ? cs.primary : cs.tertiary,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            if (!isReal)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
                 child: Text(
-                  'Isto não é texto oficial da banca nem aula fechada — só apoio didático local.',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  isReal ? 'Explicação (4 eixos)' : 'Rascunho / modelo',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
-            if (isReal) ...[
-              axisBlock('Comando', axes['comando']?.toString()),
-              axisBlock('Conceito', axes['conceito']?.toString()),
-              axisBlock('Gabarito', axes['gabarito']?.toString()),
-              axisBlock('Distrator', axes['distrator']?.toString()),
-              if (!axes.values.any((v) => (v?.toString() ?? '').trim().isNotEmpty) &&
-                  resolution.trim().isNotEmpty)
-                SelectableText(resolution),
-            ] else if (resolution.trim().isNotEmpty) ...[
-              const Text('Texto', style: TextStyle(fontWeight: FontWeight.w700)),
+              if (label.isNotEmpty || isReal)
+                Chip(
+                  label: Text(
+                    isReal
+                        ? 'Explicação completa'
+                        : (label == 'rascunho' ? 'Rascunho didático' : 'Modelo de apoio'),
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+            ],
+          ),
+          Builder(
+            builder: (context) {
+              final board = (prof['examBoard'] ?? question['examBoard'] ?? 'TREINO').toString().toUpperCase();
+              final similar = prof['similarityOf'] ?? question['similarityOf'];
+              final blabel = board == 'UEMA_PAES'
+                  ? 'Oficial PAES-UEMA'
+                  : board == 'OUTRA'
+                      ? 'Outra banca (reforço — não oficial UEMA)'
+                      : 'Treino rotulado (não oficial UEMA)';
+              return Text(
+                similar != null ? '$blabel · similar a $similar' : blabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: board == 'UEMA_PAES' ? cs.primary : cs.tertiary,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+          if (!isReal)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Isto não é texto oficial da banca nem aula fechada — só apoio didático local.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          if (isReal) ...[
+            axisBlock('Comando', axes['comando']?.toString()),
+            axisBlock('Conceito', axes['conceito']?.toString()),
+            axisBlock('Gabarito', axes['gabarito']?.toString()),
+            axisBlock('Distrator', axes['distrator']?.toString()),
+            if (!axes.values.any((v) => (v?.toString() ?? '').trim().isNotEmpty) &&
+                resolution.trim().isNotEmpty)
               SelectableText(resolution),
-              const SizedBox(height: 8),
-            ],
-            if (macete.trim().isNotEmpty) ...[
-              const Text('Macete', style: TextStyle(fontWeight: FontWeight.w700)),
-              Text(macete),
-              const SizedBox(height: 8),
-            ],
-            if (pegadinha.trim().isNotEmpty) ...[
-              const Text('Pegadinha', style: TextStyle(fontWeight: FontWeight.w700)),
-              Text(pegadinha),
-              const SizedBox(height: 8),
-            ],
-            if (banca.trim().isNotEmpty) ...[
-              const Text('Intenção da banca', style: TextStyle(fontWeight: FontWeight.w700)),
-              Text(banca),
-            ],
-            if (trailing != null) ...[
-              const SizedBox(height: 10),
-              trailing!,
-            ],
+          ] else if (resolution.trim().isNotEmpty) ...[
+            const Text('Texto', style: TextStyle(fontWeight: FontWeight.w700)),
+            SelectableText(resolution),
+            const SizedBox(height: 8),
           ],
-        ),
+          if (macete.trim().isNotEmpty) ...[
+            const Text('Macete', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(macete),
+            const SizedBox(height: 8),
+          ],
+          if (pegadinha.trim().isNotEmpty) ...[
+            const Text('Pegadinha', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(pegadinha),
+            const SizedBox(height: 8),
+          ],
+          if (banca.trim().isNotEmpty) ...[
+            const Text('Intenção da banca', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(banca),
+          ],
+          if (trailing != null) ...[
+            const SizedBox(height: 10),
+            trailing!,
+          ],
+        ],
       ),
     );
   }

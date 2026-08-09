@@ -278,6 +278,7 @@ class AppShell extends ConsumerWidget {
                     icon: Icon(focus ? Icons.visibility_rounded : Icons.center_focus_strong_rounded),
                   ),
                   IconButton(
+                    tooltip: 'Ir ao Tutor',
                     onPressed: () => context.go('/tutor'),
                     icon: const Icon(Icons.auto_awesome_rounded),
                   ),

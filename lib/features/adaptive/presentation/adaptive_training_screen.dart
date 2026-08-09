@@ -384,18 +384,19 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             if (subject.isNotEmpty && topic.isNotEmpty)
                               OutlinedButton(
                                 onPressed: () async {
+                                  final messenger = ScaffoldMessenger.of(context);
                                   try {
                                     await apiClient.post('/api/gaps/recover', {
                                       'subject': subject,
                                       'topic': topic,
                                     });
                                     if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    messenger.showSnackBar(
                                       const SnackBar(content: Text('Lacuna enviada para reforço na Fila.')),
                                     );
                                   } catch (e) {
                                     if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    messenger.showSnackBar(
                                       SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a lacuna.'))),
                                     );
                                   }
@@ -504,7 +505,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           for (var i = 0; i < options.length; i++)
                             ChoiceOptionTile(
                               index: i,
-                              label: '${options[i]}',
+                              label: options[i].toString(),
                               selected: selected == i,
                               enabled: !revealed,
                               revealCorrect: revealed && correctIndex != null
@@ -581,20 +582,21 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                   onPressed: () async {
                                     final id = q['id']?.toString();
                                     if (id == null) return;
+                                    final messenger = ScaffoldMessenger.of(context);
                                     try {
                                       final data = await apiClient.post(
                                         '/api/flashcards/from-question',
                                         {'questionId': id, 'count': 4},
                                       );
                                       if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         SnackBar(
                                           content: Text('Card(s): ${(data as Map)['created'] ?? 0}'),
                                         ),
                                       );
                                     } catch (e) {
                                       if (!mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             humanApiError(e, fallback: 'Não deu para criar o card.'),

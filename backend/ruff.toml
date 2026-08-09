@@ -1,0 +1,15 @@
+line-length = 120
+target-version = "py310"
+extend-exclude = [".venv", "venv"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = [
+    "E501",   # comprimento de linha fica com o formatter
+    "B008",   # padrao do FastAPI: Depends()/File() como default
+    "UP007",  # ainda ha suporte a runtime sem `X | Y` em alguns pontos
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["E402"]      # sys.path e ajustado antes dos imports locais
+"smoke_test.py" = ["E402"]

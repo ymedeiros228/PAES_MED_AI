@@ -16,7 +16,19 @@ from main import app
 from seed import seed
 
 
-def main() -> int:
+def api_source(root: Path) -> str:
+    """Codigo da API (main.py + routers + schemas/helpers) num texto so."""
+    backend = root / "backend"
+    files = [backend / "main.py", backend / "schemas.py", backend / "api_helpers.py"]
+    files += sorted((backend / "routers").glob("*.py"))
+    return "\n".join(f.read_text(encoding="utf-8", errors="ignore") for f in files if f.exists())
+
+
+Check = tuple[str, bool, str]
+
+
+def run_checks() -> list[Check]:
+    """Roda a bateria inteira e devolve (nome, passou, detalhe) por verificação."""
     seed(force=True)
     client = TestClient(app)
     checks: list[tuple[str, bool, str]] = []
@@ -1590,9 +1602,6 @@ def main() -> int:
         r.status_code == 200 and (cod.get("ok") is True or "years" in cod or "items" in cod or "message" in cod),
         str(list(cod.keys())[:10]),
     )
-    years_used = None
-    if isinstance(cod.get("yearsUsed"), list):
-        years_used = cod["yearsUsed"]
     inv_years = inv_l.get("yearsUsed") if isinstance(inv_l.get("yearsUsed"), list) else None
     ok(
         "ciclo_m_years_used_present_only",
@@ -2288,7 +2297,8 @@ def main() -> int:
     ).exists() else ""
     ok(
         "ciclo_as_tutor_ui_uncited_banner",
-        "uncited" in tutor_ui and "Sem base local" in tutor_ui,
+        "uncited" in tutor_ui
+        and ("Conteúdo geral" in tutor_ui or "sem questão da base local" in tutor_ui),
         "tutor UI uncited",
     )
     ok(
@@ -3838,12 +3848,14 @@ def main() -> int:
     ).read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_ck_onboarding_finish_paths",
-        "Ir ao Hoje" in onb_ck and "/dashboard" in onb_ck and "Semana 1 (Biblioteca)" in onb_ck,
+        "Ir para Hoje" in onb_ck
+        and "/dashboard" in onb_ck
+        and "Começar pela Biblioteca" in onb_ck,
         "onboarding paths",
     )
     ok(
         "ciclo_ck_folder_no_exception",
-        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and "\$e" not in onb_ck,
+        "folderMsg" in onb_ck and "\\n$e" not in onb_ck and r"\$e" not in onb_ck,
         "folder human",
     )
     ok(
@@ -3860,6 +3872,7 @@ def main() -> int:
     # --- Ciclo CL: avançado +4 ---
     pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8", errors="ignore")
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
+    update_bat = (root / "atualizar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_cl_settings_avancado_groups",
         "SectionLabel('Mídia'" in settings_ck
@@ -5975,7 +5988,7 @@ def main() -> int:
         "first_run_coach_pending" in lib_gw
         and "Bem-vindo — Semana 1" in lib_gw
         and "Primeiro passo: Semana 1" in dash_gw
-        and "Atualizar 2024–26" in onb_ck,
+        and "Abrir provas" in onb_ck,
         "first run semana1 soft landing",
     )
     ok(
@@ -5990,9 +6003,7 @@ def main() -> int:
     api_gy = (
         root / "lib" / "core" / "data" / "api_error.dart"
     ).read_text(encoding="utf-8", errors="ignore")
-    main_gy = (
-        root / "backend" / "main.py"
-    ).read_text(encoding="utf-8", errors="ignore")
+    main_gy = api_source(root)
     core_gy = (
         root / "backend" / "services_core.py"
     ).read_text(encoding="utf-8", errors="ignore")
@@ -6096,11 +6107,14 @@ def main() -> int:
     ok(
         "ciclo_ha_version_triple_lock",
         bool(pubspec_ver)
-        and pubspec_ver in pack_bat
+        and "APP_VERSION" in pack_bat
+        and "findstr /b /c:" in pack_bat
+        and "git branch --show-current" in pack_bat
+        and "git rev-parse --short HEAD" in pack_bat
         and pubspec_ver in app_ver_ha
         and "kAppVersionLabel" in app_ver_ha
         and "kAppVersionLabel" in settings_ed,
-        f"version {pubspec_ver or '?'}",
+        f"version {pubspec_ver or '?'} dinâmica",
     )
 
     # --- Ciclo HB: pack source + dist hard quando existir ---
@@ -6195,7 +6209,9 @@ def main() -> int:
     )
 
     # --- Drop acervo provas 2014–25 (host PDFs) ---
-    from ingest_pdf import list_pdf_inventory as _inv_ac, pair_prova_gabarito as _pair_ac, compute_year_statuses as _st_ac
+    from ingest_pdf import compute_year_statuses as _st_ac
+    from ingest_pdf import list_pdf_inventory as _inv_ac
+    from ingest_pdf import pair_prova_gabarito as _pair_ac
 
     inv_ac = _inv_ac()
     provas_years_ac = {i.get("year") for i in inv_ac if i.get("kind") == "prova"}
@@ -6243,9 +6259,7 @@ def main() -> int:
     acervo_hh = (
         root / "backend" / "acervo_fetch.py"
     ).read_text(encoding="utf-8", errors="ignore")
-    main_hh = (
-        root / "backend" / "main.py"
-    ).read_text(encoding="utf-8", errors="ignore")
+    main_hh = api_source(root)
     ok(
         "ciclo_hf_partial_labels",
         "Parcial · sem gabarito" in lib_hf
@@ -6317,7 +6331,8 @@ def main() -> int:
     )
 
     # --- Ciclo HJ: parser + match gabarito ---
-    from ingest_pdf import heuristic_parse_questions as _hpq_hj, parse_gabarito as _pg_hj
+    from ingest_pdf import heuristic_parse_questions as _hpq_hj
+    from ingest_pdf import parse_gabarito as _pg_hj
 
     sample_hj = (
         "QUESTÃO 01\nSobre o DNA:\n"
@@ -6523,7 +6538,7 @@ def main() -> int:
     services_media = (root / "backend" / "services_media.py").read_text(
         encoding="utf-8", errors="ignore"
     )
-    main_py = (root / "backend" / "main.py").read_text(encoding="utf-8", errors="ignore")
+    main_py = api_source(root)
     ok(
         "ciclo_hq_offline_axes",
         "def offline_essay_axis_scores" in services_ex
@@ -6601,8 +6616,10 @@ def main() -> int:
         "rail Progresso",
     )
     ok(
-        "ciclo_hr_relevo_painter",
-        "RelevoPainter" in prog_hr and "CustomPaint" in prog_hr and "HeroStudyStrip" in prog_hr,
+        "ciclo_hr_relevo_visual",
+        "_ReadableRelief" in prog_hr
+        and "_relevoValleyThreshold" in prog_hr
+        and "HeroStudyStrip" in prog_hr,
         "Relevo visual",
     )
     ok(
@@ -6789,8 +6806,10 @@ def main() -> int:
     )
     ok(
         "ciclo_ia_settings_desktop",
-        "Desktop build" in settings_ia or "Build Windows" in settings_ia,
-        "Sobre Desktop",
+        "Build de demonstração" in settings_ia
+        or "Desktop build" in settings_ia
+        or "Build Windows" in settings_ia,
+        "Sobre build",
     )
     ok(
         "ciclo_hy_bump_doc",
@@ -7149,9 +7168,18 @@ def main() -> int:
         "ciclo_iu_version_17",
         "1.0.0+17" in pubspec
         and version_in_ui(settings_ed, ("1.0.0+17",))
-        and "1.0.0+17" in pack_bat
+        and "APP_VERSION" in pack_bat
+        and "git branch --show-current" in pack_bat
+        and "git rev-parse --short HEAD" in pack_bat
         and "1.0.0+17" in app_ver_ht,
-        "version +17 triple",
+        "version +17 com branch e commit dinamicos",
+    )
+    ok(
+        "ciclo_iu_atualizar_branch",
+        "git branch --show-current" in update_bat
+        and "BUILD_BRANCH" in update_bat
+        and "branch %BUILD_BRANCH%" in update_bat,
+        "atalho grava a branch da build",
     )
     ok(
         "ciclo_iu_como_section",
@@ -7164,6 +7192,52 @@ def main() -> int:
         "ROADMAP IQ-IU",
     )
 
+    # --- IV: Redação rascunho offline (SharedPreferences) ---
+    essay_iv = (
+        root / "lib" / "features" / "essay" / "presentation" / "essay_screen.dart"
+    ).read_text(encoding="utf-8", errors="ignore")
+    draft_iv = (root / "lib" / "features" / "essay" / "essay_draft.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    draft_unit = (root / "test" / "unit" / "essay_draft_test.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    draft_widget = (root / "test" / "widget" / "essay_draft_restore_test.dart").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    ok(
+        "ciclo_iv_essay_draft_store",
+        "class EssayDraft" in draft_iv
+        and "saveEssayDraft" in draft_iv
+        and "loadEssayDraft" in draft_iv
+        and "essay_draft_v1" in draft_iv,
+        "essay_draft store",
+    )
+    ok(
+        "ciclo_iv_essay_draft_wire",
+        "_restoreDraft" in essay_iv
+        and "_scheduleDraftSave" in essay_iv
+        and "Rascunho restaurado" in essay_iv
+        and "unawaited(_clearDraft())" in essay_iv,
+        "essay_screen draft wire",
+    )
+    ok(
+        "ciclo_iv_essay_draft_tests",
+        "save depois load" in draft_unit
+        and "Rascunho restaurado" in draft_widget,
+        "essay draft unit+widget",
+    )
+    ok(
+        "ciclo_iv_roadmap",
+        "IV" in roadmap_hm and ("rascunho" in roadmap_hm.lower() or "essay_draft" in roadmap_hm),
+        "ROADMAP IV",
+    )
+
+    return checks
+
+
+def main() -> int:
+    checks = run_checks()
     failed = [c for c in checks if not c[1]]
     for name, passed, detail in checks:
         line = f"{'OK' if passed else 'FAIL':4} {name} {detail}"

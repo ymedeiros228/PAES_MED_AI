@@ -6,12 +6,14 @@ import json
 import re
 import shutil
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
-from db import DATA_DIR, connect, loads_json
+from db import DATA_DIR, db, loads_json
 from services_core import list_questions, medicine_priority, predict_topic, stats_basis, topic_frequency
+from timeutil import file_stamp, iso_in, now_iso, today
+from timeutil import now as time_now
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -63,6 +65,19 @@ REMEDIATION_RECIPES: dict[str, dict[str, Any]] = {
     },
 }
 
+RAG_CITATION_LIMIT = 12
+
+
+def prioritize_rag_citations(
+    citations: list[dict[str, Any]],
+    question_limit: int,
+) -> list[dict[str, Any]]:
+    questions = [c for c in citations if c.get("type") == "question"]
+    others = [c for c in citations if c.get("type") != "question"]
+    question_count = min(question_limit, len(questions))
+    remaining = max(0, RAG_CITATION_LIMIT - question_count)
+    return questions[:question_count] + others[:remaining]
+
 
 def remediation_for(error_type: str | None, subject: str = "", topic: str = "") -> dict[str, Any]:
     key = (error_type or "conceito").strip().lower()
@@ -86,13 +101,10 @@ def build_rag_context(query: str, limit: int = 8) -> str:
 def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, list[dict[str, Any]]]:
     """Retorna (contexto, citações) para o tutor mostrar fontes."""
     tokens = {t.lower() for t in query.replace("?", " ").split() if len(t) > 3}
-    conn = connect()
-    try:
+    with db() as conn:
         questions = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
         syllabus = [dict(r) for r in conn.execute("SELECT * FROM syllabus").fetchall()]
         lessons = [dict(r) for r in conn.execute("SELECT * FROM lessons ORDER BY created_at DESC LIMIT 20").fetchall()]
-    finally:
-        conn.close()
 
     scored_q: list[tuple[int, dict[str, Any]]] = []
     for q in questions:
@@ -173,7 +185,7 @@ def build_rag_context_with_citations(query: str, limit: int = 8) -> tuple[str, l
             f"{f['subject']}/{f['topic']}: {f['frequency']}x anos={f['years']}"
         )
 
-    return "\n\n".join(chunks), citations[:12]
+    return "\n\n".join(chunks), prioritize_rag_citations(citations, limit)
 
 
 TUTOR_SYSTEM = """
@@ -181,12 +193,12 @@ Você é o Tutor IA pessoal do PAES MED AI (UEMA/PAES — Medicina).
 Responda em português do Brasil.
 
 REGRAS OBRIGATÓRIAS:
-1. Use APENAS o contexto fornecido (edital, questões, aulas do aluno). Não invente provas, gabaritos ou estatísticas.
-2. Se a informação não estiver no contexto, diga claramente: "Não há essa informação na base local."
-3. Nunca entregue a resposta pronta de imediato. Faça perguntas socráticas, use analogias e explique como professor.
-4. Quando citar frequência ou chance de cair, diga que é ESTIMATIVA estatística, não garantia.
-5. Cite fontes do contexto (ano, id da questão, tópico do edital).
-6. Ao final, faça UMA pergunta de verificação.
+1. Ensine o conteúdo pedido: explique conceitos, teoria, raciocínio e resolução passo a passo com rigor, clareza e didática. Use seu conhecimento geral quando o contexto não trouxer uma explicação pronta; a falta de uma aula local não é motivo para recusar o ensino.
+2. Use o contexto como âncora para afirmações sobre provas e a banca. Só atribua ao PAES/UEMA o que estiver sustentado por edital, questão, resolução ou aula fornecidos.
+3. É PROIBIDO inventar ou afirmar sem suporte no contexto: gabarito, resolução de uma questão específica, id de questão, percentual de cobrança, incidência, frequência, estatística, tendência ou o que "vai cair". Quando o aluno pedir um desses dados e a base não o sustentar, explique o conteúdo relacionado e acrescente uma ressalva curta de que a base local não sustenta o dado.
+4. Ao mencionar frequência ou chance de cair que esteja no contexto, marque explicitamente como ESTIMATIVA estatística, nunca como garantia, e não transforme frequência em percentual sem suporte explícito.
+5. Cite apenas fontes reais do contexto, usando ano, id da questão e/ou tópico do edital quando forem relevantes.
+6. Entregue primeiro a explicação útil; ao final, faça UMA pergunta curta para verificar o entendimento do aluno.
 """.strip()
 
 
@@ -198,9 +210,8 @@ def record_answer(
     error_type: str | None = None,
     time_ms: int | None = None,
 ) -> dict[str, Any]:
-    now = datetime.now().isoformat(timespec="seconds")
-    conn = connect()
-    try:
+    now = now_iso()
+    with db() as conn:
         _ensure_study_gaps_table(conn)
         conn.execute(
             """
@@ -227,8 +238,6 @@ def record_answer(
                 out["flashcardCreated"] = flash_info.get("created") is True
                 out["flashcard"] = flash_info
         return out
-    finally:
-        conn.close()
 
 
 def _ensure_study_gaps_table(conn) -> None:
@@ -326,8 +335,7 @@ def _progress_gap_on_correct(conn, subject: str, topic: str) -> dict[str, Any] |
 
 def mark_gap_card_remembered(subject: str, topic: str) -> dict[str, Any]:
     """Flashcard remembered no tópico: marca flag; recovered se já houver ≥1 acerto streak."""
-    conn = connect()
-    try:
+    with db() as conn:
         _ensure_study_gaps_table(conn)
         row = conn.execute(
             "SELECT * FROM study_gaps WHERE subject=? AND topic=? AND status='open'",
@@ -351,8 +359,6 @@ def mark_gap_card_remembered(subject: str, topic: str) -> dict[str, Any]:
             status = "open"
         conn.commit()
         return {"ok": True, "subject": subject, "topic": topic, "status": status}
-    finally:
-        conn.close()
 
 
 def _topic_has_local_material(subject: str, topic: str) -> bool:
@@ -401,8 +407,7 @@ def _topic_has_local_material(subject: str, topic: str) -> bool:
 
 
 def list_study_gaps(*, status: str = "open", limit: int = 40) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         _ensure_study_gaps_table(conn)
         if status == "all":
             rows = conn.execute(
@@ -432,13 +437,10 @@ def list_study_gaps(*, status: str = "open", limit: int = 40) -> dict[str, Any]:
         ]
         open_n = conn.execute("SELECT COUNT(*) AS c FROM study_gaps WHERE status='open'").fetchone()["c"]
         return {"ok": True, "count": len(items), "openCount": int(open_n), "items": items}
-    finally:
-        conn.close()
 
 
 def recover_study_gap(subject: str, topic: str) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         _ensure_study_gaps_table(conn)
         conn.execute(
             "UPDATE study_gaps SET status='recovered' WHERE subject=? AND topic=?",
@@ -446,8 +448,6 @@ def recover_study_gap(subject: str, topic: str) -> dict[str, Any]:
         )
         conn.commit()
         return {"ok": True, "subject": subject, "topic": topic, "status": "recovered"}
-    finally:
-        conn.close()
 
 
 def _schedule_revision(conn, subject: str, topic: str) -> None:
@@ -458,7 +458,7 @@ def _schedule_revision(conn, subject: str, topic: str) -> None:
     ).fetchone()
     reviews = row["reviews"] if row else 0
     interval = intervals[min(reviews, len(intervals) - 1)]
-    next_due = (datetime.now() + timedelta(days=interval)).isoformat(timespec="seconds")
+    next_due = iso_in(interval)
     conn.execute(
         """
         INSERT INTO revisions (subject, topic, next_due, interval_days, reviews)
@@ -500,7 +500,7 @@ def _maybe_flashcard_from_error(conn, question_id: str, subject: str, topic: str
         f"Banca: {board}",
     ]
     back = "\n".join(p for p in back_parts if p)
-    next_due = (datetime.now() + timedelta(days=1)).isoformat(timespec="seconds")
+    next_due = iso_in(1)
     cur = conn.execute(
         """
         INSERT INTO flashcards (front, back, subject, topic, source, next_due, reviews)
@@ -567,8 +567,7 @@ def fill_professor_drafts(
     from services_core import is_official_source, resolution_quality, stats_basis
 
     prefer_official = stats_basis()["officialCount"] >= 10 or prefer_uema
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [
             dict(r)
             for r in conn.execute(
@@ -691,8 +690,6 @@ def fill_professor_drafts(
             "resolutionQualityNote": "batch-fill gera draft — só Aceitar/promote eleva a real; não sobrescreve real",
             "note": "Rascunhos didáticos (draft) — NÃO resolvidos oficiais. Aceite na fila para marcar real.",
         }
-    finally:
-        conn.close()
 
 
 _NATUREZA_SUBJECTS = {"Biologia", "Química", "Física"}
@@ -703,8 +700,7 @@ _DRAFT_SKIPPED = "[Pulado — rascunho didático]"
 
 def create_natureza_pack(*, limit: int = 12, year: int | None = None) -> dict[str, Any]:
     """Flashcards Natureza due+1d a partir de macete/pegadinha oficiais (dedupe source=pack:id)."""
-    conn = connect()
-    try:
+    with db() as conn:
         sql = """
             SELECT id, subject, topic, statement, macete, pegadinha, resolution, correct_index, year, exam_board
             FROM questions
@@ -719,7 +715,7 @@ def create_natureza_pack(*, limit: int = 12, year: int | None = None) -> dict[st
         created = 0
         drafts = 0
         card_ids: list[int] = []
-        next_due = (datetime.now() + timedelta(days=1)).isoformat(timespec="seconds")
+        next_due = iso_in(1)
         for r in rows:
             if created >= limit:
                 break
@@ -766,8 +762,6 @@ def create_natureza_pack(*, limit: int = 12, year: int | None = None) -> dict[st
             "year": year,
             "note": "Pack Natureza — cards due amanhã (não oficiais da banca).",
         }
-    finally:
-        conn.close()
 
 
 def list_professor_draft_queue(*, limit: int = 5, uema_only: bool = True) -> dict[str, Any]:
@@ -775,8 +769,7 @@ def list_professor_draft_queue(*, limit: int = 5, uema_only: bool = True) -> dic
     from services_core import is_official_source, resolution_quality
 
     limit = max(1, min(int(limit or 5), 40))
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [
             dict(r)
             for r in conn.execute(
@@ -792,8 +785,6 @@ def list_professor_draft_queue(*, limit: int = 5, uema_only: bool = True) -> dic
                 """
             ).fetchall()
         ]
-    finally:
-        conn.close()
     if uema_only:
         filtered = [
             r
@@ -849,8 +840,7 @@ def accept_professor_draft(question_id: str) -> dict[str, Any]:
     """Aceita rascunho e grava resolução quality=real (4 eixos, sem tag rascunho)."""
     from services_core import resolution_quality
 
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute(
             """
             SELECT id, resolution, banca_intent, subject, topic, correct_index, year, macete, pegadinha
@@ -899,16 +889,13 @@ def accept_professor_draft(question_id: str) -> dict[str, Any]:
             "action": "accept",
             "resolutionQuality": "real",
         }
-    finally:
-        conn.close()
 
 
 def skip_professor_draft(question_id: str) -> dict[str, Any]:
     """Remove da fila marcando como pulado (ainda didático, não real)."""
     from services_core import resolution_quality
 
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute(
             "SELECT id, resolution, banca_intent FROM questions WHERE id=?",
             (question_id,),
@@ -936,8 +923,6 @@ def skip_professor_draft(question_id: str) -> dict[str, Any]:
         )
         conn.commit()
         return {"ok": True, "questionId": question_id, "action": "skip"}
-    finally:
-        conn.close()
 
 
 def parse_gate_flags(
@@ -980,8 +965,7 @@ def list_pending_ingest_previews(limit: int = 8) -> dict[str, Any]:
     """Previews não commitados + suspeitas / needsOcr (Ciclo P)."""
     from ingest_pdf import _is_suspect_question
 
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS ingest_previews (
@@ -1005,8 +989,6 @@ def list_pending_ingest_previews(limit: int = 8) -> dict[str, Any]:
             """,
             (limit,),
         ).fetchall()
-    finally:
-        conn.close()
 
     items = []
     total_suspects = 0
@@ -1046,18 +1028,14 @@ def list_pending_ingest_previews(limit: int = 8) -> dict[str, Any]:
 
 
 def list_revisions() -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute("SELECT * FROM revisions ORDER BY next_due").fetchall()
         return [dict(r) for r in rows]
-    finally:
-        conn.close()
 
 
 def complete_revision(subject: str, topic: str) -> dict[str, Any]:
     intervals = [1, 3, 7, 15, 30, 60, 120]
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute(
             "SELECT * FROM revisions WHERE subject=? AND topic=?",
             (subject, topic),
@@ -1066,21 +1044,18 @@ def complete_revision(subject: str, topic: str) -> dict[str, Any]:
             return {"ok": False, "message": "Revisão não encontrada"}
         reviews = row["reviews"] + 1
         interval = intervals[min(reviews, len(intervals) - 1)]
-        next_due = (datetime.now() + timedelta(days=interval)).isoformat(timespec="seconds")
+        next_due = iso_in(interval)
         conn.execute(
             "UPDATE revisions SET reviews=?, interval_days=?, next_due=? WHERE subject=? AND topic=?",
             (reviews, interval, next_due, subject, topic),
         )
         conn.commit()
         return {"ok": True, "nextDue": next_due, "intervalDays": interval}
-    finally:
-        conn.close()
 
 
 def save_session_checkpoint(payload: dict[str, Any]) -> dict[str, Any]:
-    now = datetime.now().isoformat(timespec="seconds")
-    conn = connect()
-    try:
+    now = now_iso()
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO session_checkpoint (id, payload_json, updated_at)
@@ -1091,31 +1066,23 @@ def save_session_checkpoint(payload: dict[str, Any]) -> dict[str, Any]:
         )
         conn.commit()
         return {"ok": True, "updatedAt": now}
-    finally:
-        conn.close()
 
 
 def get_session_checkpoint() -> dict[str, Any] | None:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT payload_json, updated_at FROM session_checkpoint WHERE id=1").fetchone()
         if not row:
             return None
         data = json.loads(row["payload_json"] or "{}")
         data["updatedAt"] = row["updated_at"]
         return data
-    finally:
-        conn.close()
 
 
 def clear_session_checkpoint() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute("DELETE FROM session_checkpoint WHERE id=1")
         conn.commit()
         return {"ok": True}
-    finally:
-        conn.close()
 
 
 _SIM_CHECKPOINT_KEY = "sim_checkpoint"
@@ -1123,13 +1090,12 @@ _SIM_CHECKPOINT_KEY = "sim_checkpoint"
 
 def save_sim_checkpoint(payload: dict[str, Any]) -> dict[str, Any]:
     """Checkpoint mid-flow de simulado (Ciclo BP) — settings.sim_checkpoint."""
-    now = datetime.now().isoformat(timespec="seconds")
+    now = now_iso()
     body = dict(payload)
     body["started"] = True
     body["kind"] = "sim"
     body["updatedAt"] = now
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO settings(key, value) VALUES(?, ?)
@@ -1139,13 +1105,10 @@ def save_sim_checkpoint(payload: dict[str, Any]) -> dict[str, Any]:
         )
         conn.commit()
         return {"ok": True, "updatedAt": now}
-    finally:
-        conn.close()
 
 
 def get_sim_checkpoint() -> dict[str, Any] | None:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key=?", (_SIM_CHECKPOINT_KEY,)).fetchone()
         if not row:
             return None
@@ -1153,25 +1116,19 @@ def get_sim_checkpoint() -> dict[str, Any] | None:
         if not isinstance(data, dict) or not data.get("started"):
             return None
         return data
-    finally:
-        conn.close()
 
 
 def clear_sim_checkpoint() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute("DELETE FROM settings WHERE key=?", (_SIM_CHECKPOINT_KEY,))
         conn.commit()
         return {"ok": True}
-    finally:
-        conn.close()
 
 
 def schedule_gap_revisions(gaps: list[dict[str, Any]]) -> dict[str, Any]:
     """Agenda revisões para lacunas do simulado (subject/topic)."""
     scheduled = 0
-    conn = connect()
-    try:
+    with db() as conn:
         for g in gaps:
             subject = (g.get("subject") or "").strip()
             topic = (g.get("topic") or "").strip()
@@ -1183,8 +1140,6 @@ def schedule_gap_revisions(gaps: list[dict[str, Any]]) -> dict[str, Any]:
                 _schedule_revision(conn, subject, topic)
                 scheduled += 1
         conn.commit()
-    finally:
-        conn.close()
     first = gaps[0] if gaps else {}
     subject = first.get("subject") or ""
     topic = first.get("topic") or ""
@@ -1303,7 +1258,7 @@ def create_simulation(
         "mode": mode_eff,
         "count": len(safe),
         "questions": safe,
-        "startedAt": datetime.now().isoformat(timespec="seconds"),
+        "startedAt": now_iso(),
         "examDayMode": mode_eff == "dia_prova",
         "note": "Cronometre no app. Após enviar, o relatório usa o modo professor.",
         "basis": "oficial" if official_required and warning is None else "treino",
@@ -1327,8 +1282,7 @@ def grade_simulation(answers: list[dict[str, Any]]) -> dict[str, Any]:
     subject_stats: dict[str, dict[str, int]] = {}
     times: list[int] = []
     cards_due = 0
-    conn = connect()
-    try:
+    with db() as conn:
         for item in answers:
             qid = item["questionId"]
             row = conn.execute("SELECT * FROM questions WHERE id=?", (qid,)).fetchone()
@@ -1373,8 +1327,6 @@ def grade_simulation(answers: list[dict[str, Any]]) -> dict[str, Any]:
                     },
                 }
             )
-    finally:
-        conn.close()
 
     # record_answer abre conexão própria — após fechar o SELECT
     for r in results:
@@ -1448,11 +1400,8 @@ def structure_lesson_from_text(
     difficulty = "Média"
 
     blob = (title + " " + transcript).lower()
-    conn = connect()
-    try:
+    with db() as conn:
         syllabus = [dict(r) for r in conn.execute("SELECT subject, topic, subtopic FROM syllabus").fetchall()]
-    finally:
-        conn.close()
 
     # Match syllabus first (better than frequency alone)
     best_score = 0
@@ -1511,9 +1460,8 @@ def structure_lesson_from_text(
     )
 
     lesson_id = str(uuid.uuid4())
-    now = datetime.now().isoformat(timespec="seconds")
-    conn = connect()
-    try:
+    now = now_iso()
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO lessons (
@@ -1552,12 +1500,10 @@ def structure_lesson_from_text(
                     subject,
                     topic,
                     f"lesson:{lesson_id}",
-                    (datetime.now() + timedelta(days=1)).isoformat(timespec="seconds"),
+                    iso_in(1),
                 ),
             )
         conn.commit()
-    finally:
-        conn.close()
 
     return {
         "id": lesson_id,
@@ -1576,8 +1522,7 @@ def structure_lesson_from_text(
 
 
 def list_lessons() -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute("SELECT * FROM lessons ORDER BY created_at DESC").fetchall()
         out = []
         for r in rows:
@@ -1600,14 +1545,11 @@ def list_lessons() -> list[dict[str, Any]]:
                 }
             )
         return out
-    finally:
-        conn.close()
 
 
 def save_essay(theme: str, text: str, feedback: dict[str, Any] | None = None, score: float | None = None) -> dict[str, Any]:
-    now = datetime.now().isoformat(timespec="seconds")
-    conn = connect()
-    try:
+    now = now_iso()
+    with db() as conn:
         cur = conn.execute(
             """
             INSERT INTO essays (theme, text, score, feedback_json, created_at)
@@ -1617,13 +1559,10 @@ def save_essay(theme: str, text: str, feedback: dict[str, Any] | None = None, sc
         )
         conn.commit()
         return {"id": cur.lastrowid, "theme": theme, "score": score, "feedback": feedback, "createdAt": now}
-    finally:
-        conn.close()
 
 
 def list_essays() -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute("SELECT * FROM essays ORDER BY created_at DESC").fetchall()
         return [
             {
@@ -1636,8 +1575,6 @@ def list_essays() -> list[dict[str, Any]]:
             }
             for r in rows
         ]
-    finally:
-        conn.close()
 
 
 _ESSAY_AXES = (
@@ -1879,7 +1816,7 @@ def essay_progress() -> dict[str, Any]:
             days_set.add(ca)
     streak = 0
     if days_set:
-        cursor = datetime.now().date()
+        cursor = today()
         if cursor.isoformat() not in days_set:
             cursor = cursor - timedelta(days=1)
         while cursor.isoformat() in days_set:
@@ -1933,14 +1870,11 @@ def essay_grade_deltas(theme: str, feedback: dict[str, Any]) -> dict[str, float 
 
 
 def essay_themes() -> list[str]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key='essay_themes'").fetchone()
         if row:
             return loads_json(row["value"], [])
         return []
-    finally:
-        conn.close()
 
 
 def progress_overview() -> dict[str, Any]:
@@ -2013,7 +1947,7 @@ def create_backup() -> dict[str, Any]:
 
     backup_dir = DATA_DIR / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = file_stamp()
     dest = backup_dir / f"backup_{stamp}"
     dest.mkdir(parents=True, exist_ok=True)
 
@@ -2047,8 +1981,7 @@ def create_backup() -> dict[str, Any]:
         "files": files_copied,
     }
     # Persist last-ok in settings
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             "INSERT INTO settings(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             (
@@ -2056,7 +1989,7 @@ def create_backup() -> dict[str, Any]:
                 json.dumps(
                     {
                         "path": zip_path,
-                        "at": datetime.now().isoformat(timespec="seconds"),
+                        "at": now_iso(),
                         "verify": verify,
                     },
                     ensure_ascii=False,
@@ -2064,8 +1997,6 @@ def create_backup() -> dict[str, Any]:
             ),
         )
         conn.commit()
-    finally:
-        conn.close()
     return {
         "ok": True,
         "path": zip_path,
@@ -2108,29 +2039,23 @@ def restore_backup_db(zip_or_folder: str) -> dict[str, Any]:
 
 
 def last_backup_status() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key='last_backup_ok'").fetchone()
         if not row:
             return {"ok": False, "message": "Nenhum backup verificado ainda."}
         return {"ok": True, **loads_json(row["value"], {})}
-    finally:
-        conn.close()
 
 
 def register_ingest(filename: str, kind: str, status: str, message: str) -> None:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO ingest_jobs (filename, kind, status, message, created_at)
             VALUES (?, ?, ?, ?, ?)
             """,
-            (filename, kind, status, message, datetime.now().isoformat(timespec="seconds")),
+            (filename, kind, status, message, now_iso()),
         )
         conn.commit()
-    finally:
-        conn.close()
 
 
 def ingest_pdf_placeholder(filename: str, kind: str) -> dict[str, Any]:
@@ -2160,8 +2085,7 @@ def generate_similar_question_stub(topic: str, subject: str) -> dict[str, Any]:
         "Generalização indevida",
         "Dado fora do edital",
     ]
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO questions (
@@ -2171,7 +2095,7 @@ def generate_similar_question_stub(topic: str, subject: str) -> dict[str, Any]:
             """,
             (
                 qid,
-                datetime.now().year,
+                time_now().year,
                 subject,
                 topic,
                 statement,
@@ -2184,8 +2108,6 @@ def generate_similar_question_stub(topic: str, subject: str) -> dict[str, Any]:
             ),
         )
         conn.commit()
-    finally:
-        conn.close()
     return {
         "id": qid,
         "generated": True,

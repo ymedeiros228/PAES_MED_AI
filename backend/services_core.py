@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
-from datetime import datetime, timedelta
 import json
 import re
+from collections import Counter, defaultdict
+from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from db import DATA_DIR, connect, loads_json
-from pathlib import Path
-
+from db import DATA_DIR, db, loads_json
+from timeutil import file_stamp, now_iso, today_iso
+from timeutil import now as time_now
+from timeutil import today as time_today
 
 NATUREZA_SUBJECTS = frozenset({"Biologia", "Química", "Física"})
 HUMANAS_SUBJECTS = frozenset({"História", "Geografia", "Filosofia", "Sociologia"})
@@ -146,8 +148,7 @@ def latest_official_year_for(subject: str | None, topic: str | None) -> int | No
     """Ano oficial mais recente com material no tópico (sem inventar)."""
     if not subject or not topic:
         return None
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             """
             SELECT year, source, generated FROM questions
@@ -156,8 +157,6 @@ def latest_official_year_for(subject: str | None, topic: str | None) -> int | No
             """,
             (subject, topic),
         ).fetchall()
-    finally:
-        conn.close()
     for r in rows:
         if is_official_source(r["source"], r["generated"]):
             try:
@@ -177,14 +176,11 @@ def topic_has_material(
         return False
     basis = stats_basis()
     use_official = basis["basis"] == "oficial" if official_only is None else official_only
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             "SELECT source, generated FROM questions WHERE subject=? AND topic=?",
             (subject, topic),
         ).fetchall()
-    finally:
-        conn.close()
     for r in rows:
         if use_official:
             if is_official_source(r["source"], r["generated"]):
@@ -282,8 +278,7 @@ def list_dirty_labels(*, limit: int = 40) -> dict[str, Any]:
 
 def official_curation_inventory() -> dict[str, Any]:
     """Inventário honesto de oficiais: labels, cross-domain, quality de resolução."""
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [
             dict(r)
             for r in conn.execute(
@@ -294,8 +289,6 @@ def official_curation_inventory() -> dict[str, Any]:
                 """
             ).fetchall()
         ]
-    finally:
-        conn.close()
     oficiais = [r for r in rows if is_official_source(r.get("source"), r.get("generated"))]
     by_subject: Counter[str] = Counter()
     by_quality: Counter[str] = Counter()
@@ -391,8 +384,7 @@ def _promote_officials_real(
     exclude_subjects: frozenset[str] | set[str] | None = None,
     scope: str = "natureza",
 ) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [
             dict(r)
             for r in conn.execute(
@@ -480,8 +472,6 @@ def _promote_officials_real(
             ),
             "kind": "didatico_estruturado",
         }
-    finally:
-        conn.close()
 
 
 def curation_health() -> dict[str, Any]:
@@ -508,7 +498,6 @@ def curation_health() -> dict[str, Any]:
     other_real = max(0, real_n - nat_real)
     other_pct = round(100.0 * other_real / other_n, 1) if other_n else 0.0
     by_subject = inv.get("bySubject") or {}
-    natureza_q = inv.get("naturezaResolutionQuality") or {}
     # saúde por eixo (subject → official count already; real needs pass)
     axle = official_axle_health()
     status = "ok" if natureza_floor_ok and cross <= 2 else ("warn" if natureza_floor_ok else "attention")
@@ -541,16 +530,13 @@ def curation_health() -> dict[str, Any]:
 
 def official_axle_health() -> dict[str, Any]:
     """Por disciplina oficial: contagem e % real (Ciclo E)."""
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [
             dict(r)
             for r in conn.execute(
                 "SELECT subject, resolution, source, generated FROM questions"
             ).fetchall()
         ]
-    finally:
-        conn.close()
     buckets: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "real": 0, "draft": 0, "template": 0})
     for r in rows:
         if not is_official_source(r.get("source"), r.get("generated")):
@@ -606,10 +592,9 @@ def promote_all_pending_officials(*, limit: int = 40) -> dict[str, Any]:
 
 def close_study_day() -> dict[str, Any]:
     """Marca o dia de estudo fechado (local) e devolve plano de amanhã."""
-    today = datetime.now().date().isoformat()
-    now = datetime.now().isoformat(timespec="seconds")
-    conn = connect()
-    try:
+    today = today_iso()
+    now = now_iso()
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO settings(key, value) VALUES(?, ?)
@@ -636,8 +621,6 @@ def close_study_day() -> dict[str, Any]:
             ("day_close_log", json_dumps_settings(log)),
         )
         conn.commit()
-    finally:
-        conn.close()
     dash = dashboard_stats()
     daily = dash.get("dailyRoutine") or {}
     week = dash.get("weekProgress") or {}
@@ -655,13 +638,10 @@ def close_study_day() -> dict[str, Any]:
 
 
 def study_day_close_status() -> dict[str, Any]:
-    today = datetime.now().date().isoformat()
-    conn = connect()
-    try:
+    today = today_iso()
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key='last_day_close'").fetchone()
         data = loads_json(row["value"], {}) if row else {}
-    finally:
-        conn.close()
     closed = (data.get("date") or "") == today
     return {
         "ok": True,
@@ -676,19 +656,15 @@ def json_dumps_settings(obj: Any) -> str:
 
 
 def _settings_get(key: str, default: Any = None) -> Any:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
         if not row:
             return default
         return loads_json(row["value"], default)
-    finally:
-        conn.close()
 
 
 def _settings_set(key: str, value: Any) -> None:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             INSERT INTO settings(key, value) VALUES(?, ?)
@@ -697,8 +673,6 @@ def _settings_set(key: str, value: Any) -> None:
             (key, json_dumps_settings(value) if not isinstance(value, str) else value),
         )
         conn.commit()
-    finally:
-        conn.close()
 
 
 def _topic_read_key(subject: str, topic: str) -> str:
@@ -715,7 +689,7 @@ def mark_topic_read(subject: str, topic: str) -> dict[str, Any]:
     data = _settings_get("study_reads", {}) or {}
     if not isinstance(data, dict):
         data = {}
-    now = datetime.now().isoformat(timespec="seconds")
+    now = now_iso()
     data[key] = now
     _settings_set("study_reads", data)
     return {"ok": True, "subject": subj, "topic": top, "read": True, "at": now, "key": key}
@@ -805,8 +779,7 @@ def library_search(
 
     # Ofícios / questões
     if sk in (None, "oficial"):
-        conn = connect()
-        try:
+        with db() as conn:
             rows = conn.execute(
                 """
                 SELECT id, year, subject, topic, statement, source, generated
@@ -815,8 +788,6 @@ def library_search(
                 LIMIT 800
                 """
             ).fetchall()
-        finally:
-            conn.close()
         scored: list[tuple[int, dict[str, Any]]] = []
         for r in rows:
             if not is_official_source(r["source"], r["generated"]) and sk == "oficial":
@@ -940,7 +911,7 @@ def _record_library_search(
         "sourceKind": (source_kind or "").strip() or None,
         "subject": (subject or "").strip() or None,
         "topic": (topic or "").strip() or None,
-        "at": datetime.now().isoformat(timespec="seconds"),
+        "at": now_iso(),
     }
     cleaned = [e for e in raw if isinstance(e, dict)]
     cleaned.insert(0, entry)
@@ -978,7 +949,7 @@ def export_study_day_markdown(markdown: str, filename: str | None = None) -> dic
         text = "# Pacote do dia — PAES MED AI\n\n(sem conteúdo)"
     out_dir = DATA_DIR / "exports"
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = file_stamp()
     name = (filename or f"pacote_dia_{stamp}.md").strip()
     if not name.endswith(".md"):
         name = f"{name}.md"
@@ -1040,11 +1011,11 @@ def export_study_week_markdown() -> dict[str, Any]:
             "",
             "## Disclaimer",
             "Treino local · estimativa ≠ garantia. Não inventa probabilidade de aprovação UEMA.",
-            f"Gerado em {datetime.now().isoformat(timespec='seconds')}.",
+            f"Gerado em {now_iso()}.",
         ]
     )
     safe_key = week_key.replace("-", "_").replace("/", "_")
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stamp = file_stamp()
     filename = f"semana_{safe_key}_{stamp}.md"
     out = export_study_day_markdown("\n".join(lines), filename)
     out["weekKey"] = week_key
@@ -1053,7 +1024,7 @@ def export_study_week_markdown() -> dict[str, Any]:
 
 
 def iso_week_key(d: datetime | None = None) -> str:
-    dt = d or datetime.now()
+    dt = d or time_now()
     y, w, _ = dt.isocalendar()
     return f"{y}-W{w:02d}"
 
@@ -1072,19 +1043,16 @@ def set_exam_date(exam_date: str | None) -> dict[str, Any]:
     """Persiste data da prova localmente (não é calendário oficial da UEMA)."""
     cleaned = (exam_date or "").strip()
     if not cleaned:
-        conn = connect()
-        try:
+        with db() as conn:
             conn.execute("DELETE FROM settings WHERE key='exam_date'")
             conn.commit()
-        finally:
-            conn.close()
         return {"ok": True, "examDate": None, "countdown": build_exam_countdown(None)}
     try:
         parsed = datetime.fromisoformat(cleaned[:10]).date()
     except ValueError as exc:
         raise ValueError("examDate deve ser ISO yyyy-mm-dd") from exc
     iso = parsed.isoformat()
-    _settings_set("exam_date", {"date": iso, "setAt": datetime.now().isoformat(timespec="seconds")})
+    _settings_set("exam_date", {"date": iso, "setAt": now_iso()})
     return {"ok": True, "examDate": iso, "countdown": build_exam_countdown(iso)}
 
 
@@ -1115,7 +1083,7 @@ def build_exam_countdown(exam_date: str | None = None) -> dict[str, Any]:
             "intensity": "normal",
             "hint": "Use Ajustes e salve no formato aaaa-mm-dd.",
         }
-    today = datetime.now().date()
+    today = time_today()
     days = (exam - today).days
     if days < 0:
         phase, intensity, label = "past", "normal", "Prova na conta — foque revisão leve"
@@ -1141,7 +1109,7 @@ def build_exam_countdown(exam_date: str | None = None) -> dict[str, Any]:
 
 def study_week_key_bounds() -> tuple[str, str, str]:
     """Retorna (weekKey, weekStartISO, weekEndISO) segunda→domingo."""
-    today = datetime.now().date()
+    today = time_today()
     start = today - timedelta(days=today.weekday())
     end = start + timedelta(days=6)
     return iso_week_key(), start.isoformat(), end.isoformat()
@@ -1166,7 +1134,7 @@ def study_week_close_status() -> dict[str, Any]:
 def close_study_week() -> dict[str, Any]:
     """Marca a semana ISO atual como fechada e registra no log."""
     week_key, start, end = study_week_key_bounds()
-    now = datetime.now().isoformat(timespec="seconds")
+    now = now_iso()
     payload = {"weekKey": week_key, "weekStart": start, "weekEnd": end, "closedAt": now}
     _settings_set("last_week_close", payload)
     log = _settings_get("week_close_log", []) or []
@@ -1195,19 +1163,16 @@ def build_study_calendar(
     days: int = 28,
 ) -> dict[str, Any]:
     """Calendário leve: ativo (resposta) / fechado (encerrar dia)."""
-    today = datetime.now().date()
+    today = time_today()
     answered = answered_dates
     if answered is None:
         answered = set()
-        conn = connect()
-        try:
+        with db() as conn:
             for row in conn.execute("SELECT answered_at FROM answers").fetchall():
                 try:
                     answered.add(datetime.fromisoformat(row["answered_at"]).date())
                 except (TypeError, ValueError):
                     continue
-        finally:
-            conn.close()
     log = _settings_get("day_close_log", []) or []
     closed_set: set = set()
     if isinstance(log, list):
@@ -1339,7 +1304,7 @@ def build_week_progress(
     week_closed: bool = False,
 ) -> dict[str, Any]:
     """Meta semanal local (minutos + dias ativos) — sem inventar nota de banca."""
-    today = datetime.now().date()
+    today = time_today()
     week_start = today - timedelta(days=today.weekday())  # segunda
     days_active = sum(1 for d in answered_dates if d >= week_start)
     goal_minutes = 300  # ~5h / semana
@@ -1382,13 +1347,10 @@ def build_week_progress(
 
 
 def stats_basis() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             "SELECT source, generated, COUNT(*) AS count FROM questions GROUP BY source, generated"
         ).fetchall()
-    finally:
-        conn.close()
     official = sum(int(r["count"]) for r in rows if is_official_source(r["source"], r["generated"]))
     training = sum(int(r["count"]) for r in rows if not is_official_source(r["source"], r["generated"]))
     basis = "oficial" if official >= 10 else "treino"
@@ -1417,8 +1379,7 @@ def list_questions(
     limit: int | None = None,
     offset: int = 0,
 ) -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         sql = "SELECT * FROM questions WHERE 1=1"
         params: list[Any] = []
         if subject:
@@ -1459,21 +1420,16 @@ def list_questions(
             top_topics = {f"{x['subject']}::{x['topic']}" for x in ranking[:12]}
             items = [q for q in items if f"{q['subject']}::{q['topic']}" in top_topics]
         return items
-    finally:
-        conn.close()
 
 
 def get_question(question_id: str) -> dict[str, Any] | None:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT * FROM questions WHERE id = ?", (question_id,)).fetchone()
         if not row:
             return None
         q = _serialize_question(dict(row))
         q.update(professor_blocks(q))
         return q
-    finally:
-        conn.close()
 
 
 def _derive_exam_board(raw: dict[str, Any]) -> str:
@@ -1529,13 +1485,10 @@ def _serialize_question(raw: dict[str, Any]) -> dict[str, Any]:
 def topic_frequency(official_only: bool | None = None) -> list[dict[str, Any]]:
     basis = stats_basis()
     use_official = basis["basis"] == "oficial" if official_only is None else official_only
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             "SELECT subject, topic, year, source, generated FROM questions ORDER BY year"
         ).fetchall()
-    finally:
-        conn.close()
 
     by_topic: dict[tuple[str, str], list[int]] = defaultdict(list)
     for r in rows:
@@ -1692,8 +1645,7 @@ def predict_topic(
 
 
 def medicine_priority(official_only: bool | None = None) -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         weights = {
             (r["subject"], r["topic"]): r["weight"]
             for r in conn.execute("SELECT subject, topic, weight FROM syllabus").fetchall()
@@ -1705,8 +1657,6 @@ def medicine_priority(official_only: bool | None = None) -> list[dict[str, Any]]
                 "SELECT subject, topic, resolution, source, generated FROM questions"
             ).fetchall()
         ]
-    finally:
-        conn.close()
 
     quality_by_key: dict[tuple[str, str], dict[str, int]] = defaultdict(lambda: {"real": 0, "dirty": 0, "n": 0})
     for r in qrows:
@@ -1799,11 +1749,8 @@ def topic_cooccurrence(official_only: bool | None = None, limit: int = 20) -> li
     """Pares de tópicos relacionados ou cobrados no mesmo ano/disciplina."""
     basis = stats_basis()
     use_official = basis["basis"] == "oficial" if official_only is None else official_only
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
-    finally:
-        conn.close()
     rows = [r for r in rows if not use_official or is_official_source(r["source"], r["generated"])]
     pairs: Counter[tuple[str, str]] = Counter()
     for row in rows:
@@ -1826,11 +1773,8 @@ def topic_cooccurrence(official_only: bool | None = None, limit: int = 20) -> li
 def bank_profile(official_only: bool | None = None) -> dict[str, Any]:
     basis = stats_basis()
     use_official = basis["basis"] == "oficial" if official_only is None else official_only
-    conn = connect()
-    try:
+    with db() as conn:
         rows = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
-    finally:
-        conn.close()
     rows = [r for r in rows if not use_official or is_official_source(r["source"], r["generated"])]
     if not rows:
         return {
@@ -1876,7 +1820,7 @@ def bank_profile(official_only: bool | None = None) -> dict[str, Any]:
         study_ctas.append(
             {
                 "label": f"Sessão {subj}",
-                "path": f"/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+                "path": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
                 "subject": subj,
                 "count": n,
             }
@@ -1912,13 +1856,10 @@ def bank_profile(official_only: bool | None = None) -> dict[str, Any]:
 
 def error_hot_topics(limit: int = 8) -> list[dict[str, Any]]:
     """Tópicos com misses recentes — sem chamar dashboard/plano (evita recursão)."""
-    conn = connect()
-    try:
+    with db() as conn:
         answers = [dict(r) for r in conn.execute(
             "SELECT subject, topic, correct, error_type FROM answers ORDER BY answered_at DESC LIMIT 100"
         ).fetchall()]
-    finally:
-        conn.close()
     hot: Counter[str] = Counter()
     type_by_key: dict[str, Counter[str]] = defaultdict(Counter)
     for a in answers:
@@ -2012,8 +1953,7 @@ def build_study_plan(days: int, exam_date: str | None = None) -> list[dict[str, 
         boosted.sort(key=lambda x: order.get(f"{x['subject']}::{x['topic']}", 99))
         ranking = boosted + rest
 
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute("DELETE FROM study_plan WHERE plan_days = ?", (days,))
         plan = []
         for day in range(1, days + 1):
@@ -2067,13 +2007,10 @@ def build_study_plan(days: int, exam_date: str | None = None) -> list[dict[str, 
             )
         conn.commit()
         return plan
-    finally:
-        conn.close()
 
 
 def get_study_plan(days: int) -> list[dict[str, Any]]:
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             "SELECT * FROM study_plan WHERE plan_days = ? ORDER BY day_index",
             (days,),
@@ -2091,17 +2028,12 @@ def get_study_plan(days: int) -> list[dict[str, Any]]:
             }
             for r in rows
         ]
-    finally:
-        conn.close()
 
 
 def dashboard_stats() -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         answers = [dict(r) for r in conn.execute("SELECT * FROM answers ORDER BY answered_at").fetchall()]
         revisions = [dict(r) for r in conn.execute("SELECT * FROM revisions").fetchall()]
-    finally:
-        conn.close()
 
     total = len(answers)
     correct = sum(1 for a in answers if a["correct"])
@@ -2151,7 +2083,7 @@ def dashboard_stats() -> dict[str, Any]:
     if pending:
         today = pending[0]
 
-    today_date = datetime.now().date()
+    today_date = time_today()
     answered_dates = set()
     study_minutes_today = 0
     study_minutes_week = 0
@@ -2264,7 +2196,7 @@ def dashboard_stats() -> dict[str, Any]:
         medicine_top=med_rank,
         due_cards=due_cards,
         gap_n=gap_n,
-        due_revisions=len([r for r in revisions if (r.get("next_due") or "") <= datetime.now().isoformat(timespec="seconds")]),
+        due_revisions=len([r for r in revisions if (r.get("next_due") or "") <= now_iso()]),
         study_minutes_today=round(study_minutes_today, 1),
         study_minutes_week=round(study_minutes_week, 1),
         streak=streak,
@@ -2415,7 +2347,7 @@ def build_daily_routine(
             if at:
                 try:
                     dt = datetime.fromisoformat(str(at).replace("Z", ""))
-                    days = (datetime.now() - dt).days
+                    days = (time_now() - dt).days
                     if days >= 7:
                         backup_reminder = f"Último backup há {days} dia(s) — vale renovar em Ajustes."
                 except (TypeError, ValueError):

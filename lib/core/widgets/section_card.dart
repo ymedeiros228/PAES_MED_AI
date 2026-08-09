@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ui_kit.dart';
+
 class SectionCard extends StatelessWidget {
   const SectionCard({
     required this.child,
@@ -11,8 +13,9 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(padding: padding, child: child),
+    return SurfacePanel(
+      padding: padding,
+      child: child,
     );
   }
 }

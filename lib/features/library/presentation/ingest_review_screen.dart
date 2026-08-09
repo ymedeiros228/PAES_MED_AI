@@ -9,6 +9,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/ui_kit.dart';
 
 /// Payload passado via `GoRouterState.extra` após import-year preview.
 class IngestReviewArgs {
@@ -276,6 +277,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           }
         }
       }
+      if (!mounted) return;
       if (highConfidenceOnly) {
         setState(() => msg = toast);
       } else {
@@ -346,6 +348,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       appBar: AppBar(
         title: Text('Revisão PAES ${widget.args.year}'),
         leading: IconButton(
+          tooltip: 'Voltar',
           icon: const Icon(Icons.close),
           onPressed: () => context.go('/biblioteca'),
         ),
@@ -380,7 +383,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                               'Sem gabarito aplicado (0/${questions.length}). '
                               'Coloque o gabarito do ano na pasta Gabaritos ou marque as respostas. '
                               'Gravar fica desativado para não inventar acertos.',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.orange.shade900),
                             ),
                           ),
                         ],
@@ -394,7 +397,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       child: Text(
                         'Gabarito: $_gabaritoAppliedCount/${questions.length} · altas conf. $highN',
-                        style: TextStyle(fontSize: 12, color: Colors.green.shade900),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.green.shade900),
                       ),
                     ),
                   ),
@@ -415,7 +418,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                               ocrFailed
                                   ? 'OCR falhou/indisponível. Instale Tesseract + pdf2image/poppler no Windows, ou revise o texto manualmente.'
                                   : 'PDF parece escaneado (needsOcr). Confirme enunciados. Setup: Tesseract OCR (por) + pip install pytesseract pdf2image.',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade900),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.orange.shade900),
                             ),
                           ),
                         ),
@@ -433,12 +436,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             if (unmatchedQ.isNotEmpty)
                               Text(
                                 'Sem gabarito: ${unmatchedQ.take(12).join(', ')}${unmatchedQ.length > 12 ? '…' : ''}',
-                                style: TextStyle(fontSize: 11, color: Colors.orange.shade800),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.orange.shade800),
                               ),
                             if (unmatchedA.isNotEmpty)
                               Text(
                                 'Gabarito sem questão: ${unmatchedA.take(12).join(', ')}${unmatchedA.length > 12 ? '…' : ''}',
-                                style: TextStyle(fontSize: 11, color: Colors.orange.shade800),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.orange.shade800),
                               ),
                             FilterChip(
                               label: Text(filterSuspects ? 'Só duvidosas ($suspects)' : 'Todas'),
@@ -486,7 +489,8 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                     padding: const EdgeInsets.all(24),
                     children: [
                       if (_isSuspect(current))
-                        Card(
+                        SurfacePanel(
+                          padding: EdgeInsets.zero,
                           color: Colors.orange.shade50,
                           child: const ListTile(
                             leading: Icon(Icons.priority_high),
@@ -510,7 +514,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       Text(
                         'Dica: setas mudam a questão · 1–5 marca gabarito · H grava só as boas',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                             ),
                       ),
                       const SizedBox(height: 12),
@@ -559,7 +563,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       ),
                       if (msg != null) ...[
                         const SizedBox(height: 12),
-                        Text(msg!, style: TextStyle(color: Colors.orange.shade800)),
+                        QuietEmpty(message: msg!),
                       ],
                     ],
                   ),

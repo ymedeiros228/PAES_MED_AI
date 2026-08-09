@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from db import connect, init_db
+from db import db, init_db
 from seed_expand import EXTRA_SYLLABUS, build_extra_questions
 
 SYLLABUS: list[dict[str, Any]] = [
@@ -578,8 +578,7 @@ QUESTIONS: list[dict[str, Any]] = [
 
 def seed(force: bool = False) -> dict[str, int]:
     init_db()
-    conn = connect()
-    try:
+    with db() as conn:
         count_q = conn.execute("SELECT COUNT(*) AS c FROM questions").fetchone()["c"]
         if count_q > 40 and not force:
             return {"syllabus": conn.execute("SELECT COUNT(*) AS c FROM syllabus").fetchone()["c"], "questions": count_q, "skipped": 1}
@@ -712,8 +711,6 @@ def seed(force: bool = False) -> dict[str, int]:
             "preservedOfficial": restored,
             "skipped": 0,
         }
-    finally:
-        conn.close()
 
 
 if __name__ == "__main__":

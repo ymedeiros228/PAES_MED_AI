@@ -28,13 +28,19 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Map<String, dynamic>? health;
+  Map<String, dynamic>? aiConfig;
   Map<String, dynamic>? lastBackup;
   String? msg;
+  String? aiMsg;
   String? backupListError;
   String kind = 'prova';
   late final TextEditingController examCtrl;
   List<dynamic> backups = [];
   final _focusNode = FocusNode();
+  late final TextEditingController aiKeyCtrl;
+  String aiProvider = 'gemini';
+  bool aiConfigLoading = true;
+  bool aiBusy = false;
 
   bool _textFieldFocused() {
     final primary = FocusManager.instance.primaryFocus;
@@ -59,10 +65,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
+    aiKeyCtrl = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
     _health();
+    _loadAiConfig();
     _backups();
     _lastBackup();
   }
@@ -71,6 +79,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void dispose() {
     _focusNode.dispose();
     examCtrl.dispose();
+    aiKeyCtrl.dispose();
     super.dispose();
   }
 
@@ -80,6 +89,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       setState(() => health = Map<String, dynamic>.from(data as Map));
     } catch (e) {
       setState(() => health = {'status': 'offline', 'error': humanApiError(e)});
+    }
+  }
+
+  Future<void> _loadAiConfig() async {
+    if (mounted) setState(() => aiConfigLoading = true);
+    try {
+      final data = await apiClient.get('/api/ai/config');
+      if (!mounted) return;
+      setState(() {
+        aiConfig = Map<String, dynamic>.from(data as Map);
+        aiConfigLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        aiConfig = null;
+        aiConfigLoading = false;
+        aiMsg = humanApiError(e, fallback: 'Não foi possível ler o estado da IA.');
+      });
+    }
+  }
+
+  Future<void> _configureAi() async {
+    final key = aiKeyCtrl.text.trim();
+    if (key.isEmpty) {
+      setState(() => aiMsg = 'Cole a chave do provedor para validar.');
+      return;
+    }
+    setState(() {
+      aiBusy = true;
+      aiMsg = null;
+    });
+    try {
+      final data = await apiClient.post('/api/ai/config', {
+        'provider': aiProvider,
+        'apiKey': key,
+      });
+      final map = Map<String, dynamic>.from(data as Map);
+      aiKeyCtrl.clear();
+      setState(() => aiMsg = map['message']?.toString() ?? 'Provedor configurado.');
+      await _loadAiConfig();
+    } catch (e) {
+      setState(() => aiMsg = humanApiError(e, fallback: 'Não foi possível validar a chave.'));
+    } finally {
+      if (mounted) setState(() => aiBusy = false);
+    }
+  }
+
+  Future<void> _testAi() async {
+    setState(() {
+      aiBusy = true;
+      aiMsg = null;
+    });
+    try {
+      final data = await apiClient.post('/api/ai/test', {});
+      final map = Map<String, dynamic>.from(data as Map);
+      setState(() => aiMsg = map['message']?.toString() ?? 'Teste concluído.');
+      await _loadAiConfig();
+    } catch (e) {
+      setState(() => aiMsg = humanApiError(e, fallback: 'Não foi possível testar a IA.'));
+    } finally {
+      if (mounted) setState(() => aiBusy = false);
     }
   }
 
@@ -217,6 +288,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       examCtrl.text = exam;
     }
     final online = health?['status'] == 'ok';
+    final aiOnline = health?['openai_configured'] == true ||
+        health?['gemini_configured'] == true;
 
     return Focus(
       focusNode: _focusNode,
@@ -290,6 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       builder: (_) {
                         final isWin = !kIsWeb && Platform.isWindows;
                         var desktopBuild = false;
+                        var buildIdentity = kAppVersionLabel;
                         if (isWin) {
                           try {
                             final exe = Platform.resolvedExecutable;
@@ -297,7 +371,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             // dist layout: .../app/paes_med_ai.exe → ../VERSION.txt
                             final sibling = File(p.join(p.dirname(dir), 'VERSION.txt'));
                             final same = File(p.join(dir, 'VERSION.txt'));
-                            desktopBuild = sibling.existsSync() || same.existsSync();
+                            final buildFile = sibling.existsSync() ? sibling : same;
+                            desktopBuild = buildFile.existsSync();
+                            if (desktopBuild) {
+                              final value = buildFile.readAsStringSync().trim();
+                              if (value.isNotEmpty) buildIdentity = value;
+                            }
                           } catch (_) {}
                         }
                         return Column(
@@ -310,7 +389,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: const Text('Desktop build · pack Windows'),
+                                label: Text('Build de demonstração · $buildIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else
@@ -319,7 +398,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ? 'Build Windows · modo desenvolvimento (flutter run)'
                                     : 'Build de estudo',
                                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                                     ),
                               ),
                             const SizedBox(height: 6),
@@ -327,7 +406,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
                               'e redação com missões (treino local · não banca).',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.62),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                                   ),
                             ),
                           ],
@@ -378,7 +457,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             return 'Prova em $d dia(s) · contagem local';
                           }(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
                               ),
                         ),
                       ),
@@ -432,7 +511,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
                             : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
                       ),
-                      trailing: IconButton(onPressed: _health, icon: const Icon(Icons.refresh_rounded)),
+                      trailing: IconButton(
+                        tooltip: 'Checar backend',
+                        onPressed: _health,
+                        icon: const Icon(Icons.refresh_rounded),
+                      ),
                     ),
                     if (online && health?['curation'] is Map)
                       Builder(
@@ -455,7 +538,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               msg.isEmpty
                                   ? 'oficiais ${c['realCount'] ?? '—'} · transversais ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
-                              style: const TextStyle(fontSize: 12),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                             trailing: focus
                                 ? Tooltip(
@@ -518,7 +601,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             final at = lastBackup!['at']?.toString() ?? '—';
                             return at;
                           }(),
-                          style: const TextStyle(fontSize: 12),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
                     ],
@@ -561,6 +644,129 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
 
               const SizedBox(height: 8),
+              SectionLabel('Tutor IA'),
+              SurfacePanel(
+                child: Builder(
+                  builder: (context) {
+                    if (aiConfigLoading) {
+                      return const SoftLoader(
+                        label: 'Lendo estado do Tutor IA…',
+                        compact: true,
+                      );
+                    }
+                    if (aiConfig == null) {
+                      return CompactStatus(
+                        message: aiMsg ?? 'Tutor IA indisponível no momento.',
+                        icon: Icons.sync_problem_outlined,
+                      );
+                    }
+                    final active = aiConfig!['activeProvider']?.toString();
+                    final activeModel = aiConfig!['activeModel']?.toString();
+                    final geminiConfigured = aiConfig!['geminiConfigured'] == true;
+                    final openAiConfigured = aiConfig!['openaiConfigured'] == true;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          active == null
+                              ? 'Nenhum provedor ativo'
+                              : 'Ativo: ${active == 'gemini' ? 'Gemini' : 'OpenAI'}'
+                                  '${activeModel == null ? '' : ' · $activeModel'}',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        CompactStatus(
+                          message: geminiConfigured
+                              ? 'Gemini configurado · ${aiConfig!['geminiKeyLast4'] ?? 'chave mascarada'}'
+                              : 'Gemini sem chave configurada.',
+                          icon: geminiConfigured
+                              ? Icons.check_circle_outline
+                              : Icons.radio_button_unchecked,
+                        ),
+                        CompactStatus(
+                          message: openAiConfigured
+                              ? 'OpenAI configurado · ${aiConfig!['openaiKeyLast4'] ?? 'chave mascarada'}'
+                              : 'OpenAI sem chave configurada.',
+                          icon: openAiConfigured
+                              ? Icons.check_circle_outline
+                              : Icons.radio_button_unchecked,
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: aiProvider,
+                          decoration: const InputDecoration(labelText: 'Provedor'),
+                          items: const [
+                            DropdownMenuItem(value: 'gemini', child: Text('Gemini')),
+                            DropdownMenuItem(value: 'openai', child: Text('OpenAI')),
+                          ],
+                          onChanged: aiBusy
+                              ? null
+                              : (value) {
+                                  if (value != null) setState(() => aiProvider = value);
+                                },
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: aiKeyCtrl,
+                          obscureText: true,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          decoration: const InputDecoration(
+                            labelText: 'Chave do provedor',
+                            hintText: 'Cole a chave aqui',
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          aiProvider == 'gemini'
+                              ? 'Chave gratuita: Google AI Studio (aistudio.google.com).'
+                              : 'Use uma chave da sua conta OpenAI.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'A chave fica somente neste computador, fora dos backups e do repositório.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            FilledButton.tonalIcon(
+                              onPressed: aiBusy ? null : _configureAi,
+                              icon: const Icon(Icons.save_outlined),
+                              label: const Text('Salvar e validar'),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: aiBusy ? null : _testAi,
+                              icon: const Icon(Icons.network_check_outlined),
+                              label: const Text('Testar configuração'),
+                            ),
+                            IconButton(
+                              tooltip: 'Atualizar estado da IA',
+                              onPressed: aiBusy ? null : _loadAiConfig,
+                              icon: const Icon(Icons.refresh_rounded),
+                            ),
+                          ],
+                        ),
+                        if (aiBusy)
+                          const CompactStatus(
+                            message: 'Validando com o provedor…',
+                            icon: Icons.hourglass_empty_rounded,
+                          ),
+                        if (aiMsg != null && !aiBusy)
+                          CompactStatus(
+                            message: aiMsg!,
+                            icon: Icons.info_outline_rounded,
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 8),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
@@ -571,12 +777,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Tutor com IA online'),
                     subtitle: Text(
-                      health?['openai_configured'] == true
+                      aiOnline
                           ? 'Chave configurada'
                           : 'Sem chave — tutor só com material local',
                     ),
-                    value: health?['openai_configured'] == true && ref.watch(tutorOnlinePrefProvider),
-                    onChanged: health?['openai_configured'] == true
+                    value: aiOnline && ref.watch(tutorOnlinePrefProvider),
+                    onChanged: aiOnline
                         ? (v) => ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v)
                         : null,
                   ),
@@ -637,13 +843,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           FutureBuilder(
                             future: apiClient.get('/api/media/opens', {'limit': '8'}),
                             builder: (context, openSnap) {
-                              if (!openSnap.hasData || openSnap.data is! Map) {
-                                return const SizedBox.shrink();
+                              if (openSnap.connectionState == ConnectionState.waiting) {
+                                return const CompactStatus(
+                                  message: 'Carregando histórico de mídia…',
+                                  icon: Icons.hourglass_empty_rounded,
+                                );
+                              }
+                              if (openSnap.hasError || openSnap.data is! Map) {
+                                return const CompactStatus(
+                                  message: 'Histórico de mídia indisponível no momento.',
+                                  icon: Icons.sync_problem_outlined,
+                                );
                               }
                               final om = Map<String, dynamic>.from(openSnap.data as Map);
                               final items =
                                   (om['items'] as List? ?? []).whereType<Map>().toList();
-                              if (items.isEmpty) return const SizedBox.shrink();
+                              if (items.isEmpty) {
+                                return const CompactStatus(
+                                  message: 'Nenhuma abertura de mídia registrada.',
+                                  icon: Icons.history_outlined,
+                                );
+                              }
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
@@ -754,7 +974,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Pasta de dados'),
-                    subtitle: Text(health?['dataDir']?.toString() ?? '—', style: const TextStyle(fontSize: 11)),
+                    subtitle: Text(
+                      health?['dataDir']?.toString() ?? '—',
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
                 ],
               ),

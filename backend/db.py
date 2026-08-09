@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -31,9 +33,18 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
-def init_db() -> None:
+@contextmanager
+def db() -> Iterator[sqlite3.Connection]:
+    """Conexão com fechamento garantido: `with db() as conn:`."""
     conn = connect()
     try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def init_db() -> None:
+    with db() as conn:
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS syllabus (
@@ -212,8 +223,6 @@ def init_db() -> None:
             """
         )
         conn.commit()
-    finally:
-        conn.close()
 
 
 def row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:

@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 import re
 import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from db import DATA_DIR, connect
+from db import DATA_DIR, db
+from timeutil import now, now_iso
 
 try:
     from pypdf import PdfReader
@@ -68,6 +68,32 @@ AREA_SUBJECT_MAP = (
     (re.compile(r"FILOSOFIA", re.I), "Filosofia"),
 )
 
+_EXAM_HEADER_RE = re.compile(
+    r"processo\s+seletivo\s+de\s+acesso\s+à\s+educação\s+superior",
+    re.IGNORECASE,
+)
+_PDF_GID_RE = re.compile(r"(?:/gid\d+\s*)+", re.IGNORECASE)
+_PDF_ARTIFACT_MARKER = "\ue000"
+_HEADER_PAGE_AFTER_ARTIFACT_RE = re.compile(
+    rf"{re.escape(_PDF_ARTIFACT_MARKER)}"
+    rf"(?:\s+{re.escape(_PDF_ARTIFACT_MARKER)})*"
+    r"\s*(?:(?:19|20)\d{2}\s+)?\d{1,3}(?=\s+[A-ZÀ-Ý\"“])"
+)
+
+
+def clean_question_statement(statement: str) -> str:
+    """Remove artefatos de cabeçalho do PDF sem tocar nos números do conteúdo."""
+    cleaned = statement.replace("\r", " ")
+    had_pdf_header = bool(_EXAM_HEADER_RE.search(cleaned) or _PDF_GID_RE.search(cleaned))
+    cleaned = _EXAM_HEADER_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
+    cleaned = _PDF_GID_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    # O número de página só pode ser removido imediatamente após o artefato.
+    if had_pdf_header:
+        cleaned = _HEADER_PAGE_AFTER_ARTIFACT_RE.sub("", cleaned)
+    cleaned = cleaned.replace(_PDF_ARTIFACT_MARKER, " ")
+    return re.sub(r"\s+", " ", cleaned).strip()
+
 NATUREZA_BIO = re.compile(
     r"(?i)\b(c[eé]lula|mitose|meiose|gene|alelo|dna|rna|ecossistema|fotoss[ií]ntese|"
     r"evolu[cç][aã]o|mendel|heredit|prote[ií]na|enzima|v[ií]rus|bact[eé]ria|"
@@ -75,6 +101,7 @@ NATUREZA_BIO = re.compile(
     r"osmose|membrana|cloroplasto|cadeia\s+alimentar|popula[cç][aã]o|bioma|"
     r"imunolog|vacina|anticorpo|gameta|embri[aã]o|respira[cç][aã]o\s+celular)\b"
 )
+
 NATUREZA_QUI = re.compile(
     r"(?i)\b(mol|estequiometr|rea[cç][aã]o|oxid|redu[cç]|[aá]cido|base|ph\b|org[aâ]nica|"
     r"hidrocarboneto|lig[aã]o\s+i[oô]nica|tabela\s+peri[oó]dica|solu[cç][aã]o|"
@@ -212,8 +239,7 @@ def compute_year_health(
 
 def year_health_from_db(year: int) -> dict[str, Any]:
     """Saúde a partir das oficiais já gravadas para um ano."""
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             """
             SELECT subject, topic, resolution, source, generated, exam_board, correct_index
@@ -222,8 +248,6 @@ def year_health_from_db(year: int) -> dict[str, Any]:
             """,
             (year,),
         ).fetchall()
-    finally:
-        conn.close()
     from collections import Counter
 
     subjects = Counter((r["subject"] or "?").strip() or "?" for r in rows)
@@ -306,7 +330,7 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
             key=lambda x: x[0],
         )
         opts_by_letter: dict[str, str] = {}
-        for index, (start, letter, mend) in enumerate(by_pos):
+        for index, (_start, letter, mend) in enumerate(by_pos):
             option_end = by_pos[index + 1][0] if index + 1 < len(by_pos) else len(body)
             value = re.sub(r"\s+", " ", body[mend:option_end]).strip()
             value = re.sub(r"^[\)\.\-:]\s*", "", value)
@@ -315,7 +339,7 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
         # Sempre A–E em ordem de índice (gabarito A=0)
         opts = [opts_by_letter.get(chr(65 + i), "") for i in range(5)]
         statement = body[: by_pos[0][0]].strip() if by_pos else body
-        statement = re.sub(r"\s+", " ", statement)[:1200]
+        statement = clean_question_statement(statement)[:1200]
         if not statement:
             continue
         real_opts = sum(1 for o in opts if o and "(revisar)" not in o)
@@ -496,13 +520,10 @@ def classify_questions_by_syllabus(questions: list[dict[str, Any]]) -> list[dict
 
     Preserva subject vindo do cabeçalho de área do caderno quando o score de syllabus é fraco.
     """
-    conn = connect()
-    try:
+    with db() as conn:
         syllabus = [dict(row) for row in conn.execute(
             "SELECT id, subject, topic, subtopic, weight FROM syllabus"
         ).fetchall()]
-    finally:
-        conn.close()
 
     classified: list[dict[str, Any]] = []
     for question in questions:
@@ -712,14 +733,11 @@ def compute_year_statuses() -> list[dict[str, Any]]:
         y = item.get("year")
         if item["kind"] == "prova" and y in years:
             prova_files[y] = prova_files.get(y, 0) + 1
-    conn = connect()
-    try:
+    with db() as conn:
         rows = conn.execute(
             """SELECT year, source, generated, COUNT(*) AS count FROM questions
                WHERE year BETWEEN 2014 AND 2026 GROUP BY year, source, generated"""
         ).fetchall()
-    finally:
-        conn.close()
     official_counts: dict[int, int] = {}
     for row in rows:
         source = (row["source"] or "").lower()
@@ -897,8 +915,7 @@ def import_and_commit_year(year: int) -> dict[str, Any]:
 
 def save_preview(kind: str, filename: str, questions: list[dict[str, Any]], raw_text: str) -> dict[str, Any]:
     preview_id = str(uuid.uuid4())
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS ingest_previews (
@@ -923,7 +940,7 @@ def save_preview(kind: str, filename: str, questions: list[dict[str, Any]], raw_
                 filename,
                 json.dumps(questions, ensure_ascii=False),
                 raw_text[:50000],
-                datetime.now().isoformat(timespec="seconds"),
+                now_iso(),
             ),
         )
         conn.execute(
@@ -936,12 +953,10 @@ def save_preview(kind: str, filename: str, questions: list[dict[str, Any]], raw_
                 kind,
                 "preview_pronto",
                 f"Preview {preview_id} com {len(questions)} questões candidatas. Confirme para gravar.",
-                datetime.now().isoformat(timespec="seconds"),
+                now_iso(),
             ),
         )
         conn.commit()
-    finally:
-        conn.close()
     return {
         "previewId": preview_id,
         "count": len(questions),
@@ -958,8 +973,7 @@ def commit_preview(
     min_confidence: float = 0.55,
     allow_without_gabarito: bool = False,
 ) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS ingest_previews (
@@ -1083,7 +1097,7 @@ def commit_preview(
                 f"{inserted} questões gravadas"
                 + (f" · {skipped} deixadas de fora (baixa confiança)." if skipped else ".")
                 + " Estatísticas recalculam na leitura.",
-                datetime.now().isoformat(timespec="seconds"),
+                now_iso(),
             ),
         )
         conn.commit()
@@ -1115,13 +1129,10 @@ def commit_preview(
                 + (f" ({skipped} fora)." if skipped else ".")
             ),
         }
-    finally:
-        conn.close()
 
 
 def update_preview(preview_id: str, questions: list[dict[str, Any]]) -> dict[str, Any]:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT * FROM ingest_previews WHERE id=?", (preview_id,)).fetchone()
         if not row:
             return {"ok": False, "message": "Preview não encontrado"}
@@ -1133,13 +1144,10 @@ def update_preview(preview_id: str, questions: list[dict[str, Any]]) -> dict[str
         )
         conn.commit()
         return {"ok": True, "count": len(questions), "previewId": preview_id}
-    finally:
-        conn.close()
 
 
 def get_preview(preview_id: str) -> dict[str, Any] | None:
-    conn = connect()
-    try:
+    with db() as conn:
         row = conn.execute("SELECT * FROM ingest_previews WHERE id=?", (preview_id,)).fetchone()
         if not row:
             return None
@@ -1151,8 +1159,6 @@ def get_preview(preview_id: str) -> dict[str, Any] | None:
             "questions": json.loads(row["questions_json"]),
             "committed": bool(row["committed"]),
         }
-    finally:
-        conn.close()
 
 
 def parse_pdf_file(path: Path, kind: str, year: int | None = None, subject: str = "Geral") -> dict[str, Any]:
@@ -1163,9 +1169,27 @@ def parse_pdf_file(path: Path, kind: str, year: int | None = None, subject: str 
         preview.update({"gabarito": parse_gabarito(text), "message": "Gabarito lido. Use /api/ingest/apply-gabarito para aplicar às questões oficiais."})
         preview["needsOcr"] = needs_ocr
         return preview
-    questions = heuristic_parse_questions(text, default_year=year or datetime.now().year, subject=subject)
+    questions = heuristic_parse_questions(text, default_year=year or now().year, subject=subject)
     if kind == "prova":
         questions = classify_questions_by_syllabus(questions)
     preview = save_preview(kind, path.name, questions, text)
     preview["needsOcr"] = needs_ocr
     return preview
+
+
+def sanitize_question_statements() -> int:
+    """Limpa enunciados persistidos e retorna quantos registros mudaram."""
+    changed = 0
+    with db() as conn:
+        rows = conn.execute("SELECT id, statement FROM questions").fetchall()
+        for row in rows:
+            original = str(row["statement"] or "")
+            cleaned = clean_question_statement(original)
+            if cleaned != original:
+                conn.execute(
+                    "UPDATE questions SET statement=? WHERE id=?",
+                    (cleaned, row["id"]),
+                )
+                changed += 1
+        conn.commit()
+    return changed

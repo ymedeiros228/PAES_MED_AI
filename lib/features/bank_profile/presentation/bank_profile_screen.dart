@@ -122,8 +122,8 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 ),
               ),
               profile.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                loading: () => const SoftLoader(compact: true),
+                error: (e, _) => QuietEmpty(message: humanApiError(e, fallback: 'Perfil da banca indisponível.')),
                 data: (data) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: TrainingBasisBanner(
@@ -134,7 +134,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 ),
               ),
               profile.when(
-                loading: () => const LinearProgressIndicator(),
+                loading: () => const SoftLoader(
+                  compact: true,
+                  label: 'Carregando perfil da banca…',
+                ),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Perfil da banca indisponível.'),
                   action: Wrap(
@@ -222,7 +225,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                     DataCell(
                                       Text(
                                         entry.key.toString().split(' ').first,
-                                        style: const TextStyle(fontSize: 11),
+                                        style: Theme.of(context).textTheme.labelSmall,
                                       ),
                                     ),
                                     for (final y in yearList)
@@ -303,7 +306,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               ),
               SectionLabel('Frequência no tempo'),
               freq.when(
-                loading: () => const LinearProgressIndicator(),
+                loading: () => const SoftLoader(
+                  compact: true,
+                  label: 'Carregando frequência…',
+                ),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Frequência indisponível.'),
                   action: TextButton(
