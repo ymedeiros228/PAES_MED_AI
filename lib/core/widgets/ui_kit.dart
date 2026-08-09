@@ -57,57 +57,74 @@ class PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (eyebrow != null) ...[
+          Text(
+            eyebrow!.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: cs.primary,
+                  letterSpacing: 1.3,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 6),
+        ],
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.4,
+              ),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 10),
+          width: 36,
+          height: 3,
+          decoration: BoxDecoration(
+            color: cs.primary.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            subtitle!,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: cs.onSurface.withOpacity(0.72),
+                  height: 1.4,
+                ),
+          ),
+        ],
+      ],
+    );
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxWidth < 520 || MediaQuery.sizeOf(context).width < 700;
+          if (trailing == null) return heading;
+          if (compact) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (eyebrow != null) ...[
-                  Text(
-                    eyebrow!.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.primary,
-                          letterSpacing: 1.3,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                ],
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.4,
-                      ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  width: 36,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: cs.primary.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    subtitle!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: cs.onSurface.withOpacity(0.72),
-                          height: 1.4,
-                        ),
-                  ),
-                ],
+                heading,
+                const SizedBox(height: kGap8),
+                Align(alignment: Alignment.centerRight, child: trailing!),
               ],
-            ),
-          ),
-          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
-        ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: heading),
+              const SizedBox(width: kGap12),
+              trailing!,
+            ],
+          );
+        },
       ),
     );
   }
@@ -174,7 +191,7 @@ class SectionLabel extends StatelessWidget {
 class SurfacePanel extends StatelessWidget {
   const SurfacePanel({
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(kGap16),
     this.color,
     this.margin = EdgeInsets.zero,
     this.soft = true,
@@ -260,7 +277,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.only(bottom: 6),
+        margin: const EdgeInsets.only(bottom: kGap8),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(kRadiusButton),
@@ -288,7 +305,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 11, 10, 11),
+                      padding: const EdgeInsets.fromLTRB(kGap8, kGap12, kGap12, kGap12),
                       child: Row(
                         children: [
                           Icon(
@@ -296,7 +313,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                             color: widget.active ? cs.primary : cs.onSurface.withOpacity(0.45),
                             size: 26,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: kGap12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
