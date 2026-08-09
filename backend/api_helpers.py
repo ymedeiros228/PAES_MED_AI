@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
+import httpx
 from fastapi import (
     HTTPException,
     UploadFile,
@@ -26,6 +27,7 @@ from schemas import ChatMessage
 
 GEMINI_PROBE_TIMEOUT_SECONDS = 15
 MAX_GEMINI_CANDIDATES_PER_REQUEST = 3
+CompatibleProvider = Literal["groq", "openrouter"]
 
 
 def _openai_client():
@@ -47,15 +49,13 @@ _COMPATIBLE_BASE_URLS = {
 
 
 def _compatible_provider_request(
-    provider: str,
+    provider: CompatibleProvider,
     api_key: str,
     model: str,
     instructions: str,
     user_content: str,
     history: list[ChatMessage] | None = None,
 ) -> str:
-    import httpx
-
     messages = [{"role": "system", "content": instructions}]
     messages.extend(
         {"role": item.role, "content": item.content}
@@ -101,31 +101,31 @@ def _compatible_provider_request(
 
 
 def _ask_compatible(
-    provider: str,
+    provider: CompatibleProvider,
     instructions: str,
     user_content: str,
     history: list[ChatMessage] | None = None,
 ) -> str:
-    if not provider_configured(provider):  # type: ignore[arg-type]
+    if not provider_configured(provider):
         raise HTTPException(status_code=503, detail=f"{provider.upper()}_API_KEY não configurada.")
     last_kind = "unavailable"
-    for model in provider_model_candidates(provider):  # type: ignore[arg-type]
+    for model in provider_model_candidates(provider):
         try:
             answer = _compatible_provider_request(
                 provider,
-                provider_key(provider),  # type: ignore[arg-type]
+                provider_key(provider),
                 model,
                 instructions,
                 user_content,
                 history,
             )
-            if model != provider_model(provider):  # type: ignore[arg-type]
-                remember_model(provider, model)  # type: ignore[arg-type]
-            set_provider_status(provider, "working")  # type: ignore[arg-type]
+            if model != provider_model(provider):
+                remember_model(provider, model)
+            set_provider_status(provider, "working")
             return answer
         except RuntimeError as exc:
             last_kind = str(exc)
-            set_provider_status(provider, last_kind)  # type: ignore[arg-type]
+            set_provider_status(provider, last_kind)
             if last_kind in {"key_rejected", "connection"}:
                 break
     details = {
@@ -376,8 +376,12 @@ def validate_openai_key(api_key: str) -> str:
         raise HTTPException(status_code=status, detail=detail) from exc
 
 
-def validate_compatible_key(provider: str, api_key: str, model: str | None = None) -> str:
-    candidates = provider_model_candidates(provider, model)  # type: ignore[arg-type]
+def validate_compatible_key(
+    provider: CompatibleProvider,
+    api_key: str,
+    model: str | None = None,
+) -> str:
+    candidates = provider_model_candidates(provider, model)
     last_kind = "unavailable"
     for candidate in candidates:
         try:

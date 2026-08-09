@@ -309,7 +309,12 @@ def test_cascata_tenta_provedores_na_ordem_e_depois_offline(
 
 
 def test_modelos_openrouter_preservam_sufixo_gratuito() -> None:
-    assert ai_state.provider_model_candidates("openrouter") == [
-        "deepseek/deepseek-r1:free",
-        "meta-llama/llama-3.3-70b-instruct:free",
-    ]
+    original = dict(ai_state._values["openrouter"])
+    try:
+        ai_state._values["openrouter"]["model"] = ""
+        assert ai_state.provider_model_candidates("openrouter") == [
+            "deepseek/deepseek-r1:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+        ]
+    finally:
+        ai_state._values["openrouter"] = original
