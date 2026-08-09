@@ -636,6 +636,411 @@ class CompactStatus extends StatelessWidget {
 /// espaçamento vertical entre eles — melhora muito a leitura no desktop.
 /// Animação de entrada fade-in em cascata para listas de widgets.
 /// Cada item aparece com um pequeno atraso, criando um efeito visual suave.
+/// Constelação de Conhecimento — gamificação do progresso de estudo.
+///
+/// Renderiza um céu estrelado onde cada dia ativo de estudo vira uma estrela
+/// que brilha, e dias inativos ficam como pontos escuros. As estrelas se
+/// conectam em uma "constelação" que cresce conforme o streak aumenta.
+/// O título/nível muda conforme o número de dias seguidos:
+/// 0-2: "Explorador" · 3-6: "Observador" · 7-13: "Astrônomo" ·
+/// 14-29: "Cartógrafo" · 30+: "Mestre das Estrelas"
+class ConstellationMap extends StatefulWidget {
+  const ConstellationMap({
+    required this.activeDays,
+    required this.streakDays,
+    required this.totalDays,
+    required this.accuracy,
+    super.key,
+  });
+
+  /// Lista de dias ativos (índice 0 = mais antigo, último = mais recente).
+  /// Cada item é true se houve estudo naquele dia, false caso contrário.
+  final List<bool> activeDays;
+
+  /// Dias seguidos (streak atual).
+  final int streakDays;
+
+  /// Total de dias no período (ex: 28).
+  final int totalDays;
+
+  /// Acurácia atual (0.0 a 1.0) — afeta o brilho das estrelas.
+
+  final double accuracy;
+
+  @override
+  State<ConstellationMap> createState() => _ConstellationMapState();
+}
+
+class _ConstellationMapState extends State<ConstellationMap>
+    with TickerProviderStateMixin {
+  late final AnimationController _twinkle;
+  late final AnimationController _grow;
+
+  @override
+  void initState() {
+    super.initState();
+    _twinkle = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat(reverse: true);
+    _grow = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _twinkle.dispose();
+    _grow.dispose();
+    super.dispose();
+  }
+
+  String _levelTitle() {
+    final s = widget.streakDays;
+    if (s >= 30) return 'Mestre das Estrelas';
+    if (s >= 14) return 'Cartógrafo Celeste';
+    if (s >= 7) return 'Astrônomo';
+    if (s >= 3) return 'Observador';
+    return 'Explorador';
+  }
+
+  String _levelHint() {
+    final s = widget.streakDays;
+    if (s >= 30) return '30+ dias seguidos — constelação completa';
+    if (s >= 14) return '14+ dias — mapeando o céu inteiro';
+    if (s >= 7) return '7+ dias — as estrelas formam figuras';
+    if (s >= 3) return '3+ dias — começando a enxergar padrões';
+    return 'Estude 3 dias seguidos para subir de nível';
+  }
+
+  (Color, Color) _levelColors() {
+    final s = widget.streakDays;
+    if (s >= 30) return (const Color(0xFFFFD700), const Color(0xFFFFA500));
+    if (s >= 14) return (const Color(0xFFB39DDB), const Color(0xFF7E57C2));
+    if (s >= 7) return (const Color(0xFF4FC3F7), const Color(0xFF0288D1));
+    if (s >= 3) return (const Color(0xFF80CBC4), const Color(0xFF00897B));
+    return (const Color(0xFF90A4AE), const Color(0xFF546E7A));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (starColor, lineColor) = _levelColors();
+    final title = _levelTitle();
+    final hint = _levelHint();
+
+    // Grid de estrelas: 7 colunas (dias da semana) x N linhas
+    final cols = 7;
+    final rows = (widget.totalDays / cols).ceil();
+    final activeCount = widget.activeDays.where((a) => a).length;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF0A0E27),
+            const Color(0xFF1A1F3A),
+            const Color(0xFF0D1126),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(kRadiusPanel),
+        border: Border.all(color: lineColor.withOpacity(0.3), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Cabeçalho com título e nível
+          Row(
+            children: [
+              AnimatedBuilder(
+                animation: _twinkle,
+                builder: (context, _) {
+                  final t = 0.5 + 0.5 * _twinkle.value;
+                  return Icon(
+                    Icons.auto_awesome,
+                    size: 20,
+                    color: starColor.withOpacity(0.6 + 0.4 * t),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: starColor,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                    ),
+                    Text(
+                      hint,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              // Badge de streak
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: starColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: starColor.withOpacity(0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.local_fire_department, size: 14, color: starColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${widget.streakDays}d',
+                      style: TextStyle(
+                        color: starColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Céu estrelado
+          SizedBox(
+            height: rows * 38.0,
+            child: CustomPaint(
+              painter: _ConstellationPainter(
+                activeDays: widget.activeDays,
+                cols: cols,
+                rows: rows,
+                starColor: starColor,
+                lineColor: lineColor,
+                twinkleValue: _twinkle.value,
+                growValue: Curves.easeOutCubic.transform(_grow.value),
+                accuracy: widget.accuracy,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Rodapé com estatísticas
+          Row(
+            children: [
+              _StatChip(
+                icon: Icons.star_rounded,
+                value: '$activeCount',
+                label: 'estrelas',
+                color: starColor,
+              ),
+              const SizedBox(width: 12),
+              _StatChip(
+                icon: Icons.whatshot_rounded,
+                value: '${widget.streakDays}',
+                label: 'streak',
+                color: starColor,
+              ),
+              const SizedBox(width: 12),
+              _StatChip(
+                icon: Icons.gps_fixed_rounded,
+                value: '${(widget.accuracy * 100).toStringAsFixed(0)}%',
+                label: 'acerto',
+                color: starColor,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color.withOpacity(0.7)),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Painter que desenha o céu estrelado com constelação.
+class _ConstellationPainter extends CustomPainter {
+  _ConstellationPainter({
+    required this.activeDays,
+    required this.cols,
+    required this.rows,
+    required this.starColor,
+    required this.lineColor,
+    required this.twinkleValue,
+    required this.growValue,
+    required this.accuracy,
+  });
+
+  final List<bool> activeDays;
+  final int cols;
+  final int rows;
+  final Color starColor;
+  final Color lineColor;
+  final double twinkleValue;
+  final double growValue;
+  final double accuracy;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cellW = size.width / cols;
+    final cellH = size.height / rows;
+    final starRadius = (cellW * 0.18).clamp(3.0, 8.0);
+
+    // Posições das estrelas ativas
+    final starPositions = <Offset>[];
+
+    // Primeiro desenha os pontos escuros (dias inativos)
+    for (var i = 0; i < activeDays.length && i < cols * rows; i++) {
+      final row = i ~/ cols;
+      final col = i % cols;
+      final cx = col * cellW + cellW / 2;
+      final cy = row * cellH + cellH / 2;
+      final center = Offset(cx, cy);
+
+      if (!activeDays[i]) {
+        // Dia inativo: ponto pequeno e escuro
+        final paint = Paint()
+          ..color = Colors.white.withOpacity(0.08)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(center, starRadius * 0.35, paint);
+      }
+    }
+
+    // Depois desenha as linhas da constelação (conecta estrelas ativas)
+    for (var i = 0; i < activeDays.length && i < cols * rows; i++) {
+      if (!activeDays[i]) continue;
+      final row = i ~/ cols;
+      final col = i % cols;
+      final cx = col * cellW + cellW / 2;
+      final cy = row * cellH + cellH / 2;
+      starPositions.add(Offset(cx, cy));
+    }
+
+    // Desenha linhas entre estrelas consecutivas ativas
+    if (starPositions.length >= 2) {
+      final linePaint = Paint()
+        ..color = lineColor.withOpacity(0.25 * growValue)
+        ..strokeWidth = 1.2
+        ..style = PaintingStyle.stroke;
+
+      for (var i = 0; i < starPositions.length - 1; i++) {
+        final p1 = starPositions[i];
+        final p2 = starPositions[i + 1];
+        // Só conecta se estiverem próximos (mesma linha ou adjacente)
+        final dist = (p2 - p1).distance;
+        if (dist < cellW * 2.5) {
+          // Anima a linha crescendo
+          final end = Offset.lerp(p1, p2, growValue)!;
+          canvas.drawLine(p1, end, linePaint);
+        }
+      }
+    }
+
+    // Por fim desenha as estrelas ativas (por cima das linhas)
+    for (var i = 0; i < starPositions.length; i++) {
+      final pos = starPositions[i];
+      // Cada estrela pisca em momento diferente
+      final phase = (i * 0.3) % 1.0;
+      final twinkle = 0.5 + 0.5 * ((twinkleValue + phase) % 1.0);
+      final intensity = (0.4 + 0.6 * twinkle) * growValue;
+
+      // Halo/glow ao redor da estrela
+      final haloRadius = starRadius * 2.5 * intensity;
+      final haloPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            starColor.withOpacity(0.4 * intensity),
+            starColor.withOpacity(0),
+          ],
+        ).createShader(Rect.fromCircle(center: pos, radius: haloRadius));
+      canvas.drawCircle(pos, haloRadius, haloPaint);
+
+      // Núcleo da estrela
+      final corePaint = Paint()
+        ..color = starColor.withOpacity(0.9 * intensity)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(pos, starRadius * (0.7 + 0.3 * twinkle), corePaint);
+
+      // Brilho central branco
+      final whitePaint = Paint()
+        ..color = Colors.white.withOpacity(0.8 * intensity)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(pos, starRadius * 0.35 * twinkle, whitePaint);
+
+      // Raios da estrela (4 pontas)
+      if (intensity > 0.5) {
+        final rayPaint = Paint()
+          ..color = starColor.withOpacity(0.5 * intensity)
+          ..strokeWidth = 1.0
+          ..style = PaintingStyle.stroke;
+        final rayLen = starRadius * 1.8 * twinkle;
+        canvas.drawLine(
+          Offset(pos.dx - rayLen, pos.dy),
+          Offset(pos.dx + rayLen, pos.dy),
+          rayPaint,
+        );
+        canvas.drawLine(
+          Offset(pos.dx, pos.dy - rayLen),
+          Offset(pos.dx, pos.dy + rayLen),
+          rayPaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConstellationPainter oldDelegate) =>
+      oldDelegate.twinkleValue != twinkleValue ||
+      oldDelegate.growValue != growValue;
+}
+
 class StaggeredFadeIn extends StatefulWidget {
   const StaggeredFadeIn({
     required this.children,

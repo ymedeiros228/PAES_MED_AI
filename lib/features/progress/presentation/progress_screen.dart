@@ -62,6 +62,28 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
     }
   }
 
+  /// Extrai a lista de dias ativos (true/false) do activity28 retornado pela API.
+  List<bool> _extractActiveDays(Map<String, dynamic>? data) {
+    final activity = data?['activity28'];
+    if (activity is Map) {
+      final items = activity['items'];
+      if (items is List) {
+        return items
+            .whereType<Map>()
+            .map((item) => item['active'] == true || item['closed'] == true)
+            .toList();
+      }
+    }
+    if (activity is List) {
+      return activity
+          .whereType<Map>()
+          .map((item) => item['active'] == true || item['closed'] == true)
+          .toList();
+    }
+    // Fallback: se não há dados, retorna 28 dias vazios
+    return List.filled(28, false);
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(refreshTickProvider);
@@ -194,7 +216,18 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ),
                     ),
                   ],
-                  SectionLabel('Ritmo de treino', hint: 'instrumento local · não % de aprovação'),
+                  // Constelação de Conhecimento — gamificação do progresso
+                  SectionLabel('Sua constelação', hint: 'cada estrela = um dia de estudo'),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: ConstellationMap(
+                      activeDays: _extractActiveDays(data),
+                      streakDays: (data?['streakDays'] as num?)?.toInt() ?? 0,
+                      totalDays: 28,
+                      accuracy: ((data?['accuracy'] as num?) ?? 0).toDouble(),
+                    ),
+                  ),
+                  // Ritmo de treino (mantido abaixo, mais compacto)
                   SurfacePanel(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: Column(
@@ -220,14 +253,14 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                             curve: Curves.easeOutCubic,
                             builder: (context, value, _) => LinearProgressIndicator(
                               value: value,
-                              minHeight: 10,
+                              minHeight: 6,
                               backgroundColor: cs.surfaceContainerHighest,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
-                          'Só mostra consistência de treino local — zero previsões de aprovação.',
+                          'Consistência de treino local — não é % de aprovação.',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: cs.onSurface.f72,
                               ),
