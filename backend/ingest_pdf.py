@@ -1255,3 +1255,188 @@ def sanitize_question_statements() -> int:
                 changed += 1
         conn.commit()
     return changed
+
+
+# Padrões que indicam contaminação da opção E com texto da questão seguinte.
+# A opção E legítima termina em ponto, ponto-e-vírgula, ou nada. Mas quando
+# o texto da próxima questão aparece colado, vemos frases como:
+# "Na década de 80..." / "Segun el texto..." / "Entre as diferentes..."
+# Esses padrões indicam o início de uma nova questão dentro da opção E.
+_NEXT_QUESTION_CONTAMINATION_RE = re.compile(
+    r"(?i)(?:"
+    # Instruções para a próxima questão (português)
+    r"\b(?:leia|analise|observe|considere|de\s+acordo\s+com\s+o\s+texto|"
+    r"entre\s+as\s+diferentes|na\s+d[eé]cada\s+de\s+\d|"
+    r"em\s+[\"“][^\"”]{5,}[\"”])|"
+    # Instruções para a próxima questão (espanhol)
+    r"\bseg[uú]n\s+el\s+texto|"
+    # Instruções para a próxima questão (inglês)
+    r"\b(?:according\s+to\s+the\s+text|based\s+on\s+the\s+text|read\s+the\s+text|"
+    r"the\s+english\s+grammar|the\s+following\s+group|the\s+following\s+options|"
+    r"the\s+following\s+sentences|except\s+one|answer\s+the\s+question|"
+    r"choose\s+the\s+(?:correct|best)|read\s+the\s+(?:following|text|passage))|"
+    # Referência a questão seguinte
+    r"\bquest(?:[ãa]o|ao)\s*\d|"
+    r"\bquest(?:[õo]es|oes)\s+de\b|"
+    r"\bserve\s+de\s+base\s+para\s+respond|"
+    # Cabeçalho de próxima seção
+    r"\blingua(?:gens)?\s+inglesa|\bl[ií]ngua\s+espanhola|"
+    # Letra de opção da próxima questão (a) / b) / c) colada
+    r"\b[a-e]\s*[\)\.]\s+[A-ZÀ-Ý]|"
+    # Faixa de questões (ex: "05 a 09" / "questões 01 a 06")
+    r"\b\d{1,2}\s*a\s*\d{1,2}\s*[\.\s]+[A-ZÀ-Ý]|"
+    # URL residual
+    r"https?://\S+|www\.\S+|\.html\b|"
+    # "Texto I" / "Texto II" (novo texto de apoio)
+    r"\btexto\s+(?:i+|1|2|3)\b|"
+    # Cabeçalho de prova residual (gid, Processo Seletivo, UEMA, PAES)
+    r"\bprocesso\s+seletivo\b|\bgid\d+|"
+    r"\bdispon[ií]vel\s+em\b|\bfonte\s*:|"
+    r"\bau(?:tor|tora)\s+em\b|"
+    # Título de texto de apoio (após ponto final, frase curta sem verbo)
+    r"\.\s+O\s+conto\s+\w|"
+    r"\.\s+A\s+autor(?:a|idade)\s+\w"
+    r")"
+)
+
+# Padrão agressivo: só aplicado em opções muito longas (>250 chars)
+# Nome próprio em MAIÚSCULAS seguido de texto (ex: "MARIA Maria estava...")
+_AGGRESSIVE_CONTAMINATION_RE = re.compile(
+    r"\b[A-ZÀ-Ý]{3,}\s+[a-zà-ÿ]"
+)
+
+# Cabeçalhos de seção que aparecem no início do enunciado
+_SECTION_HEADER_RE = re.compile(
+    r"(?i)^(?:"
+    r"l[ií]ngua(?:gens)?(?:\s+e\s+c[oó]digos)?|"
+    r"ci[eê]ncias\s+(?:humanas|da\s+natureza)|"
+    r"matem[aá]tica(?:\s+e\s+suas\s+tecnologias)?|"
+    r"produ[cç][aã]o\s+textual|"
+    r"l[ií]ngua\s+inglesa|"
+    r"l[ií]ngua\s+espanhola|"
+    r"l[ií]ngua\s+portuguesa(?:\s+e\s+literatura)?|"
+    r"reda[cç][aã]o|"
+    r"biologia|qu[ií]mica|f[ií]sica|hist[oó]ria|geografia|"
+    r"filosofia|sociologia|"
+    r"espanhol|ingl[eê]s"
+    r")\s*(?:[-–—:·])?\s*",
+    re.MULTILINE,
+)
+
+
+def _clean_option_contamination(option_text: str) -> str:
+    """Remove texto da questão seguinte que ficou colado na última opção.
+
+    O parser heurístico pega todo o texto até a próxima 'QUESTÃO N', mas a
+    opção E não tem delimitador de fim — então o enunciado da próxima questão
+    aparece colado nela. Esta função detecta e corta essa contaminação.
+    """
+    if not option_text or len(option_text) < 50:
+        return option_text
+    # Procura o primeiro padrão de contaminação (padrões seguros)
+    match = _NEXT_QUESTION_CONTAMINATION_RE.search(option_text)
+    if match:
+        cleaned = option_text[:match.start()].rstrip()
+        cleaned = re.sub(r'[\s,;:\-–—]+$', '', cleaned)
+        if len(cleaned) >= 15:
+            return cleaned
+    # Heurística agressiva: opções muito longas (>250 chars) podem ter
+    # contaminação com nome de personagem em MAIÚSCULAS (ex: "MARIA Maria...")
+    if len(option_text) > 250:
+        match = _AGGRESSIVE_CONTAMINATION_RE.search(option_text)
+        if match and match.start() > 50:
+            cleaned = option_text[:match.start()].rstrip()
+            cleaned = re.sub(r'[\s,;:\-–—]+$', '', cleaned)
+            if len(cleaned) >= 30:
+                return cleaned
+    # Heurística final: opções muito longas (>400 chars) sem padrão detectável
+    # provavelmente têm texto de apoio colado. Cortar no último delimitador
+    # natural antes de 350 chars para preservar o conteúdo legítimo da opção.
+    if len(option_text) > 400:
+        cutoff = option_text[:350]
+        # Procura por vários delimitadores naturais (ponto, ponto-e-vírgula, aspas fechando)
+        last_delim = max(
+            cutoff.rfind(". "),
+            cutoff.rfind('." '),
+            cutoff.rfind('.” '),
+            cutoff.rfind("; "),
+            cutoff.rfind('. '),
+        )
+        if last_delim > 80:
+            cleaned = option_text[:last_delim + 1].rstrip()
+            # Remove aspas órfãs no final
+            cleaned = re.sub(r'["”]+$', '', cleaned).rstrip()
+            return cleaned
+        # Se não encontrou delimitador, corta em 350 com reticências
+        return option_text[:350].rstrip() + "…"
+    return option_text
+
+
+def _clean_section_header(statement: str) -> str:
+    """Remove cabeçalhos de seção do início do enunciado."""
+    if not statement:
+        return statement
+    # Tenta remover cabeçalho no início
+    cleaned = _SECTION_HEADER_RE.sub("", statement)
+    # Pode haver múltiplos cabeçalhos seguidos (ex: "LÍNGUA INGLESA\nSprowston...")
+    cleaned = _SECTION_HEADER_RE.sub("", cleaned)
+    return cleaned.strip()
+
+
+def sanitize_questions_full() -> dict[str, int]:
+    """Sanitização completa: enunciados + opções + cabeçalhos de seção.
+
+    Retorna contagem de mudanças por tipo.
+    """
+    import json as _json
+    changed_statements = 0
+    changed_options = 0
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, statement, options_json FROM questions"
+        ).fetchall()
+        for row in rows:
+            original_stmt = str(row["statement"] or "")
+            # 1. Limpa cabeçalho de seção do enunciado
+            stmt = _clean_section_header(original_stmt)
+            # 2. Limpa artefatos de PDF
+            stmt = clean_question_statement(stmt)
+            # 3. Remove "Leia, agora, um fragmento..." que é instrução da próxima questão
+            stmt = re.sub(
+                r"(?i)\b(?:leia|analise|observe)\s*,?\s*(?:agora\s*,?\s*)?"
+                r"um\s+(?:fragmento|trecho|texto|poema|c[oó]mic|quadrinhos?).*$",
+                "",
+                stmt,
+            ).strip()
+
+            # 4. Limpa opções contaminadas
+            opts_changed = False
+            try:
+                opts = _json.loads(row["options_json"]) if row["options_json"] else []
+            except Exception:
+                opts = []
+            cleaned_opts = []
+            for opt in opts:
+                original_opt = str(opt) if opt else ""
+                # Primeiro limpa artefatos de PDF (cabeçalhos, GIDs, etc.)
+                opt_str = clean_question_statement(original_opt)
+                # Depois remove contaminação da próxima questão
+                cleaned_opt = _clean_option_contamination(opt_str)
+                if cleaned_opt != original_opt:
+                    opts_changed = True
+                cleaned_opts.append(cleaned_opt)
+
+            if stmt != original_stmt or opts_changed:
+                conn.execute(
+                    "UPDATE questions SET statement=?, options_json=? WHERE id=?",
+                    (stmt, _json.dumps(cleaned_opts, ensure_ascii=False), row["id"]),
+                )
+                if stmt != original_stmt:
+                    changed_statements += 1
+                if opts_changed:
+                    changed_options += 1
+        conn.commit()
+    return {
+        "statements": changed_statements,
+        "options": changed_options,
+    }

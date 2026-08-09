@@ -456,23 +456,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             ),
           ),
         const SizedBox(height: 12),
-        // SelectableText permite copiar trechos do enunciado (útil para pesquisar)
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHigh.f38,
-            borderRadius: BorderRadius.circular(kRadiusPanel),
-            border: Border.all(color: cs.outlineVariant.f38),
-          ),
-          child: SelectableText(
-            q.statement,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(height: 1.45),
-            contextMenuBuilder: (context, editableTextState) =>
-                AdaptiveTextSelectionToolbar.editableText(
-              editableTextState: editableTextState,
-            ),
-          ),
-        ),
+        // StatementView formata o enunciado em parágrafos legíveis
+        StatementView(text: q.statement),
         const SizedBox(height: 16),
         for (var i = 0; i < q.options.length; i++)
           ChoiceOptionTile(
