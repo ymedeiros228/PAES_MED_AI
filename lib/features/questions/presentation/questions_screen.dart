@@ -391,6 +391,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             approved: q.approved,
                             examBoard: q.examBoard,
                           );
+                          final subjStyle = subjectStyle(q.subject);
                           return PlaylistTile(
                             title: '${q.subject} · ${q.topic}',
                             subtitle: () {
@@ -399,7 +400,8 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                               return '${q.year} · ${q.difficulty} · $short';
                             }(),
                             badge: badge,
-                            leadingIcon: Icons.quiz_outlined,
+                            badgeColor: subjStyle.color.f22,
+                            leadingIcon: subjStyle.icon,
                             active: i == selected,
                             onPlay: () {
                               setState(() => selected = i);

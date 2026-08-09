@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +9,7 @@ import '../data/study_prefs_providers.dart';
 import '../theme/app_theme.dart';
 
 /// Banner mínimo: só alerta se backend morto. Sucesso = linha discreta ou nada.
+/// Auto-retry a cada 10s quando offline — recupera sem precisar de botão.
 class BackendStatusBanner extends ConsumerStatefulWidget {
   const BackendStatusBanner({super.key});
 
@@ -17,11 +20,34 @@ class BackendStatusBanner extends ConsumerStatefulWidget {
 class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   bool? online;
   String? lastError;
+  Timer? _retryTimer;
+  int _retrySeconds = 10;
 
   @override
   void initState() {
     super.initState();
     _check();
+  }
+
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _retrySeconds--);
+      if (_retrySeconds <= 0) {
+        t.cancel();
+        _check();
+      }
+    });
   }
 
   Future<void> _check() async {
@@ -32,13 +58,16 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
           online = true;
           lastError = null;
         });
+        _retryTimer?.cancel();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           online = false;
           lastError = humanApiError(e, fallback: 'Aplicativo sem internet.');
+          _retrySeconds = 10;
         });
+        _startAutoRetry();
       }
     }
   }
@@ -63,11 +92,11 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
             subtitle: Text(
               lastError ??
                   'Feche e abra de novo pelo ícone PAES MED AI · Hoje pode ter sessão salva.',
-              style: TextStyle(color: cs.onErrorContainer.withOpacity(0.9), fontSize: 12),
+              style: TextStyle(color: cs.onErrorContainer.f90, fontSize: 12),
             ),
             trailing: FilledButton(
               onPressed: _check,
-              child: const Text('Tentar'),
+              child: Text(_retrySeconds > 0 ? 'Tentar ($_retrySeconds)' : 'Tentar'),
             ),
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 
@@ -458,6 +459,7 @@ class StatsStrip extends StatelessWidget {
 }
 
 /// Barra de fases da sessão (mínima, tipo player).
+/// Estados: done (check verde), current (primary preenchido), upcoming (cinza).
 class PhaseProgressBar extends StatelessWidget {
   const PhaseProgressBar({
     required this.phases,
@@ -480,28 +482,61 @@ class PhaseProgressBar extends StatelessWidget {
           for (var i = 0; i < phases.length; i++) ...[
             if (i > 0)
               Expanded(
-                child: Container(
-                  height: 2,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  height: 3,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
-                  color: i <= currentIndex ? cs.primary : cs.outlineVariant,
+                  decoration: BoxDecoration(
+                    color: i <= currentIndex ? cs.primary : cs.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
             InkWell(
               onTap: onSelect == null ? null : () => onSelect!(i),
               borderRadius: BorderRadius.circular(kRadiusHighlight),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: i == currentIndex ? cs.primary : cs.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(kRadiusHighlight),
-                ),
-                child: Text(
-                  phases[i],
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: i == currentIndex ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
-                        fontWeight: FontWeight.w700,
+              child: Tooltip(
+                message: phases[i],
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: i == currentIndex
+                        ? cs.primary
+                        : i < currentIndex
+                            ? cs.primaryContainer.f65
+                            : cs.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(kRadiusHighlight),
+                    border: i < currentIndex && i != currentIndex
+                        ? Border.all(color: cs.primary.f38, width: 1)
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (i < currentIndex) ...[
+                        Icon(
+                          Icons.check_rounded,
+                          size: 14,
+                          color: cs.primary,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        phases[i],
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: i == currentIndex
+                                  ? cs.onPrimary
+                                  : i < currentIndex
+                                      ? cs.primary
+                                      : cs.onSurface.f72,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -789,7 +824,7 @@ class SkeletonList extends StatelessWidget {
 }
 
 /// Alternativa A–E em painéis clicáveis (sessão / simulado).
-class ChoiceOptionTile extends StatelessWidget {
+class ChoiceOptionTile extends StatefulWidget {
   const ChoiceOptionTile({
     required this.index,
     required this.label,
@@ -809,71 +844,125 @@ class ChoiceOptionTile extends StatelessWidget {
   final bool? revealCorrect;
 
   @override
+  State<ChoiceOptionTile> createState() => _ChoiceOptionTileState();
+}
+
+class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
+  bool _hover = false;
+
+  void _handleTap() {
+    if (widget.onTap == null) return;
+    // Haptic feedback sutil ao selecionar uma alternativa.
+    HapticFeedback.selectionClick();
+    widget.onTap!();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final letter = index >= 0 && index < 5 ? 'ABCDE'[index] : '?';
-    Color border = cs.outlineVariant.withOpacity(0.75);
+    final letter = widget.index >= 0 && widget.index < 5 ? 'ABCDE'[widget.index] : '?';
+    Color border = cs.outlineVariant.f60;
     Color bg = cs.surface;
     Color letterBg = cs.surfaceContainerHigh;
-    Color letterFg = cs.onSurface.withOpacity(0.75);
-    if (revealCorrect == true) {
+    Color letterFg = cs.onSurface.f72;
+    IconData? trailingIcon;
+
+    if (widget.revealCorrect == true) {
       border = cs.primary.f55;
       bg = cs.primaryContainer.f45;
       letterBg = cs.primary;
       letterFg = cs.onPrimary;
-    } else if (revealCorrect == false && selected) {
+      trailingIcon = Icons.check_circle_rounded;
+    } else if (widget.revealCorrect == false && widget.selected) {
       border = cs.error.f45;
       bg = cs.errorContainer.f35;
       letterBg = cs.error;
       letterFg = cs.onError;
-    } else if (selected) {
+      trailingIcon = Icons.cancel_rounded;
+    } else if (widget.selected) {
       border = cs.primary.f55;
       bg = cs.primaryContainer.f38;
       letterBg = cs.primary;
       letterFg = cs.onPrimary;
+    } else if (_hover && widget.enabled) {
+      border = cs.outlineVariant.f85;
+      bg = cs.surfaceContainerHigh.f50;
     }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(kRadiusButton),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(kRadiusButton),
-              border: Border.all(color: border, width: selected || revealCorrect != null ? 1.4 : 1),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: letterBg,
-                    borderRadius: BorderRadius.circular(kRadiusControl),
-                  ),
-                  child: Text(
-                    letter,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: letterFg,
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
+      child: MouseRegion(
+        cursor: widget.enabled && widget.onTap != null
+            ? SystemMouseCursors.click
+            : MouseCursor.defer,
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.enabled ? _handleTap : null,
+            borderRadius: BorderRadius.circular(kRadiusButton),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(kRadiusButton),
+                border: Border.all(
+                  color: border,
+                  width: widget.selected || widget.revealCorrect != null ? 1.4 : 1,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.35),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Letra A/B/C/D/E com animação de scale ao selecionar
+                  AnimatedScale(
+                    scale: widget.selected || widget.revealCorrect != null ? 1.08 : 1.0,
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: letterBg,
+                        borderRadius: BorderRadius.circular(kRadiusControl),
+                      ),
+                      child: Text(
+                        letter,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: letterFg,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.label,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            height: 1.35,
+                            color: widget.revealCorrect == true
+                                ? cs.onPrimaryContainer
+                                : null,
+                            fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
+                          ),
+                    ),
+                  ),
+                  // Ícone de feedback (certo/errado) ao revelar gabarito
+                  if (trailingIcon != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(
+                      trailingIcon,
+                      size: 22,
+                      color: widget.revealCorrect == true ? cs.primary : cs.error,
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),

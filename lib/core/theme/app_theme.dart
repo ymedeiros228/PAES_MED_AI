@@ -323,6 +323,28 @@ extension AppThemeContext on BuildContext {
   bool get isDark => Theme.of(this).brightness == Brightness.dark;
 }
 
+/// Cor e ícone por disciplina — para identidade visual rápida nas listas.
+/// Cada disciplina tem uma cor de destaque (não interfere no tema, só no badge/ícone).
+class SubjectStyle {
+  final Color color;
+  final IconData icon;
+  const SubjectStyle(this.color, this.icon);
+}
+
+SubjectStyle subjectStyle(String? subject) {
+  final s = (subject ?? '').toLowerCase();
+  if (s.contains('biolog')) return const SubjectStyle(Color(0xFF4CAF50), Icons.biotech_rounded);
+  if (s.contains('química') || s.contains('quimica')) return const SubjectStyle(Color(0xFFAB47BC), Icons.science_rounded);
+  if (s.contains('física') || s.contains('fisica')) return const SubjectStyle(Color(0xFFEF6C00), Icons.bolt_rounded);
+  if (s.contains('matem')) return const SubjectStyle(Color(0xFF42A5F5), Icons.calculate_rounded);
+  if (s.contains('portugu') || s.contains('linguag')) return const SubjectStyle(Color(0xFFEC407A), Icons.menu_book_rounded);
+  if (s.contains('hist')) return const SubjectStyle(Color(0xFF8D6E63), Icons.account_balance_rounded);
+  if (s.contains('geog')) return const SubjectStyle(Color(0xFF66BB6A), Icons.public_rounded);
+  if (s.contains('filo')) return const SubjectStyle(Color(0xFF78909C), Icons.psychology_rounded);
+  if (s.contains('soc')) return const SubjectStyle(Color(0xFF5C6BC0), Icons.groups_rounded);
+  return const SubjectStyle(Color(0xFF1FA887), Icons.quiz_outlined); // default = teal
+}
+
 /// Tokens de opacidade pré-computados — evita criar novo Color a cada build.
 /// Uso: `cs.onSurface.f72` em vez de `cs.onSurface.withOpacity(0.72)`.
 extension FadeColor on Color {

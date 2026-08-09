@@ -148,6 +148,12 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     if (q == null || selected == null || revealed) return;
     final correct = selected == q.correctIndex;
     stopwatch.stop();
+    // Haptic feedback: acerto = leve, erro = forte (sensação tátil de feedback)
+    if (correct) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
     if (!correct) {
       setState(() {
         revealed = true;
@@ -469,14 +475,50 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           const SizedBox(height: 12),
           FilledButton(onPressed: selected == null ? null : _submit, child: const Text('Responder')),
         ] else ...[
-          Text(
-            selected == q.correctIndex
-                ? 'Correto!'
-                : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: selected == q.correctIndex ? Colors.green : Colors.red,
-            ).copyWith(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize),
+          // Animacao de entrada do feedback (slide + fade) — sensação de revelação
+          AnimatedSize(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeOutCubic,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.15),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              ),
+              child: Container(
+                key: ValueKey('feedback_${selected == q.correctIndex}_$pendingErrorPick'),
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      selected == q.correctIndex
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      size: 24,
+                      color: selected == q.correctIndex ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        selected == q.correctIndex
+                            ? 'Correto!'
+                            : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: selected == q.correctIndex ? Colors.green : Colors.red,
+                        ).copyWith(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           if (pendingErrorPick) ...[
             const SizedBox(height: 8),
