@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -675,6 +677,9 @@ class _ConstellationMapState extends State<ConstellationMap>
     with TickerProviderStateMixin {
   late final AnimationController _twinkle;
   late final AnimationController _grow;
+  late final AnimationController _shootingStar;
+  double _shootingStarProgress = -1; // -1 = inativa
+  Timer? _shootingStarTimer;
 
   @override
   void initState() {
@@ -687,12 +692,42 @@ class _ConstellationMapState extends State<ConstellationMap>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..forward();
+    // Estrela cadente: dispara a cada 8-15 segundos
+    _shootingStar = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _scheduleNextShootingStar();
+  }
+
+  void _scheduleNextShootingStar() {
+    // Delay aleatório entre 8 e 15 segundos
+    final delay = Duration(seconds: 8 + DateTime.now().millisecond % 8);
+    _shootingStarTimer = Timer(delay, _fireShootingStar);
+  }
+
+  void _fireShootingStar() {
+    if (!mounted) return;
+    _shootingStarProgress = 0;
+    _shootingStar
+      ..reset()
+      ..forward();
+    _shootingStar.addListener(() {
+      if (!mounted) return;
+      setState(() => _shootingStarProgress = _shootingStar.value);
+      if (_shootingStar.isCompleted) {
+        setState(() => _shootingStarProgress = -1);
+        _scheduleNextShootingStar();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _shootingStarTimer?.cancel();
     _twinkle.dispose();
     _grow.dispose();
+    _shootingStar.dispose();
     super.dispose();
   }
 
@@ -828,6 +863,7 @@ class _ConstellationMapState extends State<ConstellationMap>
                 twinkleValue: _twinkle.value,
                 growValue: Curves.easeOutCubic.transform(_grow.value),
                 accuracy: widget.accuracy,
+                shootingStarProgress: _shootingStarProgress,
               ),
               child: const SizedBox.expand(),
             ),
@@ -916,6 +952,7 @@ class _ConstellationPainter extends CustomPainter {
     required this.twinkleValue,
     required this.growValue,
     required this.accuracy,
+    required this.shootingStarProgress,
   });
 
   final List<bool> activeDays;
@@ -926,12 +963,23 @@ class _ConstellationPainter extends CustomPainter {
   final double twinkleValue;
   final double growValue;
   final double accuracy;
+  // -1 = sem estrela cadente; 0..1 = progresso da travessia
+  final double shootingStarProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
     final cellW = size.width / cols;
     final cellH = size.height / rows;
     final starRadius = (cellW * 0.18).clamp(3.0, 8.0);
+
+    // Estrelas de fundo (cosmo) — pontos minúsculos fixos
+    // Usa seed determinística para não mudar a cada frame
+    _drawBackgroundStars(canvas, size);
+
+    // Estrela cadente (se ativa)
+    if (shootingStarProgress >= 0 && shootingStarProgress <= 1.0) {
+      _drawShootingStar(canvas, size, shootingStarProgress);
+    }
 
     // Posições das estrelas ativas
     final starPositions = <Offset>[];
@@ -1035,10 +1083,86 @@ class _ConstellationPainter extends CustomPainter {
     }
   }
 
+  /// Desenha estrelas de fundo minúsculas (cosmo) com posições determinísticas.
+  void _drawBackgroundStars(Canvas canvas, Size size) {
+    // Gerador determinístico baseado no tamanho
+    final rng = _SeededRandom(size.width.toInt() * 31 + size.height.toInt());
+    final bgStarPaint = Paint()..style = PaintingStyle.fill;
+    for (var i = 0; i < 40; i++) {
+      final x = rng.nextDouble() * size.width;
+      final y = rng.nextDouble() * size.height;
+      final r = 0.5 + rng.nextDouble() * 1.2;
+      // Piscar suavemente
+      final phase = (i * 0.17) % 1.0;
+      final alpha = 0.08 + 0.12 * ((twinkleValue + phase) % 1.0);
+      bgStarPaint.color = Colors.white.withOpacity(alpha);
+      canvas.drawCircle(Offset(x, y), r, bgStarPaint);
+    }
+  }
+
+  /// Desenha uma estrela cadente que cruza o céu diagonalmente.
+  void _drawShootingStar(Canvas canvas, Size size, double progress) {
+    // Trajetória: canto sup-esq para inf-dir
+    final startX = size.width * 0.05;
+    final startY = size.height * 0.1;
+    final endX = size.width * 0.95;
+    final endY = size.height * 0.7;
+    final headX = startX + (endX - startX) * progress;
+    final headY = startY + (endY - startY) * progress;
+
+    // Cauda: 8 pontos que diminuem em opacidade
+    final tailLen = 60.0;
+    final dx = (endX - startX) / ((endX - startX).abs() + 0.01);
+    final dy = (endY - startY) / ((endY - startY).abs() + 0.01);
+    final dirLen = (Offset(dx, dy).distance);
+    final ndx = dx / dirLen;
+    final ndy = dy / dirLen;
+
+    for (var i = 0; i < 12; i++) {
+      final t = i / 12.0;
+      final tailX = headX - ndx * tailLen * t;
+      final tailY = headY - ndy * tailLen * t;
+      final alpha = (1.0 - t) * 0.6 * (1.0 - (progress * 0.5));
+      final paint = Paint()
+        ..color = Colors.white.withOpacity(alpha)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(tailX, tailY), 2.0 * (1.0 - t * 0.7), paint);
+    }
+
+    // Cabeça brilhante
+    final headPaint = Paint()
+      ..color = Colors.white.withOpacity(0.9 * (1.0 - progress * 0.3))
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(headX, headY), 3.0, headPaint);
+
+    // Halo da cabeça
+    final haloPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.white.withOpacity(0.4 * (1.0 - progress * 0.3)),
+          Colors.white.withOpacity(0),
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(headX, headY), radius: 12));
+    canvas.drawCircle(Offset(headX, headY), 12, haloPaint);
+  }
+
   @override
   bool shouldRepaint(_ConstellationPainter oldDelegate) =>
       oldDelegate.twinkleValue != twinkleValue ||
-      oldDelegate.growValue != growValue;
+      oldDelegate.growValue != growValue ||
+      oldDelegate.shootingStarProgress != shootingStarProgress;
+}
+
+/// Gerador pseudo-aleatório simples com seed determinística.
+class _SeededRandom {
+  _SeededRandom(this.seed);
+  final int seed;
+  int _state = 0;
+
+  double nextDouble() {
+    _state = (_state + 1) * 1103515245 + seed;
+    return ((_state & 0x7FFFFFFF) / 0x7FFFFFFF).toDouble();
+  }
 }
 
 class StaggeredFadeIn extends StatefulWidget {
