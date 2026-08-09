@@ -97,10 +97,12 @@ if exist "assets\branding\app_icon.ico" (
 
 echo.
 echo == passo 4/5 — copiar backend + dados ==
-REM Copia todos os .py do backend (exceto __pycache__)
-for %%F in (backend\*.py) do copy /y "%%F" "%OUT%\backend\" >nul
-copy /y backend\requirements.txt "%OUT%\backend\" >nul
-if exist "backend\.env.example" copy /y backend\.env.example "%OUT%\backend\" >nul
+REM Copia o backend recursivamente, sem segredos nem ambientes locais.
+robocopy "backend" "%OUT%\backend" /E /XF ".env" "requirements-dev.txt" /XD "__pycache__" ".venv" ".pytest_cache" ".ruff_cache" "tests" >nul
+if errorlevel 8 (
+  echo ERRO: nao foi possivel copiar o backend completo para o pacote.
+  goto :erro
+)
 copy /y COMO_LIGAR.md "%OUT%\" >nul
 if exist "README.md" copy /y README.md "%OUT%\" >nul
 if exist "data\ACERVO.md" copy /y "data\ACERVO.md" "%OUT%\data\" >nul
@@ -134,6 +136,14 @@ if not exist "%OUT%\app\flutter_windows.dll" (
 REM Gate minimo pos-copia
 if not exist "%OUT%\backend\services_extra.py" (
   echo ERRO: services_extra.py ausente no dist.
+  goto :erro
+)
+if not exist "%OUT%\backend\routers\ai.py" (
+  echo ERRO: router de IA ausente no dist.
+  goto :erro
+)
+if not exist "%OUT%\backend\requirements.txt" (
+  echo ERRO: requirements.txt ausente no dist.
   goto :erro
 )
 if not exist "%OUT%\Iniciar_PAES_MED_AI.bat" (
