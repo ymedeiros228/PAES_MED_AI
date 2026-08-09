@@ -13,6 +13,7 @@ from ingest_pdf import (
     compute_year_statuses,
     list_pdf_inventory,
     pair_prova_gabarito,
+    sanitize_question_statements,
 )
 from schemas import (
     OpenFolderRequest,
@@ -440,9 +441,15 @@ def api_edital_coverage() -> dict[str, Any]:
 
 @router.post("/api/library/reprocess")
 def api_library_reprocess() -> dict[str, Any]:
-    """Estatísticas são derivadas do SQLite; reindex embeddings + confirmação."""
+    """Limpa enunciados persistidos e reindexa a base."""
+    sanitized = sanitize_question_statements()
     indexed = index_all_questions()
-    return {"ok": True, "message": "Base reprocessada (frequência/perfil recalculam na leitura).", "rag": indexed}
+    return {
+        "ok": True,
+        "message": "Base reprocessada e enunciados saneados.",
+        "sanitizedStatements": sanitized,
+        "rag": indexed,
+    }
 
 @router.get("/api/backups")
 def api_list_backups() -> list[dict[str, str]]:

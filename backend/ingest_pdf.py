@@ -68,6 +68,28 @@ AREA_SUBJECT_MAP = (
     (re.compile(r"FILOSOFIA", re.I), "Filosofia"),
 )
 
+_EXAM_HEADER_RE = re.compile(
+    r"processo\s+seletivo\s+de\s+acesso\s+à\s+educação\s+superior",
+    re.IGNORECASE,
+)
+_PDF_GID_RE = re.compile(r"(?:/gid\d+\s*)+", re.IGNORECASE)
+_HEADER_PAGE_RE = re.compile(
+    r"(?:19|20)\d{2}\s+\d{1,3}\s+|\b\d{1,3}\s+(?=[A-ZÀ-Ý\"“])"
+)
+
+
+def clean_question_statement(statement: str) -> str:
+    """Remove artefatos de cabeçalho do PDF sem tocar nos números do conteúdo."""
+    cleaned = statement.replace("\r", " ")
+    had_pdf_header = bool(_EXAM_HEADER_RE.search(cleaned) or _PDF_GID_RE.search(cleaned))
+    cleaned = _EXAM_HEADER_RE.sub(" ", cleaned)
+    cleaned = _PDF_GID_RE.sub(" ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    # Após retirar o cabeçalho e os /gid, sobra ``ano página`` no início.
+    if had_pdf_header:
+        cleaned = _HEADER_PAGE_RE.sub("", cleaned, count=1)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
 NATUREZA_BIO = re.compile(
     r"(?i)\b(c[eé]lula|mitose|meiose|gene|alelo|dna|rna|ecossistema|fotoss[ií]ntese|"
     r"evolu[cç][aã]o|mendel|heredit|prote[ií]na|enzima|v[ií]rus|bact[eé]ria|"
@@ -313,7 +335,7 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
         # Sempre A–E em ordem de índice (gabarito A=0)
         opts = [opts_by_letter.get(chr(65 + i), "") for i in range(5)]
         statement = body[: by_pos[0][0]].strip() if by_pos else body
-        statement = re.sub(r"\s+", " ", statement)[:1200]
+        statement = clean_question_statement(statement)[:1200]
         if not statement:
             continue
         real_opts = sum(1 for o in opts if o and "(revisar)" not in o)
@@ -1149,3 +1171,21 @@ def parse_pdf_file(path: Path, kind: str, year: int | None = None, subject: str 
     preview = save_preview(kind, path.name, questions, text)
     preview["needsOcr"] = needs_ocr
     return preview
+
+
+def sanitize_question_statements() -> int:
+    """Limpa enunciados persistidos e retorna quantos registros mudaram."""
+    changed = 0
+    with db() as conn:
+        rows = conn.execute("SELECT id, statement FROM questions").fetchall()
+        for row in rows:
+            original = str(row["statement"] or "")
+            cleaned = clean_question_statement(original)
+            if cleaned != original:
+                conn.execute(
+                    "UPDATE questions SET statement=? WHERE id=?",
+                    (cleaned, row["id"]),
+                )
+                changed += 1
+        conn.commit()
+    return changed
