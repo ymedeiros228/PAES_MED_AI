@@ -1348,9 +1348,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: sessionQuestions.isEmpty ? 0 : (qIndex + 1) / sessionQuestions.length,
-                  minHeight: 4,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(
+                    begin: 0,
+                    end: sessionQuestions.isEmpty ? 0 : (qIndex + 1) / sessionQuestions.length,
+                  ),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    minHeight: 4,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

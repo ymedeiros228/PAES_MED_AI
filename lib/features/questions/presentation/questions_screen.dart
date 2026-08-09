@@ -213,29 +213,38 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     FilterChip(
                       label: const Text('Só UEMA'),
                       selected: examBoard == 'UEMA_PAES' && !officialWithGab,
-                      onSelected: (v) => _resetPage(() {
-                        officialWithGab = false;
-                        examBoard = v ? 'UEMA_PAES' : null;
-                        source = null;
-                      }),
+                      onSelected: (v) {
+                        HapticFeedback.selectionClick();
+                        _resetPage(() {
+                          officialWithGab = false;
+                          examBoard = v ? 'UEMA_PAES' : null;
+                          source = null;
+                        });
+                      },
                     ),
                     FilterChip(
                       label: const Text('Oficiais com gabarito'),
                       selected: officialWithGab,
-                      onSelected: (v) => _resetPage(() {
-                        officialWithGab = v;
-                        if (v) {
-                          examBoard = 'UEMA_PAES';
-                          source = 'oficial';
-                        } else {
-                          source = null;
-                        }
-                      }),
+                      onSelected: (v) {
+                        HapticFeedback.selectionClick();
+                        _resetPage(() {
+                          officialWithGab = v;
+                          if (v) {
+                            examBoard = 'UEMA_PAES';
+                            source = 'oficial';
+                          } else {
+                            source = null;
+                          }
+                        });
+                      },
                     ),
                     FilterChip(
                       label: const Text('Medicina'),
                       selected: medicine,
-                      onSelected: (v) => _resetPage(() => medicine = v),
+                      onSelected: (v) {
+                        HapticFeedback.selectionClick();
+                        _resetPage(() => medicine = v);
+                      },
                     ),
                   ],
                 ),
@@ -283,7 +292,10 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                         FilterChip(
                           label: const Text('Similares'),
                           selected: similares,
-                          onSelected: (v) => _resetPage(() => similares = v),
+                          onSelected: (v) {
+                            HapticFeedback.selectionClick();
+                            _resetPage(() => similares = v);
+                          },
                         ),
                       ],
                     ),
