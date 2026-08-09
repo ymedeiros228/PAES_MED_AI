@@ -72,13 +72,22 @@ if not exist "%PACKAGE%\VERSION.txt" (
 )
 
 echo == passo 4/5 - registrar a versao da build ==
+if not exist "pubspec.yaml" (
+  echo ERRO: pubspec.yaml nao foi encontrado para identificar a versao.
+  goto :erro
+)
+for /f "tokens=2" %%V in ('findstr /b /c:"version:" pubspec.yaml') do set "APP_VERSION=%%V"
+if not defined APP_VERSION (
+  echo ERRO: nao foi possivel ler a versao de pubspec.yaml.
+  goto :erro
+)
 for /f "delims=" %%H in ('git rev-parse --short HEAD') do set "COMMIT=%%H"
 for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set "STAMP=%%T"
 if not defined COMMIT (
   echo ERRO: nao foi possivel identificar o commit da build.
   goto :erro
 )
-> "%PACKAGE%\VERSION.txt" echo 1.0.0+17 - commit %COMMIT% - empacotado em %STAMP%
+> "%PACKAGE%\VERSION.txt" echo %APP_VERSION% - commit %COMMIT% - empacotado em %STAMP%
 
 if not exist "%PACKAGE%\VERSION.txt" (
   echo ERRO: nao foi possivel gravar a identificacao da build.
