@@ -670,12 +670,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          active == null
-                              ? 'Nenhum provedor ativo'
-                              : 'Ativo: ${active == 'gemini' ? 'Gemini' : 'OpenAI'}'
-                                  '${activeModel == null ? '' : ' · $activeModel'}',
-                          style: Theme.of(context).textTheme.titleSmall,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                active == null
+                                    ? 'Nenhum provedor ativo'
+                                    : 'Ativo: ${active == 'gemini' ? 'Gemini' : 'OpenAI'}'
+                                        '${activeModel == null ? '' : ' · $activeModel'}',
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Atualizar estado dos provedores',
+                              onPressed: aiBusy ? null : _loadAiConfig,
+                              icon: const Icon(Icons.refresh_rounded),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         CompactStatus(
@@ -1058,7 +1069,7 @@ class _AiProviderEditor extends StatelessWidget {
             Icon(
               ok ? Icons.check_circle_outline : Icons.radio_button_unchecked,
               size: 20,
-              color: ok ? Colors.green : null,
+              color: ok ? Theme.of(context).colorScheme.primary : null,
             ),
             const SizedBox(width: 8),
             Expanded(
