@@ -41,6 +41,10 @@ class AIProviderConfigRequest(BaseModel):
     model: str | None = Field(default=None, max_length=160)
 
 
+class AIProviderTestRequest(BaseModel):
+    provider: Literal["gemini", "openai"] | None = None
+
+
 class AnswerRequest(BaseModel):
     questionId: str
     correct: bool

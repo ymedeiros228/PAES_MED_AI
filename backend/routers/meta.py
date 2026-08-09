@@ -11,12 +11,13 @@ from ai_state import (
     provider_configured,
     provider_key,
     provider_model,
+    set_provider_status,
     validate_secret,
 )
 from ai_state import state as ai_state
 from api_helpers import validate_gemini_key, validate_openai_key
 from db import DATA_DIR, db
-from schemas import AIProviderConfigRequest
+from schemas import AIProviderConfigRequest, AIProviderTestRequest
 from seed import seed
 from services_core import (
     curation_health,
@@ -102,8 +103,8 @@ def api_ai_configure(payload: AIProviderConfigRequest) -> dict[str, Any]:
 
 
 @router.post("/api/ai/test")
-def api_ai_test() -> dict[str, Any]:
-    provider = ai_state().get("activeProvider")
+def api_ai_test(payload: AIProviderTestRequest | None = None) -> dict[str, Any]:
+    provider = payload.provider if payload and payload.provider else ai_state().get("activeProvider")
     if provider is None:
         return {
             "ok": False,
@@ -128,12 +129,14 @@ def api_ai_test() -> dict[str, Any]:
             status = "connection"
         else:
             status = "unavailable"
+        set_provider_status(provider, status)
         return {
             "ok": False,
             "status": status,
             "message": detail,
             **ai_state(),
         }
+    set_provider_status(provider, "working")
     return {
         "ok": True,
         "status": "working",

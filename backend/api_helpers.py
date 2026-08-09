@@ -18,6 +18,7 @@ from ai_state import (
     provider_key,
     provider_model,
     remember_model,
+    set_provider_status,
 )
 from config import MAX_UPLOAD_BYTES, OPENAI_TIMEOUT_SECONDS
 from schemas import ChatMessage
@@ -182,12 +183,16 @@ def _ask_gemini(
             )
             if model != provider_model("gemini"):
                 remember_model("gemini", model)
+            set_provider_status("gemini", "working")
             return answer
         except GeminiValidationError as error:
             if error.kind == "key":
+                set_provider_status("gemini", "key_rejected")
                 raise _gemini_http_error(error) from error
             if error.kind not in {"unavailable", "quota"}:
+                set_provider_status("gemini", "unavailable")
                 raise _gemini_http_error(error) from error
+            set_provider_status("gemini", "quota" if error.kind == "quota" else "unavailable")
             last = error
     if last is not None:
         raise _gemini_http_error(
@@ -285,6 +290,7 @@ def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage]
         answer = (response.output_text or "").strip()
         if not answer:
             raise HTTPException(status_code=502, detail="IA retornou vazio.")
+        set_provider_status("openai", "working")
         return answer
     except HTTPException:
         raise
@@ -292,12 +298,16 @@ def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage]
         kind = type(exc).__name__
         if kind == "RateLimitError":
             detail = "A chave OpenAI foi aceita, mas atingiu o limite de uso ou cota."
+            set_provider_status("openai", "quota")
         elif kind in {"AuthenticationError", "PermissionDeniedError"}:
             detail = "A chave OpenAI foi recusada. Verifique se ela está ativa e autorizada."
+            set_provider_status("openai", "key_rejected")
         elif kind in {"APITimeoutError", "APIConnectionError"}:
             detail = "Não foi possível alcançar a OpenAI dentro do tempo limite."
+            set_provider_status("openai", "connection")
         else:
             detail = f"Falha OpenAI ({kind})."
+            set_provider_status("openai", "unavailable")
         raise HTTPException(
             status_code=502,
             detail=detail,

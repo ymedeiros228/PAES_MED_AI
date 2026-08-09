@@ -41,6 +41,12 @@ def _usable(value: str) -> bool:
     return bool(value and value != _PLACEHOLDER)
 
 
+_statuses = {
+    "gemini": "configured" if _usable(GEMINI_API_KEY) else "not_configured",
+    "openai": "configured" if _usable(OPENAI_API_KEY) else "not_configured",
+}
+
+
 def validate_secret(value: str) -> str:
     value = value.strip()
     if not value or len(value) > MAX_API_KEY_LENGTH:
@@ -62,6 +68,16 @@ def provider_model(provider: Provider) -> str:
 
 def provider_configured(provider: Provider) -> bool:
     return _usable(provider_key(provider))
+
+
+def provider_status(provider: Provider) -> str:
+    with _lock:
+        return str(_statuses[provider])
+
+
+def set_provider_status(provider: Provider, status: str) -> None:
+    with _lock:
+        _statuses[provider] = status
 
 
 def configured_provider() -> str | None:
@@ -90,9 +106,11 @@ def state() -> dict[str, object]:
         "geminiConfigured": provider_configured("gemini"),
         "geminiModel": provider_model("gemini"),
         "geminiKeyLast4": masked_key("gemini"),
+        "geminiStatus": provider_status("gemini"),
         "openaiConfigured": provider_configured("openai"),
         "openaiModel": provider_model("openai"),
         "openaiKeyLast4": masked_key("openai"),
+        "openaiStatus": provider_status("openai"),
     }
 
 
@@ -158,6 +176,7 @@ def configure_provider(provider: Provider, key: str, model: str | None = None) -
         env_updates["GEMINI_MODEL" if provider == "gemini" else "OPENAI_MODEL"] = clean_model
     with _lock:
         _values[provider] = {"key": clean_key, "model": clean_model}
+        _statuses[provider] = "working"
         if provider == "gemini" and model is not None:
             global _gemini_model_explicit
             _gemini_model_explicit = True

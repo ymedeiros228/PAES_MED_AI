@@ -37,8 +37,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late final TextEditingController examCtrl;
   List<dynamic> backups = [];
   final _focusNode = FocusNode();
-  late final TextEditingController aiKeyCtrl;
-  String aiProvider = 'gemini';
+  late final TextEditingController geminiKeyCtrl;
+  late final TextEditingController openAiKeyCtrl;
   bool aiConfigLoading = true;
   bool aiBusy = false;
 
@@ -65,7 +65,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
-    aiKeyCtrl = TextEditingController();
+    geminiKeyCtrl = TextEditingController();
+    openAiKeyCtrl = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -79,7 +80,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void dispose() {
     _focusNode.dispose();
     examCtrl.dispose();
-    aiKeyCtrl.dispose();
+    geminiKeyCtrl.dispose();
+    openAiKeyCtrl.dispose();
     super.dispose();
   }
 
@@ -111,8 +113,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _configureAi() async {
-    final key = aiKeyCtrl.text.trim();
+  Future<void> _configureAi(String provider) async {
+    final controller = provider == 'gemini' ? geminiKeyCtrl : openAiKeyCtrl;
+    final key = controller.text.trim();
     if (key.isEmpty) {
       setState(() => aiMsg = 'Cole a chave do provedor para validar.');
       return;
@@ -123,11 +126,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
     try {
       final data = await apiClient.post('/api/ai/config', {
-        'provider': aiProvider,
+        'provider': provider,
         'apiKey': key,
       });
       final map = Map<String, dynamic>.from(data as Map);
-      aiKeyCtrl.clear();
+      controller.clear();
       setState(() => aiMsg = map['message']?.toString() ?? 'Provedor configurado.');
       await _loadAiConfig();
     } catch (e) {
@@ -137,13 +140,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _testAi() async {
+  Future<void> _testAi(String provider) async {
     setState(() {
       aiBusy = true;
       aiMsg = null;
     });
     try {
-      final data = await apiClient.post('/api/ai/test', {});
+      final data = await apiClient.post('/api/ai/test', {'provider': provider});
       final map = Map<String, dynamic>.from(data as Map);
       setState(() => aiMsg = map['message']?.toString() ?? 'Teste concluído.');
       await _loadAiConfig();
@@ -692,63 +695,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               : Icons.radio_button_unchecked,
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: aiProvider,
-                          decoration: const InputDecoration(labelText: 'Provedor'),
-                          items: const [
-                            DropdownMenuItem(value: 'gemini', child: Text('Gemini')),
-                            DropdownMenuItem(value: 'openai', child: Text('OpenAI')),
-                          ],
-                          onChanged: aiBusy
-                              ? null
-                              : (value) {
-                                  if (value != null) setState(() => aiProvider = value);
-                                },
+                        _AiProviderEditor(
+                          name: 'Gemini',
+                          hint: 'Cole a chave do Google AI Studio',
+                          controller: geminiKeyCtrl,
+                          configured: geminiConfigured,
+                          status: aiConfig!['geminiStatus']?.toString(),
+                          busy: aiBusy,
+                          onSave: () => _configureAi('gemini'),
+                          onTest: () => _testAi('gemini'),
                         ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: aiKeyCtrl,
-                          obscureText: true,
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          decoration: const InputDecoration(
-                            labelText: 'Chave do provedor',
-                            hintText: 'Cole a chave aqui',
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          aiProvider == 'gemini'
-                              ? 'Chave gratuita: Google AI Studio (aistudio.google.com).'
-                              : 'Use uma chave da sua conta OpenAI.',
-                          style: Theme.of(context).textTheme.bodySmall,
+                        const SizedBox(height: 12),
+                        _AiProviderEditor(
+                          name: 'OpenAI',
+                          hint: 'Cole a chave da sua conta OpenAI',
+                          controller: openAiKeyCtrl,
+                          configured: openAiConfigured,
+                          status: aiConfig!['openaiStatus']?.toString(),
+                          busy: aiBusy,
+                          onSave: () => _configureAi('openai'),
+                          onTest: () => _testAi('openai'),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'A chave fica somente neste computador, fora dos backups e do repositório.',
+                          'As chaves ficam somente neste computador, fora das cópias de segurança e do repositório.',
                           style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            FilledButton.tonalIcon(
-                              onPressed: aiBusy ? null : _configureAi,
-                              icon: const Icon(Icons.save_outlined),
-                              label: const Text('Salvar e validar'),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: aiBusy ? null : _testAi,
-                              icon: const Icon(Icons.network_check_outlined),
-                              label: const Text('Testar configuração'),
-                            ),
-                            IconButton(
-                              tooltip: 'Atualizar estado da IA',
-                              onPressed: aiBusy ? null : _loadAiConfig,
-                              icon: const Icon(Icons.refresh_rounded),
-                            ),
-                          ],
                         ),
                         if (aiBusy)
                           const CompactStatus(
@@ -1032,6 +1003,101 @@ class _ThemeModePicker extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AiProviderEditor extends StatelessWidget {
+  const _AiProviderEditor({
+    required this.name,
+    required this.hint,
+    required this.controller,
+    required this.configured,
+    required this.status,
+    required this.busy,
+    required this.onSave,
+    required this.onTest,
+  });
+
+  final String name;
+  final String hint;
+  final TextEditingController controller;
+  final bool configured;
+  final String? status;
+  final bool busy;
+  final VoidCallback onSave;
+  final VoidCallback onTest;
+
+  String get _statusText {
+    switch (status) {
+      case 'working':
+        return 'Funcionando';
+      case 'quota':
+        return 'Cota esgotada';
+      case 'key_rejected':
+        return 'Chave recusada';
+      case 'connection':
+        return 'Sem conexão com o provedor';
+      case 'unavailable':
+        return 'Provedor indisponível';
+      case 'configured':
+        return 'Chave cadastrada, ainda não testada';
+      default:
+        return configured ? 'Chave cadastrada, ainda não testada' : 'Não configurada';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ok = status == 'working';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(
+              ok ? Icons.check_circle_outline : Icons.radio_button_unchecked,
+              size: 20,
+              color: ok ? Colors.green : null,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$name · $_statusText',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: true,
+          autocorrect: false,
+          enableSuggestions: false,
+          decoration: InputDecoration(
+            labelText: 'Chave $name',
+            hintText: hint,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: busy ? null : onSave,
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('Salvar e validar'),
+            ),
+            OutlinedButton.icon(
+              onPressed: busy || !configured ? null : onTest,
+              icon: const Icon(Icons.network_check_outlined),
+              label: const Text('Validar chave salva'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

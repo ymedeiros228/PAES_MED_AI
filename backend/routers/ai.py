@@ -7,7 +7,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from ai_state import provider_model
+from ai_state import configured_provider, provider_configured, provider_model
 from api_helpers import (
     _ask_gemini,
     _ask_openai,
@@ -61,8 +61,12 @@ def retrieval_query(message: str, history: list[Any] | None) -> str:
     return message
 
 
-@router.post("/api/chat", response_model=ChatResponse)
-def api_chat(payload: ChatRequest) -> ChatResponse:
+def _api_chat(
+    payload: ChatRequest,
+    *,
+    provider_override: str | None = None,
+    force_offline: bool = False,
+) -> ChatResponse:
     citations: list[dict[str, Any]] = []
     rag_query = retrieval_query(payload.message, payload.history)
     try:
@@ -108,7 +112,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
     ]
     has_local = bool(q_cites) or bool((context or "").strip())
 
-    provider = _configured_provider()
+    provider = None if force_offline else (provider_override or _configured_provider())
     if provider is None:
         from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
 
@@ -250,6 +254,22 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         hasLocalBase=True,
         uncited=False,
     )
+
+
+@router.post("/api/chat", response_model=ChatResponse)
+def api_chat(payload: ChatRequest) -> ChatResponse:
+    try:
+        return _api_chat(payload)
+    except HTTPException as first_error:
+        if configured_provider() == "gemini" and provider_configured("openai"):
+            try:
+                return _api_chat(payload, provider_override="openai")
+            except HTTPException:
+                pass
+        try:
+            return _api_chat(payload, force_offline=True)
+        except HTTPException:
+            raise first_error from None
 
 @router.post("/api/rag/reindex")
 def api_rag_reindex() -> dict[str, Any]:
