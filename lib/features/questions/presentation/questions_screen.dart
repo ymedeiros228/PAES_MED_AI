@@ -376,11 +376,13 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 return Column(
                   children: [
                     Expanded(
-                      child: ListView.builder(
-                        controller: _scrollCtrl,
-                        padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
-                        itemCount: items.length,
-                        itemBuilder: (context, i) {
+                      child: RepaintBoundary(
+                        child: ListView.builder(
+                          controller: _scrollCtrl,
+                          padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
+                          cacheExtent: 500, // pré-renderiza além da viewport — scroll smoother
+                          itemCount: items.length,
+                          itemBuilder: (context, i) {
                           final q = items[i];
                           final badge = _badgeLabel(
                             source: q.source,
@@ -404,6 +406,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             },
                           );
                         },
+                      ),
                       ),
                     ),
                     Padding(

@@ -182,7 +182,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final focus = ref.watch(focusModeProvider);
 
     return async.when(
-      loading: () => const SoftLoader(label: 'Montando o dia…'),
+      loading: () => PageBody(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const PageHeader(title: 'Hoje', eyebrow: 'PAES MED AI'),
+            const SkeletonCard(lines: 3),
+            const SizedBox(height: 12),
+            const SkeletonCard(lines: 2),
+            const SizedBox(height: 12),
+            const SkeletonCard(lines: 2),
+          ],
+        ),
+      ),
       error: (e, _) => EmptyState(
         title: 'Não foi possível carregar',
         subtitle: humanApiError(e, fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
@@ -594,9 +606,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   if (wc.isEmpty) return const SizedBox.shrink();
                                   return Padding(
                                     padding: const EdgeInsets.only(top: 12),
-                                    child: WeekClosePanel(
-                                      weekClose: wc,
-                                      onCloseWeek: _closeWeek,
+                                    child: RepaintBoundary(
+                                      child: WeekClosePanel(
+                                        weekClose: wc,
+                                        onCloseWeek: _closeWeek,
+                                      ),
                                     ),
                                   );
                                 },
@@ -823,12 +837,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 ),
                               const SizedBox(height: 8),
                               SectionLabel('Seu ritmo'),
-                              StatsStrip(
-                                items: [
-                                  ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                                  ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                                  ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                                ],
+                              RepaintBoundary(
+                                child: StatsStrip(
+                                  items: [
+                                    ('${data['streakDays'] ?? 0}', 'dias seguidos'),
+                                    ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
+                                    ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
+                                  ],
+                                ),
                               ),
                               if (!focus) ...[
                                 SectionLabel('Explorar'),

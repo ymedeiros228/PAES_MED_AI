@@ -11,60 +11,73 @@ final questionsProvider = FutureProvider.autoDispose
   return paesApi.questions(filters.isEmpty ? null : filters);
 });
 
+/// Providers das telas âncora usam keepAlive para preservar o cache
+/// entre navegações (stale-while-revalidate): ao voltar para a tela,
+/// os dados aparecem instantaneamente e o refreshTick força refetch.
 final dashboardProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.dashboard();
 });
 
 final frequencyProvider =
     FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.frequency();
 });
 
 final medicineProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.medicine();
 });
 
 final bankProfileProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.bankProfile();
 });
 
 final lessonsProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.lessons();
 });
 
 final essaysProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.essays();
 });
 
 final revisionsApiProvider =
     FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.revisions();
 });
 
 final flashcardsProvider =
     FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.flashcards(dueOnly: true);
 });
 
 final flashcardsAllProvider =
     FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.flashcards();
 });
 
 final flashcardsAxesProvider =
     FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  ref.keepAlive();
   ref.watch(refreshTickProvider);
   return paesApi.flashcards(axesOnly: true);
 });

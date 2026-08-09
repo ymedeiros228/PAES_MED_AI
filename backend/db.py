@@ -222,6 +222,40 @@ def init_db() -> None:
             WHERE exam_board IS NULL OR TRIM(exam_board)=''
             """
         )
+        # Índices para acelerar consultas frequentes (listagens, filtros, dashboards).
+        # CREATE INDEX IF NOT EXISTS é idempotente — seguro rodar a cada startup.
+        conn.executescript(
+            """
+            CREATE INDEX IF NOT EXISTS idx_questions_subject_topic
+                ON questions(subject, topic);
+            CREATE INDEX IF NOT EXISTS idx_questions_year
+                ON questions(year);
+            CREATE INDEX IF NOT EXISTS idx_questions_exam_board
+                ON questions(exam_board);
+            CREATE INDEX IF NOT EXISTS idx_questions_approved
+                ON questions(approved);
+            CREATE INDEX IF NOT EXISTS idx_answers_question_id
+                ON answers(question_id);
+            CREATE INDEX IF NOT EXISTS idx_answers_answered_at
+                ON answers(answered_at);
+            CREATE INDEX IF NOT EXISTS idx_answers_subject_topic
+                ON answers(subject, topic);
+            CREATE INDEX IF NOT EXISTS idx_revisions_next_due
+                ON revisions(next_due);
+            CREATE INDEX IF NOT EXISTS idx_flashcards_next_due
+                ON flashcards(next_due);
+            CREATE INDEX IF NOT EXISTS idx_study_plan_plan_day
+                ON study_plan(plan_days, day_index);
+            CREATE INDEX IF NOT EXISTS idx_study_gaps_status
+                ON study_gaps(status);
+            CREATE INDEX IF NOT EXISTS idx_lessons_subject_topic
+                ON lessons(subject, topic);
+            CREATE INDEX IF NOT EXISTS idx_essays_created_at
+                ON essays(created_at);
+            CREATE INDEX IF NOT EXISTS idx_ingest_jobs_status
+                ON ingest_jobs(status);
+            """
+        )
         conn.commit()
 
 

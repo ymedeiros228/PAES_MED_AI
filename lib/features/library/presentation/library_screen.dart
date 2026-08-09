@@ -42,6 +42,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool showFirstRunCoach = false;
   bool _wantSemana1Scroll = false;
   bool _didSemana1Scroll = false;
+  Timer? _searchDebounce;
 
   bool _textFieldFocused() {
     final primary = FocusManager.instance.primaryFocus;
@@ -128,6 +129,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _focusNode.dispose();
     _searchCtrl.dispose();
     super.dispose();
@@ -895,6 +897,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  /// Debounce: dispara a busca 350ms após o usuário parar de digitar.
+  /// Evita 1 HTTP por tecla e cancela buscas anteriores obsoletas.
+  void _onSearchChanged(String _) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), _runSearch);
+  }
+
   Future<void> _runSearch() async {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) {
@@ -1266,6 +1275,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   border: const OutlineInputBorder(),
                 ),
                 onSubmitted: (_) => _runSearch(),
+                onChanged: _onSearchChanged,
               ),
               const SizedBox(height: 8),
               Wrap(

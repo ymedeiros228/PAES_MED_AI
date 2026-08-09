@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -10,12 +11,28 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+class ApiTimeoutException implements Exception {
+  const ApiTimeoutException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
 
   static const _configuredBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+
+  /// Timeouts progressivos (anteriormente 60s/180s/300s — usuário achava que travou).
+  /// GET 15s: leituras devem ser rápidas (SQLite local + índices).
+  /// POST 60s: IA pode demorar, mas 60s é o limite razoável para feedback.
+  /// Upload 180s: PDFs grandes podem demorar para parsear.
+  static const _getTimeout = Duration(seconds: 15);
+  static const _postTimeout = Duration(seconds: 60);
+  static const _deleteTimeout = Duration(seconds: 15);
+  static const _uploadTimeout = Duration(seconds: 180);
 
   String get baseUrl {
     if (_configuredBaseUrl.trim().isNotEmpty) {
@@ -29,26 +46,38 @@ class ApiClient {
 
   Future<dynamic> get(String path, [Map<String, String>? query]) async {
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
-    final response = await _client.get(uri).timeout(const Duration(seconds: 60));
-    return _decode(response);
+    try {
+      final response = await _client.get(uri).timeout(_getTimeout);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Tempo esgotado (15s). O servidor local pode estar ocupado.');
+    }
   }
 
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     final uri = Uri.parse('$baseUrl$path');
-    final response = await _client
-        .post(
-          uri,
-          headers: const {'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode(body),
-        )
-        .timeout(const Duration(seconds: 180));
-    return _decode(response);
+    try {
+      final response = await _client
+          .post(
+            uri,
+            headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode(body),
+          )
+          .timeout(_postTimeout);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Tempo esgotado (60s). A IA pode estar lenta — tente de novo.');
+    }
   }
 
   Future<dynamic> delete(String path) async {
     final uri = Uri.parse('$baseUrl$path');
-    final response = await _client.delete(uri).timeout(const Duration(seconds: 30));
-    return _decode(response);
+    try {
+      final response = await _client.delete(uri).timeout(_deleteTimeout);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Tempo esgotado (15s). Tente de novo.');
+    }
   }
 
   Future<dynamic> postMultipart(
@@ -62,9 +91,13 @@ class ApiClient {
     final req = http.MultipartRequest('POST', uri);
     req.fields.addAll(fields);
     req.files.add(await http.MultipartFile.fromPath(fileField, filePath, filename: filename));
-    final streamed = await req.send().timeout(const Duration(seconds: 300));
-    final response = await http.Response.fromStream(streamed);
-    return _decode(response);
+    try {
+      final streamed = await req.send().timeout(_uploadTimeout);
+      final response = await http.Response.fromStream(streamed);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Upload esgotou (180s). PDFs muito grandes podem falhar.');
+    }
   }
 
   dynamic _decode(http.Response response) {

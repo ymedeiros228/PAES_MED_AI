@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'api_client.dart';
+
 /// Mensagens de erro legíveis no app de estudo (Ciclo CJ).
 /// Evita `ClientException` / stack em inglês na UI.
 String humanApiError(Object e, {String fallback = 'Não deu para carregar — tente de novo.'}) {
+  // ApiTimeoutException já traz mensagem humanizada específica — usa direto.
+  if (e is ApiTimeoutException) return e.message;
   final s = e.toString().toLowerCase();
   if (s.contains('socket') ||
       s.contains('connection refused') ||

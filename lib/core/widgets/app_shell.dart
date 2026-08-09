@@ -222,8 +222,9 @@ class AppShell extends ConsumerWidget {
               decoration: BoxDecoration(gradient: AppTheme.scaffoldGradientFor(bright)),
               child: Column(
                 children: [
-                  const BackendStatusBanner(),
-                  const ExamDateSyncBanner(),
+                  // Banners de status mudam raramente — isolam do conteúdo.
+                  const RepaintBoundary(child: BackendStatusBanner()),
+                  const RepaintBoundary(child: ExamDateSyncBanner()),
                   Expanded(child: child),
                 ],
               ),
@@ -233,8 +234,10 @@ class AppShell extends ConsumerWidget {
               return Scaffold(
                 body: Row(
                   children: [
-                    rail,
-                    Expanded(child: body),
+                    // Isola repaints do rail (animações de hover/selection)
+                    // do conteúdo da rota ativa — evita rebuild em cascata.
+                    RepaintBoundary(child: rail),
+                    Expanded(child: RepaintBoundary(child: body)),
                   ],
                 ),
               );
@@ -512,6 +515,7 @@ class _NavTileState extends State<_NavTile> {
           child: MouseRegion(
             onEnter: (_) => setState(() => hovered = true),
             onExit: (_) => setState(() => hovered = false),
+            cursor: SystemMouseCursors.click,
             child: Material(
               color: bg,
               borderRadius: BorderRadius.circular(12),
