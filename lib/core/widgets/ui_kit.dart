@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Layout padding padrão das telas âncora.
 const kPagePadding = EdgeInsets.fromLTRB(28, 20, 28, 40);
 const kPageMaxWidth = 1080.0;
@@ -46,6 +48,7 @@ class PageHeader extends StatelessWidget {
     this.eyebrow,
     this.subtitle,
     this.trailing,
+    this.badge,
     super.key,
   });
 
@@ -53,6 +56,8 @@ class PageHeader extends StatelessWidget {
   final String? eyebrow;
   final String? subtitle;
   final Widget? trailing;
+  /// Badge contextual ao lado do título (ex: "oficial", "treino", contador).
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -71,19 +76,43 @@ class PageHeader extends StatelessWidget {
           ),
           const SizedBox(height: 6),
         ],
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.4,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.4,
+                    ),
               ),
+            ),
+            if (badge != null && badge!.isNotEmpty) ...[
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer.f65,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  badge!,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: cs.onPrimaryContainer,
+                      ),
+                ),
+              ),
+            ],
+          ],
         ),
         Container(
           margin: const EdgeInsets.only(top: 10),
           width: 36,
           height: 3,
           decoration: BoxDecoration(
-            color: cs.primary.withOpacity(0.85),
+            color: cs.primary.f85,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -92,7 +121,7 @@ class PageHeader extends StatelessWidget {
           Text(
             subtitle!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurface.withOpacity(0.72),
+                  color: cs.onSurface.f72,
                   height: 1.4,
                 ),
           ),
@@ -178,7 +207,7 @@ class SectionLabel extends StatelessWidget {
               child: Text(
                 hint!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurface.withOpacity(0.72),
+                      color: cs.onSurface.f72,
                     ),
               ),
             ),
@@ -266,9 +295,9 @@ class _PlaylistTileState extends State<PlaylistTile> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final bg = widget.active
-        ? cs.primaryContainer.withOpacity(0.55)
+        ? cs.primaryContainer.f55
         : hover
-            ? cs.surfaceContainerHigh.withOpacity(0.55)
+            ? cs.surfaceContainerHigh.f55
             : Colors.transparent;
 
     return MouseRegion(
@@ -287,8 +316,8 @@ class _PlaylistTileState extends State<PlaylistTile> {
           borderRadius: BorderRadius.circular(kRadiusButton),
           border: Border.all(
             color: widget.active
-                ? cs.primary.withOpacity(0.22)
-                : (hover ? cs.outlineVariant.withOpacity(0.65) : Colors.transparent),
+                ? cs.primary.f22
+                : (hover ? cs.outlineVariant.f65 : Colors.transparent),
           ),
         ),
         child: Material(
@@ -314,7 +343,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                         children: [
                           Icon(
                             widget.leadingIcon,
-                            color: widget.active ? cs.primary : cs.onSurface.withOpacity(0.45),
+                            color: widget.active ? cs.primary : cs.onSurface.f45,
                             size: 26,
                           ),
                           const SizedBox(width: kGap12),
@@ -367,7 +396,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                             widget.secondary!,
                           ] else if (widget.onPlay != null) ...[
                             const SizedBox(width: 4),
-                            Icon(Icons.chevron_right_rounded, color: cs.onSurface.withOpacity(0.35)),
+                            Icon(Icons.chevron_right_rounded, color: cs.onSurface.f35),
                           ],
                         ],
                       ),
@@ -391,33 +420,38 @@ class StatsStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SurfacePanel(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      child: Row(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0)
-              Container(width: 1, height: 36, color: cs.outlineVariant),
-            Expanded(
-              child: Column(
-                children: [
-                  Text(
-                    items[i].$1,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.3,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    items[i].$2,
-                    style: Theme.of(context).textTheme.bodySmall,
+    // Semântica agregada para leitores de tela: "5 dias seguidos, 42 min hoje, 78% acerto"
+    final semanticLabel = items.map((e) => '${e.$1} ${e.$2}').join(', ');
+    return Semantics(
+      label: semanticLabel,
+      child: SurfacePanel(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Row(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0)
+                Container(width: 1, height: 36, color: cs.outlineVariant),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      items[i].$1,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      items[i].$2,
+                      style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
             ),
           ],
         ],
+      ),
       ),
     );
   }
@@ -504,7 +538,7 @@ class QuietEmpty extends StatelessWidget {
               child: Icon(
                 icon ?? Icons.hourglass_empty_rounded,
                 size: 18,
-                color: cs.onSurface.withOpacity(0.55),
+                color: cs.onSurface.f55,
               ),
             ),
             const SizedBox(width: 12),
@@ -512,7 +546,7 @@ class QuietEmpty extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.72),
+                      color: cs.onSurface.f72,
                       height: 1.35,
                     ),
               ),
@@ -551,7 +585,7 @@ class CompactStatus extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurface.withOpacity(0.72),
+                      color: cs.onSurface.f72,
                     ),
               ),
             ),
@@ -578,7 +612,7 @@ class SoftLoader extends StatelessWidget {
       child: CircularProgressIndicator(
         strokeWidth: compact ? 2.2 : 2.6,
         color: cs.primary,
-        backgroundColor: cs.primaryContainer.withOpacity(0.55),
+        backgroundColor: cs.primaryContainer.f55,
       ),
     );
     if (compact && label == null) {
@@ -597,7 +631,7 @@ class SoftLoader extends StatelessWidget {
                 label!,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.withOpacity(0.72),
+                      color: cs.onSurface.f72,
                     ),
               ),
             ],
@@ -783,18 +817,18 @@ class ChoiceOptionTile extends StatelessWidget {
     Color letterBg = cs.surfaceContainerHigh;
     Color letterFg = cs.onSurface.withOpacity(0.75);
     if (revealCorrect == true) {
-      border = cs.primary.withOpacity(0.55);
-      bg = cs.primaryContainer.withOpacity(0.45);
+      border = cs.primary.f55;
+      bg = cs.primaryContainer.f45;
       letterBg = cs.primary;
       letterFg = cs.onPrimary;
     } else if (revealCorrect == false && selected) {
-      border = cs.error.withOpacity(0.45);
-      bg = cs.errorContainer.withOpacity(0.35);
+      border = cs.error.f45;
+      bg = cs.errorContainer.f35;
       letterBg = cs.error;
       letterFg = cs.onError;
     } else if (selected) {
-      border = cs.primary.withOpacity(0.55);
-      bg = cs.primaryContainer.withOpacity(0.38);
+      border = cs.primary.f55;
+      bg = cs.primaryContainer.f38;
       letterBg = cs.primary;
       letterFg = cs.onPrimary;
     }
@@ -893,7 +927,7 @@ class StudyCheckRow extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     decoration: done ? TextDecoration.lineThrough : null,
-                    color: done ? cs.onSurface.withOpacity(0.55) : null,
+                    color: done ? cs.onSurface.f55 : null,
                     fontWeight: done ? FontWeight.w500 : FontWeight.w600,
                   ),
             ),
@@ -934,7 +968,7 @@ class HeroStudyStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textOn = isDark ? Colors.white : const Color(0xFF0A1628);
-    final muted = textOn.withOpacity(0.72);
+    final muted = textOn.f72;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 20),
@@ -1037,7 +1071,7 @@ class MissionQuestCard extends StatelessWidget {
     final statusColor = switch (status) {
       MissionQuestStatus.open => cs.tertiary,
       MissionQuestStatus.active => cs.primary,
-      MissionQuestStatus.cleared => cs.primary.withOpacity(0.85),
+      MissionQuestStatus.cleared => cs.primary.f85,
     };
     return SurfacePanel(
       margin: const EdgeInsets.only(bottom: 14),
@@ -1102,19 +1136,19 @@ class DeltaChip extends StatelessWidget {
     String text;
     if (d == null) {
       bg = cs.surfaceContainerHighest;
-      fg = cs.onSurface.withOpacity(0.65);
+      fg = cs.onSurface.f65;
       text = label;
     } else if (d > 0.05) {
       bg = cs.primaryContainer;
       fg = cs.onPrimaryContainer;
       text = '+${d.toStringAsFixed(1)} $label';
     } else if (d < -0.05) {
-      bg = cs.errorContainer.withOpacity(0.55);
+      bg = cs.errorContainer.f55;
       fg = cs.onErrorContainer;
       text = '${d.toStringAsFixed(1)} $label';
     } else {
       bg = cs.surfaceContainerHighest;
-      fg = cs.onSurface.withOpacity(0.65);
+      fg = cs.onSurface.f65;
       text = '· $label';
     }
     return Container(
@@ -1204,7 +1238,7 @@ class SoftTimeline extends StatelessWidget {
                           Text(
                             items[i].subtitle!,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.72),
+                                  color: cs.onSurface.f72,
                                 ),
                           ),
                         if (items[i].trailing != null) ...[
@@ -1304,7 +1338,7 @@ class SessionResumeBanner extends StatelessWidget {
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurface.withOpacity(0.72),
+                  color: cs.onSurface.f72,
                 ),
           ),
           const SizedBox(height: 12),
@@ -1335,7 +1369,7 @@ class SessionResumeBanner extends StatelessWidget {
                       child: Text(
                         '${i + 1}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: i <= step ? cs.onPrimary : cs.onSurface.withOpacity(0.72),
+                              color: i <= step ? cs.onPrimary : cs.onSurface.f72,
                               fontWeight: FontWeight.w800,
                               fontSize: 10,
                             ),
@@ -1346,7 +1380,7 @@ class SessionResumeBanner extends StatelessWidget {
                       labels[i],
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             fontWeight: i == step ? FontWeight.w800 : FontWeight.w500,
-                            color: i == step ? cs.primary : cs.onSurface.withOpacity(0.72),
+                            color: i == step ? cs.primary : cs.onSurface.f72,
                           ),
                     ),
                   ],

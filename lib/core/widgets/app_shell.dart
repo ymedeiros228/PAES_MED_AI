@@ -165,7 +165,7 @@ class AppShell extends ConsumerWidget {
                               child: Text(
                                 group.label.toUpperCase(),
                                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurface.withOpacity(0.38),
+                                      color: cs.onSurface.f38,
                                       letterSpacing: 1.4,
                                     ),
                               ),
@@ -203,13 +203,11 @@ class AppShell extends ConsumerWidget {
                         ),
                         if (expanded) ...[
                           const SizedBox(height: 10),
-                          Text(
-                            'Tecla F: modo foco',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.42),
-                                  fontSize: 11,
-                                ),
-                          ),
+                          // Barra de atalhos visível — descobre atalhos sem ler docs.
+                          _ShortcutHint(label: 'F', desc: 'Foco'),
+                          _ShortcutHint(label: 'Ctrl+T', desc: 'Tema'),
+                          _ShortcutHint(label: 'R', desc: 'Recarregar'),
+                          _ShortcutHint(label: 'S', desc: 'Sessão'),
                         ],
                       ],
                     ),
@@ -322,7 +320,7 @@ class AppShell extends ConsumerWidget {
                 children: [
                   if (examSyncPending)
                     Material(
-                      color: cs.tertiaryContainer.withOpacity(0.85),
+                      color: cs.tertiaryContainer.f85,
                       child: SafeArea(
                         top: false,
                         child: ListTile(
@@ -499,7 +497,7 @@ class _NavTileState extends State<_NavTile> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final bg = widget.selected
-        ? cs.primaryContainer.withOpacity(0.85)
+        ? cs.primaryContainer.f85
         : hovered
             ? cs.surfaceContainerHigh.withOpacity(0.6)
             : Colors.transparent;
@@ -543,7 +541,7 @@ class _NavTileState extends State<_NavTile> {
                           Icon(
                             widget.item.icon,
                             size: 22,
-                            color: widget.selected ? cs.primary : cs.onSurface.withOpacity(0.55),
+                            color: widget.selected ? cs.primary : cs.onSurface.f55,
                           ),
                           if (widget.badge)
                             Positioned(
@@ -613,7 +611,7 @@ class _RailControl extends StatelessWidget {
         button: true,
         label: label,
         child: Material(
-          color: active ? cs.primaryContainer.withOpacity(0.55) : cs.surfaceContainer.withOpacity(0.5),
+          color: active ? cs.primaryContainer.f55 : cs.surfaceContainer.withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             onTap: onTap,
@@ -656,4 +654,47 @@ class _NavItem {
   final String path;
   final String label;
   final IconData icon;
+}
+
+/// Atalho de teclado visível no rodapé do rail — chip discreto com tecla + descrição.
+class _ShortcutHint extends StatelessWidget {
+  const _ShortcutHint({required this.label, required this.desc});
+  final String label;
+  final String desc;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: cs.outlineVariant.f60),
+            ),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                    fontFamily: 'Segoe UI',
+                  ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            desc,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: cs.onSurface.f55,
+                  fontSize: 11,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
 }

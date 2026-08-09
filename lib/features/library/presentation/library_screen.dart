@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -1197,7 +1198,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (busy)
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.secondaryContainer.withOpacity(0.45),
+                  color: cs.secondaryContainer.f45,
                   child: Row(
                     children: [
                       const SoftLoader(compact: true),
@@ -1215,7 +1216,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (showFirstRunCoach && officialN == 0) ...[
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.withOpacity(0.55),
+                  color: cs.primaryContainer.f55,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
+import '../theme/app_theme.dart';
 import 'ui_kit.dart';
 
 /// Fecho da semana — payload `weekClose` de dashboard/today (Ciclo AM).
@@ -96,7 +97,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
         ),
         SurfacePanel(
           margin: const EdgeInsets.only(bottom: 12),
-          color: closed ? cs.primaryContainer.withOpacity(0.35) : null,
+          color: closed ? cs.primaryContainer.f35 : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -106,7 +107,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 Text(
                   'Cartões para revisar: $due',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurface.withOpacity(0.65),
+                        color: cs.onSurface.f65,
                       ),
                 ),
               ],
@@ -229,7 +230,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 Text(
                   exportMsg!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurface.withOpacity(0.65),
+                        color: cs.onSurface.f65,
                       ),
                 ),
               ],

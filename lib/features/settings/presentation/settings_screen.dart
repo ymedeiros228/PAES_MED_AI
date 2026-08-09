@@ -4,6 +4,7 @@ import 'dart:io' show File, Platform;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -323,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               SectionLabel('Sobre'),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.35),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.f35,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -412,7 +413,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ? 'Build Windows · modo desenvolvimento (flutter run)'
                                     : 'Build de estudo',
                                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
+                                      color: Theme.of(context).colorScheme.onSurface.f72,
                                     ),
                               ),
                             const SizedBox(height: 6),
@@ -420,7 +421,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
                               'e redação com missões (treino local · não banca).',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
+                                    color: Theme.of(context).colorScheme.onSurface.f72,
                                   ),
                             ),
                           ],
@@ -471,7 +472,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             return 'Prova em $d dia(s) · contagem local';
                           }(),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
+                                color: Theme.of(context).colorScheme.onSurface.f72,
                               ),
                         ),
                       ),

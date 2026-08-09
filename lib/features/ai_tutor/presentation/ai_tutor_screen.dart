@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -333,7 +334,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                               hintText: 'Sua dúvida… (Ctrl+Enter envia)',
                               filled: true,
                               fillColor:
-                                  cs.surfaceContainerHigh.withOpacity(0.45),
+                                  cs.surfaceContainerHigh.f45,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide.none,
@@ -436,7 +437,7 @@ class _MessageBubble extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: scheme.primaryContainer.withOpacity(0.55),
+                  color: scheme.primaryContainer.f55,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

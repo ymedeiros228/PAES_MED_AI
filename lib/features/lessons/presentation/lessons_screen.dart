@@ -2,6 +2,7 @@
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -208,7 +209,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         child: Text(
                           'Cole pelo menos ~80 caracteres de legenda.',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.withOpacity(0.55),
+                                color: cs.onSurface.f55,
                               ),
                         ),
                       ),
@@ -223,7 +224,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                 SectionLabel('Última importação'),
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.withOpacity(0.35),
+                  color: cs.primaryContainer.f35,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

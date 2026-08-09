@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -362,7 +363,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         Icon(
                           Icons.playlist_add_check_rounded,
                           size: 40,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.22),
+                          color: Theme.of(context).colorScheme.onSurface.f22,
                         ),
                         const SizedBox(height: 10),
                         QuietEmpty(
@@ -717,7 +718,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
                             style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72),
+                                  color: Theme.of(ctx).colorScheme.onSurface.f72,
                                 ),
                           ),
                       ],
@@ -755,7 +756,7 @@ class _GapDot extends StatelessWidget {
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              color: active ? cs.onPrimary : cs.onSurface.withOpacity(0.72),
+              color: active ? cs.onPrimary : cs.onSurface.f72,
             ),
       ),
     );

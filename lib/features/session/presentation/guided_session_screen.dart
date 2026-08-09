@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -534,7 +535,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Boa volta. O próximo passo natural é a Fila do dia.'
                 : 'Houve erro neste bloco — a Fila e o treino do tópico fraco resolvem bem.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurface.withOpacity(0.72),
+                  color: cs.onSurface.f72,
                 ),
           ),
           const SizedBox(height: 10),
@@ -1212,7 +1213,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ? (paused ? 'Pausado · ${current['title']}' : '${current['title']} · ${current['minutes'] ?? '?'} min')
                   : '20 teoria → 30 questões → 10 revisão',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
+                    color: Theme.of(context).colorScheme.onSurface.f72,
                   ),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -644,7 +645,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               ? 'Atalhos: 1–5 tipo de erro · Enter registra'
                               : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.withOpacity(0.45),
+                                color: cs.onSurface.f45,
                               ),
                         ),
                       ],

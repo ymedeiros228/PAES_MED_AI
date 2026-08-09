@@ -514,7 +514,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       Text(
                         'Dica: setas mudam a questão · 1–5 marca gabarito · H grava só as boas',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.72),
+                              color: Theme.of(context).colorScheme.onSurface.f72,
                             ),
                       ),
                       const SizedBox(height: 12),

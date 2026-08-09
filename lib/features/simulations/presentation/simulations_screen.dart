@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -739,7 +740,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 trailing: inSession && report == null
                     ? SurfacePanel(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        color: examLocked ? cs.tertiaryContainer.withOpacity(0.55) : null,
+                        color: examLocked ? cs.tertiaryContainer.f55 : null,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisSize: MainAxisSize.min,
@@ -755,7 +756,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                               Text(
                                 '−$_timeRemainingLabel',
                                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurface.withOpacity(0.65),
+                                      color: cs.onSurface.f65,
                                       fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                               ),
@@ -957,7 +958,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               if (examLocked && report == null)
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.tertiaryContainer.withOpacity(0.45),
+                  color: cs.tertiaryContainer.f45,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -975,7 +976,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       Text(
                         'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.65),
+                              color: cs.onSurface.f65,
                             ),
                       ),
                     ],
@@ -1065,7 +1066,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 SectionLabel('Resultado'),
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.withOpacity(0.35),
+                  color: cs.primaryContainer.f35,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1276,7 +1277,7 @@ class _ModeCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: selected ? cs.primaryContainer.withOpacity(0.55) : cs.surface.withOpacity(0.9),
+        color: selected ? cs.primaryContainer.f55 : cs.surface.withOpacity(0.9),
         borderRadius: BorderRadius.circular(kRadiusPanel),
         child: InkWell(
           onTap: onTap,
@@ -1286,7 +1287,7 @@ class _ModeCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(kRadiusPanel),
               border: Border.all(
-                color: selected ? cs.primary.withOpacity(0.55) : cs.outlineVariant.withOpacity(0.85),
+                color: selected ? cs.primary.f55 : cs.outlineVariant.f85,
                 width: selected ? 1.5 : 1,
               ),
             ),
@@ -1302,7 +1303,7 @@ class _ModeCard extends StatelessWidget {
                       Text(
                         subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.72),
+                              color: cs.onSurface.f72,
                             ),
                       ),
                     ],

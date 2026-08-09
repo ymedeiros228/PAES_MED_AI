@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -303,7 +304,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     Text(
                       'Carregando questões do acervo local…',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurface.withOpacity(0.72),
+                            color: cs.onSurface.f72,
                           ),
                     ),
                   ],
@@ -421,7 +422,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                           Text(
                             'Página ${page + 1} · ${selected + 1} de ${items.length}',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: cs.onSurface.withOpacity(0.72),
+                                  color: cs.onSurface.f72,
                                 ),
                           ),
                           TextButton(

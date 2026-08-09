@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -430,6 +431,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       ),
                       const SizedBox(height: 12),
                       EssayRoseChart(
+                        key: const ValueKey('essay_radar'),
                         axes: axes,
                         averages: avg,
                         labels: labels,
@@ -482,7 +484,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       return Text(
                         'O que olho: $hint',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.72),
+                              color: cs.onSurface.f72,
                             ),
                       );
                     },
@@ -523,7 +525,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 child: Text(
                   '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras · treino local',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.72),
+                        color: cs.onSurface.f72,
                       ),
                 ),
               ),
@@ -539,7 +541,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   child: Text(
                     'Escreva pelo menos ~50 caracteres para corrigir.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurface.withOpacity(0.72),
+                          color: cs.onSurface.f72,
                         ),
                   ),
                 ),
@@ -550,7 +552,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     Icon(
                       _draftRestored ? Icons.history_rounded : Icons.save_outlined,
                       size: 14,
-                      color: cs.onSurface.withOpacity(0.55),
+                      color: cs.onSurface.f55,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -559,7 +561,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                             ? 'Rascunho restaurado · salvo automaticamente no seu PC'
                             : 'Rascunho salvo automaticamente no seu PC',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.55),
+                              color: cs.onSurface.f55,
                             ),
                       ),
                     ),
@@ -575,7 +577,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 SectionLabel('Resultado'),
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.withOpacity(0.35),
+                  color: cs.primaryContainer.f35,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

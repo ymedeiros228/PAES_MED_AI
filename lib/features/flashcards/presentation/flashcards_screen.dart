@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -304,7 +305,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                           ? 'Toque / Space · L lembrei · E esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
                                           : 'Toque / Space para revelar · próxima: ${humanDueLabel(item['next_due']?.toString())}',
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: cs.onSurface.withOpacity(0.55),
+                                            color: cs.onSurface.f55,
                                           ),
                                     ),
                                     const SizedBox(height: 10),

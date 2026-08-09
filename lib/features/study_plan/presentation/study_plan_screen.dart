@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -405,7 +406,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         ),
                       SurfacePanel(
                         margin: const EdgeInsets.only(bottom: 16),
-                        color: cs.primaryContainer.withOpacity(0.35),
+                        color: cs.primaryContainer.f35,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -473,7 +474,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     return SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 8),
                       color: active
-                          ? cs.primaryContainer.withOpacity(0.55)
+                          ? cs.primaryContainer.f55
                           : done
                           ? cs.primaryContainer.withOpacity(0.25)
                           : fromErrors

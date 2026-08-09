@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
+import '../theme/app_theme.dart';
 import 'ui_kit.dart';
 
 String adaptiveTrainPath(String subject, String topic) =>
@@ -347,7 +348,7 @@ Future<void> openTheoryReadSheet(
                           ? 'Passo 2 · Teoria lida — treine o tópico agora.'
                           : 'Passo 1 · Leia o material e marque como lido. Depois treine.',
                       style: Theme.of(ctx).textTheme.labelLarge?.copyWith(
-                            color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72),
+                            color: Theme.of(ctx).colorScheme.onSurface.f72,
                             fontWeight: FontWeight.w600,
                           ),
                     ),

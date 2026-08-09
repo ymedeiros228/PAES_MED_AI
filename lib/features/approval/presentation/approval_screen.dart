@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -177,7 +178,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                     return SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 10),
                   color: active
-                      ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.45)
+                      ? Theme.of(context).colorScheme.primaryContainer.f45
                       : null,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

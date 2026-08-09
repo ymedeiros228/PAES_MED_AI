@@ -275,10 +275,44 @@ class AppTheme {
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          // Transição desktop: slide horizontal sutil + fade (mais fluido que FadeUpwards).
+          TargetPlatform.windows: _SlideFadeTransitionBuilder(),
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: _SlideFadeTransitionBuilder(),
+          TargetPlatform.linux: _SlideFadeTransitionBuilder(),
         },
+      ),
+    );
+  }
+}
+
+/// Transição customizada: slide horizontal 24px + fade — desktop-friendly.
+/// Mais suave que FadeUpwards (que sobe 27px) e mais rápido (180ms vs 300ms).
+class _SlideFadeTransitionBuilder extends PageTransitionsBuilder {
+  const _SlideFadeTransitionBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curve = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return FadeTransition(
+      opacity: curve,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.04, 0), // 24px horizontal sutil
+          end: Offset.zero,
+        ).animate(curve),
+        child: child,
       ),
     );
   }
@@ -287,4 +321,29 @@ class AppTheme {
 extension AppThemeContext on BuildContext {
   ColorScheme get colors => Theme.of(this).colorScheme;
   bool get isDark => Theme.of(this).brightness == Brightness.dark;
+}
+
+/// Tokens de opacidade pré-computados — evita criar novo Color a cada build.
+/// Uso: `cs.onSurface.f72` em vez de `cs.onSurface.withOpacity(0.72)`.
+extension FadeColor on Color {
+  static final _cache = <int, Color>{};
+  Color _f(int alpha255) {
+    final key = (value << 8) | alpha255;
+    return _cache[key] ??= Color.fromARGB(alpha255, red.toInt(), green.toInt(), blue.toInt());
+  }
+
+  Color get f88 => _f(224); // 0.88
+  Color get f72 => _f(184); // 0.72
+  Color get f55 => _f(140); // 0.55
+  Color get f45 => _f(115); // 0.45
+  Color get f38 => _f(97);  // 0.38
+  Color get f35 => _f(89);  // 0.35
+  Color get f22 => _f(56);  // 0.22
+  Color get f85 => _f(217); // 0.85
+  Color get f90 => _f(230); // 0.90
+  Color get f65 => _f(166); // 0.65
+  Color get f60 => _f(153); // 0.60
+  Color get f50 => _f(128); // 0.50
+  Color get f40 => _f(102); // 0.40
+  Color get f30 => _f(77);  // 0.30
 }

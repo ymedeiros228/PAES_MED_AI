@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -155,7 +156,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
               Text(
                 'Use as setas do teclado ou Enter para avançar',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.withOpacity(0.72)),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.f72),
               ),
               if (step == 1) ...[
                 const SizedBox(height: 16),
@@ -214,7 +215,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest.withOpacity(0.55),
+                    color: cs.surfaceContainerHighest.f55,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: cs.outlineVariant),
                   ),
@@ -236,7 +237,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       Text(
                         'Consulte os materiais disponíveis e adicione outros quando precisar.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withOpacity(0.72),
+                              color: cs.onSurface.f72,
                             ),
                       ),
                     ],

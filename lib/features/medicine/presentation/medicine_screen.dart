@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -384,7 +385,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               Text(
                                 curation['message'].toString(),
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.withOpacity(0.72),
+                                      color: cs.onSurface.f72,
                                     ),
                               ),
                             ],

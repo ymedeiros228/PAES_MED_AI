@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -174,7 +175,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                     children: [
                       SurfacePanel(
                         margin: const EdgeInsets.only(bottom: 12),
-                        color: cs.primaryContainer.withOpacity(0.35),
+                        color: cs.primaryContainer.f35,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

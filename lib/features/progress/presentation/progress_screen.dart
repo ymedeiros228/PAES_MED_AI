@@ -187,6 +187,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: EssayRoseChart(
+                        key: const ValueKey('progress_radar'),
                         axes: axes,
                         averages: avg,
                         labels: labels,
@@ -223,7 +224,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         Text(
                           'Só mostra consistência de treino local — zero previsões de aprovação.',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.withOpacity(0.72),
+                                color: cs.onSurface.f72,
                               ),
                         ),
                       ],
@@ -329,11 +330,11 @@ class _ReadableRelief extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             AppTheme.navy,
-            Color.alphaBlend(AppTheme.teal.withOpacity(0.45), AppTheme.navy),
+            Color.alphaBlend(AppTheme.teal.f45, AppTheme.navy),
           ],
         ),
         borderRadius: BorderRadius.circular(kRadiusPanel),
-        border: Border.all(color: AppTheme.teal.withOpacity(0.55)),
+        border: Border.all(color: AppTheme.teal.f55),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

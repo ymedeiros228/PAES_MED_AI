@@ -109,6 +109,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _discardCheckpoint() async {
+    // Confirma antes de descartar — checkpoint pode ter progresso significativo.
+    final phase = checkpoint != null ? _checkpointShort(checkpoint!) : '';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Descartar sessão?'),
+        content: Text(
+          phase.isNotEmpty
+              ? 'Você tem uma sessão em andamento ($phase). '
+                  'Descartar significa perder esse progresso.'
+              : 'Descartar a sessão salva? Você vai começar do zero na próxima.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Descartar')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
     try {
       await apiClient.delete('/api/session/checkpoint');
       setState(() {
@@ -282,7 +301,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       width: 40,
                       height: 3,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.55),
+                        color: Colors.white.f55,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -313,7 +332,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       Text(
                         progress,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.72),
+                              color: Colors.white.f72,
                             ),
                       ),
                     ],
@@ -345,7 +364,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Text(
                       'S inicia a sessão · L abre a fila',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.72),
+                            color: Colors.white.f72,
                           ),
                     ),
                   ],
@@ -390,7 +409,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           if (showFirstRunCoach && !semana1Ok)
                             SurfacePanel(
                               margin: const EdgeInsets.only(bottom: 16),
-                              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.45),
+                              color: Theme.of(context).colorScheme.primaryContainer.f45,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -665,7 +684,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       Text(
                                         'Indicador ${readyScore.toStringAsFixed(0)}/100',
                                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+                                              color: Theme.of(context).colorScheme.onSurface.f55,
                                             ),
                                       ),
                                       const SizedBox(height: 8),
@@ -704,9 +723,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                             final cs = Theme.of(context).colorScheme;
                                             Color bg;
                                             if (closed) {
-                                              bg = cs.primary.withOpacity(0.85);
+                                              bg = cs.primary.f85;
                                             } else if (active) {
-                                              bg = cs.primary.withOpacity(0.35);
+                                              bg = cs.primary.f35;
                                             } else {
                                               bg = cs.onSurface.withOpacity(0.08);
                                             }
@@ -886,7 +905,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 Text(
                                   examDays >= 0 ? 'Prova: $exam' : 'Data da prova: $exam',
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.45),
+                                        color: Theme.of(context).colorScheme.onSurface.f45,
                                       ),
                                 ),
                               ],

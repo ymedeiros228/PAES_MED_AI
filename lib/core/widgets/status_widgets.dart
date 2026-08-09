@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/api_client.dart';
 import '../data/api_error.dart';
 import '../data/study_prefs_providers.dart';
+import '../theme/app_theme.dart';
 
 /// Banner mínimo: só alerta se backend morto. Sucesso = linha discreta ou nada.
 class BackendStatusBanner extends ConsumerStatefulWidget {
@@ -153,7 +154,7 @@ class EmptyState extends StatelessWidget {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: cs.primaryContainer.withOpacity(0.65),
+                    color: cs.primaryContainer.f65,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -173,7 +174,7 @@ class EmptyState extends StatelessWidget {
                   subtitle,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.72),
+                        color: cs.onSurface.f72,
                         height: 1.4,
                       ),
                 ),

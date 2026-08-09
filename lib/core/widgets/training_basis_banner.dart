@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../theme/app_theme.dart';
+
 /// Aviso suave se ainda não há provas oficiais. Some quando base está ok.
 class TrainingBasisBanner extends StatefulWidget {
   const TrainingBasisBanner({
@@ -60,7 +62,7 @@ class _TrainingBasisBannerState extends State<TrainingBasisBanner> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: cs.tertiaryContainer.withOpacity(0.55),
+        color: cs.tertiaryContainer.f55,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
