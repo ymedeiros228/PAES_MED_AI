@@ -3872,6 +3872,7 @@ def run_checks() -> list[Check]:
     # --- Ciclo CL: avançado +4 ---
     pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8", errors="ignore")
     pack_bat = (root / "empacotar_windows.bat").read_text(encoding="utf-8", errors="ignore")
+    update_bat = (root / "atualizar_windows.bat").read_text(encoding="utf-8", errors="ignore")
     ok(
         "ciclo_cl_settings_avancado_groups",
         "SectionLabel('Mídia'" in settings_ck
@@ -6106,11 +6107,14 @@ def run_checks() -> list[Check]:
     ok(
         "ciclo_ha_version_triple_lock",
         bool(pubspec_ver)
-        and pubspec_ver in pack_bat
+        and "APP_VERSION" in pack_bat
+        and "findstr /b /c:" in pack_bat
+        and "git branch --show-current" in pack_bat
+        and "git rev-parse --short HEAD" in pack_bat
         and pubspec_ver in app_ver_ha
         and "kAppVersionLabel" in app_ver_ha
         and "kAppVersionLabel" in settings_ed,
-        f"version {pubspec_ver or '?'}",
+        f"version {pubspec_ver or '?'} dinâmica",
     )
 
     # --- Ciclo HB: pack source + dist hard quando existir ---
@@ -6802,8 +6806,10 @@ def run_checks() -> list[Check]:
     )
     ok(
         "ciclo_ia_settings_desktop",
-        "Desktop build" in settings_ia or "Build Windows" in settings_ia,
-        "Sobre Desktop",
+        "Build de demonstração" in settings_ia
+        or "Desktop build" in settings_ia
+        or "Build Windows" in settings_ia,
+        "Sobre build",
     )
     ok(
         "ciclo_hy_bump_doc",
@@ -7162,9 +7168,18 @@ def run_checks() -> list[Check]:
         "ciclo_iu_version_17",
         "1.0.0+17" in pubspec
         and version_in_ui(settings_ed, ("1.0.0+17",))
-        and "1.0.0+17" in pack_bat
+        and "APP_VERSION" in pack_bat
+        and "git branch --show-current" in pack_bat
+        and "git rev-parse --short HEAD" in pack_bat
         and "1.0.0+17" in app_ver_ht,
-        "version +17 triple",
+        "version +17 com branch e commit dinamicos",
+    )
+    ok(
+        "ciclo_iu_atualizar_branch",
+        "git branch --show-current" in update_bat
+        and "BUILD_BRANCH" in update_bat
+        and "branch %BUILD_BRANCH%" in update_bat,
+        "atalho grava a branch da build",
     )
     ok(
         "ciclo_iu_como_section",

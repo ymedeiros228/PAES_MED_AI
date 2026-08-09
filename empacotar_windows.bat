@@ -4,6 +4,31 @@ cd /d "%~dp0"
 set "PATH=C:\Users\Yuri\flutter\bin;C:\Program Files\Git\cmd;%PATH%"
 
 echo.
+echo == PAES MED AI pack — identificar build ==
+if not exist "pubspec.yaml" (
+  echo ERRO: pubspec.yaml nao foi encontrado.
+  goto :erro
+)
+for /f "tokens=2" %%V in ('findstr /b /c:"version:" pubspec.yaml') do set "APP_VERSION=%%V"
+for /f "delims=" %%B in ('git branch --show-current') do set "BUILD_BRANCH=%%B"
+for /f "delims=" %%H in ('git rev-parse --short HEAD') do set "COMMIT=%%H"
+if not defined APP_VERSION (
+  echo ERRO: nao foi possivel ler a versao de pubspec.yaml.
+  goto :erro
+)
+if not defined BUILD_BRANCH (
+  echo ERRO: nao foi possivel identificar a branch atual.
+  goto :erro
+)
+if not defined COMMIT (
+  echo ERRO: nao foi possivel identificar o commit atual.
+  goto :erro
+)
+echo Versao: %APP_VERSION%
+echo Branch: %BUILD_BRANCH%
+echo Commit: %COMMIT%
+
+echo.
 echo == PAES MED AI pack · passo 1/5 — limpar processos ==
 echo Encerrando app/API se estiverem abertos ^(evita lock do dist^)...
 taskkill /F /IM paes_med_ai.exe >nul 2>nul
@@ -122,7 +147,8 @@ if not exist "%OUT%\branding\app_icon.ico" (
 
 echo.
 echo == passo 5/5 — VERSION + atalho Desktop ==
-echo 1.0.0+17> "%OUT%\VERSION.txt"
+for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set "STAMP=%%T"
+> "%OUT%\VERSION.txt" echo %APP_VERSION% - branch %BUILD_BRANCH% - commit %COMMIT% - empacotado em %STAMP%
 if not exist "%OUT%\VERSION.txt" (
   echo ERRO: VERSION.txt nao gravado no dist.
   goto :erro

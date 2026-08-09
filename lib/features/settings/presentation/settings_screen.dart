@@ -363,6 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       builder: (_) {
                         final isWin = !kIsWeb && Platform.isWindows;
                         var desktopBuild = false;
+                        var buildIdentity = kAppVersionLabel;
                         if (isWin) {
                           try {
                             final exe = Platform.resolvedExecutable;
@@ -370,7 +371,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             // dist layout: .../app/paes_med_ai.exe → ../VERSION.txt
                             final sibling = File(p.join(p.dirname(dir), 'VERSION.txt'));
                             final same = File(p.join(dir, 'VERSION.txt'));
-                            desktopBuild = sibling.existsSync() || same.existsSync();
+                            final buildFile = sibling.existsSync() ? sibling : same;
+                            desktopBuild = buildFile.existsSync();
+                            if (desktopBuild) {
+                              final value = buildFile.readAsStringSync().trim();
+                              if (value.isNotEmpty) buildIdentity = value;
+                            }
                           } catch (_) {}
                         }
                         return Column(
@@ -383,7 +389,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: const Text('Desktop build · pack Windows'),
+                                label: Text('Build de demonstração · $buildIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else

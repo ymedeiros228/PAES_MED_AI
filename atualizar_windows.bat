@@ -82,12 +82,17 @@ if not defined APP_VERSION (
   goto :erro
 )
 for /f "delims=" %%H in ('git rev-parse --short HEAD') do set "COMMIT=%%H"
+for /f "delims=" %%B in ('git branch --show-current') do set "BUILD_BRANCH=%%B"
 for /f "delims=" %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set "STAMP=%%T"
-if not defined COMMIT (
-  echo ERRO: nao foi possivel identificar o commit da build.
+if not defined COMMIT if not defined BUILD_BRANCH (
+  echo ERRO: nao foi possivel identificar branch e commit da build.
   goto :erro
 )
-> "%PACKAGE%\VERSION.txt" echo %APP_VERSION% - commit %COMMIT% - empacotado em %STAMP%
+if not defined BUILD_BRANCH (
+  echo ERRO: nao foi possivel identificar a branch da build.
+  goto :erro
+)
+> "%PACKAGE%\VERSION.txt" echo %APP_VERSION% - branch %BUILD_BRANCH% - commit %COMMIT% - empacotado em %STAMP%
 
 if not exist "%PACKAGE%\VERSION.txt" (
   echo ERRO: nao foi possivel gravar a identificacao da build.
@@ -98,6 +103,7 @@ echo == passo 5/5 - concluir ==
 echo Build atualizada com sucesso.
 echo Pacote: %PACKAGE%
 echo Commit: %COMMIT%
+echo Branch: %BUILD_BRANCH%
 echo Data e hora: %STAMP%
 echo O atalho PAES MED AI usa este pacote atualizado.
 exit /b 0
