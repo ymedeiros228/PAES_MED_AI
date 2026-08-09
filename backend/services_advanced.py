@@ -6,10 +6,11 @@ import json
 import math
 import os
 import re
+import unicodedata
 from datetime import timedelta
 from typing import Any
 
-from db import db, loads_json
+from db import db
 from services_core import list_questions, stats_basis
 from services_extra import generate_similar_question_stub
 from timeutil import iso_in, now_iso
@@ -225,6 +226,294 @@ def _tokenize(text: str) -> list[str]:
     return [t for t in re.findall(r"[a-zA-ZÀ-ÿ0-9]{3,}", text.lower())]
 
 
+_LEXICAL_STOPWORDS = {
+    "a",
+    "ao",
+    "aos",
+    "as",
+    "com",
+    "como",
+    "corpo",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "entre",
+    "essa",
+    "esse",
+    "esta",
+    "este",
+    "explique",
+    "exemplo",
+    "forma",
+    "isso",
+    "mais",
+    "mesmo",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "o",
+    "os",
+    "para",
+    "passo",
+    "por",
+    "qual",
+    "que",
+    "relacao",
+    "resolver",
+    "resolva",
+    "simples",
+    "sobre",
+    "um",
+    "uma",
+    "voce",
+    "diferenca",
+    "durante",
+    "percorre",
+    "parte",
+    "metros",
+    "segundos",
+}
+
+
+def _normalize_lexical(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text.lower())
+    return "".join(char for char in decomposed if not unicodedata.combining(char))
+
+
+def lexical_tokens(text: str) -> list[str]:
+    """Termos comparáveis sem acento, ignorando palavras-função comuns."""
+    normalized = _normalize_lexical(text)
+    return [
+        token
+        for token in re.findall(r"[a-z0-9]{2,}", normalized)
+        if token not in _LEXICAL_STOPWORDS and not token.isdigit()
+    ]
+
+
+def _lexical_question_score(
+    query_terms: list[str],
+    question: dict[str, Any],
+    *,
+    document_frequency: dict[str, int],
+    document_count: int,
+    average_length: float,
+) -> float:
+    fields = (
+        (f"{question.get('subject') or ''} {question.get('topic') or ''}", 4.0),
+        (question.get("subtopic") or "", 3.0),
+        (question.get("statement") or "", 1.7),
+        (question.get("resolution") or "", 0.8),
+        (question.get("macete") or "", 0.6),
+    )
+    weighted_terms: dict[str, float] = {}
+    length = 0
+    for text, weight in fields:
+        tokens = lexical_tokens(text)
+        length += len(tokens)
+        for term in tokens:
+            weighted_terms[term] = weighted_terms.get(term, 0.0) + weight
+
+    score = 0.0
+    k1 = 1.2
+    b = 0.75
+    normalized_length = max(average_length, 1.0)
+    for term in query_terms:
+        tf = weighted_terms.get(term, 0.0)
+        if not tf:
+            continue
+        df = document_frequency.get(term, 0)
+        idf = math.log(1.0 + (document_count - df + 0.5) / (df + 0.5))
+        denominator = tf + k1 * (1.0 - b + b * length / normalized_length)
+        score += idf * (tf * (k1 + 1.0) / denominator)
+    return score
+
+
+def _infer_subject(query_terms: list[str], questions: list[dict[str, Any]]) -> str | None:
+    """Infere a matéria pelo vocabulário da taxonomia já presente no acervo."""
+    subject_scores: dict[str, float] = {}
+    for question in questions:
+        subject = (question.get("subject") or "").strip()
+        if not subject:
+            continue
+        metadata = set(
+            lexical_tokens(
+                f"{subject} {question.get('topic') or ''} "
+                f"{question.get('subtopic') or ''}"
+            )
+        )
+        statement = set(lexical_tokens(question.get("statement") or ""))
+        overlap = 5.0 * len(metadata.intersection(query_terms)) + len(
+            statement.intersection(query_terms)
+        )
+        if overlap:
+            subject_scores[subject] = subject_scores.get(subject, 0.0) + overlap
+    if not subject_scores:
+        return None
+    return max(subject_scores, key=subject_scores.get)
+
+
+def _build_lexical_rag_context(
+    query: str,
+    limit: int,
+) -> tuple[str, str, list[dict[str, Any]]]:
+    from services_core import is_official_source, stats_basis
+    from services_extra import prioritize_rag_citations
+
+    query_terms = lexical_tokens(query)
+    with db() as conn:
+        questions = [dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()]
+        syllabus = [dict(r) for r in conn.execute("SELECT * FROM syllabus").fetchall()]
+        lessons = [
+            dict(r)
+            for r in conn.execute(
+                "SELECT * FROM lessons ORDER BY created_at DESC LIMIT 20"
+            ).fetchall()
+        ]
+
+    if not query_terms or not questions:
+        return "", "lexical", []
+
+    document_terms: list[set[str]] = []
+    for question in questions:
+        document_terms.append(
+            set(
+                lexical_tokens(
+                    f"{question.get('subject') or ''} {question.get('topic') or ''} "
+                    f"{question.get('subtopic') or ''} {question.get('statement') or ''} "
+                    f"{question.get('resolution') or ''} {question.get('macete') or ''}"
+                )
+            )
+        )
+    document_frequency: dict[str, int] = {}
+    for terms in document_terms:
+        for term in terms:
+            document_frequency[term] = document_frequency.get(term, 0) + 1
+    average_length = sum(len(terms) for terms in document_terms) / len(document_terms)
+    subject_hint = _infer_subject(query_terms, questions)
+    scored: list[tuple[float, dict[str, Any]]] = []
+    for question in questions:
+        metadata_terms = set(
+            lexical_tokens(
+                f"{question.get('subject') or ''} {question.get('topic') or ''} "
+                f"{question.get('subtopic') or ''}"
+            )
+        )
+        statement_overlap = len(
+            set(lexical_tokens(question.get("statement") or "")).intersection(query_terms)
+        )
+        score = _lexical_question_score(
+            query_terms,
+            question,
+            document_frequency=document_frequency,
+            document_count=len(questions),
+            average_length=average_length,
+        )
+        if score < 2.0:
+            continue
+        if not metadata_terms.intersection(query_terms) and (
+            subject_hint is None or (score < 8.0 and statement_overlap < 2)
+        ):
+            continue
+        same_subject = subject_hint is None or question.get("subject") == subject_hint
+        if subject_hint is not None:
+            score += 3.0 if same_subject else -4.0
+        if score >= 2.0 and (subject_hint is None or same_subject):
+            scored.append((score, question))
+    scored.sort(key=lambda item: (-item[0], str(item[1].get("id"))))
+
+    prefer_official = stats_basis()["officialCount"] >= 10
+    chunks: list[str] = []
+    if not prefer_official:
+        chunks.append("[AVISO] Base ainda em treino — citações não são oficiais PAES.")
+    citations: list[dict[str, Any]] = []
+    matching_syllabus = []
+    for item in syllabus:
+        metadata = set(
+            lexical_tokens(
+                f"{item.get('subject') or ''} {item.get('topic') or ''} "
+                f"{item.get('subtopic') or ''}"
+            )
+        )
+        if metadata.intersection(query_terms) and (
+            subject_hint is None or item.get("subject") == subject_hint
+        ):
+            matching_syllabus.append(item)
+    if matching_syllabus:
+        chunks.append("=== EDITAL ===")
+        for item in matching_syllabus[:8]:
+            chunks.append(
+                f"- {item['subject']} > {item['topic']} peso={item['weight']}"
+            )
+            citations.append(
+                {
+                    "type": "edital",
+                    "id": item.get("id"),
+                    "label": f"Edital · {item['subject']} · {item['topic']}",
+                    "snippet": item["topic"],
+                    "subject": item["subject"],
+                    "topic": item["topic"],
+                }
+            )
+
+    if scored:
+        chunks.append("=== QUESTÕES (busca lexical) ===")
+    for score, question in scored[:limit]:
+        if prefer_official and not is_official_source(
+            question.get("source"), question.get("generated")
+        ):
+            continue
+        chunks.append(
+            f"[score={score:.3f}] [{question['year']}] "
+            f"{question['subject']}/{question['topic']} id={question['id']}\n"
+            f"{question['statement']}\n"
+            f"Resolução: {question.get('resolution') or 'n/d'}\n"
+            f"Macete: {question.get('macete') or 'n/d'}"
+        )
+        citations.append(
+            {
+                "type": "question",
+                "id": question["id"],
+                "label": f"{question['subject']} · {question['topic']} ({question['year']})",
+                "snippet": (question["statement"] or "")[:140],
+                "score": round(float(score), 3),
+                "official": is_official_source(
+                    question.get("source"), question.get("generated")
+                ),
+                "subject": question["subject"],
+                "topic": question["topic"],
+            }
+        )
+    if lessons and scored:
+        for lesson in lessons[:3]:
+            lesson_terms = set(
+                lexical_tokens(
+                    f"{lesson.get('subject') or ''} {lesson.get('topic') or ''} "
+                    f"{lesson.get('title') or ''} {lesson.get('summary') or ''}"
+                )
+            )
+            if not lesson_terms.intersection(query_terms):
+                continue
+            chunks.append(
+                f"=== AULA ===\n{lesson['title']}: {lesson.get('summary') or ''}"
+            )
+            citations.append(
+                {
+                    "type": "lesson",
+                    "id": lesson["id"],
+                    "label": lesson["title"],
+                    "snippet": (lesson.get("summary") or "")[:140],
+                    "subject": lesson.get("subject"),
+                    "topic": lesson.get("topic"),
+                }
+            )
+    return "\n\n".join(chunks), "lexical", prioritize_rag_citations(citations, limit)
+
+
 def local_embedding(text: str, dim: int = 64) -> list[float]:
     """Embedding offline determinístico (hashing trick) — fallback sem OpenAI."""
     vec = [0.0] * dim
@@ -332,106 +621,5 @@ def build_rag_context_embedded(query: str, limit: int = 8) -> tuple[str, str]:
 
 
 def build_rag_context_embedded_full(query: str, limit: int = 8) -> tuple[str, str, list[dict[str, Any]]]:
-    """Retorna (contexto, modo, citações)."""
-    from services_core import is_official_source, stats_basis
-    from services_extra import build_rag_context_with_citations, prioritize_rag_citations
-
-    basis = stats_basis()
-    prefer_official = basis["officialCount"] >= 10
-    qvec = openai_embedding(query) or local_embedding(query)
-    with db() as conn:
-        ensure_embeddings_table(conn)
-        emb_rows = conn.execute("SELECT * FROM embeddings WHERE ref_type IN ('question','edital')").fetchall()
-        questions = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()}
-        syllabus = [dict(r) for r in conn.execute("SELECT * FROM syllabus").fetchall()]
-        lessons = [dict(r) for r in conn.execute("SELECT * FROM lessons ORDER BY created_at DESC LIMIT 10").fetchall()]
-
-    if not emb_rows:
-        index_all_questions(200)
-        with db() as conn:
-            emb_rows = conn.execute("SELECT * FROM embeddings WHERE ref_type IN ('question','edital')").fetchall()
-            questions = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM questions").fetchall()}
-
-    scored: list[tuple[float, str, str]] = []
-    for e in emb_rows:
-        vec = loads_json(e["vector_json"], [])
-        if not vec:
-            continue
-        if abs(len(vec) - len(qvec)) > 8:
-            continue
-        scored.append((cosine(qvec, vec), e["ref_type"], e["ref_id"]))
-    scored.sort(key=lambda x: -x[0])
-
-    if not scored:
-        ctx, cites = build_rag_context_with_citations(query, limit)
-        disclaimer = (
-            ""
-            if prefer_official
-            else "\n\n[AVISO] Base ainda em treino — citações não são oficiais PAES."
-        )
-        return ctx + disclaimer, "keyword", cites
-
-    mode = "embedded"
-    chunks: list[str] = ["=== EDITAL ==="]
-    if not prefer_official:
-        chunks.insert(0, "[AVISO] officialCount < 10 — RAG pode citar treino. Não invente incidência oficial.")
-    citations: list[dict[str, Any]] = []
-    for s in syllabus[:25]:
-        chunks.append(f"- {s['subject']} > {s['topic']} peso={s['weight']}")
-        citations.append(
-            {
-                "type": "edital",
-                "id": s.get("id"),
-                "label": f"Edital · {s['subject']} · {s['topic']}",
-                "snippet": s["topic"],
-                "subject": s["subject"],
-                "topic": s["topic"],
-            }
-        )
-
-    chunks.append("=== QUESTÕES (top similaridade) ===")
-    used = 0
-    for score, ref_type, qid in scored:
-        if ref_type != "question":
-            continue
-        q = questions.get(qid)
-        if not q:
-            continue
-        if prefer_official and not is_official_source(q.get("source"), q.get("generated")):
-            continue
-        chunks.append(
-            f"[sim={score:.3f}] [{q['year']}] {q['subject']}/{q['topic']} id={q['id']}\n"
-            f"{q['statement']}\nResolução: {q.get('resolution') or 'n/d'}\nMacete: {q.get('macete') or 'n/d'}"
-        )
-        citations.append(
-            {
-                "type": "question",
-                "id": q["id"],
-                "label": f"{q['subject']} · {q['topic']} ({q['year']})",
-                "snippet": (q["statement"] or "")[:140],
-                "score": round(float(score), 3),
-                "official": is_official_source(q.get("source"), q.get("generated")),
-                "subject": q["subject"],
-                "topic": q["topic"],
-            }
-        )
-        used += 1
-        if used >= limit:
-            break
-
-    if lessons:
-        chunks.append("=== AULAS ===")
-        for lesson in lessons[:3]:
-            chunks.append(f"{lesson['title']}: {lesson.get('summary') or ''}")
-            citations.append(
-                {
-                    "type": "lesson",
-                    "id": lesson["id"],
-                    "label": lesson["title"],
-                    "snippet": (lesson.get("summary") or "")[:140],
-                    "subject": lesson.get("subject"),
-                    "topic": lesson.get("topic"),
-                }
-            )
-
-    return "\n\n".join(chunks), mode, prioritize_rag_citations(citations, limit)
+    """Retorna recuperação lexical offline, sem decidir por embedding hash."""
+    return _build_lexical_rag_context(query, limit)

@@ -121,7 +121,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(28, kGap16, kGap16, 0),
                 child: PageHeader(
                   eyebrow: 'Ajuda',
                   title: 'Tutor',
@@ -149,7 +149,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                       config['openaiConfigured'] == true;
                   if (configured) return const SizedBox.shrink();
                   return Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, kGap8),
                     child: QuietEmpty(
                       icon: Icons.cloud_off_outlined,
                       message:
@@ -190,7 +190,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                 ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(28, 0, 28, 8),
+                padding: const EdgeInsets.fromLTRB(28, 0, 28, kGap8),
                 child: Row(
                   children: [
                     for (final s in _styles)

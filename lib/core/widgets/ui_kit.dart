@@ -174,7 +174,7 @@ class SectionLabel extends StatelessWidget {
 class SurfacePanel extends StatelessWidget {
   const SurfacePanel({
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(kGap16),
     this.color,
     this.margin = EdgeInsets.zero,
     this.soft = true,
@@ -260,7 +260,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         curve: Curves.easeOutCubic,
-        margin: const EdgeInsets.only(bottom: 6),
+        margin: const EdgeInsets.only(bottom: kGap8),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(kRadiusButton),
@@ -288,7 +288,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 11, 10, 11),
+                      padding: const EdgeInsets.fromLTRB(kGap8, kGap12, kGap12, kGap12),
                       child: Row(
                         children: [
                           Icon(
@@ -296,7 +296,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                             color: widget.active ? cs.primary : cs.onSurface.withOpacity(0.45),
                             size: 26,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: kGap12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

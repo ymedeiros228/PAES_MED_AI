@@ -114,78 +114,27 @@ def _api_chat(
 
     provider = None if force_offline else (provider_override or _configured_provider())
     if provider is None:
-        from services_core import NATUREZA_SUBJECTS, dashboard_stats, list_questions, stats_basis
+        from services_core import stats_basis
 
         basis = stats_basis()
-        dash = dashboard_stats()
-        daily = dash.get("dailyRoutine") or {}
-        subject = daily.get("subject") or "Biologia"
-        topic = daily.get("topic") or "Genética"
-        session_path = daily.get("sessionPath") or "/sessao"
-        hot = dash.get("errorHotTopics") or []
         grounded_cites: list[dict[str, Any]] = []
         lines: list[str] = [
-            f"Tutor sem internet · tópico do dia: {subject} · {topic}",
+            "Tutor sem internet · fontes locais alinhadas ao pedido:",
             "",
         ]
-        # Prefer oficiais Natureza no coach Natureza; senão tópico do dia
-        prefer_nat = (subject in NATUREZA_SUBJECTS) or "natureza" in (session_path or "").lower()
-        pool = list_questions(subject=subject, topic=topic, exam_board="UEMA_PAES", limit=8) or list_questions(
-            subject=subject, topic=topic, limit=8
-        )
-        if prefer_nat and pool:
-            nat_pool = [q for q in pool if (q.get("subject") or "") in NATUREZA_SUBJECTS]
-            if nat_pool:
-                pool = nat_pool + [q for q in pool if q not in nat_pool]
-        grounded = 0
-        for q in pool[:5]:
-            res = (q.get("resolution") or "").strip()
-            if not res or res == "—":
-                continue
-            qid = q.get("id")
-            lines.append(f"• Questão {qid} ({q.get('year') or '—'}):")
-            for ln in res.splitlines()[:4]:
-                if ln.strip():
-                    lines.append(f"  {ln.strip()[:200]}")
-            grounded_cites.append(
-                {
-                    "type": "question",
-                    "id": qid,
-                    "label": f"{q.get('subject')} · {q.get('topic')} ({q.get('year')})",
-                    "snippet": (q.get("statement") or "")[:140],
-                    "subject": q.get("subject"),
-                    "topic": q.get("topic"),
-                }
-            )
-            grounded += 1
-            if grounded >= 2:
-                break
-        if not grounded:
-            for cite in q_cites[:3]:
-                label = cite.get("label") or cite.get("type") or "fonte"
+        if q_cites:
+            grounded_cites.extend(q_cites[:5])
+            for cite in grounded_cites:
+                label = cite.get("label") or "fonte local"
                 snippet = (cite.get("snippet") or "")[:180]
-                if snippet:
-                    lines.append(f"• {label}: {snippet}")
-                else:
-                    lines.append(f"• {label}")
-                grounded_cites.append(cite)
-        # Merge RAG question cites not already used
-        seen_ids = {c.get("id") for c in grounded_cites}
-        for cite in q_cites:
-            if cite.get("id") not in seen_ids:
-                grounded_cites.append(cite)
-                seen_ids.add(cite.get("id"))
+                lines.append(f"• {label}: {snippet}" if snippet else f"• {label}")
         has_local_off = bool(grounded_cites)
-        if hot and has_local_off:
-            h0 = hot[0]
-            lines.append("")
-            lines.append(f"Lacuna quente: {h0.get('key')} ({h0.get('misses')} miss(es)).")
         if not has_local_off:
             answer = (
                 "Sem base local para esta pergunta.\n\n"
                 "Não há trechos de questões/resoluções oficiais na base alinhados ao pedido. "
                 "Abra Biblioteca (2024–26) ou a Fila com preferNatureza=1 — o tutor não inventa cobranca UEMA.\n\n"
-                f"Próximo passo: {session_path}"
+                "Próximo passo: sessão em /sessao"
             )
             return ChatResponse(
                 answer=answer,
@@ -197,7 +146,7 @@ def _api_chat(
                 uncited=True,
             )
         lines.append("")
-        lines.append(f"Próximo passo: sessão em {session_path}")
+        lines.append("Próximo passo: sessão em /sessao")
         lines.append("Pergunta: qual distrator você eliminaria primeiro e por quê?")
         lines.append("")
         lines.append(
