@@ -1291,6 +1291,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       label: Text(kind.$2),
                       selected: searchSourceKind == kind.$1,
                       onSelected: (_) {
+                        HapticFeedback.selectionClick();
                         setState(() => searchSourceKind = kind.$1);
                         if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
                       },
@@ -1320,6 +1321,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () {
+                          HapticFeedback.selectionClick();
                           final q = h['q']?.toString() ?? '';
                           if (q.isEmpty) return;
                           _searchCtrl.text = q;
@@ -1362,6 +1364,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                             ? Icons.quiz_outlined
                             : Icons.description_outlined,
                         onPlay: () {
+                          HapticFeedback.selectionClick();
                           setState(() => _hitSelected = i);
                           _openSearchHit(hit);
                         },
