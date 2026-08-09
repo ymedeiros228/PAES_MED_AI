@@ -57,6 +57,6 @@ def on_startup() -> None:
     try:
         from services_advanced import index_all_questions
 
-        index_all_questions(limit=300)
+        index_all_questions(limit=300, allow_remote=False)
     except Exception:
         pass

@@ -443,7 +443,7 @@ def api_edital_coverage() -> dict[str, Any]:
 def api_library_reprocess() -> dict[str, Any]:
     """Limpa enunciados persistidos e reindexa a base."""
     sanitized = sanitize_question_statements()
-    indexed = index_all_questions()
+    indexed = index_all_questions(allow_remote=False)
     return {
         "ok": True,
         "message": "Base reprocessada e enunciados saneados.",
