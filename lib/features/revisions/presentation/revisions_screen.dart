@@ -144,26 +144,29 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                         ),
                       )
                     else
-                      for (var i = 0; i < _items.length; i++)
-                        Builder(
-                          builder: (_) {
-                            final item = _items[i];
-                            final subject = item['subject']?.toString() ?? '';
-                            final topic = item['topic']?.toString() ?? '';
-                            final due = humanDueLabel(item['next_due']?.toString());
-                            final days = item['interval_days'];
-                            return PlaylistTile(
-                              title: '$subject · $topic',
-                              subtitle: 'Próxima: $due${days != null ? ' · a cada $days dias' : ''}',
-                              badge: 'revisar',
-                              leadingIcon: Icons.replay_rounded,
-                              active: i == selected,
-                              onPlay: () {
-                                HapticFeedback.selectionClick();
-                                setState(() => selected = i);
-                                _openItem(i);
-                              },
-                              secondary: Row(
+                      StaggeredFadeIn(
+                        itemDelay: const Duration(milliseconds: 70),
+                        children: [
+                          for (var i = 0; i < _items.length; i++)
+                            Builder(
+                              builder: (_) {
+                                final item = _items[i];
+                                final subject = item['subject']?.toString() ?? '';
+                                final topic = item['topic']?.toString() ?? '';
+                                final due = humanDueLabel(item['next_due']?.toString());
+                                final days = item['interval_days'];
+                                return PlaylistTile(
+                                  title: '$subject · $topic',
+                                  subtitle: 'Próxima: $due${days != null ? ' · a cada $days dias' : ''}',
+                                  badge: 'revisar',
+                                  leadingIcon: Icons.replay_rounded,
+                                  active: i == selected,
+                                  onPlay: () {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => selected = i);
+                                    _openItem(i);
+                                  },
+                                  secondary: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
@@ -219,6 +222,8 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                             );
                           },
                         ),
+                        ],
+                      ),
                   ],
                 ),
               ),

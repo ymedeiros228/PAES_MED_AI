@@ -264,19 +264,22 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                               ],
                             ),
                           ),
-                        for (final raw in items)
-                          Builder(
-                            builder: (_) {
-                              final item = Map<String, dynamic>.from(raw as Map);
-                              final idRaw = item['id'];
-                              final id = idRaw is int ? idRaw : int.tryParse('$idRaw');
-                              if (id == null) return const SizedBox.shrink();
-                              final flipped = showBack && currentId == id;
-                              final subj = item['subject']?.toString() ?? '';
-                              final top = item['topic']?.toString() ?? '';
-                              final src = item['source']?.toString() ?? '';
-                              final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-                              return SurfacePanel(
+                        StaggeredFadeIn(
+                          itemDelay: const Duration(milliseconds: 60),
+                          children: [
+                            for (final raw in items)
+                              Builder(
+                                builder: (_) {
+                                  final item = Map<String, dynamic>.from(raw as Map);
+                                  final idRaw = item['id'];
+                                  final id = idRaw is int ? idRaw : int.tryParse('$idRaw');
+                                  if (id == null) return const SizedBox.shrink();
+                                  final flipped = showBack && currentId == id;
+                                  final subj = item['subject']?.toString() ?? '';
+                                  final top = item['topic']?.toString() ?? '';
+                                  final src = item['source']?.toString() ?? '';
+                                  final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
+                                  return SurfacePanel(
                                 margin: const EdgeInsets.only(bottom: 10),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,6 +415,8 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                               );
                             },
                           ),
+                          ],
+                        ),
                       ],
                     );
                   },

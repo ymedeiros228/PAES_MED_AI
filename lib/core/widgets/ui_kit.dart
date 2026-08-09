@@ -634,6 +634,72 @@ class CompactStatus extends StatelessWidget {
 /// Formata enunciado de questão em parágrafos legíveis.
 /// Detecta mudanças de parágrafo (ponto final + maiúscula) e adiciona
 /// espaçamento vertical entre eles — melhora muito a leitura no desktop.
+/// Animação de entrada fade-in em cascata para listas de widgets.
+/// Cada item aparece com um pequeno atraso, criando um efeito visual suave.
+class StaggeredFadeIn extends StatefulWidget {
+  const StaggeredFadeIn({
+    required this.children,
+    this.itemDelay = const Duration(milliseconds: 80),
+    this.duration = const Duration(milliseconds: 350),
+    super.key,
+  });
+
+  final List<Widget> children;
+  final Duration itemDelay;
+  final Duration duration;
+
+  @override
+  State<StaggeredFadeIn> createState() => _StaggeredFadeInState();
+}
+
+class _StaggeredFadeInState extends State<StaggeredFadeIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration + widget.itemDelay * widget.children.length,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < widget.children.length; i++)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final start = widget.itemDelay.inMilliseconds * i;
+              final end = start + widget.duration.inMilliseconds;
+              final t = (_controller.value * 1000 - start).clamp(0, end - start);
+              final progress = (t / (end - start)).clamp(0.0, 1.0);
+              final curve = Curves.easeOutCubic.transform(progress.toDouble());
+              return Opacity(
+                opacity: curve,
+                child: Transform.translate(
+                  offset: Offset(0, 12 * (1 - curve)),
+                  child: child,
+                ),
+              );
+            },
+            child: widget.children[i],
+          ),
+      ],
+    );
+  }
+}
+
 class StatementView extends StatelessWidget {
   const StatementView({
     required this.text,
