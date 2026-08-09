@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -176,8 +178,35 @@ class PaesMedAiApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: appRouter,
+      // Scrollbars sempre visíveis no desktop — descobre que há mais conteúdo
+      builder: (context, child) => ScrollConfiguration(
+        behavior: const _PaesScrollBehavior(),
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
+}
+
+/// ScrollBehavior desktop: scrollbars visíveis, drag com mouse/trackpad.
+class _PaesScrollBehavior extends MaterialScrollBehavior {
+  const _PaesScrollBehavior();
+
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    // Scrollbar sempre visível no desktop — descobre que há mais conteúdo.
+    return Scrollbar(
+      controller: details.controller,
+      thumbVisibility: true,
+      child: child,
+    );
+  }
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }
 
 /// Deep-link / refresh sem args: manda de volta à Biblioteca (não embute Library silenciosa).

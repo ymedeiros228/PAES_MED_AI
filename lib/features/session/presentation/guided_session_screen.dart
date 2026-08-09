@@ -1354,9 +1354,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 alignment: Alignment.center,
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 760),
-                  child: Text(
-                    sessionQuestions[qIndex]['statement']?.toString() ?? '',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHigh.f38,
+                      borderRadius: BorderRadius.circular(kRadiusPanel),
+                      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant.f38),
+                    ),
+                    child: SelectableText(
+                      sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.45),
+                    ),
                   ),
                 ),
               ),
