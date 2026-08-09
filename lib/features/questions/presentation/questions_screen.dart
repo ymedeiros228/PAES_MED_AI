@@ -157,7 +157,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(questionsProvider(filters));
+    final async = ref.watch(questionsProvider(filtersKey(filters)));
     final cs = Theme.of(context).colorScheme;
 
     return Focus(

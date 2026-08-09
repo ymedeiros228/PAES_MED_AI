@@ -69,7 +69,7 @@ AREA_SUBJECT_MAP = (
 )
 
 _EXAM_HEADER_RE = re.compile(
-    r"processo\s+seletivo\s+de\s+acesso\s+à\s+educação\s+superior",
+    r"processo\s+seletivo\s+de\s+acesso\b(?:\s+(?:à\s+)?educa[cç][aã]o\s+superior)?",
     re.IGNORECASE,
 )
 _PDF_GID_RE = re.compile(r"(?:/gid\d+\s*)+", re.IGNORECASE)
@@ -80,6 +80,56 @@ _HEADER_PAGE_AFTER_ARTIFACT_RE = re.compile(
     r"\s*(?:(?:19|20)\d{2}\s+)?\d{1,3}(?=\s+[A-ZÀ-Ý\"“])"
 )
 
+# URLs completas (http/https/www) — aparecem no início de enunciados de PDFs
+_URL_RE = re.compile(r"https?://\S+|www\.\S+\.\S{2,}", re.IGNORECASE)
+
+# "This text refers to questions 19 and 20." — referência cruzada em inglês
+_REF_EN_RE = re.compile(
+    r"(?i)\bthis\s+text\s+refers?\s+to\s+questions?\s+\d+(?:\s+and\s+\d+)?\.?\s*",
+)
+
+# Instruções de capa da prova — "O caderno de provas só poderá ser levado..."
+# até o primeiro ponto final. Não é parte do enunciado real.
+_COVER_INSTRUCTIONS_RE = re.compile(
+    r"(?i)o\s+caderno\s+de\s+provas\s+s[oó]\s+poder[aá]\s+ser\s+levado[^.]*\.\s*",
+)
+
+# "Prova Objetiva e Produção Textual" + data — cabeçalho de seção
+_PROVA_OBJETIVA_RE = re.compile(
+    r"(?i)prova\s+objetiva\s+e\s+produ[cç][aã]o\s+textual\s+\d{2}/\d{2}/\d{4}\s*",
+)
+
+# "Edital n.° 68/2024 – GR/UEMA" — referência de edital (possivelmente duplicada)
+_EDITAL_RE = re.compile(
+    r"(?i)edital\s+n\.?\s*°?\s*\d+/\d{4}\s*[-–—]?\s*gr/uema\s*",
+)
+
+# "DIVISÃO DE PROCESSOS SELETIVOS E VESTIBULARES - DPSV" e similares
+_DIVISION_HEADER_RE = re.compile(
+    r"(?i)divis[aã]o\s+de\s+processos\s+seletivos\s+e\s+vestibulares?\s*[-–—]?\s*dpsv\s*",
+)
+
+# "VESTIBULAR V E S T I B U L A R" — artefato de espaçamento de PDF
+_SPACED_VEST_RE = re.compile(r"(?i)\bv\s+e\s+s\s+t\s+i\s+b\s+u\s+l\s+a\s+r\b")
+
+# Cabeçalho "BOA PROVA!" isolado ou no meio
+_BOA_PROVA_RE = re.compile(r"(?i)\bboa\s+prova\s*!?\s*")
+
+# "Início: 13h30 Término: 18h30" — horários da prova
+_EXAM_TIME_RE = re.compile(
+    r"(?i)\bin[ií]cio:\s*\d{1,2}h\d{0,2}\s+t[eé]rmino:\s*\d{1,2}h\d{0,2}\b\s*"
+)
+
+# "Este caderno contém 60 (sessenta) questões objetivas..." — descrição da prova
+_CADELHO_DESC_RE = re.compile(
+    r"(?i)este\s+caderno\s+cont[eé]m\s+\d+.*?produ[cç][aã]o\s+textual\.?\s*",
+)
+
+# "À EDUCAÇÃO SUPERIOR" órfão (sobra de header duplicado colado)
+_ORPHAN_SUPERIOR_RE = re.compile(
+    r"(?i)à\s+educa[cç][aã]o\s+superior(?:à\s+educa[cç][aã]o\s+superior)?\s*",
+)
+
 
 def clean_question_statement(statement: str) -> str:
     """Remove artefatos de cabeçalho do PDF sem tocar nos números do conteúdo."""
@@ -87,6 +137,18 @@ def clean_question_statement(statement: str) -> str:
     had_pdf_header = bool(_EXAM_HEADER_RE.search(cleaned) or _PDF_GID_RE.search(cleaned))
     cleaned = _EXAM_HEADER_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
     cleaned = _PDF_GID_RE.sub(_PDF_ARTIFACT_MARKER, cleaned)
+    # Remove referências cruzadas em inglês
+    cleaned = _REF_EN_RE.sub(" ", cleaned)
+    # Remove instruções de capa
+    cleaned = _COVER_INSTRUCTIONS_RE.sub(" ", cleaned)
+    cleaned = _PROVA_OBJETIVA_RE.sub(" ", cleaned)
+    cleaned = _EDITAL_RE.sub(" ", cleaned)
+    cleaned = _DIVISION_HEADER_RE.sub(" ", cleaned)
+    cleaned = _SPACED_VEST_RE.sub(" ", cleaned)
+    cleaned = _BOA_PROVA_RE.sub(" ", cleaned)
+    cleaned = _EXAM_TIME_RE.sub(" ", cleaned)
+    cleaned = _CADELHO_DESC_RE.sub(" ", cleaned)
+    cleaned = _ORPHAN_SUPERIOR_RE.sub(" ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     # O número de página só pode ser removido imediatamente após o artefato.
     if had_pdf_header:
