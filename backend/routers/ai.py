@@ -114,9 +114,11 @@ def _api_chat(
 
     provider = None if force_offline else (provider_override or _configured_provider())
     if provider is None:
-        from services_core import stats_basis
+        from services_core import dashboard_stats, stats_basis
 
         basis = stats_basis()
+        daily = dashboard_stats().get("dailyRoutine") or {}
+        session_path = daily.get("sessionPath") or "/sessao"
         grounded_cites: list[dict[str, Any]] = []
         lines: list[str] = [
             "Tutor sem internet · fontes locais alinhadas ao pedido:",
@@ -134,7 +136,7 @@ def _api_chat(
                 "Sem base local para esta pergunta.\n\n"
                 "Não há trechos de questões/resoluções oficiais na base alinhados ao pedido. "
                 "Abra Biblioteca (2024–26) ou a Fila com preferNatureza=1 — o tutor não inventa cobranca UEMA.\n\n"
-                "Próximo passo: sessão em /sessao"
+                f"Próximo passo: {session_path}"
             )
             return ChatResponse(
                 answer=answer,
@@ -146,7 +148,7 @@ def _api_chat(
                 uncited=True,
             )
         lines.append("")
-        lines.append("Próximo passo: sessão em /sessao")
+        lines.append(f"Próximo passo: sessão em {session_path}")
         lines.append("Pergunta: qual distrator você eliminaria primeiro e por quê?")
         lines.append("")
         lines.append(
