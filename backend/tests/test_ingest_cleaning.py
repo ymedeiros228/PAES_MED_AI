@@ -36,6 +36,14 @@ def test_clean_question_statement_preserves_legitimate_numbers() -> None:
     assert clean_question_statement(value) == value
 
 
+def test_clean_question_statement_preserves_number_before_embedded_header() -> None:
+    value = (
+        "A análise cita 123 Antes. Processo Seletivo de Acesso à Educação Superior "
+        "/gid00049 2024 5 Depois do cabeçalho."
+    )
+    assert clean_question_statement(value) == "A análise cita 123 Antes. Depois do cabeçalho."
+
+
 def test_sanitize_question_statements_updates_only_dirty_rows(tmp_path, monkeypatch) -> None:
     import sqlite3
     from contextlib import contextmanager
