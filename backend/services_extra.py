@@ -760,7 +760,7 @@ def create_natureza_pack(*, limit: int = 12, year: int | None = None) -> dict[st
             "cardIds": card_ids,
             "nextDue": next_due,
             "year": year,
-            "note": "Pack Natureza — cards due amanhã (não oficiais da banca).",
+        "note": "Pacote Natureza — cartões para revisar amanhã (não oficiais da banca).",
         }
 
 
@@ -954,7 +954,7 @@ def parse_gate_flags(
         "needsOcr": needs_ocr,
         "threshold": 0.30,
         "message": (
-            "Parse com muitas suspeitas ou needsOcr — revise antes de estudar, ou continue mesmo assim."
+            "Há muitas suspeitas ou PDFs escaneados — revise antes de estudar, ou continue mesmo assim."
             if warn
             else "Parse ok para estudar."
         ),

@@ -106,7 +106,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       setState(() {
         themes = [];
         if (!_draftRestored) theme = null;
-        setupError = humanApiError(e, fallback: 'Temas indisponíveis — API offline?');
+        setupError = humanApiError(e, fallback: 'Temas indisponíveis — verifique a conexão com o aplicativo.');
       });
     }
   }
@@ -252,7 +252,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 SelectableText(item['text']?.toString() ?? '(vazio)'),
                 if (fbMap.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text('Feedback', style: Theme.of(ctx).textTheme.titleSmall),
+                  Text('Comentários', style: Theme.of(ctx).textTheme.titleSmall),
                   const SizedBox(height: 6),
                   for (final a in [
                     ('Gramática', fbMap['grammar']),

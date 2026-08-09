@@ -187,7 +187,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         final portal = map['portal']?.toString();
         setState(() {
           msg = [
-            map['message']?.toString() ?? map['error']?.toString() ?? 'Bootstrap falhou.',
+            map['message']?.toString() ?? map['error']?.toString() ?? 'A preparação do acervo falhou.',
             if (portal != null && portal.isNotEmpty) 'Portal: $portal',
             'Use Biblioteca → Manual / Abrir provas se o host falhar.',
           ].join(' ');
@@ -510,7 +510,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
       );
       await _showPostCommitCta(
-        title: 'PDFs do disco commitados',
+        title: 'PDFs gravados no computador',
         body: 'Disco OK · +$inserted · base $n$healthLine$packLine\nAbrir sessão UEMA Natureza?',
         sessaoPath: sessao,
         professor: map['professor'] is Map ? Map<String, dynamic>.from(map['professor'] as Map) : null,
@@ -726,7 +726,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final n = pack['cardsCreated'] as int? ?? 0;
     final d = pack['drafts'] as int? ?? 0;
     if (n <= 0 && d <= 0) return '';
-    return '\nPack Natureza: $n cards due amanhã'
+    return '\nPacote Natureza: $n cartões para revisar amanhã'
         '${d > 0 ? ' · $d com rascunho professor' : ''}.';
   }
 
@@ -745,10 +745,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final choice = await showDialog<String>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Parse com suspeitas'),
+          title: const Text('Revisão necessária'),
           content: Text(
-            '${gate['message'] ?? 'Revise suspeitas/needsOcr antes de estudar.'}\n'
-            'Suspeitas: ${gate['suspects'] ?? 0} · needsOcr: ${gate['needsOcr'] == true}',
+            '${gate['message'] ?? 'Revise as suspeitas e os PDFs escaneados antes de estudar.'}\n'
+            'Suspeitas: ${gate['suspects'] ?? 0} · PDFs escaneados: ${gate['needsOcr'] == true ? 'sim' : 'não'}',
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, 'review'), child: const Text('Revisar suspeitas')),
@@ -1068,9 +1068,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       } else if (map['fetchFailed'] == true || map['ok'] != true) {
         if (!mounted) return;
         await _showFetchPlaybook(
-          title: 'Fetch PAES $year falhou',
+          title: 'Importação do PAES $year falhou',
           body: map['message']?.toString() ??
-              'Download falhou. Use portal, drop manual ou tentar de novo.',
+              'A importação falhou. Use o portal, escolha os arquivos manualmente ou tente de novo.',
           portal: map['portal']?.toString() ??
               (map['playbook'] is Map ? (map['playbook'] as Map)['portal']?.toString() : null),
           year: year,
@@ -1082,7 +1082,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       setState(() => msg = err);
       if (mounted) {
         await _showFetchPlaybook(
-          title: 'Fetch PAES $year falhou',
+          title: 'Importação do PAES $year falhou',
           body: err,
           year: year,
         );
@@ -1174,7 +1174,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 eyebrow: 'Acervo',
                 title: 'Biblioteca',
                 subtitle: officialN > 0
-                    ? '$officialN oficiais · coloque provas e engula com um clique'
+                    ? '$officialN oficiais · importe provas com um clique'
                     : 'Semana 1: importe 2024–26 e comece a estudar de verdade',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
@@ -1342,7 +1342,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     builder: (_) {
                       final hit = searchHits[i];
                       return PlaylistTile(
-                        title: hit['label']?.toString() ?? 'item',
+                        title: hit['label']?.toString() ?? 'arquivo',
                         subtitle:
                             '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
                         badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',

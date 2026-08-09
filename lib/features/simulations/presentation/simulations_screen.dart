@@ -453,7 +453,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     } catch (e) {
       healthNote = humanApiError(
         e,
-        fallback: 'API offline — contagem de oficiais indisponível.',
+          fallback: 'Sem internet — contagem de oficiais indisponível.',
       );
     }
     final n = basis['officialCount'] as int? ?? 0;
@@ -468,7 +468,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
           '${n < 10
               ? 'Há poucas oficiais na base ($n). Este modo NÃO inventa prova UEMA — sem acervo sério, a base de treino fica rotulada como treino.\n\n'
                   'Tempo estimado: ~$mins min.\nResolução só ao finalizar.'
-              : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado neste pack.'}',
+              : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado nesta seleção.'}',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
@@ -773,7 +773,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     message: lastSimMeta!['warning']?.toString() ??
                         (lastSimMeta!['basis'] == 'oficial'
                             ? (genInPack > 0
-                                ? 'Pack com $genInPack item(ns) gerados — não confunda com oficiais.'
+                                ? 'Seleção com $genInPack questão(ões) geradas — não confunda com oficiais.'
                                 : null)
                             : 'Este bloco usou base de treino. Monte a Biblioteca para Dia de prova sério.'),
                     showLibraryCta: lastSimMeta!['basis'] != 'oficial',

@@ -70,7 +70,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para salvar o card.'))),
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para salvar o cartão.'))),
       );
     }
   }
@@ -87,7 +87,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar o card.'))),
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar o cartão.'))),
       );
     }
   }
@@ -162,12 +162,12 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
               children: [
                 PageHeader(
                   eyebrow: 'Estudar',
-                  title: 'Cards',
+                  title: 'Cartões',
                   subtitle: axesOnly
                       ? 'Só eixos de resolução · toque para virar'
                       : dueOnly
                           ? 'Só o que é para revisar hoje'
-                          : 'Todos os cards · toque para virar',
+                          : 'Todos os cartões · toque para virar',
                   trailing: Wrap(
                     spacing: 4,
                     children: [
@@ -195,10 +195,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 async.when(
                   loading: () => const SoftLoader(
                     compact: true,
-                    label: 'Carregando cards…',
+                    label: 'Carregando cartões…',
                   ),
                   error: (e, _) => QuietEmpty(
-                    message: humanApiError(e, fallback: 'Não deu para carregar os cards.'),
+                    message: humanApiError(e, fallback: 'Não deu para carregar os cartões.'),
                     action: Wrap(
                       spacing: 8,
                       children: [
@@ -224,10 +224,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     _itemIds = ids;
                     if (items.isEmpty) {
                       return EmptyState(
-                        title: dueOnly ? 'Nada para revisar agora' : 'Nenhum card ainda',
+                        title: dueOnly ? 'Nada para revisar agora' : 'Nenhum cartão ainda',
                         subtitle: dueOnly
-                            ? 'Quando errar na sessão, os cards aparecem aqui. Ou veja todos.'
-                            : 'Estude uma sessão: ao errar, criamos cards para você.',
+                            ? 'Quando errar na sessão, os cartões aparecem aqui. Ou veja todos.'
+                            : 'Estude uma sessão: ao errar, criamos cartões para você.',
                         action: Wrap(
                           spacing: 8,
                           alignment: WrapAlignment.center,
@@ -334,7 +334,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                               ScaffoldMessenger.of(context).showSnackBar(
                                                 SnackBar(
                                                   content: Text(
-                                                    humanApiError(e, fallback: 'Não deu para apagar o card.'),
+                                                    humanApiError(e, fallback: 'Não deu para apagar o cartão.'),
                                                   ),
                                                 ),
                                               );
@@ -356,7 +356,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 const SizedBox(height: 16),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Criar card manual', style: Theme.of(context).textTheme.titleSmall),
+                  title: Text('Criar cartão manual', style: Theme.of(context).textTheme.titleSmall),
                   children: [
                     TextField(controller: frontCtrl, decoration: const InputDecoration(labelText: 'Frente')),
                     const SizedBox(height: 8),
@@ -364,7 +364,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: FilledButton(onPressed: _create, child: const Text('Salvar card')),
+                      child: FilledButton(onPressed: _create, child: const Text('Salvar cartão')),
                     ),
                   ],
                 ),

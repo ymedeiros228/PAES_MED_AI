@@ -176,8 +176,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   SectionLabel(
                     'Prioridade',
                     hint: officialN >= 10
-                        ? 'Score local de estudo (base oficial) — não é % de aprovação UEMA'
-                        : 'Score local com base de treino — não é incidência UEMA',
+                        ? 'Pontuação local de estudo (base oficial) — não é % de aprovação UEMA'
+                        : 'Pontuação local com base de treino — não é incidência UEMA',
                   ),
                   if (items.isEmpty)
                     QuietEmpty(
@@ -233,7 +233,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   ExpansionTile(
                     tilePadding: EdgeInsets.zero,
                     title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
-                    subtitle: const Text('Rascunhos, labels sujas, inventário e curadoria'),
+                    subtitle: const Text('Rascunhos, assuntos duvidosos, inventário e curadoria'),
                     children: [
                       FutureBuilder(
                         key: ValueKey('drafts-$tick'),
@@ -321,13 +321,13 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         builder: (context, snap) {
                           if (snap.connectionState == ConnectionState.waiting) {
                             return const CompactStatus(
-                              message: 'Carregando labels para revisar…',
+                              message: 'Carregando assuntos para revisar…',
                               icon: Icons.hourglass_empty_rounded,
                             );
                           }
                           if (snap.hasError || snap.data is! Map) {
                             return const CompactStatus(
-                              message: 'Labels suspeitas indisponíveis no momento.',
+                              message: 'Assuntos suspeitos indisponíveis no momento.',
                               icon: Icons.sync_problem_outlined,
                             );
                           }
@@ -336,14 +336,14 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           final dirtyItems = d['items'] as List? ?? const [];
                           if (n == 0) {
                             return const CompactStatus(
-                              message: 'Nenhuma label suspeita encontrada.',
+                              message: 'Nenhum assunto suspeito encontrado.',
                               icon: Icons.label_outline_rounded,
                             );
                           }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SectionLabel('Labels suspeitas', hint: '$n cross-domain · rode Reclassificar'),
+                              SectionLabel('Assuntos suspeitos', hint: '$n assuntos de áreas misturadas · rode Reclassificar'),
                               for (final raw in dirtyItems.take(6))
                                 Builder(
                                   builder: (_) {

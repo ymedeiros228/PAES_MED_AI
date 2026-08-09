@@ -379,7 +379,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           children: [
                             FilledButton.tonal(
                               onPressed: () => context.go('/flashcards?due=1'),
-                              child: const Text('Cards'),
+                              child: const Text('Cartões'),
                             ),
                             if (subject.isNotEmpty && topic.isNotEmpty)
                               OutlinedButton(
@@ -591,7 +591,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                       if (!mounted) return;
                                       messenger.showSnackBar(
                                         SnackBar(
-                                          content: Text('Card(s): ${(data as Map)['created'] ?? 0}'),
+                                        content: Text('Cartões criados: ${(data as Map)['created'] ?? 0}'),
                                         ),
                                       );
                                     } catch (e) {
@@ -599,13 +599,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                       messenger.showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            humanApiError(e, fallback: 'Não deu para criar o card.'),
+                                            humanApiError(e, fallback: 'Não deu para criar o cartão.'),
                                           ),
                                         ),
                                       );
                                     }
                                   },
-                                  child: const Text('Criar card'),
+                                  child: const Text('Criar cartão'),
                                 ),
                               ],
                             ),

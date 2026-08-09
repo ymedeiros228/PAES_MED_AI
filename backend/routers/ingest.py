@@ -305,7 +305,7 @@ def api_ingest_classify_pending() -> dict[str, Any]:
         "bySubject": inv.get("bySubject"),
         "bankProfile": bank_export,
         "message": (
-            f"Reclassificados {updated} · cross-domain corrigidos {cross_fixed} · residual {residual}."
+            f"Reclassificados {updated} · assuntos de áreas misturadas corrigidos {cross_fixed} · restantes {residual}."
         ),
         "disclaimer": "Relatório da base local — não inventa incidência UEMA.",
     }
@@ -382,7 +382,7 @@ def api_acervo_bootstrap_year(payload: AcervoBootstrapRequest) -> dict[str, Any]
 
     result = bootstrap_year(dry_run=payload.dryRun, overwrite=payload.overwrite, year=payload.year)
     if not result.get("ok") and not payload.dryRun:
-        raise HTTPException(400, result.get("message") or result.get("error") or "Bootstrap falhou")
+        raise HTTPException(400, result.get("message") or result.get("error") or "A preparação do acervo falhou")
     return result
 
 @router.post("/api/acervo/bootstrap-and-commit")

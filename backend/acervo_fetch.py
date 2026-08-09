@@ -201,7 +201,7 @@ def fetch_year(year: int, *, dry_run: bool = False, overwrite: bool = False) -> 
         results["message"] = "PDFs salvos. Próximo passo: Biblioteca → Revisar → Commitar."
     elif not ok_any:
         results["message"] = (
-            f"Download falhou para PAES {year}. Use o portal, Abrir provas/gabaritos (drop manual) ou Tentar de novo."
+            f"Importação falhou para PAES {year}. Use o portal, abra provas/gabaritos e escolha os arquivos manualmente, ou tente de novo."
         )
         results["fetchFailed"] = True
     else:

@@ -560,7 +560,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               if (flashcardsCreated > 0)
                 Chip(
                   avatar: Icon(Icons.style_outlined, size: 18, color: cs.primary),
-                  label: Text('$flashcardsCreated card${flashcardsCreated == 1 ? '' : 's'}'),
+                  label: Text('$flashcardsCreated cartão${flashcardsCreated == 1 ? '' : 'ões'}'),
                   visualDensity: VisualDensity.compact,
                 ),
               if (cardsDone > 0)
@@ -586,7 +586,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       [
-                        if (officialInPack != null) 'Oficiais neste pack: $officialInPack',
+                        if (officialInPack != null) 'Oficiais nesta seleção: $officialInPack',
                         if (toppedOff) 'Completamos com oficiais do acervo',
                         if (yearWidened) 'Janela de anos ampliada para achar itens',
                       ].join(' · '),
@@ -664,7 +664,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               TextButton(
                 onPressed: () => context.go('/flashcards?due=1'),
-                child: const Text('Cards'),
+                child: const Text('Cartões'),
               ),
               TextButton(
                 onPressed: () => context.go('/progresso'),
@@ -730,7 +730,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         flashcardsCreated++;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Card criado para revisar amanhã.'),
+            content: Text('Cartão criado para revisar amanhã.'),
             duration: Duration(seconds: 3),
           ),
         );
@@ -782,7 +782,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         setState(
           () => cardReviewError = humanApiError(
             e,
-            fallback: 'Revisão do card não registrada.',
+            fallback: 'Revisão do cartão não registrada.',
           ),
         );
       }
@@ -909,7 +909,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
     if (phaseName == 'theory') return ' · Enter avança';
     if (isRevPhase && !revisionUsingQuestions) {
-      return ' · Espaço vira o card';
+      return ' · Espaço vira o cartão';
     }
     if (pendingErrorPick) return ' · Escolha o tipo de erro';
     if (revealed) return ' · Enter próxima';
@@ -931,7 +931,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       buf.writeln('- $s');
     }
     buf.writeln('\n## Sessão');
-    buf.writeln('Respondidas: ${answeredIds.length} · Acertos: $correctCount · Cards: $cardsDone');
+    buf.writeln('Respondidas: ${answeredIds.length} · Acertos: $correctCount · Cartões: $cardsDone');
     if (sessionErrors.isNotEmpty) {
       buf.writeln('Erros (tipos): ${sessionErrors.join(', ')}');
     }
@@ -1001,12 +1001,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       if (!mounted) return;
       final n = (data as Map)['created'] ?? 0;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(n == 0 ? 'Sem eixos para card' : 'Card(s) criados: $n')),
+        SnackBar(content: Text(n == 0 ? 'Sem eixos para cartão' : 'Cartões criados: $n')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar o card.'))),
+            SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para criar o cartão.'))),
       );
     }
   }
@@ -1045,7 +1045,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ),
           TextButton(
             onPressed: _createCardFromCurrent,
-            child: const Text('Criar card'),
+            child: const Text('Criar cartão'),
           ),
         ],
       ),
@@ -1485,7 +1485,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               if (sessionCards.isEmpty)
                 QuietEmpty(
                   message:
-                      'Nenhum card para revisar agora (${((plan?['revisions'] as List?) ?? []).length} '
+                      'Nenhum cartão para revisar agora (${((plan?['revisions'] as List?) ?? []).length} '
                       'assunto(s) na fila). Carregue revisões para praticar com questões.',
                   action: FilledButton.tonal(
                     onPressed: () => unawaited(_enterRevisionsPhase()),
@@ -1493,7 +1493,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                 )
               else ...[
-                Text('Card ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
+                Text('Cartão ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
                 const SizedBox(height: 8),
                 SurfacePanel(
                   padding: EdgeInsets.zero,

@@ -3181,7 +3181,7 @@ def run_checks() -> list[Check]:
     ).exists() else ""
     ok(
         "ciclo_br_dominio_avancado",
-        "Rascunhos, labels sujas" in med_br or "labels sujas" in med_br,
+        "Rascunhos, assuntos duvidosos" in med_br or "assuntos duvidosos" in med_br,
         "domínio Avançado",
     )
     sett_br = (
@@ -4023,7 +4023,7 @@ def run_checks() -> list[Check]:
     )
     ok(
         "ciclo_cp_cards_loading",
-        "Cards do dia" in dash_cp or "Cards do dia…" in dash_cp,
+        "Cartões do dia" in dash_cp or "Cartões do dia…" in dash_cp,
         "cards loading gate",
     )
     ok(
@@ -4566,7 +4566,7 @@ def run_checks() -> list[Check]:
         "ciclo_dj_backup_human_error",
         "humanApiError(e, fallback: 'Falha no backup.')" in settings_dj
         and "humanApiError(e, fallback: 'Falha ao restaurar.')" in settings_dj
-        and "Restaurar backup?" in settings_dj
+        and "Restaurar cópia de segurança?" in settings_dj
         and "sha256Prefix" in settings_dj,
         "backup human errors",
     )
@@ -5053,8 +5053,8 @@ def run_checks() -> list[Check]:
         and "LogicalKeyboardKey.keyB" in settings_el
         and (
             "R atualiza health" in settings_el
-            or "atalho B = backup" in settings_el
-            or "B backup" in settings_el
+            or "atalho B = cópia de segurança" in settings_el
+            or "B cópia de segurança" in settings_el
         )
         and "Salvar cópia de segurança (B)" in settings_el,
         "settings rb keys",
@@ -5629,7 +5629,7 @@ def run_checks() -> list[Check]:
     ok(
         "ciclo_fw_session_card_review",
         "cardReviewError" in sess_fb
-        and "Revisão do card não registrada." in sess_fb,
+        and "Revisão do cartão não registrada." in sess_fb,
         "session card review",
     )
     ok(
@@ -5708,7 +5708,7 @@ def run_checks() -> list[Check]:
     ok(
         "ciclo_gc_sim_preflight_health",
         "healthNote" in sim_fy
-        and "API offline — contagem de oficiais indisponível." in sim_fy,
+        and "Sem internet — contagem de oficiais indisponível." in sim_fy,
         "sim preflight health",
     )
     ok(

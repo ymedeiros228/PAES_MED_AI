@@ -303,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               PageHeader(
                 eyebrow: 'Conta',
                 title: 'Ajustes',
-                subtitle: 'Preferências · atalho B = backup',
+                subtitle: 'Preferências · atalho B = cópia de segurança',
               ),
 
               SectionLabel('Sobre'),
@@ -353,7 +353,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'App local de treino para PAES UEMA Medicina.\n'
-                      '• Offline-first — dados no seu PC\n'
+                      '• Funciona sem internet — dados no seu PC\n'
                       '• Não inventa % de aprovação nem prova oficial ausente\n'
                       '• Catálogo de reforço (vídeo/leitura) não é edital da banca',
                       style: Theme.of(context).textTheme.bodyMedium,
@@ -590,8 +590,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         title: Text(
                           lastBackup!['ok'] == true
-                              ? 'Último backup verificado'
-                              : 'Nenhum backup verificado',
+                              ? 'Última cópia de segurança verificada'
+                              : 'Nenhuma cópia de segurança verificada',
                         ),
                         subtitle: Text(
                           () {
@@ -621,7 +621,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               final ok = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: const Text('Restaurar backup?'),
+                                  title: const Text('Restaurar cópia de segurança?'),
                                   content: Text(
                                     'Substitui o progresso atual por:\n\n$name'
                                     '${sha.isNotEmpty ? '\n\nCódigo de verificação (avançado): $sha' : ''}'
@@ -770,12 +770,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
-                subtitle: const Text('Mídia · oficina · índices · paths'),
+                subtitle: const Text('Mídia · oficina · índices · caminhos'),
                 children: [
                   SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Tutor com IA online'),
+                    title: const Text('Tutor com IA conectada'),
                     subtitle: Text(
                       aiOnline
                           ? 'Chave configurada'
@@ -958,7 +958,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: const Text('Lote de rascunhos (professor)'),
                     trailing: FilledButton.tonal(onPressed: _professorBatch, child: const Text('Rodar')),
                   ),
-                  SectionLabel('Índices', hint: 'RAG e recálculo local'),
+                  SectionLabel('Índices', hint: 'Busca na base e recálculo local'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Reindexar material local'),

@@ -36,7 +36,7 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
       if (mounted) {
         setState(() {
           online = false;
-          lastError = humanApiError(e, fallback: 'API local offline.');
+          lastError = humanApiError(e, fallback: 'Aplicativo sem internet.');
         });
       }
     }

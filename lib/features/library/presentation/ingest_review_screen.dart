@@ -416,8 +416,8 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             padding: const EdgeInsets.all(10),
                             child: Text(
                               ocrFailed
-                                  ? 'OCR falhou/indisponível. Instale Tesseract + pdf2image/poppler no Windows, ou revise o texto manualmente.'
-                                  : 'PDF parece escaneado (needsOcr). Confirme enunciados. Setup: Tesseract OCR (por) + pip install pytesseract pdf2image.',
+                                  ? 'A leitura automática falhou ou está indisponível. Revise o texto manualmente.'
+                                  : 'O PDF parece escaneado. Confirme os enunciados e revise o texto antes de importar.',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.orange.shade900),
                             ),
                           ),

@@ -272,7 +272,7 @@ def list_dirty_labels(*, limit: int = 40) -> dict[str, Any]:
         "count": int(inv.get("crossDomainCount") or 0),
         "items": items,
         "bySubject": inv.get("bySubject"),
-        "disclaimer": "Labels suspeitas da base local — rode Reclassificar lote.",
+        "disclaimer": "Assuntos suspeitos da base local — rode Reclassificar lote.",
     }
 
 
@@ -522,7 +522,7 @@ def curation_health() -> dict[str, Any]:
         "axles": axle.get("axles"),
         "alerts": alerts,
         "message": (
-            f"Natureza {nat_real}/{nat_n} real · oficiais {real_n}/{official_n} real · cross-domain {cross}."
+            f"Natureza {nat_real}/{nat_n} real · oficiais {real_n}/{official_n} real · assuntos de áreas misturadas {cross}."
         ),
         "disclaimer": "Contagens da base local — sem inventar incidência.",
     }
@@ -628,7 +628,7 @@ def close_study_day() -> dict[str, Any]:
         "ok": True,
         "closedDate": today,
         "closedAt": now,
-        "message": "Dia encerrado. Amanhã basta abrir Hoje e seguir o coach.",
+        "message": "Dia encerrado. Amanhã basta abrir Hoje e seguir a orientação.",
         "tomorrowHint": daily.get("line") or "Amanhã: sessão Natureza.",
         "weekProgress": week,
         "readiness": dash.get("readiness"),
@@ -990,11 +990,11 @@ def export_study_week_markdown() -> dict[str, Any]:
         "",
         "## Métricas (treino local)",
         f"- Minutos na semana: {minutes}",
-        f"- Streak (dias seguidos): {streak}",
-        f"- Cards due (ao fechar o snapshot): {due}",
+        f"- Sequência de estudo (dias seguidos): {streak}",
+        f"- Cartões para revisar (ao fechar o resumo): {due}",
         f"- Progresso: met={week_progress.get('met')} · "
         f"{week_progress.get('label') or week_progress.get('line') or '—'}",
-        f"- Readiness score local: {readiness.get('score')} — pulso de treino, não % UEMA",
+        f"- Prontidão local: {readiness.get('score')} — pulso de treino, não % UEMA",
         "",
         "## Lacunas quentes",
     ]
@@ -1149,7 +1149,7 @@ def close_study_week() -> dict[str, Any]:
         "ok": True,
         "weekKey": week_key,
         "closedAt": now,
-        "message": "Semana encerrada. Na próxima, o coach reabre o contador.",
+        "message": "Semana encerrada. Na próxima, a orientação reabre o contador.",
         "nextHint": (dash.get("dailyRoutine") or {}).get("line") or "Próxima semana: sessão Natureza.",
         "weekProgress": dash.get("weekProgress"),
         "readiness": dash.get("readiness"),
@@ -1261,13 +1261,13 @@ def build_study_readiness(
     cd = countdown or {}
     phase = cd.get("phase") or "unset"
     if phase == "final" and score < 60:
-        tip = "Reta final: priorize lacunas e cards due, não volume novo."
+        tip = "Reta final: priorize lacunas e cartões para revisar, não volume novo."
     elif phase == "sprint":
-        tip = "Sprint: feche o checklist do dia e um simulado curto na semana."
+        tip = "Reta final: feche o checklist do dia e um simulado curto na semana."
     elif gap_n > 0:
         tip = f"Próximo passo: recuperar {gap_n} lacuna(s) na Fila."
     elif due_cards > 0:
-        tip = f"Próximo passo: {due_cards} card(s) due."
+        tip = f"Próximo passo: {due_cards} cartão(ões) para revisar."
     elif not week.get("met"):
         tip = "Próximo passo: sessão Natureza para avançar a meta semanal."
     else:
@@ -1335,7 +1335,7 @@ def build_week_progress(
         "streakDays": streak,
         "nextStep": next_step,
         "hint": (
-            "Semana fechada — descanse ou cards leves."
+            "Semana fechada — descanse ou revise cartões leves."
             if week_closed
             else (
                 "Meta atingida — um simulado curto consolida."
@@ -1586,7 +1586,7 @@ def professor_blocks(question: dict[str, Any]) -> dict[str, Any]:
 def predict_topic(
     subject: str, topic: str, match: dict[str, Any] | None = None, official_only: bool | None = None
 ) -> dict[str, Any]:
-    """Score local de prioridade — NÃO é probabilidade de cobrança UEMA nem de aprovação."""
+    """Pontuação local de prioridade — NÃO é probabilidade de cobrança UEMA nem de aprovação."""
     if match is None:
         freq_list = topic_frequency(official_only)
         match = next(
@@ -1600,7 +1600,7 @@ def predict_topic(
             "probability": 0,  # legado; use priorityScore
             "confidence": "baixa",
             "disclaimer": (
-                "Score local de prioridade de estudo — não é incidência oficial da UEMA "
+                "Pontuação local de prioridade de estudo — não é incidência oficial da UEMA "
                 "nem probabilidade de aprovação."
             ),
             "reason": "Assunto sem histórico na base atual.",
@@ -1631,7 +1631,7 @@ def predict_topic(
         "probability": int(score),  # legado UI
         "confidence": confidence,
         "disclaimer": (
-            "Score local de prioridade (histórico da base) — não é probabilidade de cobrança UEMA "
+            "Pontuação local de prioridade (histórico da base) — não é probabilidade de cobrança UEMA "
             "nem de aprovação."
         ),
         "reason": " ".join(reason_parts),
@@ -2151,9 +2151,9 @@ def dashboard_stats() -> dict[str, Any]:
             "filaDue": "/fila",
         },
         "hint": (
-            f"Fecho da semana: {due_cards} card(s) due · {len(gaps_slim)} lacuna(s) quente(s)."
+            f"Fecho da semana: {due_cards} cartão(ões) para revisar · {len(gaps_slim)} lacuna(s) quente(s)."
             if due_cards or gaps_slim
-            else "Fecho da semana: sem due nem lacunas quentes — faça um simulado curto ou sessão Natureza."
+            else "Fecho da semana: sem cartões pendentes nem lacunas quentes — faça um simulado curto ou sessão Natureza."
         ),
     }
 
@@ -2303,7 +2303,7 @@ def build_daily_routine(
     phase = cd.get("phase") or "unset"
 
     if day_closed:
-        line = "Dia encerrado — amanhã o coach volta aqui"
+        line = "Dia encerrado — amanhã a orientação volta aqui"
         primary = "closed"
         close_path = "/dashboard"
         close_label = "Ok"
@@ -2314,12 +2314,12 @@ def build_daily_routine(
         close_label = "Ir à fila"
     elif due_cards > 0:
         if intensity == "high":
-            line = f"Reta curta: {due_cards} card(s) due → sessão {subject}"
+            line = f"Reta curta: {due_cards} cartão(ões) para revisar → sessão {subject}"
         else:
-            line = f"Hoje: {due_cards} card(s) due + sessão Natureza (~60 min)"
+            line = f"Hoje: {due_cards} cartão(ões) para revisar + sessão Natureza (~60 min)"
         primary = "cards"
         close_path = "/flashcards"
-        close_label = "Revisar cards"
+        close_label = "Revisar cartões"
     elif study_today:
         line = f"Hoje: sessão · {subject} · {topic}"
         primary = "session"
@@ -2416,7 +2416,7 @@ def build_daily_routine(
             "tip": ready.get("tip"),
         },
         "hint": (
-            "Dia fechado. Descanse ou revise cards leves."
+            "Dia fechado. Descanse ou revise cartões leves."
             if day_closed
             else (
                 ready.get("tip")

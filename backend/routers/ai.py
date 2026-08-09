@@ -121,7 +121,7 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
         hot = dash.get("errorHotTopics") or []
         grounded_cites: list[dict[str, Any]] = []
         lines: list[str] = [
-            f"Tutor offline · tópico do dia: {subject} · {topic}",
+            f"Tutor sem internet · tópico do dia: {subject} · {topic}",
             "",
         ]
         # Prefer oficiais Natureza no coach Natureza; senão tópico do dia
