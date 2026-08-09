@@ -45,7 +45,7 @@ final appRouter = GoRouter(
   },
   routes: [
     GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
-    // Aliases de deep-link/antigos — evita dead-end em CTA e link legado.
+    // Apelidos de deep-link/antigos — evita encerramentos em CTA e link legado.
     GoRoute(path: '/hoje', redirect: (_, __) => '/dashboard'),
     GoRoute(path: '/ajustes', redirect: (_, __) => '/configuracoes'),
     ShellRoute(
@@ -140,13 +140,13 @@ final appRouter = GoRouter(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Essa página não existe',
+                  'Esta página não existe',
                   style: Theme.of(ctx).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Volte ao início e siga pelo menu. Se veio de um link antigo, abra Hoje.',
+                  'Retornar ao início e seguir pelo menu. Se veio de um link antigo, abra Hoje.',
                   textAlign: TextAlign.center,
                   style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                         color: cs.onSurface.withOpacity(0.65),
