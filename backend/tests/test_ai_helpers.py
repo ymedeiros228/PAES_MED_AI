@@ -12,9 +12,36 @@ from fastapi import HTTPException
 BACKEND = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND))
 
+import ai_state  # noqa: E402
 import api_helpers  # noqa: E402
 from routers.ai import retrieval_query  # noqa: E402
 from schemas import ChatMessage  # noqa: E402
+
+
+def test_openrouter_tenta_modelos_gratuitos_e_memoriza_o_primeiro_ok(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = dict(ai_state._values["openrouter"])
+    original_status = ai_state._statuses["openrouter"]
+    attempts: list[str] = []
+    try:
+        ai_state._values["openrouter"] = {"key": "router-chave", "model": ""}
+        def fake_request(provider: str, key: str, model: str, *_: object) -> str:
+            attempts.append(model)
+            if len(attempts) == 1:
+                raise RuntimeError("unavailable")
+            return "resposta gratuita"
+
+        monkeypatch.setattr(api_helpers, "_compatible_provider_request", fake_request)
+        assert api_helpers._ask_openrouter("instruções", "pergunta") == "resposta gratuita"
+        assert attempts == [
+            "deepseek/deepseek-r1:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+        ]
+        assert ai_state.provider_model("openrouter") == attempts[-1]
+    finally:
+        ai_state._values["openrouter"] = original
+        ai_state._statuses["openrouter"] = original_status
 
 
 def test_ask_gemini_retorna_texto_da_resposta(monkeypatch: pytest.MonkeyPatch) -> None:

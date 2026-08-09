@@ -252,3 +252,64 @@ def test_tutor_cai_para_offline_se_os_dois_provedores_falharem(
 
     assert result.model == "offline-no-base-embedded"
     assert result.uncited is True
+
+
+def test_preserva_as_quatro_chaves_ao_salvar_uma(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "GEMINI_API_KEY=g\nGROQ_API_KEY=r\nOPENROUTER_API_KEY=o\nOPENAI_API_KEY=a\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(ai_state, "BASE_DIR", tmp_path)
+    original = {name: dict(value) for name, value in ai_state._values.items()}
+    statuses = dict(ai_state._statuses)
+    try:
+        ai_state.configure_provider("groq", "groq-nova", "llama-test")
+        content = env_path.read_text(encoding="utf-8")
+        assert "GEMINI_API_KEY=g" in content
+        assert "GROQ_API_KEY=groq-nova" in content
+        assert "OPENROUTER_API_KEY=o" in content
+        assert "OPENAI_API_KEY=a" in content
+        assert "GROQ_MODEL=llama-test" in content
+        assert "groq-nova" not in str(ai_state.state())
+    finally:
+        ai_state._values.clear()
+        ai_state._values.update(original)
+        ai_state._statuses.clear()
+        ai_state._statuses.update(statuses)
+
+
+def test_cascata_tenta_provedores_na_ordem_e_depois_offline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts: list[str] = []
+    monkeypatch.setattr(
+        ai,
+        "configured_providers",
+        lambda: ["gemini", "groq", "openrouter", "openai"],
+    )
+    monkeypatch.setattr(ai, "_configured_provider", lambda: "gemini")
+    monkeypatch.setattr(ai, "provider_configured", lambda _provider: True)
+
+    def failure(
+        _payload: ChatRequest,
+        provider_override: str | None = None,
+        force_offline: bool = False,
+    ) -> None:
+        attempts.append("offline" if force_offline else str(provider_override))
+        raise HTTPException(status_code=502, detail="falha")
+
+    monkeypatch.setattr(ai, "_api_chat", failure)
+    with pytest.raises(HTTPException):
+        ai.api_chat(ChatRequest(message="Explique osmose."))
+    assert attempts == ["gemini", "groq", "openrouter", "openai", "offline"]
+
+
+def test_modelos_openrouter_preservam_sufixo_gratuito() -> None:
+    assert ai_state.provider_model_candidates("openrouter") == [
+        "deepseek/deepseek-r1:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+    ]

@@ -17,6 +17,7 @@ from ai_state import (
     provider_configured,
     provider_key,
     provider_model,
+    provider_model_candidates,
     remember_model,
     set_provider_status,
 )
@@ -37,6 +38,111 @@ def _openai_client():
         timeout=OPENAI_TIMEOUT_SECONDS,
         max_retries=1,
     )
+
+
+_COMPATIBLE_BASE_URLS = {
+    "groq": "https://api.groq.com/openai/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
+}
+
+
+def _compatible_provider_request(
+    provider: str,
+    api_key: str,
+    model: str,
+    instructions: str,
+    user_content: str,
+    history: list[ChatMessage] | None = None,
+) -> str:
+    import httpx
+
+    messages = [{"role": "system", "content": instructions}]
+    messages.extend(
+        {"role": item.role, "content": item.content}
+        for item in (history or [])[-20:]
+    )
+    messages.append({"role": "user", "content": user_content})
+    headers = {"Authorization": f"Bearer {api_key}"}
+    if provider == "openrouter":
+        headers["HTTP-Referer"] = "https://paes-med-ai.local"
+        headers["X-Title"] = "PAES MED AI"
+    try:
+        response = httpx.post(
+            f"{_COMPATIBLE_BASE_URLS[provider]}/chat/completions",
+            headers=headers,
+            json={"model": model, "messages": messages, "temperature": 0.2},
+            timeout=OPENAI_TIMEOUT_SECONDS,
+        )
+    except httpx.HTTPError as exc:
+        raise RuntimeError("connection") from exc
+    if response.status_code >= 400:
+        if response.status_code in {401, 403}:
+            kind = "key_rejected"
+        elif response.status_code == 429:
+            kind = "quota"
+        elif response.status_code == 404:
+            kind = "unavailable"
+        else:
+            kind = "connection" if response.status_code >= 500 else "unavailable"
+        raise RuntimeError(kind)
+    try:
+        data = response.json()
+    except (ValueError, TypeError) as exc:
+        raise RuntimeError("unavailable") from exc
+    choices = data.get("choices") or []
+    answer = (
+        choices[0].get("message", {}).get("content", "").strip()
+        if choices and isinstance(choices[0], dict)
+        else ""
+    )
+    if not answer:
+        raise RuntimeError("unavailable")
+    return answer
+
+
+def _ask_compatible(
+    provider: str,
+    instructions: str,
+    user_content: str,
+    history: list[ChatMessage] | None = None,
+) -> str:
+    if not provider_configured(provider):  # type: ignore[arg-type]
+        raise HTTPException(status_code=503, detail=f"{provider.upper()}_API_KEY não configurada.")
+    last_kind = "unavailable"
+    for model in provider_model_candidates(provider):  # type: ignore[arg-type]
+        try:
+            answer = _compatible_provider_request(
+                provider,
+                provider_key(provider),  # type: ignore[arg-type]
+                model,
+                instructions,
+                user_content,
+                history,
+            )
+            if model != provider_model(provider):  # type: ignore[arg-type]
+                remember_model(provider, model)  # type: ignore[arg-type]
+            set_provider_status(provider, "working")  # type: ignore[arg-type]
+            return answer
+        except RuntimeError as exc:
+            last_kind = str(exc)
+            set_provider_status(provider, last_kind)  # type: ignore[arg-type]
+            if last_kind in {"key_rejected", "connection"}:
+                break
+    details = {
+        "key_rejected": "A chave foi recusada. Verifique se ela está ativa.",
+        "quota": "O provedor atingiu o limite de uso ou cota.",
+        "connection": "Não foi possível conectar ao provedor.",
+        "unavailable": "Nenhum modelo disponível para este provedor.",
+    }
+    raise HTTPException(status_code=502, detail=details[last_kind])
+
+
+def _ask_groq(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:
+    return _ask_compatible("groq", instructions, user_content, history)
+
+
+def _ask_openrouter(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:
+    return _ask_compatible("openrouter", instructions, user_content, history)
 
 
 def _gemini_configured() -> bool:
@@ -268,6 +374,32 @@ def validate_openai_key(api_key: str) -> str:
             detail = "Não foi possível validar a chave OpenAI."
             status = 502
         raise HTTPException(status_code=status, detail=detail) from exc
+
+
+def validate_compatible_key(provider: str, api_key: str, model: str | None = None) -> str:
+    candidates = provider_model_candidates(provider, model)  # type: ignore[arg-type]
+    last_kind = "unavailable"
+    for candidate in candidates:
+        try:
+            _compatible_provider_request(
+                provider,
+                api_key,
+                candidate,
+                "Responda apenas com OK.",
+                "Teste de configuração.",
+            )
+            return candidate
+        except RuntimeError as exc:
+            last_kind = str(exc)
+            if last_kind in {"key_rejected", "connection"}:
+                break
+    details = {
+        "key_rejected": "A chave foi recusada. Verifique se ela está ativa.",
+        "quota": "O provedor atingiu o limite de uso ou cota.",
+        "connection": "Não foi possível conectar ao provedor.",
+        "unavailable": "Os modelos disponíveis estão indisponíveis.",
+    }
+    raise HTTPException(status_code=400 if last_kind == "key_rejected" else 502, detail=details[last_kind])
 
 
 def _ask_openai(instructions: str, user_content: str, history: list[ChatMessage] | None = None) -> str:

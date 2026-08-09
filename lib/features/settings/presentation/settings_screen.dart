@@ -38,6 +38,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   List<dynamic> backups = [];
   final _focusNode = FocusNode();
   late final TextEditingController geminiKeyCtrl;
+  late final TextEditingController groqKeyCtrl;
+  late final TextEditingController openRouterKeyCtrl;
   late final TextEditingController openAiKeyCtrl;
   bool aiConfigLoading = true;
   bool aiBusy = false;
@@ -66,6 +68,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.initState();
     examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
     geminiKeyCtrl = TextEditingController();
+    groqKeyCtrl = TextEditingController();
+    openRouterKeyCtrl = TextEditingController();
     openAiKeyCtrl = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
@@ -81,6 +85,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _focusNode.dispose();
     examCtrl.dispose();
     geminiKeyCtrl.dispose();
+    groqKeyCtrl.dispose();
+    openRouterKeyCtrl.dispose();
     openAiKeyCtrl.dispose();
     super.dispose();
   }
@@ -114,7 +120,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _configureAi(String provider) async {
-    final controller = provider == 'gemini' ? geminiKeyCtrl : openAiKeyCtrl;
+    final controller = switch (provider) {
+      'gemini' => geminiKeyCtrl,
+      'groq' => groqKeyCtrl,
+      'openrouter' => openRouterKeyCtrl,
+      _ => openAiKeyCtrl,
+    };
     final key = controller.text.trim();
     if (key.isEmpty) {
       setState(() => aiMsg = 'Cole a chave do provedor para validar.');
@@ -666,7 +677,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     final active = aiConfig!['activeProvider']?.toString();
                     final activeModel = aiConfig!['activeModel']?.toString();
                     final geminiConfigured = aiConfig!['geminiConfigured'] == true;
+                    final groqConfigured = aiConfig!['groqConfigured'] == true;
+                    final openRouterConfigured = aiConfig!['openrouterConfigured'] == true;
                     final openAiConfigured = aiConfig!['openaiConfigured'] == true;
+                    final providerNames = {
+                      'gemini': 'Gemini',
+                      'groq': 'Groq',
+                      'openrouter': 'OpenRouter',
+                      'openai': 'OpenAI',
+                    };
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -676,7 +695,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               child: Text(
                                 active == null
                                     ? 'Nenhum provedor ativo'
-                                    : 'Ativo: ${active == 'gemini' ? 'Gemini' : 'OpenAI'}'
+                                    : 'Ativo: ${providerNames[active] ?? active}'
                                         '${activeModel == null ? '' : ' · $activeModel'}',
                                 style: Theme.of(context).textTheme.titleSmall,
                               ),
@@ -694,6 +713,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ? 'Gemini configurado · ${aiConfig!['geminiKeyLast4'] ?? 'chave mascarada'}'
                               : 'Gemini sem chave configurada.',
                           icon: geminiConfigured
+                              ? Icons.check_circle_outline
+                              : Icons.radio_button_unchecked,
+                        ),
+                        CompactStatus(
+                          message: groqConfigured
+                              ? 'Groq configurado · ${aiConfig!['groqKeyLast4'] ?? 'chave mascarada'}'
+                              : 'Groq sem chave configurada.',
+                          icon: groqConfigured
+                              ? Icons.check_circle_outline
+                              : Icons.radio_button_unchecked,
+                        ),
+                        CompactStatus(
+                          message: openRouterConfigured
+                              ? 'OpenRouter configurado · ${aiConfig!['openrouterKeyLast4'] ?? 'chave mascarada'}'
+                              : 'OpenRouter sem chave configurada.',
+                          icon: openRouterConfigured
                               ? Icons.check_circle_outline
                               : Icons.radio_button_unchecked,
                         ),
@@ -718,8 +753,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 12),
                         _AiProviderEditor(
+                          name: 'Groq',
+                          hint: 'Gere em console.groq.com',
+                          controller: groqKeyCtrl,
+                          configured: groqConfigured,
+                          status: aiConfig!['groqStatus']?.toString(),
+                          busy: aiBusy,
+                          onSave: () => _configureAi('groq'),
+                          onTest: () => _testAi('groq'),
+                        ),
+                        const SizedBox(height: 12),
+                        _AiProviderEditor(
+                          name: 'OpenRouter',
+                          hint: 'Gere em openrouter.ai/settings/keys',
+                          controller: openRouterKeyCtrl,
+                          configured: openRouterConfigured,
+                          status: aiConfig!['openrouterStatus']?.toString(),
+                          busy: aiBusy,
+                          onSave: () => _configureAi('openrouter'),
+                          onTest: () => _testAi('openrouter'),
+                        ),
+                        const SizedBox(height: 12),
+                        _AiProviderEditor(
                           name: 'OpenAI',
-                          hint: 'Cole a chave da sua conta OpenAI',
+                          hint: 'Gere em platform.openai.com',
                           controller: openAiKeyCtrl,
                           configured: openAiConfigured,
                           status: aiConfig!['openaiStatus']?.toString(),

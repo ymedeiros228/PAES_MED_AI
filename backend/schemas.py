@@ -36,13 +36,13 @@ class ChatResponse(BaseModel):
 
 
 class AIProviderConfigRequest(BaseModel):
-    provider: Literal["gemini", "openai"]
+    provider: Literal["gemini", "groq", "openrouter", "openai"]
     apiKey: str = Field(min_length=1, max_length=512)
     model: str | None = Field(default=None, max_length=160)
 
 
 class AIProviderTestRequest(BaseModel):
-    provider: Literal["gemini", "openai"] | None = None
+    provider: Literal["gemini", "groq", "openrouter", "openai"] | None = None
 
 
 class AnswerRequest(BaseModel):

@@ -7,10 +7,12 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from ai_state import configured_provider, provider_configured, provider_model
+from ai_state import configured_providers, provider_configured, provider_model
 from api_helpers import (
     _ask_gemini,
+    _ask_groq,
     _ask_openai,
+    _ask_openrouter,
     _configured_provider,
     _openai_client,
 )
@@ -38,6 +40,9 @@ from services_extra import (
     skip_professor_draft,
 )
 
+# Compatibilidade para testes e clientes internos que importavam este nome.
+configured_provider = _configured_provider
+
 router = APIRouter(tags=["ia"])
 
 _FOLLOW_UP_PREFIXES = (
@@ -45,6 +50,21 @@ _FOLLOW_UP_PREFIXES = (
     "faça uma pergunta curta para testar meu entendimento",
     "transforme a resposta anterior em até 3 flashcards",
 )
+
+
+def _ask_provider(
+    provider: str,
+    instructions: str,
+    content: str,
+    history: list[Any] | None,
+) -> str:
+    askers = {
+        "gemini": _ask_gemini,
+        "groq": _ask_groq,
+        "openrouter": _ask_openrouter,
+        "openai": _ask_openai,
+    }
+    return askers[provider](instructions, content, history)
 
 
 def retrieval_query(message: str, history: list[Any] | None) -> str:
@@ -226,10 +246,7 @@ def _api_chat(
             "apenas que a base local não sustenta esse dado. Não substitua a "
             "explicação por uma recusa."
         )
-        if provider == "gemini":
-            answer = _ask_gemini(TUTOR_SYSTEM, uncited_content, payload.history)
-        else:
-            answer = _ask_openai(TUTOR_SYSTEM, uncited_content, payload.history)
+        answer = _ask_provider(provider, TUTOR_SYSTEM, uncited_content, payload.history)
         return ChatResponse(
             answer=answer,
             model=provider_model(provider),
@@ -240,10 +257,7 @@ def _api_chat(
             uncited=True,
         )
 
-    if provider == "gemini":
-        answer = _ask_gemini(TUTOR_SYSTEM, user_content, payload.history)
-    else:
-        answer = _ask_openai(TUTOR_SYSTEM, user_content, payload.history)
+    answer = _ask_provider(provider, TUTOR_SYSTEM, user_content, payload.history)
     model = provider_model(provider)
     return ChatResponse(
         answer=answer,
@@ -258,18 +272,25 @@ def _api_chat(
 
 @router.post("/api/chat", response_model=ChatResponse)
 def api_chat(payload: ChatRequest) -> ChatResponse:
-    try:
-        return _api_chat(payload)
-    except HTTPException as first_error:
-        if configured_provider() == "gemini" and provider_configured("openai"):
-            try:
-                return _api_chat(payload, provider_override="openai")
-            except HTTPException:
-                pass
+    first_error: HTTPException | None = None
+    providers = configured_providers()
+    preferred = _configured_provider()
+    if preferred and preferred not in providers:
+        providers.insert(0, preferred)
+    for candidate in ("gemini", "groq", "openrouter", "openai"):
+        if provider_configured(candidate) and candidate not in providers:
+            providers.append(candidate)
+    for provider in providers:
         try:
-            return _api_chat(payload, force_offline=True)
-        except HTTPException:
+            return _api_chat(payload, provider_override=provider)
+        except HTTPException as error:
+            first_error = first_error or error
+    try:
+        return _api_chat(payload, force_offline=True)
+    except HTTPException:
+        if first_error is not None:
             raise first_error from None
+        raise
 
 @router.post("/api/rag/reindex")
 def api_rag_reindex() -> dict[str, Any]:

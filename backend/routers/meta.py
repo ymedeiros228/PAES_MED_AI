@@ -15,7 +15,11 @@ from ai_state import (
     validate_secret,
 )
 from ai_state import state as ai_state
-from api_helpers import validate_gemini_key, validate_openai_key
+from api_helpers import (
+    validate_compatible_key,
+    validate_gemini_key,
+    validate_openai_key,
+)
 from db import DATA_DIR, db
 from schemas import AIProviderConfigRequest, AIProviderTestRequest
 from seed import seed
@@ -50,10 +54,14 @@ def health() -> dict[str, Any]:
         "status": "ok",
         "openai_configured": provider_configured("openai"),
         "gemini_configured": provider_configured("gemini"),
+        "groq_configured": provider_configured("groq"),
+        "openrouter_configured": provider_configured("openrouter"),
         "youtube_configured": youtube_configured(),
         "serper_configured": serper_configured(),
         "model": provider_model("openai"),
         "gemini_model": provider_model("gemini"),
+        "groq_model": provider_model("groq"),
+        "openrouter_model": provider_model("openrouter"),
         "questions": nq,
         "officialCount": basis.get("officialCount", 0),
         "statsBasis": basis.get("basis"),
@@ -90,6 +98,8 @@ def api_ai_configure(payload: AIProviderConfigRequest) -> dict[str, Any]:
         api_key = validate_secret(payload.apiKey)
         if payload.provider == "gemini":
             model = validate_gemini_key(api_key, payload.model)
+        elif payload.provider in {"groq", "openrouter"}:
+            model = validate_compatible_key(payload.provider, api_key, payload.model)
         else:
             model = validate_openai_key(api_key)
         configure_provider(payload.provider, api_key, payload.model or model)
@@ -117,6 +127,10 @@ def api_ai_test(payload: AIProviderTestRequest | None = None) -> dict[str, Any]:
             model = validate_gemini_key(provider_key("gemini"))
             if model != provider_model("gemini"):
                 configure_provider("gemini", provider_key("gemini"), model)
+        elif provider in {"groq", "openrouter"}:
+            model = validate_compatible_key(provider, provider_key(provider))
+            if model != provider_model(provider):
+                configure_provider(provider, provider_key(provider), model)
         else:
             model = validate_openai_key(provider_key("openai"))
     except HTTPException as exc:
