@@ -689,12 +689,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final correct = selected == correctIdx;
     qSw.stop();
     if (!correct) {
+      HapticFeedback.mediumImpact();
       setState(() {
         revealed = true;
         pendingErrorPick = true;
       });
       return;
     }
+    HapticFeedback.lightImpact();
     await _persistAnswer(q, correct: true, type: null);
   }
 
@@ -749,10 +751,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
   Future<void> _confirmErrorAndSave() async {
     if (sessionQuestions.isEmpty) return;
+    HapticFeedback.selectionClick();
     await _persistAnswer(sessionQuestions[qIndex], correct: false, type: errorType);
   }
 
   Future<void> _nextQuestion() async {
+    HapticFeedback.selectionClick();
     if (qIndex >= sessionQuestions.length - 1) {
       await _nextPhase();
       return;
@@ -1379,7 +1383,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                       selected: selected == i,
                       enabled: !revealed,
                       revealCorrect: reveal,
-                      onTap: () => setState(() => selected = i),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => selected = i);
+                      },
                     );
                   },
                 ),

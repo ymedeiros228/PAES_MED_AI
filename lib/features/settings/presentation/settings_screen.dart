@@ -445,7 +445,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       title: const Text('Modo foco'),
                       subtitle: const Text('Esconde telas extras. Atalho F'),
                       value: focus,
-                      onChanged: (v) => ref.read(focusModeProvider.notifier).setFocus(v),
+                      onChanged: (v) {
+                        HapticFeedback.lightImpact();
+                        ref.read(focusModeProvider.notifier).setFocus(v);
+                      },
                     ),
                     TextField(
                       decoration: const InputDecoration(
@@ -528,7 +531,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       trailing: IconButton(
                         tooltip: 'Checar backend',
-                        onPressed: _health,
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          _health();
+                        },
                         icon: const Icon(Icons.refresh_rounded),
                       ),
                     ),
@@ -578,7 +584,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       trailing: TextButton(onPressed: () => context.go('/biblioteca'), child: const Text('Abrir')),
                     ),
                     FilledButton.tonal(
-                      onPressed: _backup,
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        _backup();
+                      },
                       child: const Text('Salvar cópia de segurança (B)'),
                     ),
                     if (backupListError != null) ...[
@@ -823,7 +832,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     value: aiOnline && ref.watch(tutorOnlinePrefProvider),
                     onChanged: aiOnline
-                        ? (v) => ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v)
+                        ? (v) {
+                            HapticFeedback.lightImpact();
+                            ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v);
+                          }
                         : null,
                   ),
                   FutureBuilder(

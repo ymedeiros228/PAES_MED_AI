@@ -197,9 +197,12 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                         label: Text(s.$2),
                         selected: state.style == s.$1,
                         showCheckmark: false,
-                        onSelected: (_) => ref
-                            .read(aiTutorControllerProvider.notifier)
-                            .setStyle(s.$1),
+                        onSelected: (_) {
+                          HapticFeedback.selectionClick();
+                          ref
+                              .read(aiTutorControllerProvider.notifier)
+                              .setStyle(s.$1);
+                        },
                       ),
                   ];
                   if (MediaQuery.sizeOf(context).width < 700) {
@@ -302,10 +305,18 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                           if (index == state.messages.length) {
                             return const _TypingIndicator();
                           }
-                          return _MessageBubble(
-                            message: state.messages[index],
-                            onPrompt: state.isLoading ? null : _sendPrompt,
-                          );
+                          // Anima apenas a última mensagem (nova)
+                          final isLast = index == state.messages.length - 1;
+                          return isLast
+                              ? _AnimatedMessageBubble(
+                                  key: ValueKey('msg_$index'),
+                                  message: state.messages[index],
+                                  onPrompt: state.isLoading ? null : _sendPrompt,
+                                )
+                              : _MessageBubble(
+                                  message: state.messages[index],
+                                  onPrompt: state.isLoading ? null : _sendPrompt,
+                                );
                         },
                       ),
               ),
@@ -372,6 +383,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   Future<void> _send() async {
     final text = _controller.text;
     if (text.trim().isEmpty) return;
+    HapticFeedback.selectionClick();
     _controller.clear();
     await ref.read(aiTutorControllerProvider.notifier).send(text);
   }
@@ -398,6 +410,63 @@ String _citeLine(Map<String, dynamic> c) {
   final snippet = c['snippet']?.toString();
   if (snippet != null && snippet.isNotEmpty) return '$tag $label — $snippet';
   return '$tag $label';
+}
+
+/// Wrapper que anima a entrada da mensagem nova (fade + slide up).
+class _AnimatedMessageBubble extends StatefulWidget {
+  const _AnimatedMessageBubble({
+    required this.message,
+    this.onPrompt,
+    super.key,
+  });
+
+  final ChatMessage message;
+  final ValueChanged<String>? onPrompt;
+
+  @override
+  State<_AnimatedMessageBubble> createState() => _AnimatedMessageBubbleState();
+}
+
+class _AnimatedMessageBubbleState extends State<_AnimatedMessageBubble>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: _MessageBubble(
+          message: widget.message,
+          onPrompt: widget.onPrompt,
+        ),
+      ),
+    );
+  }
 }
 
 class _MessageBubble extends StatelessWidget {
@@ -583,24 +652,72 @@ class _TutorAction extends StatelessWidget {
   }
 }
 
-class _TypingIndicator extends StatelessWidget {
+class _TypingIndicator extends StatefulWidget {
   const _TypingIndicator();
 
   @override
+  State<_TypingIndicator> createState() => _TypingIndicatorState();
+}
+
+class _TypingIndicatorState extends State<_TypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Align(
+    final cs = Theme.of(context).colorScheme;
+    return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox.square(
-              dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
+            // Três pontos pulsantes
+            for (var i = 0; i < 3; i++) ...[
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  // Cada ponto tem um atraso diferente
+                  final t = (_controller.value + i * 0.2) % 1.0;
+                  final scale = 0.6 + 0.4 * (0.5 + 0.5 * (t < 0.5 ? t * 2 : (1 - t) * 2));
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(right: 4),
+                      decoration: BoxDecoration(
+                        color: cs.primary.withOpacity(0.4 + 0.4 * scale),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+            const SizedBox(width: 10),
+            Text(
+              'Pensando…',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: cs.onSurface.f55,
+                  ),
             ),
-            SizedBox(width: 10),
-            Text('Pensando…'),
           ],
         ),
       ),

@@ -189,6 +189,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     final correctIndex = (q['correctIndex'] as num?)?.toInt();
     final correct = correctIndex != null && selected == correctIndex;
     if (correct) {
+      HapticFeedback.lightImpact();
       setState(() {
         revealed = true;
         answeredCount++;
@@ -197,6 +198,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       });
       await _postAnswer(correct: true);
     } else {
+      HapticFeedback.mediumImpact();
       setState(() {
         revealed = true;
         answeredCount++;
@@ -207,12 +209,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
 
   Future<void> _confirmErrorAndSave() async {
     if (!pendingErrorPick) return;
+    HapticFeedback.selectionClick();
     setState(() => pendingErrorPick = false);
     await _postAnswer(correct: false);
   }
 
   void _next() {
     if (pendingErrorPick) return;
+    HapticFeedback.selectionClick();
     if (index >= queue.length - 1) {
       setState(() => finished = true);
       return;
@@ -514,7 +518,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                       ? true
                                       : (i == selected ? false : null))
                                   : null,
-                              onTap: () => setState(() => selected = i),
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => selected = i);
+                              },
                             ),
                         if (!revealed) ...[
                           const SizedBox(height: 6),
