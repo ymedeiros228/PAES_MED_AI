@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -686,23 +687,23 @@ class _ConstellationMapState extends State<ConstellationMap>
     super.initState();
     _twinkle = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 3000),
     )..repeat(reverse: true);
     _grow = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1400),
     )..forward();
-    // Estrela cadente: dispara a cada 8-15 segundos
+    // Estrela cadente: dispara a cada 10-18 segundos
     _shootingStar = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
     );
     _scheduleNextShootingStar();
   }
 
   void _scheduleNextShootingStar() {
-    // Delay aleatório entre 8 e 15 segundos
-    final delay = Duration(seconds: 8 + DateTime.now().millisecond % 8);
+    // Delay aleatório entre 10 e 18 segundos
+    final delay = Duration(seconds: 10 + DateTime.now().millisecond % 8);
     _shootingStarTimer = Timer(delay, _fireShootingStar);
   }
 
@@ -970,10 +971,12 @@ class _ConstellationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cellW = size.width / cols;
     final cellH = size.height / rows;
-    final starRadius = (cellW * 0.18).clamp(3.0, 8.0);
+    final starRadius = (cellW * 0.16).clamp(3.0, 7.0);
+
+    // Nebulosa sutil de fundo para profundidade
+    _drawNebula(canvas, size);
 
     // Estrelas de fundo (cosmo) — pontos minúsculos fixos
-    // Usa seed determinística para não mudar a cada frame
     _drawBackgroundStars(canvas, size);
 
     // Estrela cadente (se ativa)
@@ -995,13 +998,13 @@ class _ConstellationPainter extends CustomPainter {
       if (!activeDays[i]) {
         // Dia inativo: ponto pequeno e escuro
         final paint = Paint()
-          ..color = Colors.white.withOpacity(0.08)
+          ..color = Colors.white.withOpacity(0.06)
           ..style = PaintingStyle.fill;
-        canvas.drawCircle(center, starRadius * 0.35, paint);
+        canvas.drawCircle(center, starRadius * 0.3, paint);
       }
     }
 
-    // Depois desenha as linhas da constelação (conecta estrelas ativas)
+    // Coleta posições das estrelas ativas
     for (var i = 0; i < activeDays.length && i < cols * rows; i++) {
       if (!activeDays[i]) continue;
       final row = i ~/ cols;
@@ -1011,22 +1014,15 @@ class _ConstellationPainter extends CustomPainter {
       starPositions.add(Offset(cx, cy));
     }
 
-    // Desenha linhas entre estrelas consecutivas ativas
+    // Desenha linhas curvas (Bezier) entre estrelas consecutivas ativas
     if (starPositions.length >= 2) {
-      final linePaint = Paint()
-        ..color = lineColor.withOpacity(0.25 * growValue)
-        ..strokeWidth = 1.2
-        ..style = PaintingStyle.stroke;
-
       for (var i = 0; i < starPositions.length - 1; i++) {
         final p1 = starPositions[i];
         final p2 = starPositions[i + 1];
-        // Só conecta se estiverem próximos (mesma linha ou adjacente)
+        // Só conecta se estiverem próximos
         final dist = (p2 - p1).distance;
-        if (dist < cellW * 2.5) {
-          // Anima a linha crescendo
-          final end = Offset.lerp(p1, p2, growValue)!;
-          canvas.drawLine(p1, end, linePaint);
+        if (dist < cellW * 2.8) {
+          _drawCurvedLine(canvas, p1, p2, growValue);
         }
       }
     }
@@ -1035,69 +1031,174 @@ class _ConstellationPainter extends CustomPainter {
     for (var i = 0; i < starPositions.length; i++) {
       final pos = starPositions[i];
       // Cada estrela pisca em momento diferente
-      final phase = (i * 0.3) % 1.0;
+      final phase = (i * 0.37) % 1.0;
       final twinkle = 0.5 + 0.5 * ((twinkleValue + phase) % 1.0);
       final intensity = (0.4 + 0.6 * twinkle) * growValue;
 
-      // Halo/glow ao redor da estrela
-      final haloRadius = starRadius * 2.5 * intensity;
-      final haloPaint = Paint()
-        ..shader = RadialGradient(
-          colors: [
-            starColor.withOpacity(0.4 * intensity),
-            starColor.withOpacity(0),
-          ],
-        ).createShader(Rect.fromCircle(center: pos, radius: haloRadius));
-      canvas.drawCircle(pos, haloRadius, haloPaint);
+      // Halo/glow multi-camada ao redor da estrela
+      _drawStarGlow(canvas, pos, starRadius, starColor, intensity, twinkle);
 
-      // Núcleo da estrela
-      final corePaint = Paint()
-        ..color = starColor.withOpacity(0.9 * intensity)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, starRadius * (0.7 + 0.3 * twinkle), corePaint);
+      // Estrela de 5 pontas
+      _drawStarShape(
+        canvas,
+        pos,
+        starRadius * (0.7 + 0.3 * twinkle),
+        starColor.withOpacity(0.95 * intensity),
+      );
 
       // Brilho central branco
       final whitePaint = Paint()
-        ..color = Colors.white.withOpacity(0.8 * intensity)
+        ..color = Colors.white.withOpacity(0.85 * intensity)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, starRadius * 0.35 * twinkle, whitePaint);
-
-      // Raios da estrela (4 pontas)
-      if (intensity > 0.5) {
-        final rayPaint = Paint()
-          ..color = starColor.withOpacity(0.5 * intensity)
-          ..strokeWidth = 1.0
-          ..style = PaintingStyle.stroke;
-        final rayLen = starRadius * 1.8 * twinkle;
-        canvas.drawLine(
-          Offset(pos.dx - rayLen, pos.dy),
-          Offset(pos.dx + rayLen, pos.dy),
-          rayPaint,
-        );
-        canvas.drawLine(
-          Offset(pos.dx, pos.dy - rayLen),
-          Offset(pos.dx, pos.dy + rayLen),
-          rayPaint,
-        );
-      }
+      canvas.drawCircle(pos, starRadius * 0.3 * twinkle, whitePaint);
     }
+  }
+
+  /// Desenha uma nebulosa sutil para dar profundidade ao fundo.
+  void _drawNebula(Canvas canvas, Size size) {
+    // Nebulosa 1: canto superior esquerdo (azul-violeta sutil)
+    final nebula1Paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          lineColor.withOpacity(0.06),
+          lineColor.withOpacity(0.02),
+          lineColor.withOpacity(0),
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromCircle(
+        center: Offset(size.width * 0.2, size.height * 0.15),
+        radius: size.width * 0.5,
+      ));
+    canvas.drawRect(Offset.zero & size, nebula1Paint);
+
+    // Nebulosa 2: canto inferior direito (cor da estrela sutil)
+    final nebula2Paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          starColor.withOpacity(0.04),
+          starColor.withOpacity(0),
+        ],
+        stops: const [0.0, 0.6, 1.0],
+      ).createShader(Rect.fromCircle(
+        center: Offset(size.width * 0.8, size.height * 0.85),
+        radius: size.width * 0.4,
+      ));
+    canvas.drawRect(Offset.zero & size, nebula2Paint);
   }
 
   /// Desenha estrelas de fundo minúsculas (cosmo) com posições determinísticas.
   void _drawBackgroundStars(Canvas canvas, Size size) {
-    // Gerador determinístico baseado no tamanho
     final rng = _SeededRandom(size.width.toInt() * 31 + size.height.toInt());
     final bgStarPaint = Paint()..style = PaintingStyle.fill;
-    for (var i = 0; i < 40; i++) {
+    for (var i = 0; i < 50; i++) {
       final x = rng.nextDouble() * size.width;
       final y = rng.nextDouble() * size.height;
-      final r = 0.5 + rng.nextDouble() * 1.2;
+      final r = 0.4 + rng.nextDouble() * 1.0;
       // Piscar suavemente
-      final phase = (i * 0.17) % 1.0;
-      final alpha = 0.08 + 0.12 * ((twinkleValue + phase) % 1.0);
+      final phase = (i * 0.13) % 1.0;
+      final alpha = 0.06 + 0.10 * ((twinkleValue + phase) % 1.0);
       bgStarPaint.color = Colors.white.withOpacity(alpha);
       canvas.drawCircle(Offset(x, y), r, bgStarPaint);
     }
+  }
+
+  /// Desenha uma linha curva (Bezier quadrática) entre dois pontos.
+  /// A curva dá um arco orgânico, como constelações reais.
+  void _drawCurvedLine(Canvas canvas, Offset p1, Offset p2, double grow) {
+    // Ponto de controle: perpendicular ao midpoint, deslocado suavemente
+    final mid = Offset.lerp(p1, p2, 0.5)!;
+    final dx = p2.dx - p1.dx;
+    final dy = p2.dy - p1.dy;
+    // Perpendicular normalizada
+    final len = sqrt(dx * dx + dy * dy);
+    final perpX = len > 0 ? -dy / len : 0.0;
+    final perpY = len > 0 ? dx / len : 0.0;
+    // Deslocamento sutil (10% da distância)
+    final offset = len * 0.08;
+    final control = Offset(
+      mid.dx + perpX * offset,
+      mid.dy + perpY * offset,
+    );
+
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..quadraticBezierTo(control.dx, control.dy, p2.dx, p2.dy);
+
+    // Anima a linha crescendo com um PathMetric
+    final paint = Paint()
+      ..color = lineColor.withOpacity(0.2 * grow)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    if (grow >= 0.99) {
+      canvas.drawPath(path, paint);
+    } else {
+      // Desenha parcialmente usando PathMetric
+      final metrics = path.computeMetrics();
+      for (final metric in metrics) {
+        final extracted = metric.extractPath(0, metric.length * grow);
+        canvas.drawPath(extracted, paint);
+      }
+    }
+  }
+
+  /// Desenha o glow multi-camada ao redor de uma estrela.
+  void _drawStarGlow(
+    Canvas canvas,
+    Offset pos,
+    double radius,
+    Color color,
+    double intensity,
+    double twinkle,
+  ) {
+    // Camada externa: glow amplo e suave
+    final outerRadius = radius * 3.5 * intensity;
+    final outerPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          color.withOpacity(0.15 * intensity),
+          color.withOpacity(0.05 * intensity),
+          color.withOpacity(0),
+        ],
+        stops: const [0.0, 0.4, 1.0],
+      ).createShader(Rect.fromCircle(center: pos, radius: outerRadius));
+    canvas.drawCircle(pos, outerRadius, outerPaint);
+
+    // Camada interna: glow mais concentrado
+    final innerRadius = radius * 1.8 * intensity;
+    final innerPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          color.withOpacity(0.35 * intensity),
+          color.withOpacity(0),
+        ],
+      ).createShader(Rect.fromCircle(center: pos, radius: innerRadius));
+    canvas.drawCircle(pos, innerRadius, innerPaint);
+  }
+
+  /// Desenha uma estrela de 5 pontas usando Path.
+  void _drawStarShape(Canvas canvas, Offset center, double radius, Color color) {
+    final path = Path();
+    const points = 5;
+    const innerRatio = 0.4; // razão entre raio interno e externo
+    for (var i = 0; i < points * 2; i++) {
+      final angle = (i * pi / points) - pi / 2; // começa apontando para cima
+      final r = i.isEven ? radius : radius * innerRatio;
+      final x = center.dx + cos(angle) * r;
+      final y = center.dy + sin(angle) * r;
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, paint);
   }
 
   /// Desenha uma estrela cadente que cruza o céu diagonalmente.
@@ -1110,40 +1211,41 @@ class _ConstellationPainter extends CustomPainter {
     final headX = startX + (endX - startX) * progress;
     final headY = startY + (endY - startY) * progress;
 
-    // Cauda: 8 pontos que diminuem em opacidade
-    final tailLen = 60.0;
+    // Cauda: gradient path
+    final tailLen = 80.0;
     final dx = (endX - startX) / ((endX - startX).abs() + 0.01);
     final dy = (endY - startY) / ((endY - startY).abs() + 0.01);
     final dirLen = (Offset(dx, dy).distance);
     final ndx = dx / dirLen;
     final ndy = dy / dirLen;
 
-    for (var i = 0; i < 12; i++) {
-      final t = i / 12.0;
+    // Cauda: pontos com gradiente de opacidade (mais suave)
+    for (var i = 0; i < 16; i++) {
+      final t = i / 16.0;
       final tailX = headX - ndx * tailLen * t;
       final tailY = headY - ndy * tailLen * t;
-      final alpha = (1.0 - t) * 0.6 * (1.0 - (progress * 0.5));
+      final alpha = (1.0 - t) * 0.5 * (1.0 - (progress * 0.4));
       final paint = Paint()
         ..color = Colors.white.withOpacity(alpha)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(tailX, tailY), 2.0 * (1.0 - t * 0.7), paint);
+      canvas.drawCircle(Offset(tailX, tailY), 1.8 * (1.0 - t * 0.6), paint);
     }
 
     // Cabeça brilhante
     final headPaint = Paint()
-      ..color = Colors.white.withOpacity(0.9 * (1.0 - progress * 0.3))
+      ..color = Colors.white.withOpacity(0.95 * (1.0 - progress * 0.3))
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(headX, headY), 3.0, headPaint);
+    canvas.drawCircle(Offset(headX, headY), 2.5, headPaint);
 
     // Halo da cabeça
     final haloPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.white.withOpacity(0.4 * (1.0 - progress * 0.3)),
+          Colors.white.withOpacity(0.5 * (1.0 - progress * 0.3)),
           Colors.white.withOpacity(0),
         ],
-      ).createShader(Rect.fromCircle(center: Offset(headX, headY), radius: 12));
-    canvas.drawCircle(Offset(headX, headY), 12, haloPaint);
+      ).createShader(Rect.fromCircle(center: Offset(headX, headY), radius: 14));
+    canvas.drawCircle(Offset(headX, headY), 14, haloPaint);
   }
 
   @override
