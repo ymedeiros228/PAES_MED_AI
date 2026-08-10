@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
 
@@ -72,13 +73,14 @@ class PageHeader extends StatelessWidget {
         if (eyebrow != null) ...[
           Text(
             eyebrow!.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: cs.primary,
-                  letterSpacing: 1.3,
-                  fontWeight: FontWeight.w700,
-                ),
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: cs.primary,
+              letterSpacing: 1.4,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
         ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,10 +88,13 @@ class PageHeader extends StatelessWidget {
             Flexible(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.4,
-                    ),
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                  color: cs.onSurface,
+                  height: 1.2,
+                ),
               ),
             ),
             if (badge != null && badge!.isNotEmpty) ...[
@@ -102,18 +107,19 @@ class PageHeader extends StatelessWidget {
                 ),
                 child: Text(
                   badge!,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: cs.onPrimaryContainer,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
             ],
           ],
         ),
         Container(
-          margin: const EdgeInsets.only(top: 10),
-          width: 36,
+          margin: const EdgeInsets.only(top: 12),
+          width: 40,
           height: 3,
           decoration: BoxDecoration(
             color: cs.primary.f85,
@@ -121,7 +127,7 @@ class PageHeader extends StatelessWidget {
           ),
         ),
         if (subtitle != null) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             subtitle!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -248,13 +254,19 @@ class SurfacePanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? cs.surface.withOpacity(isDark ? 0.94 : 0.98),
         borderRadius: BorderRadius.circular(soft ? kRadiusPanelSoft : kRadiusPanel),
-        border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.55 : 0.85)),
+        border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.5 : 0.85)),
         boxShadow: soft && !isDark
             ? [
+                // Sombra dupla: difusa + próxima (estilo Apple/Coursera)
                 BoxShadow(
-                  color: const Color(0xFF0A1628).withOpacity(0.045),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
+                  color: const Color(0xFF0A1628).withOpacity(0.03),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF0A1628).withOpacity(0.025),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ]
             : null,
@@ -1904,12 +1916,10 @@ class StatementView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final paragraphs = _splitParagraphs(text);
 
-    // Estilo serif para enunciados — leitura mais confortável, como livro
-    final statementStyle = TextStyle(
-      fontFamily: 'Georgia',
-      fontFamilyFallback: const ['Times New Roman', 'Liberation Serif', 'serif'],
+    // Estilo serif para enunciados — Lora (Google Fonts) para leitura confortável
+    final statementStyle = GoogleFonts.lora(
       fontSize: 15.5,
-      height: 1.62,
+      height: 1.65,
       letterSpacing: 0.15,
       color: cs.onSurface,
     );

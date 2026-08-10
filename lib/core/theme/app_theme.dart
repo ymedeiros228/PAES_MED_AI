@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Identidade PAES MED AI: teal clínico + navy.
 /// Light = ar limpo. Dark = foco noturno (ink).
+///
+/// Tipografia: Inter (corpo/UI) + Poppins (títulos/display).
+/// Referências: Duolingo (hierarquia clara), Khan Academy (credibilidade),
+/// Coursera (legibilidade), Inter (otimizada para tela).
 class AppTheme {
   static const navy = Color(0xFF0A1628);
   static const navySoft = Color(0xFF132337);
@@ -104,32 +109,18 @@ class AppTheme {
       inversePrimary: dark ? tealDeep : const Color(0xFF3DC9A8),
     );
 
-    // Display Georgia (editorial) + corpo Segoe (UI limpa)
-    final display = TextStyle(
-      fontFamily: 'Georgia',
-      fontFamilyFallback: const [
-        'Times New Roman',
-        'Liberation Serif',
-        'DejaVu Serif',
-        'Noto Serif',
-      ],
+    // Poppins: títulos/display (geométrica, moderna, distinta)
+    // Inter: corpo/UI (otimizada para tela, x-height alto, legível)
+    final display = GoogleFonts.poppins(
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
-      height: 1.12,
-      letterSpacing: -0.6,
+      height: 1.15,
+      letterSpacing: -0.5,
     );
-    final body = TextStyle(
-      fontFamily: 'Segoe UI',
-      fontFamilyFallback: const [
-        'Roboto',
-        'Liberation Sans',
-        'DejaVu Sans',
-        'Noto Sans',
-        'Helvetica',
-      ],
+    final body = GoogleFonts.inter(
       color: scheme.onSurface,
-      height: 1.45,
-      letterSpacing: 0.1,
+      height: 1.55,
+      letterSpacing: -0.1,
     );
 
     return ThemeData(
@@ -140,20 +131,25 @@ class AppTheme {
       canvasColor: scheme.surface,
       dividerColor: scheme.outlineVariant,
       textTheme: TextTheme(
-        displayLarge: display.copyWith(fontSize: 44),
-        displayMedium: display.copyWith(fontSize: 36),
-        displaySmall: display.copyWith(fontSize: 32),
-        headlineLarge: display.copyWith(fontSize: 28),
-        headlineMedium: display.copyWith(fontSize: 24),
-        headlineSmall: display.copyWith(fontSize: 20),
-        titleLarge: body.copyWith(fontWeight: FontWeight.w700, fontSize: 18),
+        // Display — Poppins para títulos grandes (hero, números)
+        displayLarge: display.copyWith(fontSize: 44, fontWeight: FontWeight.w700),
+        displayMedium: display.copyWith(fontSize: 36, fontWeight: FontWeight.w700),
+        displaySmall: display.copyWith(fontSize: 32, fontWeight: FontWeight.w600),
+        // Headline — Poppins para seções
+        headlineLarge: display.copyWith(fontSize: 28, fontWeight: FontWeight.w600),
+        headlineMedium: display.copyWith(fontSize: 24, fontWeight: FontWeight.w600),
+        headlineSmall: display.copyWith(fontSize: 20, fontWeight: FontWeight.w600),
+        // Title — Inter semi-bold para títulos de cards e painéis
+        titleLarge: body.copyWith(fontWeight: FontWeight.w700, fontSize: 18, letterSpacing: -0.2),
         titleMedium: body.copyWith(fontWeight: FontWeight.w600, fontSize: 15),
         titleSmall: body.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
-        bodyLarge: body.copyWith(fontSize: 16),
-        bodyMedium: body.copyWith(fontSize: 14, color: scheme.onSurface.withOpacity(0.88)),
-        bodySmall: body.copyWith(fontSize: 12, color: scheme.onSurface.withOpacity(0.72)),
-        labelLarge: body.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
-        labelMedium: body.copyWith(fontWeight: FontWeight.w600, fontSize: 12),
+        // Body — Inter para texto corrido (line-height 1.55 para leitura confortável)
+        bodyLarge: body.copyWith(fontSize: 16, height: 1.6),
+        bodyMedium: body.copyWith(fontSize: 14, height: 1.55, color: scheme.onSurface.withOpacity(0.88)),
+        bodySmall: body.copyWith(fontSize: 12, height: 1.5, color: scheme.onSurface.withOpacity(0.72)),
+        // Label — Inter medium para labels, chips, botões
+        labelLarge: body.copyWith(fontWeight: FontWeight.w600, fontSize: 13, letterSpacing: 0.1),
+        labelMedium: body.copyWith(fontWeight: FontWeight.w600, fontSize: 12, letterSpacing: 0.15),
         labelSmall: body.copyWith(fontWeight: FontWeight.w500, fontSize: 11, letterSpacing: 0.4),
       ),
       appBarTheme: AppBarTheme(
@@ -162,16 +158,21 @@ class AppTheme {
         foregroundColor: scheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: display.copyWith(fontSize: 20, color: scheme.onSurface),
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+        ),
       ),
       cardTheme: CardTheme(
-        elevation: 0,
+        elevation: dark ? 0 : 1,
         color: scheme.surface.withOpacity(dark ? 0.92 : 0.96),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outlineVariant.withOpacity(0.8)),
+          side: BorderSide(color: scheme.outlineVariant.withOpacity(0.6)),
         ),
+        shadowColor: scheme.shadow.withOpacity(0.08),
       ),
       listTileTheme: ListTileThemeData(
         iconColor: scheme.primary,
@@ -182,11 +183,15 @@ class AppTheme {
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          // Hover sutil no desktop — feedback de interatividade
           minimumSize: const Size(88, 48),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -195,18 +200,26 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
           side: BorderSide(color: scheme.outline.withOpacity(0.7)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          textStyle: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surfaceContainerHigh,
         selectedColor: scheme.primaryContainer,
-        labelStyle: body.copyWith(fontSize: 12),
+        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
         side: BorderSide.none,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -225,7 +238,7 @@ class AppTheme {
         backgroundColor: scheme.surface.withOpacity(0.96),
         indicatorColor: scheme.primaryContainer,
         labelTextStyle: WidgetStatePropertyAll(
-          body.copyWith(fontSize: 11, fontWeight: FontWeight.w600),
+          GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
         ),
         height: 68,
       ),
@@ -233,12 +246,12 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         selectedIconTheme: IconThemeData(color: scheme.primary),
         unselectedIconTheme: IconThemeData(color: scheme.onSurface.withOpacity(0.45)),
-        selectedLabelTextStyle: body.copyWith(
+        selectedLabelTextStyle: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: scheme.primary,
         ),
-        unselectedLabelTextStyle: body.copyWith(
+        unselectedLabelTextStyle: GoogleFonts.inter(
           fontSize: 12,
           color: scheme.onSurface.withOpacity(0.5),
         ),
@@ -246,13 +259,13 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: dark ? scheme.surfaceContainerHigh : navy,
-        contentTextStyle: body.copyWith(color: Colors.white),
+        contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.outlineVariant),
@@ -273,9 +286,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.error, width: 2),
         ),
-        hintStyle: body.copyWith(color: scheme.onSurface.withOpacity(0.4)),
-        labelStyle: body.copyWith(color: scheme.onSurface.withOpacity(0.6)),
-        floatingLabelStyle: body.copyWith(
+        hintStyle: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.4)),
+        labelStyle: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.6)),
+        floatingLabelStyle: GoogleFonts.inter(
           color: scheme.primary,
           fontWeight: FontWeight.w600,
         ),
@@ -290,15 +303,25 @@ class AppTheme {
           color: dark ? scheme.surfaceContainerHighest : navy,
           borderRadius: BorderRadius.circular(8),
         ),
-        textStyle: body.copyWith(fontSize: 12, color: Colors.white),
+        textStyle: GoogleFonts.inter(fontSize: 12, color: Colors.white),
         waitDuration: const Duration(milliseconds: 500),
         showDuration: const Duration(milliseconds: 2000),
         preferBelow: true,
       ),
       dialogTheme: DialogTheme(
         backgroundColor: scheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
+        titleTextStyle: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: scheme.onSurface.withOpacity(0.88),
+          height: 1.55,
+        ),
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
       menuTheme: MenuThemeData(
@@ -314,9 +337,17 @@ class AppTheme {
           ),
         ),
       ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: scheme.primary,
+        inactiveTrackColor: scheme.surfaceContainerHighest,
+        thumbColor: scheme.primary,
+        overlayColor: scheme.primary.withOpacity(0.12),
+        trackHeight: 4,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+      ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          // Transição desktop: slide horizontal sutil + fade (mais fluido que FadeUpwards).
           TargetPlatform.windows: _SlideFadeTransitionBuilder(),
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
@@ -350,7 +381,7 @@ class _SlideFadeTransitionBuilder extends PageTransitionsBuilder {
       opacity: curve,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0.04, 0), // 24px horizontal sutil
+          begin: const Offset(0.04, 0),
           end: Offset.zero,
         ).animate(curve),
         child: child,
