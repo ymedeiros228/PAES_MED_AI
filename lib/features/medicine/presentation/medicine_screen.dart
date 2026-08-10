@@ -249,7 +249,14 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   const SizedBox(height: 16),
                   ExpansionTile(
                     tilePadding: EdgeInsets.zero,
-                    title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
+                    title: Text(
+                      'Avançado',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
+                      ),
+                    ),
                     subtitle: const Text('Rascunhos, assuntos duvidosos, inventário e curadoria'),
                     children: [
                       FutureBuilder(
@@ -398,20 +405,28 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               'Resoluções reais: $realN'
                               '${realPct != null ? ' ($realPct%)' : ''}\n'
                               'Cross-domain (labels suspeitas): $crossN',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: cs.onSurface.withOpacity(0.7),
+                              ),
                             ),
                             if (curation['message'] != null) ...[
                               const SizedBox(height: 4),
                               Text(
                                 curation['message'].toString(),
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.f72,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: cs.onSurface.f72,
+                                ),
                               ),
                             ],
                             Text(
                               'Números da base — sem inventar % de incidência.',
-                              style: Theme.of(context).textTheme.labelSmall,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                              ),
                             ),
                           ],
                         ),

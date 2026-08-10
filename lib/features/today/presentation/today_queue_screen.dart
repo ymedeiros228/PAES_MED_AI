@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -202,6 +203,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (error != null) {
       return EmptyState(
         title: 'Fila indisponível',
@@ -328,18 +330,25 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         Icons.edit_note_rounded,
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Missão de redação',
-                              style: Theme.of(context).textTheme.titleSmall,
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                              ),
                             ),
                             Text(
                               'Treino local · não banca',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: cs.onSurface.withOpacity(0.7),
+                              ),
                             ),
                           ],
                         ),
@@ -743,9 +752,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         if (focus)
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
-                            style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(ctx).colorScheme.onSurface.f72,
-                                ),
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: Theme.of(ctx).colorScheme.onSurface.f72,
+                            ),
                           ),
                       ],
                     );
@@ -780,10 +790,11 @@ class _GapDot extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: active ? cs.onPrimary : cs.onSurface.f72,
-            ),
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: active ? cs.onPrimary : cs.onSurface.f72,
+        ),
       ),
     );
   }

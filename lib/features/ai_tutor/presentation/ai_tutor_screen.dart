@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,9 +133,12 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     tooltip: 'Limpar conversa',
                     onPressed: state.isLoading
                         ? null
-                        : () => ref
-                            .read(aiTutorControllerProvider.notifier)
-                            .clearConversation(),
+                        : () {
+                            HapticFeedback.selectionClick();
+                            ref
+                                .read(aiTutorControllerProvider.notifier)
+                                .clearConversation();
+                          },
                     icon: const Icon(Icons.delete_sweep_outlined),
                   ),
                 ),
@@ -156,7 +160,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                       message:
                           'Modo sem internet com base local. Configure uma chave em Ajustes para conversar com a IA conectada.',
                       action: TextButton(
-                        onPressed: () => context.go('/configuracoes'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/configuracoes');
+                        },
                         child: const Text('Abrir Ajustes'),
                       ),
                     ),
@@ -172,17 +179,26 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                       spacing: 8,
                       children: [
                         TextButton(
-                          onPressed: () => ref
-                              .read(aiTutorControllerProvider.notifier)
-                              .clearConversation(),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            ref
+                                .read(aiTutorControllerProvider.notifier)
+                                .clearConversation();
+                          },
                           child: const Text('Limpar'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/sessao'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/sessao');
+                          },
                           child: const Text('Sessão'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/biblioteca'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/biblioteca');
+                          },
                           child: const Text('Biblioteca'),
                         ),
                       ],
@@ -209,7 +225,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(28, 0, 28, kGap8),
                       child: Wrap(
-                        spacing: 6,
+                        spacing: 8,
                         runSpacing: 4,
                         children: chips,
                       ),
@@ -222,7 +238,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                       children: [
                         for (final chip in chips) ...[
                           chip,
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                         ],
                       ],
                     ),
@@ -240,11 +256,14 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                               if (state.messages.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: Text(
+                                  child: SelectableText(
                                     state.messages.first.content,
                                     textAlign: TextAlign.center,
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      color: cs.onSurface.withOpacity(0.85),
+                                    ),
                                   ),
                                 ),
                               const QuietEmpty(
@@ -261,6 +280,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                     onPressed: state.isLoading
                                         ? null
                                         : () {
+                                            HapticFeedback.selectionClick();
                                             ref
                                                 .read(aiTutorControllerProvider
                                                     .notifier)
@@ -274,6 +294,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                     onPressed: state.isLoading
                                         ? null
                                         : () {
+                                            HapticFeedback.selectionClick();
                                             ref
                                                 .read(aiTutorControllerProvider
                                                     .notifier)
@@ -284,11 +305,17 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                   ),
                                   ActionChip(
                                     label: const Text('Abrir sessão'),
-                                    onPressed: () => context.go('/sessao'),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      context.go('/sessao');
+                                    },
                                   ),
                                   ActionChip(
                                     label: const Text('Biblioteca'),
-                                    onPressed: () => context.go('/biblioteca'),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      context.go('/biblioteca');
+                                    },
                                   ),
                                 ],
                               ),
@@ -328,7 +355,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     20,
                     12,
                     20,
-                    14 + MediaQuery.viewInsetsOf(context).bottom,
+                    16 + MediaQuery.viewInsetsOf(context).bottom,
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1080),
@@ -356,7 +383,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                             onSubmitted: (_) => _send(),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         IconButton.filled(
                           tooltip: 'Enviar',
                           onPressed: state.isLoading ? null : _send,
@@ -486,12 +513,12 @@ class _MessageBubble extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 760),
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: message.isUser
               ? scheme.primaryContainer
               : scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(18).copyWith(
+          borderRadius: BorderRadius.circular(16).copyWith(
             bottomRight: message.isUser ? const Radius.circular(4) : null,
             bottomLeft: message.isUser ? null : const Radius.circular(4),
           ),
@@ -503,7 +530,7 @@ class _MessageBubble extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
                   color: scheme.primaryContainer.f55,
@@ -511,10 +538,14 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 child: Text(
                   'Conteúdo geral · sem questão da base local',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: scheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ).copyWith(
+                    color: scheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -539,20 +570,31 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
             ],
-            SelectableText(message.content),
+            SelectableText(
+              message.content,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.5,
+                color: scheme.onSurface.withOpacity(0.85),
+              ),
+            ),
             if (!message.isUser && onPrompt != null) ...[
               const SizedBox(height: 12),
               Text(
                 'Próximo passo',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface.withOpacity(0.78),
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ).copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface.withOpacity(0.78),
+                ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _TutorAction(
                     label: 'Explicar mais simples',
@@ -582,13 +624,14 @@ class _MessageBubble extends StatelessWidget {
               ),
             ],
             if (message.citations.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 'Fontes na base (clique abre ficha/treino)',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ).copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
               for (final c in message.citations.take(5))
@@ -616,10 +659,13 @@ class _MessageBubble extends StatelessWidget {
                     },
                     child: Text(
                       '• ${_citeLine(c)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            decoration: TextDecoration.underline,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: scheme.onSurface.withOpacity(0.7),
+                      ).copyWith(
+                        color: scheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ),
@@ -647,7 +693,10 @@ class _TutorAction extends StatelessWidget {
     return ActionChip(
       avatar: Icon(icon, size: 16),
       label: Text(label),
-      onPressed: onPressed,
+      onPressed: () {
+        HapticFeedback.selectionClick();
+        onPressed();
+      },
       visualDensity: VisualDensity.compact,
     );
   }
@@ -712,12 +761,15 @@ class _TypingIndicatorState extends State<_TypingIndicator>
                 },
               ),
             ],
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Text(
               'Pensando…',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.onSurface.f55,
-                  ),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.onSurface.withOpacity(0.7),
+              ).copyWith(
+                color: cs.onSurface.f55,
+              ),
             ),
           ],
         ),

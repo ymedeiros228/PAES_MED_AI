@@ -232,9 +232,10 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 const SizedBox(height: 8),
                 Text(
                   exportMsg!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurface.f65,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: cs.onSurface.f65,
+                  ),
                 ),
               ],
             ],

@@ -536,10 +536,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                         selected == q.correctIndex
                             ? 'Correto!'
                             : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: selected == q.correctIndex ? cs.primary : cs.error,
-                        ).copyWith(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize),
+                        ),
                       ),
                     ),
                   ],

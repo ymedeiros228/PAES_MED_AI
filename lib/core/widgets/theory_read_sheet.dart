@@ -267,9 +267,22 @@ Future<void> openTheoryReadSheet(
                     ],
                     if (articles.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Text('Leituras de reforço', style: Theme.of(ctx).textTheme.titleSmall),
+                      Text(
+                        'Leituras de reforço',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(ctx).colorScheme.onSurface,
+                        ),
+                      ),
                       if (artDisclaimer != null)
-                        SelectableText(artDisclaimer, style: Theme.of(ctx).textTheme.bodySmall),
+                        SelectableText(
+                          artDisclaimer,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
                       for (final raw in articles.take(5))
                         ListTile(
                           contentPadding: EdgeInsets.zero,
@@ -342,10 +355,11 @@ Future<void> openTheoryReadSheet(
                       isRead
                           ? 'Passo 2 · Teoria lida — treine o tópico agora.'
                           : 'Passo 1 · Leia o material e marque como lido. Depois treine.',
-                      style: Theme.of(ctx).textTheme.labelLarge?.copyWith(
-                            color: Theme.of(ctx).colorScheme.onSurface.f72,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(ctx).colorScheme.onSurface.f72,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Wrap(

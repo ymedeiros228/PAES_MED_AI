@@ -301,11 +301,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         content: Text('$body$packLine'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, 'professor'),
+            onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'professor'); },
             child: const Text('Rascunhos professor'),
           ),
-          TextButton(onPressed: () => Navigator.pop(ctx, 'later'), child: const Text('Depois')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, 'study'), child: const Text('Estudar agora')),
+          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'later'); }, child: const Text('Depois')),
+          FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
         ],
       ),
     );
@@ -343,20 +343,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         actions: [
           if (canCommitDisk)
             FilledButton(
-              onPressed: () => Navigator.pop(ctx, 'disk'),
+              onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'disk'); },
               child: const Text('Gravar PDFs do PC'),
             )
           else
             FilledButton(
-              onPressed: () => Navigator.pop(ctx, 'provas'),
+              onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'provas'); },
               child: const Text('Abrir provas'),
             ),
           if (portal != null && portal.isNotEmpty)
-            TextButton(onPressed: () => Navigator.pop(ctx, 'portal'), child: const Text('Portal')),
-          TextButton(onPressed: () => Navigator.pop(ctx, 'gabaritos'), child: const Text('Abrir gabaritos')),
+            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'portal'); }, child: const Text('Portal')),
+          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'gabaritos'); }, child: const Text('Abrir gabaritos')),
           if (year != null)
-            TextButton(onPressed: () => Navigator.pop(ctx, 'retry'), child: const Text('Tentar de novo')),
-          TextButton(onPressed: () => Navigator.pop(ctx, 'ok'), child: const Text('Fechar')),
+            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'retry'); }, child: const Text('Tentar de novo')),
+          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'ok'); }, child: const Text('Fechar')),
         ],
       ),
     );
@@ -509,7 +509,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Disco OK · +$inserted · oficiais $n$healthLine'),
-          action: SnackBarAction(label: 'Estudar agora', onPressed: () => _goStudy(sessao)),
+          action: SnackBarAction(label: 'Estudar agora', onPressed: () { HapticFeedback.mediumImpact(); _goStudy(sessao); }),
           duration: const Duration(seconds: 6),
         ),
       );
@@ -574,7 +574,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Import todos · +$inserted · oficiais $n'),
-          action: SnackBarAction(label: 'Estudar', onPressed: () => _goStudy(sessao)),
+          action: SnackBarAction(label: 'Estudar', onPressed: () { HapticFeedback.mediumImpact(); _goStudy(sessao); }),
           duration: const Duration(seconds: 7),
         ),
       );
@@ -592,14 +592,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             if (waiting.isNotEmpty)
               TextButton(
                 onPressed: () {
+                  HapticFeedback.selectionClick();
                   Navigator.pop(ctx);
                   _openFolder('gabaritos');
                 },
                 child: const Text('Abrir pasta Gabaritos'),
               ),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fechar')),
+            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx); }, child: const Text('Fechar')),
             FilledButton(
               onPressed: () {
+                HapticFeedback.mediumImpact();
                 Navigator.pop(ctx);
                 _goStudy(sessao);
               },
@@ -672,14 +674,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   'Coloque gabarito_$year.pdf em data/gabaritos. Preview pronto: ${map['count'] ?? 0} questões.',
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('OK')),
+              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('OK')),
               FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
+                onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); },
                 child: const Text('Abrir gabaritos'),
               ),
               if (map['previewId'] != null)
                 TextButton(
-                  onPressed: () => Navigator.pop(ctx, null),
+                  onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, null); },
                   child: const Text('Ver preview'),
                 ),
             ],
@@ -713,7 +715,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('PAES $year · +$inserted · base $n'),
-          action: SnackBarAction(label: 'Estudar', onPressed: () => _goStudy(sessao)),
+          action: SnackBarAction(label: 'Estudar', onPressed: () { HapticFeedback.mediumImpact(); _goStudy(sessao); }),
         ),
       );
       ref.read(refreshTickProvider.notifier).state++;
@@ -755,8 +757,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             'Suspeitas: ${gate['suspects'] ?? 0} · PDFs escaneados: ${gate['needsOcr'] == true ? 'sim' : 'não'}',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, 'review'), child: const Text('Revisar suspeitas')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, 'study'), child: const Text('Estudar mesmo assim')),
+            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'review'); }, child: const Text('Revisar suspeitas')),
+            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar mesmo assim')),
           ],
         ),
       );
@@ -1034,8 +1036,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             title: Text('Revisar PAES $next'),
             content: const Text('Anos baixados. Abrir revisão do próximo ano completo?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Depois')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Revisar')),
+              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('Depois')),
+              FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); }, child: const Text('Revisar')),
             ],
           ),
         );
@@ -1070,8 +1072,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             title: Text('PAES $year baixado'),
             content: const Text('PDFs na pasta. Abrir revisão agora?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Depois')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Revisar')),
+              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('Depois')),
+              FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); }, child: const Text('Revisar')),
             ],
           ),
         );
@@ -1141,7 +1143,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       return EmptyState(
         title: 'Biblioteca indisponível',
         subtitle: error!,
-        action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+        action: FilledButton(onPressed: () { HapticFeedback.mediumImpact(); _load(); }, child: const Text('Tentar de novo')),
       );
     }
     final checklist = Map<String, dynamic>.from(library?['checklist'] as Map? ?? {});
@@ -1195,7 +1197,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     : 'Semana 1: importe 2024–26 e comece a estudar de verdade',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
-                  onPressed: busy ? null : _load,
+                  onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
                   icon: busy
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.refresh_rounded),
@@ -1213,7 +1215,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       Expanded(
                         child: Text(
                           msg ?? 'Trabalhando no acervo… pode demorar um pouco.',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                         ),
                       ),
                     ],
@@ -1315,8 +1317,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (searchHistory.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     for (final h in searchHistory.take(8))
                       ActionChip(
@@ -1348,7 +1350,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: QuietEmpty(
                     message: searchNote!,
                     action: TextButton(
-                      onPressed: searching ? null : _runSearch,
+                      onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
                       child: const Text('Tentar'),
                     ),
                   ),
@@ -1510,12 +1512,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('PAES $y', style: Theme.of(context).textTheme.titleSmall),
+                                  Text('PAES $y', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                                   Text(
                                     ready
                                         ? '${n > 0 ? '$n questões · ' : ''}$label'
                                         : label,
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                                   ),
                                 ],
                               ),
@@ -1529,16 +1531,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                         ? 'Abrir PDF do ano $y'
                                         : 'PDF sumiu do disco — coloque paes_$y.pdf na pasta Provas',
                                     child: TextButton(
-                                      onPressed: busy || !hasProva ? null : () => _openYearPdf(y),
+                                      onPressed: busy || !hasProva ? null : () { HapticFeedback.selectionClick(); _openYearPdf(y); },
                                       child: const Text('PDF'),
                                     ),
                                   ),
                                   FilledButton(
                                     onPressed: busy
                                         ? null
-                                        : () => _goStudy(
+                                        : () { HapticFeedback.mediumImpact(); _goStudy(
                                               '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                            ),
+                                            ); },
                                     child: const Text('Estudar'),
                                   ),
                                 ],
@@ -1548,11 +1550,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   TextButton(
-                                    onPressed: busy ? null : () => _openFolder('gabaritos'),
+                                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
                                     child: const Text('Gabaritos'),
                                   ),
                                   OutlinedButton(
-                                    onPressed: busy ? null : () => _importYear(y),
+                                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYear(y); },
                                     child: const Text('Preview'),
                                   ),
                                 ],
@@ -1561,14 +1563,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               OutlinedButton(
                                 onPressed: busy
                                     ? null
-                                    : () => diskOk
+                                    : () { HapticFeedback.selectionClick(); diskOk
                                         ? _importYearSafe(y)
-                                        : _bootstrapAndCommitYear(y),
+                                        : _bootstrapAndCommitYear(y); },
                                 child: Text(diskOk && !canFetch ? 'Importar do PC' : 'Importar'),
                               )
                             else
                               TextButton(
-                                onPressed: busy ? null : () => _fetchYear(y),
+                                onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchYear(y); },
                                 child: const Text('Baixar'),
                               ),
                           ],
@@ -1589,7 +1591,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         subtitle: '${it['count'] ?? 0} questões',
                         badge: 'revisar',
                         leadingIcon: Icons.preview_rounded,
-                        onPlay: y is int ? () => _importYear(y) : null,
+                        onPlay: y is int ? () { HapticFeedback.selectionClick(); _importYear(y); } : null,
                       );
                     },
                   ),
@@ -1597,7 +1599,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Anos antigos (2014–23)', style: Theme.of(context).textTheme.titleSmall),
+                title: Text('Anos antigos (2014–23)', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 subtitle: Text(
                   anosParciais > 0
                       ? '$anosParciais parcial(is) · falta gabarito_YYYY.pdf'
@@ -1609,7 +1611,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       message:
                           'Falta o PDF deste intervalo (2014–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura. Sem gabarito, o app mostra prova e preview, mas não inventa resposta correta.',
                       action: TextButton(
-                        onPressed: busy ? null : _importAllComplete,
+                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importAllComplete(); },
                         child: const Text('Importar todos com gabarito'),
                       ),
                     )
@@ -1645,31 +1647,31 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               hasGab: hasGab,
                             ),
                             onPlay: ready
-                                ? () => _goStudy(
+                                ? () { HapticFeedback.mediumImpact(); _goStudy(
                                       '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                    )
+                                    ); }
                                 : partial
-                                    ? () => _importYear(y)
+                                    ? () { HapticFeedback.selectionClick(); _importYear(y); }
                                     : diskOk
-                                        ? () => _importYearSafe(y)
+                                        ? () { HapticFeedback.selectionClick(); _importYearSafe(y); }
                                         : null,
                             secondary: partial
                                 ? Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       TextButton(
-                                        onPressed: busy ? null : () => _openFolder('gabaritos'),
+                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
                                         child: const Text('Gabaritos'),
                                       ),
                                       TextButton(
-                                        onPressed: busy ? null : () => _importYear(y),
+                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYear(y); },
                                         child: const Text('Preview'),
                                       ),
                                     ],
                                   )
                                 : !ready && diskOk
                                     ? TextButton(
-                                        onPressed: busy ? null : () => _importYearSafe(y),
+                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYearSafe(y); },
                                         child: const Text('Importar do PC'),
                                       )
                                     : null,
@@ -1682,11 +1684,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       spacing: 8,
                       children: [
                         TextButton(
-                          onPressed: busy ? null : _commitOnDisk,
+                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
                           child: const Text('Gravar todos do PC (só com gab)'),
                         ),
                         TextButton(
-                          onPressed: busy ? null : () => _openFolder('gabaritos'),
+                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
                           child: const Text('Abrir gabaritos'),
                         ),
                       ],
@@ -1698,7 +1700,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 initiallyExpanded: false,
-                title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
+                title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 subtitle: const Text('Curação %, pastas, inventário, download, edital'),
                 children: [
                   if (curation != null) ...[
@@ -1708,12 +1710,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       'Resoluções reais: ${curation!['realCount'] ?? 0}'
                       '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
                       'Cross-domain: ${curation!['crossDomainCount'] ?? 0}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                     if (curation!['message'] != null)
                       Text(
                         curation!['message'].toString(),
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                     const SizedBox(height: 8),
                   ],
@@ -1722,17 +1724,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     runSpacing: 8,
                     children: [
                       OutlinedButton.icon(
-                        onPressed: () => _openFolder('provas'),
+                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('provas'); },
                         icon: const Icon(Icons.folder_open_rounded, size: 18),
                         label: const Text('Provas'),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => _openFolder('gabaritos'),
+                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
                         icon: const Icon(Icons.folder_open_rounded, size: 18),
                         label: const Text('Gabaritos'),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => _openFolder('edital'),
+                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('edital'); },
                         icon: const Icon(Icons.folder_open_rounded, size: 18),
                         label: const Text('Edital'),
                       ),
@@ -1741,34 +1743,34 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Sincronizar edital'),
-                    trailing: OutlinedButton(onPressed: busy ? null : _syncEdital, child: const Text('Atualizar')),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _syncEdital(); }, child: const Text('Atualizar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Reclassificar assuntos'),
-                    trailing: OutlinedButton(onPressed: busy ? null : _classify, child: const Text('Rodar')),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); }, child: const Text('Rodar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Baixar todos do manifesto'),
-                    trailing: OutlinedButton(onPressed: busy ? null : _fetchAvailable, child: const Text('Baixar')),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); }, child: const Text('Baixar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Baixar e revisar 1º ano'),
-                    trailing: OutlinedButton(onPressed: busy ? null : _bootstrapFirstYear, child: const Text('Ir')),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); }, child: const Text('Ir')),
                   ),
                   if (coverage != null) ...[
                     const SizedBox(height: 8),
                     Text(
                       coverage!['message']?.toString() ?? '',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                   ],
                   if (library?['dataDir'] != null)
                     Text(
                       'Pasta: ${library!['dataDir']}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                 ],
               ),
@@ -1782,7 +1784,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   QuietEmpty(
                     message: msg!,
                     action: FilledButton.tonal(
-                      onPressed: () => unawaited(_openFolder('provas')),
+                      onPressed: () { HapticFeedback.selectionClick(); unawaited(_openFolder('provas')); },
                       child: const Text('Abrir provas'),
                     ),
                   )
@@ -1796,13 +1798,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       spacing: 8,
                       children: [
                         FilledButton(
-                          onPressed: () => _goStudy(
+                          onPressed: () { HapticFeedback.mediumImpact(); _goStudy(
                             '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                          ),
+                          ); },
                           child: const Text('Estudar agora'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/fila'),
+                          onPressed: () { HapticFeedback.selectionClick(); context.go('/fila'); },
                           child: const Text('Abrir fila'),
                         ),
                       ],
@@ -1811,7 +1813,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 else
                   Text(
                     msg!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.primary),
                   ),
               ],
             ],

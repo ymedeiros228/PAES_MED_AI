@@ -513,12 +513,13 @@ class _HeatCell extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '$value',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: isHot
-                  ? (value >= 3 ? cs.onPrimary : cs.onSurface)
-                  : cs.onSurfaceVariant.f60,
-            ),
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: isHot
+              ? (value >= 3 ? cs.onPrimary : cs.onSurface)
+              : cs.onSurfaceVariant.f60,
+        ),
       ),
     );
   }

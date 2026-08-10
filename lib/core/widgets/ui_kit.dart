@@ -2079,9 +2079,10 @@ class _SoftLoaderState extends State<SoftLoader> with TickerProviderStateMixin {
                 builder: (context, _) => Text(
                   widget.label!,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.55 + _pulse.value * 0.25),
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: cs.onSurface.withOpacity(0.55 + _pulse.value * 0.25),
+                  ),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -250,7 +251,14 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 ),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Mais filtros', style: Theme.of(context).textTheme.titleSmall),
+                  title: Text(
+                    'Mais filtros',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                   children: [
                     Wrap(
                       spacing: 8,
@@ -424,9 +432,10 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                           ),
                           Text(
                             'Página ${page + 1} · ${selected + 1} de ${items.length}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: cs.onSurface.f72,
-                                ),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: cs.onSurface.f72,
+                            ),
                           ),
                           TextButton(
                             onPressed: items.length < pageSize ? null : _nextPage,
