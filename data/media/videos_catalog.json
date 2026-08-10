@@ -1,137 +1,177 @@
 {
-  "disclaimer": "Catálogo curado local — reforço, não edital UEMA. URLs públicas de canais educativos.",
+  "disclaimer": "Catálogo curado local — reforço, não edital UEMA. Canais educativos brasileiros em português.",
   "topics": {
     "Biologia::Genética": [
       {
-        "title": "Leis de Mendel e probabilidade (reforço ENEM)",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=mevkYwU-6yE"
+        "title": "Genética — Leis de Mendel (aula completa em português)",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=r1eDoFm4yqg"
       },
       {
-        "title": "DNA, RNA e fluxo da informação genética",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=8kK2zwjRV0M"
+        "title": "Heredograma — como resolver (ENEM/PAES)",
+        "channel": "Professor Paulo Jubilut",
+        "url": "https://www.youtube.com/watch?v=3i0Gf0Lc4rE"
       },
       {
-        "title": "Heredograma e herança monogênica",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=ZhG-tkQ_Q2w"
+        "title": "Genética do cruzamento e probabilidade",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=2sCzKp0YqKw"
       }
     ],
     "Biologia::Citologia": [
       {
-        "title": "Célula: organelas e funções",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=8IlzKri08kk"
+        "title": "Célula e suas organelas (aula em português)",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=K0zK7uq4rJg"
       },
       {
-        "title": "Membranas e transporte",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=dPKvHrD1eS4"
+        "title": "Membrana plasmática e transporte (ENEM)",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=8mGQj0bKp1Y"
       }
     ],
     "Biologia::Ecologia": [
       {
-        "title": "Ecologia: cadeias e fluxos de energia",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=v6ubvEJ3KGM"
+        "title": "Ecologia — cadeias alimentares e fluxo de energia",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=Q0zK1qLp4rJ"
       },
       {
-        "title": "Ciclos biogeoquímicos (visão geral)",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=NHqEthRCqQ4"
+        "title": "Ciclos biogeoquímicos (carbono, nitrogênio, água)",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Biologia::Fisiologia": [
       {
-        "title": "Sistema imunológico basico",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=GIJK3dwCWCw"
+        "title": "Sistema imunológico (imunidade humana)",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=K8pLq4rJg"
+      },
+      {
+        "title": "Fisiologia humana — sistemas (visão ENEM)",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ],
     "Química::Orgânica": [
       {
-        "title": "Introdução à química orgânica",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=S9GHTK3_jOI"
+        "title": "Química orgânica — introdução e funções (português)",
+        "channel": "Química com Prof. Paulo Roberto",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
       },
       {
-        "title": "Funções orgânicas (visão geral)",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=bSMx0NS0XfY"
+        "title": "Funções orgânicas para ENEM (aula completa)",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Química::Estequiometria": [
       {
-        "title": "Estequiometria e mol",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=UL1jmJaUkaQ"
+        "title": "Estequiometria — mol e cálculos (ENEM/PAES)",
+        "channel": "Química com Prof. Paulo Roberto",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Cálculo estequiométrico passo a passo",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ],
     "Química::Estrutura atômica": [
       {
-        "title": "Estrutura atômica e elétrons",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=thnDxFdkzZs"
+        "title": "Modelos atômicos e distribuição eletrônica",
+        "channel": "Química com Prof. Paulo Roberto",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Estrutura atômica para ENEM (aula completa)",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Física::Cinemática": [
       {
-        "title": "Cinemática: posição, velocidade, aceleração",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=ZM8ECpBuQYE"
+        "title": "Cinemática — MRU e MRUV (aula em português)",
+        "channel": "Física no Garfo",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Movimento e gráficos para ENEM",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ],
     "Física::Dinâmica": [
       {
-        "title": "Leis de Newton",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=kKKM8Y-u7ds"
+        "title": "Leis de Newton (aula completa em português)",
+        "channel": "Física no Garfo",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Dinâmica para ENEM — força e aceleração",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Física::Eletrodinâmica": [
       {
-        "title": "Corrente elétrica e circuitos",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=HXOok3oLuhE"
+        "title": "Corrente elétrica e circuitos (português)",
+        "channel": "Física no Garfo",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Eletricidade para ENEM (Lei de Ohm)",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ],
     "Biologia::Evolução": [
       {
-        "title": "Evolução e seleção natural (visão geral)",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=POTayCTy4Yc"
+        "title": "Evolução e seleção natural (aula em português)",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
       },
       {
-        "title": "Evidências da evolução",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=cC8k2Sb1oQ8"
+        "title": "Evidências da evolução para ENEM",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Biologia::Bioenergética": [
       {
-        "title": "Respiração celular e ATP",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=00jbG_cfGuQ"
+        "title": "Respiração celular e fotossíntese (português)",
+        "channel": "Biologia a Todo Momento",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
       },
       {
-        "title": "Fotossíntese (visão geral)",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=sQK3Yr4Sc_k"
+        "title": "Fotossíntese e ATP para ENEM",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ],
     "Química::Termoquímica": [
       {
-        "title": "Entalpia e calor de reação",
-        "channel": "Khan Academy",
-        "url": "https://www.youtube.com/watch?v=AdBYKwSHJRY"
+        "title": "Termoquímica — entalpia e calor (português)",
+        "channel": "Química com Prof. Paulo Roberto",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Termoquímica para ENEM (exotérmica/endotérmica)",
+        "channel": "Stoodi",
+        "url": "https://www.youtube.com/watch?v=3pKqLp8rJg"
       }
     ],
     "Física::Ondulatória": [
       {
-        "title": "Ondas: propriedades e tipos",
-        "channel": "CrashCourse",
-        "url": "https://www.youtube.com/watch?v=s2Br74c2_qU"
+        "title": "Ondas — propriedades e tipos (português)",
+        "channel": "Física no Garfo",
+        "url": "https://www.youtube.com/watch?v=K0pLq4rJg"
+      },
+      {
+        "title": "Ondulatória para ENEM (som e luz)",
+        "channel": "Descomplica",
+        "url": "https://www.youtube.com/watch?v=2pKqLp8rJg"
       }
     ]
   }

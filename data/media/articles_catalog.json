@@ -1,188 +1,158 @@
 {
-  "disclaimer": "Leituras de reforço — não oficiais da banca UEMA. URLs públicas curadas.",
+  "disclaimer": "Leituras de fontes científicas e educacionais — SciELO, Khan Academy, portais .gov.br. Não oficiais da banca UEMA.",
   "topics": {
     "Biologia::Genética": [
       {
-        "title": "Genética — visão geral",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Gen%C3%A9tica",
-        "snippet": "Hereditariedade, genes e variação genética."
+        "title": "Genética molecular — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/heredity",
+        "snippet": "Heredidade, DNA, genes e leis de Mendel com exercícios."
       },
       {
-        "title": "Leis de Mendel",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Leis_de_Mendel",
-        "snippet": "Segregação e segregação independente."
+        "title": "Artigos sobre genética humana — SciELO",
+        "source": "SciELO",
+        "url": "https://search.scielo.org/?q=genetica+humana",
+        "snippet": "Artigos científicos brasileiros sobre genética e herança."
       },
       {
-        "title": "Árvore genealógica (heráldica de pedigrees)",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Heredograma",
-        "snippet": "Símbolos e padrões de herança monogênica."
+        "title": "Genética — Manual MSD (versão profissional)",
+        "source": "MSD Manuals",
+        "url": "https://www.msdmanuals.com/pt/profissional/gen%C3%A9tica",
+        "snippet": "Referência médica confiável sobre genética e doenças hereditárias."
       }
     ],
     "Biologia::Citologia": [
       {
-        "title": "Célula",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/C%C3%A9lula",
-        "snippet": "Unidade básica da vida; organelas e membranas."
+        "title": "A célula e suas organelas — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/structure-of-a-cell",
+        "snippet": "Estrutura celular, organelas e membranas com exercícios."
       },
       {
-        "title": "Membrana plasmática",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Membrana_plasm%C3%A1tica",
-        "snippet": "Bicamada lipídica e transporte."
+        "title": "Biologia celular — artigos SciELO",
+        "source": "SciELO",
+        "url": "https://search.scielo.org/?q=biologia+celular",
+        "snippet": "Pesquisa científica brasileira sobre biologia celular."
       }
     ],
     "Biologia::Ecologia": [
       {
-        "title": "Ecologia",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Ecologia",
-        "snippet": "Relações entre organismos e ambiente."
+        "title": "Ecologia — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/ecology",
+        "snippet": "Ecossistemas, cadeias alimentares e ciclos biogeoquímicos."
       },
       {
-        "title": "Ciclo do carbono",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Ciclo_do_carbono",
-        "snippet": "Fluxos e impactos antrópicos."
+        "title": "Ecologia — artigos SciELO",
+        "source": "SciELO",
+        "url": "https://search.scielo.org/?q=ecologia",
+        "snippet": "Artigos científicos sobre ecologia e meio ambiente."
       }
     ],
     "Biologia::Fisiologia": [
       {
-        "title": "Fisiologia humana",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Fisiologia_humana",
-        "snippet": "Sistemas e integração homeostática."
+        "title": "Fisiologia humana — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/human-biology",
+        "snippet": "Sistemas do corpo humano com exercícios interativos."
       },
       {
-        "title": "Sistema imunitário",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Sistema_imunit%C3%A1rio",
-        "snippet": "Imunidade inata e adaptativa."
+        "title": "Fisiologia — Manual MSD (versão profissional)",
+        "source": "MSD Manuals",
+        "url": "https://www.msdmanuals.com/pt/profissional/fisiologia",
+        "snippet": "Referência médica sobre fisiologia e sistemas do corpo."
       }
     ],
     "Química::Orgânica": [
       {
-        "title": "Química orgânica",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Qu%C3%ADmica_org%C3%A2nica",
-        "snippet": "Compostos de carbono e funções."
+        "title": "Química orgânica — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/organic-chemistry",
+        "snippet": "Compostos de carbono, funções orgânicas e reações."
       },
       {
-        "title": "Hidrocarbonetos",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Hidrocarboneto",
-        "snippet": "Alcanos, alcenos e aromáticos."
+        "title": "Química orgânica — artigos SciELO",
+        "source": "SciELO",
+        "url": "https://search.scielo.org/?q=quimica+organica",
+        "snippet": "Pesquisa brasileira em química orgânica."
       }
     ],
     "Química::Estequiometria": [
       {
-        "title": "Estequiometria",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Estequiometria",
-        "snippet": "Relações quantitativas em reações."
-      },
-      {
-        "title": "Mol (unidade)",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Mol_(unidade)",
-        "snippet": "Quantidade de matéria e massa molar."
+        "title": "Estequiometria — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/chemistry/chemical-reactions-stoichiometry",
+        "snippet": "Mol, cálculos estequiométricos e reações."
       }
     ],
     "Química::Estrutura atômica": [
       {
-        "title": "Átomo",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/%C3%81tomo",
-        "snippet": "Núcleo, elétrons e modelos atômicos."
+        "title": "Estrutura atômica — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/chemistry/atomic-structure",
+        "snippet": "Modelos atômicos, elétrons e configuração eletrônica."
       }
     ],
     "Física::Cinemática": [
       {
-        "title": "Cinemática",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Cinem%C3%A1tica",
-        "snippet": "Posição, velocidade e aceleração."
+        "title": "Cinemática — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/physics/one-dimensional-motion",
+        "snippet": "Movimento, velocidade, aceleração e gráficos."
       }
     ],
     "Física::Dinâmica": [
       {
-        "title": "Leis de Newton",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Leis_de_Newton",
-        "snippet": "Inércia, F=ma e ação-reação."
+        "title": "Leis de Newton — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/physics/forces-and-newtons-laws",
+        "snippet": "Forças, leis de Newton e aplicações."
       }
     ],
     "Física::Eletrodinâmica": [
       {
-        "title": "Corrente elétrica",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Corrente_el%C3%A9trica",
-        "snippet": "Carga em movimento e circuitos."
-      },
-      {
-        "title": "Lei de Ohm",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Lei_de_Ohm",
-        "snippet": "Tensão, corrente e resistência."
+        "title": "Circuitos elétricos — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/physics/circuits-topic",
+        "snippet": "Corrente, tensão, resistência e Lei de Ohm."
       }
     ],
     "Biologia::Evolução": [
       {
-        "title": "Evolução",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Evolu%C3%A7%C3%A3o",
-        "snippet": "Mudança das linhagens ao longo do tempo."
+        "title": "Evolução e seleção natural — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/heredity/evolution-and-natural-selection",
+        "snippet": "Evolução, seleção natural e evidências."
       },
       {
-        "title": "Seleção natural",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Sele%C3%A7%C3%A3o_natural",
-        "snippet": "Mecanismo de adaptação populacional."
+        "title": "Evolução — artigos SciELO",
+        "source": "SciELO",
+        "url": "https://search.scielo.org/?q=evolucao+biologica",
+        "snippet": "Pesquisa científica brasileira sobre evolução."
       }
     ],
     "Biologia::Bioenergética": [
       {
-        "title": "Respiração celular",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Respira%C3%A7%C3%A3o_celular",
-        "snippet": "Glicólise, ciclo de Krebs e cadeia respiratória."
-      },
-      {
-        "title": "Fotossíntese",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Fotoss%C3%ADntese",
-        "snippet": "Conversão de luz em energia química."
+        "title": "Fotossíntese e respiração celular — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/biology/photosynthesis",
+        "snippet": "Fotossíntese, respiração celular e ATP."
       }
     ],
     "Química::Termoquímica": [
       {
-        "title": "Termoquímica",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Termoqu%C3%ADmica",
-        "snippet": "Calor e energia em reações químicas."
-      },
-      {
-        "title": "Entalpia",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Entalpia",
-        "snippet": "ΔH e processos endo/exotérmicos."
+        "title": "Termoquímica — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/chemistry/thermodynamics-chemistry",
+        "snippet": "Entalpia, calor de reação e termodinâmica."
       }
     ],
     "Física::Ondulatória": [
       {
-        "title": "Onda",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Onda",
-        "snippet": "Comprimento de onda, frequência e propagação."
-      },
-      {
-        "title": "Som",
-        "source": "Wikipédia",
-        "url": "https://pt.wikipedia.org/wiki/Som",
-        "snippet": "Ondas mecânicas audíveis."
+        "title": "Ondas e som — Khan Academy (português)",
+        "source": "Khan Academy",
+        "url": "https://pt.khanacademy.org/science/physics/mechanical-waves-and-sound",
+        "snippet": "Propriedades das ondas, som e luz."
       }
     ]
   }

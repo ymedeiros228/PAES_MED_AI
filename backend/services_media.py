@@ -23,8 +23,8 @@ DISCLAIMER_VIDEO = (
     "Não contam como edital nem como prova oficial."
 )
 DISCLAIMER_ARTICLE = (
-    "Leituras de reforço (não oficiais da banca UEMA). "
-    "Não contam como edital nem como prova oficial."
+    "Leituras de reforço de fontes científicas (SciELO, PubMed, Khan Academy, .gov.br, .edu.br). "
+    "Não oficiais da banca UEMA — não contam como edital nem prova oficial."
 )
 
 _YT_HOSTS = frozenset(
@@ -236,7 +236,8 @@ def _cache_set(store_key: str, entry_key: str, items: list[dict[str, Any]], max_
 def _youtube_search(subject: str | None, topic: str | None, limit: int = 5) -> list[dict[str, Any]]:
     if not youtube_configured():
         return []
-    q = f"{subject or ''} {topic or ''} ENEM Natureza".strip()
+    # Query prioriza contexto brasileiro (ENEM/PAES + português) para evitar vídeos gringos.
+    q = f"{subject or ''} {topic or ''} ENEM português Brasil".strip()
     cache_key = f"yt::{_topic_key(subject, topic)}"
     cached = _cache_get("video_cache", cache_key, VIDEO_CACHE_TTL_H)
     if cached is not None:
@@ -250,6 +251,7 @@ def _youtube_search(subject: str | None, topic: str | None, limit: int = 5) -> l
             "key": YOUTUBE_API_KEY,
             "safeSearch": "strict",
             "relevanceLanguage": "pt",
+            "regionCode": "BR",
         }
     )
     url = f"https://www.googleapis.com/youtube/v3/search?{params}"
@@ -285,7 +287,13 @@ def _youtube_search(subject: str | None, topic: str | None, limit: int = 5) -> l
 def _serper_search(subject: str | None, topic: str | None, limit: int = 5) -> list[dict[str, Any]]:
     if not serper_configured():
         return []
-    q = f"{subject or ''} {topic or ''} site:pt.wikipedia.org OR educação".strip()
+    # Prioriza fontes científicas/educacionais confiáveis em vez de Wikipedia.
+    # SciELO, PubMed, Khan Academy, .gov.br, .edu.br são filtrados no host allowlist.
+    q = (
+        f"{subject or ''} {topic or ''} "
+        f"(site:scielo.br OR site:pubmed.ncbi.nlm.nih.gov OR site:khanacademy.org "
+        f"OR site:pt.khanacademy.org OR site:gov.br OR site:edu.br OR site:pt.wikipedia.org)"
+    ).strip()
     cache_key = f"serper::{_topic_key(subject, topic)}"
     cached = _cache_get("article_cache", cache_key, ARTICLE_CACHE_TTL_H)
     if cached is not None:
@@ -446,13 +454,34 @@ def _host_allowed_for_article(host: str) -> bool:
     h = (host or "").lower().strip(".")
     if not h:
         return False
-    if h in {"wikipedia.org", "scielo.br", "khanacademy.org"}:
+    # Fontes científicas internacionais (PubMed/NIH)
+    if h in {"ncbi.nlm.nih.gov", "pubmed.ncbi.nlm.nih.gov", "pmc.ncbi.nlm.nih.gov"}:
         return True
-    if h.endswith(".wikipedia.org") or h.endswith(".scielo.br") or h.endswith(".khanacademy.org"):
+    if h.endswith(".ncbi.nlm.nih.gov") or h.endswith(".nih.gov"):
         return True
+    # Fontes científicas brasileiras
+    if h in {"scielo.br", "scielo.org", "bvs.br", "bvsalud.org"}:
+        return True
+    if h.endswith(".scielo.br") or h.endswith(".scielo.org") or h.endswith(".bvs.br") or h.endswith(".bvsalud.org"):
+        return True
+    # Khan Academy (pt e en)
+    if h in {"khanacademy.org", "pt.khanacademy.org"}:
+        return True
+    if h.endswith(".khanacademy.org"):
+        return True
+    # Wikipedia (pt apenas — fallback, não prioridade)
+    if h == "pt.wikipedia.org" or h.endswith(".pt.wikipedia.org"):
+        return True
+    # Portais governamentais brasileiros (Ministério da Saúde, etc.)
     if h.endswith(".gov.br") or h == "gov.br":
         return True
+    # Domínios educacionais brasileiros
     if h.endswith(".edu.br") or h.endswith(".edu") or h == "edu" or h == "edu.br":
+        return True
+    # Portais médicos brasileiros confiáveis
+    if h in {"msdmanuals.com", "pt.msdmanuals.com", "sociedadebrasileira.org"}:
+        return True
+    if h.endswith(".msdmanuals.com"):
         return True
     return False
 
