@@ -1779,17 +1779,17 @@ class _AchievementOverlayState extends State<_AchievementOverlay>
                         children: [
                           Text(
                             'CONQUISTA DESBLOQUEADA',
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               color: widget.color.withOpacity(0.7),
                               fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.4,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Text(
                             widget.title,
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -1797,9 +1797,10 @@ class _AchievementOverlayState extends State<_AchievementOverlay>
                           ),
                           Text(
                             widget.subtitle,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withOpacity(0.65),
                               fontSize: 12,
+                              height: 1.4,
                             ),
                           ),
                         ],

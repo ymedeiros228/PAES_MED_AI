@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../theme/app_theme.dart';
@@ -76,15 +77,20 @@ class _TrainingBasisBannerState extends State<TrainingBasisBanner> {
                   children: [
                     Text(
                       'Ainda no modo treino',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: cs.onTertiaryContainer,
-                          ),
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onTertiaryContainer,
+                      ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       'Importe provas UEMA na Biblioteca para estatísticas reais.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onTertiaryContainer.withOpacity(0.9),
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: cs.onTertiaryContainer.withOpacity(0.85),
+                      ),
                     ),
                   ],
                 ),
