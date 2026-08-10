@@ -31,12 +31,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   // Futures cached para evitar recriar a cada rebuild (performance)
   late final Future<dynamic> _essayProgressFuture;
   late final Future<dynamic> _backupLastFuture;
+  late final Future<dynamic> _dueCardsFuture;
 
   @override
   void initState() {
     super.initState();
     _essayProgressFuture = apiClient.get('/api/essays/progress');
     _backupLastFuture = apiClient.get('/api/backup/last');
+    _dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -286,7 +288,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
         final hot = (data['errorHotTopics'] as List? ?? []).take(2).toList();
-        final dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
+        final dueCardsFuture = _dueCardsFuture;
         final readyScore = (readiness['score'] as num?)?.toDouble();
         final calItems = calendar['items'] as List? ?? const [];
 
