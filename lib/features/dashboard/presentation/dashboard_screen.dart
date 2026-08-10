@@ -342,7 +342,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       runSpacing: 10,
                       children: [
                         FilledButton(
-                          onPressed: () => context.go(sessionPath),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go(sessionPath);
+                          },
                           child: Text(
                             checkpoint != null
                                 ? 'Continuar · ${_checkpointShort(checkpoint!)}'
@@ -351,11 +354,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                         if (checkpoint != null)
                           OutlinedButton(
-                            onPressed: _discardCheckpoint,
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              _discardCheckpoint();
+                            },
                             child: const Text('Recomeçar'),
                           ),
                         OutlinedButton(
-                          onPressed: () => context.go(closePath),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go(closePath);
+                          },
                           child: Text(closeLabel),
                         ),
                       ],

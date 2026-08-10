@@ -1955,7 +1955,10 @@ class StudyCheckRow extends StatelessWidget {
           ),
           if (actionLabel != null && onAction != null && !done)
             FilledButton.tonal(
-              onPressed: onAction,
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                onAction!();
+              },
               style: FilledButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

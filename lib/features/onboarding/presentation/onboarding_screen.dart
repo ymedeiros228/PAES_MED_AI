@@ -19,15 +19,21 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
   int step = 0;
   late final TextEditingController examCtrl;
   String? folderMsg;
   final _focusNode = FocusNode();
+  late final AnimationController _stepAnim;
 
   @override
   void initState() {
     super.initState();
+    _stepAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    )..forward();
     examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
@@ -36,6 +42,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
+    _stepAnim.dispose();
     examCtrl.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -49,14 +56,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
     }
     if (step < 3) {
+      HapticFeedback.selectionClick();
+      _stepAnim.forward(from: 0);
       setState(() => step++);
       return;
     }
+    HapticFeedback.mediumImpact();
     await _finish(path: '/dashboard');
   }
 
   void _back() {
-    if (step > 0) setState(() => step--);
+    if (step > 0) {
+      HapticFeedback.selectionClick();
+      _stepAnim.forward(from: 0);
+      setState(() => step--);
+    }
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
@@ -145,15 +159,61 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.primary),
               ),
               const Spacer(),
-              Icon(
-                [Icons.school_rounded, Icons.event_rounded, Icons.folder_open_rounded, Icons.flag_rounded][step],
-                size: 56,
-                color: cs.primary,
+              // AnimatedSwitcher para transição suave entre steps
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 400),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, anim) {
+                  return FadeTransition(
+                    opacity: anim,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.15, 0),
+                        end: Offset.zero,
+                      ).animate(anim),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Icon(
+                  [Icons.school_rounded, Icons.event_rounded, Icons.folder_open_rounded, Icons.flag_rounded][step],
+                  key: ValueKey('icon_$step'),
+                  size: 56,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(height: 16),
-              Text(titles[step], style: Theme.of(context).textTheme.headlineSmall),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.1, 0),
+                      end: Offset.zero,
+                    ).animate(anim),
+                    child: child,
+                  ),
+                ),
+                child: Text(
+                  titles[step],
+                  key: ValueKey('title_$step'),
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
               const SizedBox(height: 12),
-              Text(bodies[step], style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4)),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                child: Text(
+                  bodies[step],
+                  key: ValueKey('body_$step'),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4),
+                ),
+              ),
               Text(
                 'Use as setas do teclado ou Enter para avançar',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.f72),
@@ -190,15 +250,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   runSpacing: 8,
                   children: [
                     FilledButton.tonal(
-                      onPressed: () => _openFolder('provas'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _openFolder('provas');
+                      },
                       child: const Text('Abrir provas'),
                     ),
                     FilledButton.tonal(
-                      onPressed: () => _openFolder('gabaritos'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _openFolder('gabaritos');
+                      },
                       child: const Text('Abrir gabaritos'),
                     ),
                     OutlinedButton(
-                      onPressed: () => _openFolder('edital'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _openFolder('edital');
+                      },
                       child: const Text('Abrir edital'),
                     ),
                   ],

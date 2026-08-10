@@ -348,6 +348,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     active: navIndexFor(sessionPath) == selected,
                     leadingIcon: Icons.menu_book_rounded,
                     onPlay: () {
+                      HapticFeedback.selectionClick();
                       final i = navIndexFor(sessionPath);
                       if (i >= 0) setState(() => selected = i);
                       context.go(sessionPath);
@@ -389,7 +390,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         child: FilterChip(
                           label: const Text('Só sem material'),
                           selected: gapsOnlyNoMaterial,
-                          onSelected: (v) => setState(() => gapsOnlyNoMaterial = v),
+                          onSelected: (v) {
+                            HapticFeedback.selectionClick();
+                            setState(() => gapsOnlyNoMaterial = v);
+                          },
                         ),
                       ),
                     ),
@@ -442,6 +446,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                                   ? (read ? Icons.menu_book_rounded : Icons.flag_rounded)
                                   : Icons.folder_off_outlined,
                               onPlay: () {
+                                HapticFeedback.selectionClick();
                                 final i = navIndexFor(path);
                                 if (i >= 0) setState(() => selected = i);
                                 context.go(path);
@@ -555,6 +560,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       active: navIndexFor('/flashcards?due=1') == selected,
                       leadingIcon: Icons.style_outlined,
                       onPlay: () {
+                        HapticFeedback.selectionClick();
                         const path = '/flashcards?due=1';
                         final i = navIndexFor(path);
                         if (i >= 0) setState(() => selected = i);
@@ -574,6 +580,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           active: navIndexFor(path) == selected,
                           leadingIcon: Icons.replay_rounded,
                           onPlay: () {
+                            HapticFeedback.selectionClick();
                             final i = navIndexFor(path);
                             if (i >= 0) setState(() => selected = i);
                             context.go(path);
@@ -589,6 +596,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       active: navIndexFor('/flashcards?due=1') == selected,
                       leadingIcon: Icons.style_rounded,
                       onPlay: () {
+                        HapticFeedback.selectionClick();
                         const path = '/flashcards?due=1';
                         final i = navIndexFor(path);
                         if (i >= 0) setState(() => selected = i);
@@ -611,6 +619,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         active: navIndexFor(path) == selected,
                         leadingIcon: Icons.wb_sunny_outlined,
                         onPlay: () {
+                          HapticFeedback.selectionClick();
                           final i = navIndexFor(path);
                           if (i >= 0) setState(() => selected = i);
                           context.go(path);
