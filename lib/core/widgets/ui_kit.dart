@@ -811,20 +811,18 @@ class _ConstellationMapState extends State<ConstellationMap>
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontFamily: 'Georgia',
-                        fontFamilyFallback: ['Times New Roman', 'serif'],
+                      style: GoogleFonts.poppins(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFF0F2F8),
-                        letterSpacing: 0.3,
+                        color: const Color(0xFFF0F2F8),
+                        letterSpacing: 0.2,
                         height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       hint,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 11.5,
                         color: Colors.white.withOpacity(0.42),
                         height: 1.3,
@@ -937,7 +935,7 @@ class _StatChip extends StatelessWidget {
         const SizedBox(width: 5),
         Text(
           value,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             color: const Color(0xFFF0F2F8),
             fontWeight: FontWeight.w700,
             fontSize: 13,
@@ -946,7 +944,7 @@ class _StatChip extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.white.withOpacity(0.35),
             fontSize: 11,
             fontWeight: FontWeight.w400,
