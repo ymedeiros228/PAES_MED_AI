@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app.dart';
@@ -152,11 +153,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     children: [
               Text(
                 'PAES MED AI',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                  letterSpacing: -0.5,
+                  height: 1.15,
+                ),
               ),
+              const SizedBox(height: 4),
               Text(
                 'Medicina · PAES/UEMA',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: cs.primary),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.primary,
+                  letterSpacing: 0.3,
+                ),
               ),
               const Spacer(),
               // AnimatedSwitcher para transição suave entre steps
@@ -201,22 +214,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 child: Text(
                   titles[step],
                   key: ValueKey('title_$step'),
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                    height: 1.25,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOutCubic,
                 child: Text(
                   bodies[step],
                   key: ValueKey('body_$step'),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.4),
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: cs.onSurface.withOpacity(0.85),
+                    height: 1.6,
+                  ),
                 ),
               ),
+              const SizedBox(height: 8),
               Text(
                 'Use as setas do teclado ou Enter para avançar',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface.f72),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: cs.onSurface.f72,
+                ),
               ),
               if (step == 1) ...[
                 const SizedBox(height: 16),
