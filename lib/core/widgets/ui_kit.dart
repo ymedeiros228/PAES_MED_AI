@@ -1076,6 +1076,7 @@ class _ConstellationPainter extends CustomPainter {
       ..shader = RadialGradient(
         colors: [
           starColor.withOpacity(0.04),
+          starColor.withOpacity(0.01),
           starColor.withOpacity(0),
         ],
         stops: const [0.0, 0.6, 1.0],
@@ -1152,33 +1153,40 @@ class _ConstellationPainter extends CustomPainter {
     double intensity,
     double twinkle,
   ) {
+    if (intensity <= 0) return;
+
     // Camada externa: glow amplo e suave
     final outerRadius = radius * 3.5 * intensity;
-    final outerPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          color.withOpacity(0.15 * intensity),
-          color.withOpacity(0.05 * intensity),
-          color.withOpacity(0),
-        ],
-        stops: const [0.0, 0.4, 1.0],
-      ).createShader(Rect.fromCircle(center: pos, radius: outerRadius));
-    canvas.drawCircle(pos, outerRadius, outerPaint);
+    if (outerRadius > 0.5) {
+      final outerPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            color.withOpacity(0.15 * intensity),
+            color.withOpacity(0.05 * intensity),
+            color.withOpacity(0),
+          ],
+          stops: const [0.0, 0.4, 1.0],
+        ).createShader(Rect.fromCircle(center: pos, radius: outerRadius));
+      canvas.drawCircle(pos, outerRadius, outerPaint);
+    }
 
     // Camada interna: glow mais concentrado
     final innerRadius = radius * 1.8 * intensity;
-    final innerPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          color.withOpacity(0.35 * intensity),
-          color.withOpacity(0),
-        ],
-      ).createShader(Rect.fromCircle(center: pos, radius: innerRadius));
-    canvas.drawCircle(pos, innerRadius, innerPaint);
+    if (innerRadius > 0.5) {
+      final innerPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            color.withOpacity(0.35 * intensity),
+            color.withOpacity(0),
+          ],
+        ).createShader(Rect.fromCircle(center: pos, radius: innerRadius));
+      canvas.drawCircle(pos, innerRadius, innerPaint);
+    }
   }
 
   /// Desenha uma estrela de 5 pontas usando Path.
   void _drawStarShape(Canvas canvas, Offset center, double radius, Color color) {
+    if (radius < 0.5) return;
     final path = Path();
     const points = 5;
     const innerRatio = 0.4; // razão entre raio interno e externo
