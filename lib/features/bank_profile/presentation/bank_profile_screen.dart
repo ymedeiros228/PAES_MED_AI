@@ -365,9 +365,9 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
   }
 
   Color _heatColor(int n) {
-    if (n <= 0) return Colors.grey.shade200;
-    if (n == 1) return Colors.orange.shade100;
-    if (n == 2) return Colors.orange.shade300;
-    return Colors.deepOrange.shade400;
+    if (n <= 0) return Theme.of(context).colorScheme.surfaceContainerHighest;
+    if (n == 1) return AppTheme.warning.withOpacity(0.25);
+    if (n == 2) return AppTheme.warning.withOpacity(0.55);
+    return AppTheme.warning;
   }
 }
