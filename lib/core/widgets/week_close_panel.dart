@@ -101,7 +101,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(hint, style: Theme.of(context).textTheme.bodyMedium),
+              SelectableText(hint, style: Theme.of(context).textTheme.bodyMedium),
               if (due != null) ...[
                 const SizedBox(height: 6),
                 Text(
