@@ -107,6 +107,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -182,18 +183,38 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       SurfacePanel(
                         margin: const EdgeInsets.only(bottom: 12),
                         color: cs.primaryContainer.f35,
-                        child: Column(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              total != null ? '$total questões na análise' : 'Perfil local',
-                              style: Theme.of(context).textTheme.titleMedium,
+                            Icon(
+                              Icons.insights_rounded,
+                              size: 28,
+                              color: cs.primary,
                             ),
-                            if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
-                              Text(
-                                'Enunciado médio: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
-                                style: Theme.of(context).textTheme.bodySmall,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    total != null ? '$total questões na análise' : 'Perfil local',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                  if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        'Enunciado médio: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: cs.onSurface.f72,
+                                            ),
+                                      ),
+                                    ),
+                                ],
                               ),
+                            ),
                           ],
                         ),
                       ),
@@ -223,84 +244,141 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                         SectionLabel('Disciplina × ano'),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: [
-                              const DataColumn(label: Text('Disc.')),
-                              for (final y in yearList) DataColumn(label: Text(y)),
-                            ],
-                            rows: [
-                              for (final entry in heat.entries)
-                                DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Text(
-                                        entry.key.toString().split(' ').first,
-                                        style: Theme.of(context).textTheme.labelSmall,
-                                      ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: DataTable(
+                              columnSpacing: 6,
+                              horizontalMargin: 4,
+                              headingRowHeight: 32,
+                              dataRowMinHeight: 36,
+                              dataRowMaxHeight: 36,
+                              columns: [
+                                DataColumn(
+                                  label: Text(
+                                    'Disc.',
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ),
+                                for (final y in yearList)
+                                  DataColumn(
+                                    label: Text(
+                                      y,
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
-                                    for (final y in yearList)
+                                  ),
+                              ],
+                              rows: [
+                                for (final entry in heat.entries)
+                                  DataRow(
+                                    cells: [
                                       DataCell(
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          color: _heatColor(
-                                            Map<String, dynamic>.from(entry.value as Map)[y] as int? ?? 0,
-                                          ),
-                                          child: Text(
-                                            '${Map<String, dynamic>.from(entry.value as Map)[y] ?? 0}',
-                                          ),
+                                        Text(
+                                          entry.key.toString().split(' ').first,
+                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                       ),
-                                  ],
-                                ),
-                            ],
+                                      for (final y in yearList)
+                                        DataCell(
+                                          _HeatCell(
+                                            value: Map<String, dynamic>.from(entry.value as Map)[y] as int? ?? 0,
+                                            color: _heatColor(
+                                              Map<String, dynamic>.from(entry.value as Map)[y] as int? ?? 0,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                       if (co.isNotEmpty) ...[
                         SectionLabel('Tópicos que costumam aparecer juntos'),
-                        for (final raw in co.take(10))
-                          PlaylistTile(
-                            title: '${(raw as Map)['a']} ↔ ${raw['b']}',
-                            subtitle: '${raw['count']} ocorrência(s)',
-                            leadingIcon: Icons.link_rounded,
-                            onPlay: () {
-                              final a = raw['a']?.toString() ?? '';
-                              final parts = a.split('::');
-                              final sub = parts.isNotEmpty ? parts[0] : '';
-                              final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
-                              context.go(
-                                '/adaptativo?subject=${Uri.encodeComponent(sub)}'
-                                '&topic=${Uri.encodeComponent(top)}',
-                              );
-                            },
-                          ),
+                        StaggeredFadeIn(
+                          itemDelay: const Duration(milliseconds: 60),
+                          children: [
+                            for (final raw in co.take(10))
+                              PlaylistTile(
+                                title: '${(raw as Map)['a']} ↔ ${raw['b']}',
+                                subtitle: '${raw['count']} ocorrência(s)',
+                                leadingIcon: Icons.link_rounded,
+                                onPlay: () {
+                                  HapticFeedback.selectionClick();
+                                  final a = raw['a']?.toString() ?? '';
+                                  final parts = a.split('::');
+                                  final sub = parts.isNotEmpty ? parts[0] : '';
+                                  final top = parts.length >= 2 ? parts.sublist(1).join('::') : '';
+                                  context.go(
+                                    '/adaptativo?subject=${Uri.encodeComponent(sub)}'
+                                    '&topic=${Uri.encodeComponent(top)}',
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
                       ],
                       ExpansionTile(
                         tilePadding: EdgeInsets.zero,
                         title: Text('Detalhes e export', style: Theme.of(context).textTheme.titleSmall),
                         children: [
                           if (data['difficultyDistribution'] != null)
-                            Text('Dificuldade: ${data['difficultyDistribution']}'),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Dificuldade: ${data['difficultyDistribution']}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: cs.onSurface.f72,
+                                    ),
+                              ),
+                            ),
                           if (data['correctAlternativeBias'] != null)
-                            Text('Viés de alternativa: ${data['correctAlternativeBias']}'),
-                          const SizedBox(height: 8),
-                          Text('Verbos frequentes', style: Theme.of(context).textTheme.titleSmall),
-                          Wrap(
-                            spacing: 6,
-                            children: [
-                              for (final v in (data['topVerbs'] as List? ?? []).take(12))
-                                Chip(label: Text('${(v as List)[0]} (${v[1]})')),
-                            ],
-                          ),
-                          Text('Palavras', style: Theme.of(context).textTheme.titleSmall),
-                          Wrap(
-                            spacing: 6,
-                            children: [
-                              for (final v in (data['topKeywords'] as List? ?? []).take(16))
-                                Chip(label: Text('${(v as List)[0]}')),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                'Viés de alternativa: ${data['correctAlternativeBias']}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: cs.onSurface.f72,
+                                    ),
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          if ((data['topVerbs'] as List? ?? []).isNotEmpty) ...[
+                            Text('Verbos frequentes', style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                )),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (final v in (data['topVerbs'] as List? ?? []).take(12))
+                                  Chip(label: Text('${(v as List)[0]} (${v[1]})')),
+                              ],
+                            ),
+                          ],
+                          if ((data['topKeywords'] as List? ?? []).isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text('Palavras', style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                )),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (final v in (data['topKeywords'] as List? ?? []).take(16))
+                                  Chip(label: Text('${(v as List)[0]}')),
+                              ],
+                            ),
+                          ],
+                          const SizedBox(height: 12),
                           OutlinedButton.icon(
                             onPressed: () {
                               HapticFeedback.selectionClick();
@@ -310,7 +388,15 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                             label: const Text('Exportar perfil (E)'),
                           ),
                           if (exportMsg != null)
-                            Text(exportMsg!, style: Theme.of(context).textTheme.bodySmall),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                exportMsg!,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: cs.onSurface.f72,
+                                    ),
+                              ),
+                            ),
                         ],
                       ),
                     ],
@@ -323,7 +409,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Frequência indisponível.'),
                   action: TextButton(
-                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      ref.read(refreshTickProvider.notifier).state++;
+                    },
                     child: const Text('Tentar'),
                   ),
                 ),
@@ -332,12 +421,16 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                     return QuietEmpty(
                       message: 'Sem série temporal ainda.',
                       action: TextButton(
-                        onPressed: () => context.go('/sessao'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/sessao');
+                        },
                         child: const Text('Sessão'),
                       ),
                     );
                   }
-                  return Column(
+                  return StaggeredFadeIn(
+                    itemDelay: const Duration(milliseconds: 50),
                     children: [
                       for (final raw in items.take(24))
                         PlaylistTile(
@@ -347,10 +440,13 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                               '${raw['forgotten'] == true ? ' · sumiu' : ''}'
                               '${raw['favorite'] == true ? ' · frequente' : ''}',
                           leadingIcon: Icons.timeline_rounded,
-                          onPlay: () => context.go(
-                            '/adaptativo?subject=${Uri.encodeComponent(raw['subject']?.toString() ?? '')}'
-                            '&topic=${Uri.encodeComponent(raw['topic']?.toString() ?? '')}',
-                          ),
+                          onPlay: () {
+                            HapticFeedback.selectionClick();
+                            context.go(
+                              '/adaptativo?subject=${Uri.encodeComponent(raw['subject']?.toString() ?? '')}'
+                              '&topic=${Uri.encodeComponent(raw['topic']?.toString() ?? '')}',
+                            );
+                          },
                         ),
                     ],
                   );
@@ -369,5 +465,40 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
     if (n == 1) return AppTheme.warning.withOpacity(0.25);
     if (n == 2) return AppTheme.warning.withOpacity(0.55);
     return AppTheme.warning;
+  }
+}
+
+/// Célula do heatmap com cantos arredondados e cor semântica.
+class _HeatCell extends StatelessWidget {
+  const _HeatCell({required this.value, required this.color});
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isHot = value > 0;
+    return Container(
+      width: 34,
+      height: 26,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isHot ? color.withOpacity(0.4) : cs.outlineVariant.withOpacity(0.3),
+          width: 0.5,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '$value',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: isHot
+                  ? (value >= 3 ? cs.onPrimary : cs.onSurface)
+                  : cs.onSurfaceVariant.f60,
+            ),
+      ),
+    );
   }
 }
