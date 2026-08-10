@@ -1169,6 +1169,65 @@ class _SeededRandom {
 ///
 /// Mostra um ícone, título e subtítulo com animação de entrada (slide + scale)
 /// e saída automática após [duration]. Use [AchievementToast.show] para exibir.
+/// Botão com efeito de pulso suave para chamar atenção.
+/// Útil para CTAs importantes como "Continuar sessão" quando há checkpoint.
+class PulseButton extends StatefulWidget {
+  const PulseButton({
+    required this.onPressed,
+    required this.child,
+    this.pulse = true,
+    super.key,
+  });
+
+  final VoidCallback onPressed;
+  final Widget child;
+  final bool pulse;
+
+  @override
+  State<PulseButton> createState() => _PulseButtonState();
+}
+
+class _PulseButtonState extends State<PulseButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    _scale = Tween(begin: 1.0, end: 1.04).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.pulse) {
+      return FilledButton(onPressed: widget.onPressed, child: widget.child);
+    }
+    return AnimatedBuilder(
+      animation: _scale,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scale.value,
+          child: child,
+        );
+      },
+      child: FilledButton(onPressed: widget.onPressed, child: widget.child),
+    );
+  }
+}
+
 class AchievementToast {
   AchievementToast._();
 

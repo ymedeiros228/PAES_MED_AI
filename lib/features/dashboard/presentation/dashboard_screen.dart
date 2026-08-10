@@ -341,7 +341,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        FilledButton(
+                        PulseButton(
+                          pulse: checkpoint != null,
                           onPressed: () {
                             HapticFeedback.selectionClick();
                             context.go(sessionPath);
