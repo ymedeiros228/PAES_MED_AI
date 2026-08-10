@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
@@ -192,10 +193,15 @@ class EmptyState extends StatelessWidget {
                     color: cs.primary.withOpacity(0.9),
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    height: 1.25,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
