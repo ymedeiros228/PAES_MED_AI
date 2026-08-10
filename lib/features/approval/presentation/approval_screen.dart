@@ -128,7 +128,12 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                     : '${items.length} pendente(s) · ↑/↓ J/K · A aprovar · R rejeitar · F5 atualiza · Enter/O abrir',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
-                  onPressed: loading ? null : _load,
+                  onPressed: loading
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          _load();
+                        },
                   icon: const Icon(Icons.refresh_rounded),
                 ),
               ),
@@ -200,6 +205,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                         children: [
                           FilledButton(
                             onPressed: () {
+                              HapticFeedback.mediumImpact();
                               setState(() => selected = i);
                               _decide(q['id'].toString(), true);
                             },
@@ -207,6 +213,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                           ),
                           OutlinedButton(
                             onPressed: () {
+                              HapticFeedback.lightImpact();
                               setState(() => selected = i);
                               _decide(q['id'].toString(), false);
                             },
@@ -214,6 +221,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                           ),
                           TextButton(
                             onPressed: () {
+                              HapticFeedback.selectionClick();
                               setState(() => selected = i);
                               context.go('/questoes/${q['id']}');
                             },

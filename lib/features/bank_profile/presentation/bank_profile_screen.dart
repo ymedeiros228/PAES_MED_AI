@@ -118,7 +118,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 subtitle: 'Estimativa local com base no acervo — sem % de aprovação',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
-                  onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    ref.read(refreshTickProvider.notifier).state++;
+                  },
                   icon: const Icon(Icons.refresh_rounded),
                 ),
               ),
@@ -145,11 +148,17 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                     spacing: 8,
                     children: [
                       TextButton(
-                        onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          ref.read(refreshTickProvider.notifier).state++;
+                        },
                         child: const Text('Tentar'),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/sessao'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/sessao');
+                        },
                         child: const Text('Sessão'),
                       ),
                     ],
@@ -202,7 +211,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 builder: (_) {
                                   final c = Map<String, dynamic>.from(ctas[i] as Map);
                                   return FilledButton.tonal(
-                                    onPressed: () => context.go(c['path']?.toString() ?? '/sessao'),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      context.go(c['path']?.toString() ?? '/sessao');
+                                    },
                                     child: Text('${i + 1}) ${c['label']?.toString() ?? 'Estudar'}'),
                                   );
                                 },
@@ -293,7 +305,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ),
                           const SizedBox(height: 8),
                           OutlinedButton.icon(
-                            onPressed: _export,
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _export();
+                            },
                             icon: const Icon(Icons.download_rounded, size: 18),
                             label: const Text('Exportar perfil (E)'),
                           ),

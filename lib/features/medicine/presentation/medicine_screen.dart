@@ -101,11 +101,17 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
           alignment: WrapAlignment.center,
           children: [
             FilledButton(
-              onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                ref.read(refreshTickProvider.notifier).state++;
+              },
               child: const Text('Tentar de novo'),
             ),
             TextButton(
-              onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+              },
               child: const Text('Sessão'),
             ),
           ],
@@ -281,9 +287,13 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                                       subtitle: '${it['topic']}',
                                       badge: ql == 'template' ? 'modelo' : 'rascunho',
                                       leadingIcon: Icons.edit_note_rounded,
-                                      onPlay: () => context.go('/questoes/$id'),
+                                      onPlay: () {
+                                        HapticFeedback.selectionClick();
+                                        context.go('/questoes/$id');
+                                      },
                                       secondary: TextButton(
                                         onPressed: () async {
+                                          HapticFeedback.mediumImpact();
                                           try {
                                             await apiClient.post(
                                               '/api/professor/draft-accept',
@@ -401,6 +411,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         subtitle: const Text('Não substitui revisão humana'),
                         trailing: FilledButton.tonal(
                           onPressed: () async {
+                            HapticFeedback.mediumImpact();
                             try {
                               final data = await apiClient.post('/api/professor/batch-fill', {
                                 'limit': 8,
@@ -426,6 +437,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         subtitle: const Text('Corrige disciplina mal etiquetada (Natureza × outras)'),
                         trailing: OutlinedButton(
                           onPressed: () async {
+                            HapticFeedback.selectionClick();
                             try {
                               final data = await apiClient.post('/api/ingest/classify-pending', {});
                               if (!context.mounted) return;
@@ -454,6 +466,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         subtitle: const Text('4 eixos didáticos — modelo de apoio, não texto da banca'),
                         trailing: OutlinedButton(
                           onPressed: () async {
+                            HapticFeedback.selectionClick();
                             try {
                               final data = await apiClient.post('/api/curation/promote-natureza-real', {
                                 'limit': 8,
