@@ -697,7 +697,7 @@ class _ConstellationMapState extends State<ConstellationMap>
   late final AnimationController _twinkle;
   late final AnimationController _grow;
   late final AnimationController _shootingStar;
-  double _shootingStarProgress = -1; // -1 = inativa
+  late final Listenable _animations;
   Timer? _shootingStarTimer;
 
   @override
@@ -711,34 +711,31 @@ class _ConstellationMapState extends State<ConstellationMap>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..forward();
-    // Estrela cadente: dispara a cada 10-18 segundos
     _shootingStar = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     );
+    // Listenable.merge criado UMA VEZ — AnimatedBuilder mantém referência estável
+    _animations = Listenable.merge([_twinkle, _grow, _shootingStar]);
+    // Listener único para agendar próxima estrela cadente
+    _shootingStar.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        _scheduleNextShootingStar();
+      }
+    });
     _scheduleNextShootingStar();
   }
 
   void _scheduleNextShootingStar() {
-    // Delay aleatório entre 10 e 18 segundos
     final delay = Duration(seconds: 10 + DateTime.now().millisecond % 8);
     _shootingStarTimer = Timer(delay, _fireShootingStar);
   }
 
   void _fireShootingStar() {
     if (!mounted) return;
-    _shootingStarProgress = 0;
     _shootingStar
       ..reset()
       ..forward();
-    _shootingStar.addListener(() {
-      if (!mounted) return;
-      setState(() => _shootingStarProgress = _shootingStar.value);
-      if (_shootingStar.isCompleted) {
-        setState(() => _shootingStarProgress = -1);
-        _scheduleNextShootingStar();
-      }
-    });
   }
 
   @override
@@ -865,11 +862,11 @@ class _ConstellationMapState extends State<ConstellationMap>
             ],
           ),
           const SizedBox(height: 14),
-          // Céu estrelado — AnimatedBuilder garante repaint a cada frame
+          // Céu estrelado — AnimatedBuilder com Listenable estável
           SizedBox(
             height: rows * 36.0,
             child: AnimatedBuilder(
-              animation: Listenable.merge([_twinkle, _grow, _shootingStar]),
+              animation: _animations,
               builder: (context, _) {
                 return CustomPaint(
                   painter: _ConstellationPainter(
@@ -881,7 +878,9 @@ class _ConstellationMapState extends State<ConstellationMap>
                     twinkleValue: _twinkle.value,
                     growValue: Curves.easeOutCubic.transform(_grow.value),
                     accuracy: widget.accuracy,
-                    shootingStarProgress: _shootingStarProgress,
+                    // -1 quando inativa (value=0 e não animando), senão progresso 0..1
+                    shootingStarProgress:
+                        _shootingStar.isAnimating ? _shootingStar.value : -1,
                   ),
                   child: const SizedBox.expand(),
                 );
