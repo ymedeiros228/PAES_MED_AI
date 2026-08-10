@@ -849,22 +849,27 @@ class _ConstellationMapState extends State<ConstellationMap>
             ],
           ),
           const SizedBox(height: 14),
-          // Céu estrelado
+          // Céu estrelado — AnimatedBuilder garante repaint a cada frame
           SizedBox(
             height: rows * 36.0,
-            child: CustomPaint(
-              painter: _ConstellationPainter(
-                activeDays: widget.activeDays,
-                cols: cols,
-                rows: rows,
-                starColor: starColor,
-                lineColor: lineColor,
-                twinkleValue: _twinkle.value,
-                growValue: Curves.easeOutCubic.transform(_grow.value),
-                accuracy: widget.accuracy,
-                shootingStarProgress: _shootingStarProgress,
-              ),
-              child: const SizedBox.expand(),
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_twinkle, _grow, _shootingStar]),
+              builder: (context, _) {
+                return CustomPaint(
+                  painter: _ConstellationPainter(
+                    activeDays: widget.activeDays,
+                    cols: cols,
+                    rows: rows,
+                    starColor: starColor,
+                    lineColor: lineColor,
+                    twinkleValue: _twinkle.value,
+                    growValue: Curves.easeOutCubic.transform(_grow.value),
+                    accuracy: widget.accuracy,
+                    shootingStarProgress: _shootingStarProgress,
+                  ),
+                  child: const SizedBox.expand(),
+                );
+              },
             ),
           ),
           const SizedBox(height: 10),
@@ -967,6 +972,9 @@ class _ConstellationPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Guard: se o size for muito pequeno, não desenha nada (evita crash)
+    if (size.width < 10 || size.height < 10) return;
+
     final cellW = size.width / cols;
     final cellH = size.height / rows;
     final starRadius = (cellW * 0.14).clamp(2.5, 6.0);
@@ -1054,35 +1062,39 @@ class _ConstellationPainter extends CustomPainter {
 
   /// Desenha uma nebulosa sutil para dar profundidade ao fundo.
   void _drawNebula(Canvas canvas, Size size) {
-    // Nebulosa 1: canto superior esquerdo (azul-violeta sutil)
-    final nebula1Paint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          lineColor.withOpacity(0.04),
-          lineColor.withOpacity(0.01),
-          lineColor.withOpacity(0),
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      ).createShader(Rect.fromCircle(
-        center: Offset(size.width * 0.15, size.height * 0.1),
-        radius: size.width * 0.45,
-      ));
-    canvas.drawRect(Offset.zero & size, nebula1Paint);
+    final r1 = size.width * 0.45;
+    if (r1 > 1) {
+      final nebula1Paint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            lineColor.withOpacity(0.04),
+            lineColor.withOpacity(0.01),
+            lineColor.withOpacity(0),
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromCircle(
+          center: Offset(size.width * 0.15, size.height * 0.1),
+          radius: r1,
+        ));
+      canvas.drawRect(Offset.zero & size, nebula1Paint);
+    }
 
-    // Nebulosa 2: canto inferior direito (cor da estrela sutil)
-    final nebula2Paint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          starColor.withOpacity(0.03),
-          starColor.withOpacity(0.008),
-          starColor.withOpacity(0),
-        ],
-        stops: const [0.0, 0.6, 1.0],
-      ).createShader(Rect.fromCircle(
-        center: Offset(size.width * 0.85, size.height * 0.9),
-        radius: size.width * 0.35,
-      ));
-    canvas.drawRect(Offset.zero & size, nebula2Paint);
+    final r2 = size.width * 0.35;
+    if (r2 > 1) {
+      final nebula2Paint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            starColor.withOpacity(0.03),
+            starColor.withOpacity(0.008),
+            starColor.withOpacity(0),
+          ],
+          stops: const [0.0, 0.6, 1.0],
+        ).createShader(Rect.fromCircle(
+          center: Offset(size.width * 0.85, size.height * 0.9),
+          radius: r2,
+        ));
+      canvas.drawRect(Offset.zero & size, nebula2Paint);
+    }
   }
 
   /// Desenha estrelas de fundo minúsculas (cosmo) com posições determinísticas.
@@ -1104,14 +1116,15 @@ class _ConstellationPainter extends CustomPainter {
   /// Desenha uma linha curva (Bezier quadrática) entre dois pontos.
   /// A curva dá um arco orgânico, como constelações reais.
   void _drawCurvedLine(Canvas canvas, Offset p1, Offset p2, double grow) {
-    // Ponto de controle: perpendicular ao midpoint, deslocado suavemente
-    final mid = Offset.lerp(p1, p2, 0.5)!;
     final dx = p2.dx - p1.dx;
     final dy = p2.dy - p1.dy;
-    // Perpendicular normalizada
     final len = sqrt(dx * dx + dy * dy);
-    final perpX = len > 0 ? -dy / len : 0.0;
-    final perpY = len > 0 ? dx / len : 0.0;
+    if (len < 1) return; // pontos muito próximos — não desenha linha
+
+    // Ponto de controle: perpendicular ao midpoint, deslocado suavemente
+    final mid = Offset.lerp(p1, p2, 0.5)!;
+    final perpX = -dy / len;
+    final perpY = dx / len;
     // Deslocamento sutil (10% da distância)
     final offset = len * 0.08;
     final control = Offset(
