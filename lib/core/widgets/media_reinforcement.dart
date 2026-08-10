@@ -139,6 +139,7 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
                             : Icons.check_circle_outline,
                       ),
                       onPressed: () async {
+                        HapticFeedback.selectionClick();
                         await _markRead(
                           context,
                           url: raw['url']?.toString() ?? '',
@@ -151,6 +152,7 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
                 ],
               ),
               onTap: () async {
+                HapticFeedback.selectionClick();
                 final u = raw['url']?.toString() ?? '';
                 if (u.isEmpty) return;
                 await _open(
@@ -222,18 +224,24 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
               : () => _open(context, url: url, kind: kind, title: title),
           secondary: items.length > 1
               ? TextButton(
-                  onPressed: () => _showMore(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    _showMore(
                     context,
                     kind: kind,
                     items: items,
                     disclaimer: map['disclaimer']?.toString(),
                     readUrls: readUrls,
-                  ),
+                  );
+                  },
                   child: const Text('Mais'),
                 )
               : (!isVideo && url.isNotEmpty
                   ? TextButton(
-                      onPressed: () => _markRead(context, url: url, title: title),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _markRead(context, url: url, title: title);
+                      },
                       child: Text(isRead ? 'Li' : 'Marquei como lido'),
                     )
                   : null),

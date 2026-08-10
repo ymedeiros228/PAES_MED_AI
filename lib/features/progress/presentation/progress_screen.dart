@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -308,9 +309,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       children: [
                         Text(
                           'Ritmo ${data?['readiness'] ?? '—'}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         ClipRRect(
@@ -331,12 +334,13 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Text(
                           'Consistência de treino local — não é % de aprovação.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.f72,
-                              ),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: cs.onSurface.f72,
+                          ),
                         ),
                       ],
                     ),
@@ -464,10 +468,11 @@ class _ReadableRelief extends StatelessWidget {
             children: [
               Text(
                 'Escala: 0–${maxScale.toStringAsFixed(0)}',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Colors.white.withOpacity(0.92),
-                      fontWeight: FontWeight.w800,
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.92),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: kGap8),
               Wrap(
@@ -493,7 +498,6 @@ class _ReadableRelief extends StatelessWidget {
               value: _relevoValue(peak),
               max: _relevoMax(peak),
               progress: progress,
-              textTheme: Theme.of(context).textTheme,
               trackColor: Colors.white.withOpacity(0.20),
             ),
         ],
@@ -527,9 +531,10 @@ class _ReliefLegend extends StatelessWidget {
         const SizedBox(width: kGap4),
         Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white.withOpacity(0.78),
-              ),
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: Colors.white.withOpacity(0.78),
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           softWrap: false,
@@ -545,7 +550,6 @@ class _ReliefRow extends StatelessWidget {
     required this.value,
     required this.max,
     required this.progress,
-    required this.textTheme,
     required this.trackColor,
   });
 
@@ -553,7 +557,6 @@ class _ReliefRow extends StatelessWidget {
   final double value;
   final double max;
   final double progress;
-  final TextTheme textTheme;
   final Color trackColor;
 
   @override
@@ -575,7 +578,8 @@ class _ReliefRow extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: textTheme.bodySmall?.copyWith(
+              style: GoogleFonts.inter(
+                fontSize: 13,
                 color: Colors.white.withOpacity(0.92),
                 fontWeight: FontWeight.w700,
               ),
@@ -592,9 +596,11 @@ class _ReliefRow extends StatelessWidget {
               child: Text(
                 value.toStringAsFixed(1),
                 textAlign: TextAlign.right,
-                style: textTheme.labelLarge?.copyWith(
+                style: GoogleFonts.inter(
+                  fontSize: 14,
                   color: Colors.white.withOpacity(0.92),
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             );
