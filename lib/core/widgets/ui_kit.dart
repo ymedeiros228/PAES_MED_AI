@@ -189,9 +189,12 @@ class SectionLabel extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                    letterSpacing: -0.1,
+                  ),
                 ),
               ),
               if (chip != null)
@@ -2321,10 +2324,11 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                       ),
                       child: Text(
                         letter,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: letterFg,
-                              fontWeight: FontWeight.w800,
-                            ),
+                        style: GoogleFonts.poppins(
+                          color: letterFg,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
