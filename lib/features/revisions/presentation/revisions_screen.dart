@@ -119,6 +119,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
             });
           }
           return ListView(
+            padding: const EdgeInsets.only(bottom: 24),
             children: [
               PageBody(
                 child: Column(

@@ -146,6 +146,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         focusNode: _focusNode,
         onKeyEvent: _onKey,
         child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(

@@ -271,6 +271,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       onRefresh: _load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
           PageBody(
             child: Column(
