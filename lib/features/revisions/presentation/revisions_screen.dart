@@ -95,11 +95,17 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
             alignment: WrapAlignment.center,
             children: [
               FilledButton(
-                onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  ref.read(refreshTickProvider.notifier).state++;
+                },
                 child: const Text('Tentar de novo'),
               ),
               TextButton(
-                onPressed: () => context.go('/sessao'),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  context.go('/sessao');
+                },
                 child: const Text('Sessão'),
               ),
             ],
@@ -126,7 +132,10 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                           : '${_items.length} assunto(s) para reforço',
                       trailing: IconButton(
                         tooltip: 'Atualizar',
-                        onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          ref.read(refreshTickProvider.notifier).state++;
+                        },
                         icon: const Icon(Icons.refresh_rounded),
                       ),
                     ),
@@ -138,8 +147,20 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                           spacing: 8,
                           alignment: WrapAlignment.center,
                           children: [
-                            FilledButton(onPressed: () => context.go('/sessao'), child: const Text('Sessão')),
-                            FilledButton.tonal(onPressed: () => context.go('/simulados'), child: const Text('Simulados')),
+                            FilledButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go('/sessao');
+                              },
+                              child: const Text('Sessão'),
+                            ),
+                            FilledButton.tonal(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go('/simulados');
+                              },
+                              child: const Text('Simulados'),
+                            ),
                           ],
                         ),
                       )

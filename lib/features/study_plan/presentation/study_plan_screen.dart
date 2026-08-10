@@ -352,10 +352,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ],
               if (loading) ...[
                 const SizedBox(height: 12),
-                const SoftLoader(
-                  compact: true,
-                  label: 'Carregando plano de estudo…',
-                ),
+                const SkeletonList(count: 3, lines: 2),
               ],
               if (error != null) ...[
                 const SizedBox(height: 8),
@@ -375,7 +372,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   apiClient.get('/api/dashboard'),
                 ]),
                 builder: (context, snap) {
-                  if (!snap.hasData) return const SoftLoader(compact: true);
+                  if (!snap.hasData) return const SkeletonList(count: 2, lines: 3);
                   final revs = (snap.data![0] as List?) ?? [];
                   final dash = Map<String, dynamic>.from(snap.data![1] as Map);
                   final hot = (dash['errorHotTopics'] as List? ?? []).take(3).toList();
@@ -522,7 +519,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                                 ),
                                 Text(
                                   item['reason']?.toString() ?? '',
-                                  maxLines: 2,
+                                  maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),

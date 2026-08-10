@@ -946,10 +946,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       ? null
                       : _start,
                   icon: starting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
                         )
                       : const Icon(Icons.play_arrow_rounded),
                   label: Text(starting
@@ -1284,7 +1284,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
                           (r as Map)['correct'] == true ? Icons.check_circle : Icons.cancel,
-                          color: r['correct'] == true ? Colors.green : Colors.red,
+                          color: r['correct'] == true ? cs.primary : cs.error,
                         ),
                         title: Text('${r['subject']} · ${r['topic']}'),
                         trailing: TextButton(

@@ -138,9 +138,9 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                 ),
               ),
               if (loading)
-                const SoftLoader(
-                  compact: true,
-                  label: 'Carregando fila de aprovação…',
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: SkeletonList(count: 3, lines: 3),
                 ),
               if (error != null)
                 QuietEmpty(

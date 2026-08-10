@@ -92,7 +92,10 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
       focusNode: _focusNode,
       onKeyEvent: (node, event) => _onKey(node, event, _officialN),
       child: async.when(
-      loading: () => const SoftLoader(label: 'Carregando domínio…'),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(16),
+        child: SkeletonList(count: 3, lines: 2),
+      ),
       error: (e, _) => EmptyState(
         title: 'Domínio indisponível',
         subtitle: humanApiError(e, fallback: 'Tente de novo em instantes.'),

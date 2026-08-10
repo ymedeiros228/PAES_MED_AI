@@ -673,10 +673,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Builder(
                   builder: (context) {
                     if (aiConfigLoading) {
-                      return const SoftLoader(
-                        label: 'Lendo estado do Tutor IA…',
-                        compact: true,
-                      );
+                      return const SkeletonList(count: 2, lines: 2);
                     }
                     if (aiConfig == null) {
                       return CompactStatus(

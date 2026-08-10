@@ -370,7 +370,12 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       );
     }
     final q = question;
-    if (q == null) return const SoftLoader(label: 'Carregando questão…');
+    if (q == null) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: SkeletonList(count: 3, lines: 4),
+      );
+    }
 
     final pm = q.professorMode ?? {};
     final freq = pm['frequency'] as Map<String, dynamic>? ?? {};
@@ -510,7 +515,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                           ? Icons.check_circle_rounded
                           : Icons.cancel_rounded,
                       size: 24,
-                      color: selected == q.correctIndex ? Colors.green : Colors.red,
+                      color: selected == q.correctIndex ? cs.primary : cs.error,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -520,7 +525,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                             : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: selected == q.correctIndex ? Colors.green : Colors.red,
+                          color: selected == q.correctIndex ? cs.primary : cs.error,
                         ).copyWith(fontSize: Theme.of(context).textTheme.bodyLarge?.fontSize),
                       ),
                     ),

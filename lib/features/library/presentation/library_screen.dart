@@ -1130,7 +1130,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (busy && library == null) return const SoftLoader(label: 'Carregando biblioteca…');
+    if (busy && library == null) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: SkeletonList(count: 4, lines: 2),
+      );
+    }
     if (error != null) {
       return EmptyState(
         title: 'Biblioteca indisponível',

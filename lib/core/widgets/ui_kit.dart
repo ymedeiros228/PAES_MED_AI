@@ -2172,7 +2172,7 @@ class SkeletonCard extends StatelessWidget {
   }
 }
 
-/// Lista de skeleton cards para telas de listagem.
+/// Lista de skeleton cards para telas de listagem — substitui SoftLoader.
 class SkeletonList extends StatelessWidget {
   const SkeletonList({this.count = 5, this.lines = 2, super.key});
   final int count;
@@ -2180,14 +2180,13 @@ class SkeletonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: count,
-      itemBuilder: (_, __) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SkeletonCard(lines: lines),
-      ),
+    return Column(
+      children: [
+        for (int i = 0; i < count; i++) ...[
+          SkeletonCard(lines: lines),
+          if (i < count - 1) const SizedBox(height: 12),
+        ],
+      ],
     );
   }
 }

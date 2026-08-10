@@ -307,20 +307,9 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
           ),
           Expanded(
             child: async.when(
-              loading: () => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SoftLoader(compact: true),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Carregando questões do acervo local…',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurface.f72,
-                          ),
-                    ),
-                  ],
-                ),
+              loading: () => Padding(
+                padding: const EdgeInsets.all(28),
+                child: SkeletonList(count: 5, lines: 2),
               ),
               error: (e, _) => EmptyState(
                 title: 'Não foi possível carregar',

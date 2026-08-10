@@ -126,7 +126,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 ),
               ),
               profile.when(
-                loading: () => const SoftLoader(compact: true),
+                loading: () => const SkeletonList(count: 2, lines: 3),
                 error: (e, _) => QuietEmpty(message: humanApiError(e, fallback: 'Perfil da banca indisponível.')),
                 data: (data) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -138,10 +138,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                 ),
               ),
               profile.when(
-                loading: () => const SoftLoader(
-                  compact: true,
-                  label: 'Carregando perfil da banca…',
-                ),
+                loading: () => const SkeletonList(count: 3, lines: 2),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Perfil da banca indisponível.'),
                   action: Wrap(
@@ -322,10 +319,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               ),
               SectionLabel('Frequência no tempo'),
               freq.when(
-                loading: () => const SoftLoader(
-                  compact: true,
-                  label: 'Carregando frequência…',
-                ),
+                loading: () => const SkeletonList(count: 2, lines: 2),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Frequência indisponível.'),
                   action: TextButton(

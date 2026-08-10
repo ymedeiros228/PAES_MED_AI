@@ -548,7 +548,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 : 'Incorreto · gabarito ${correctIndex != null ? 'ABCDE'[correctIndex] : '—'}',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: selected == correctIndex ? Colors.green : cs.error,
+                              color: selected == correctIndex ? cs.primary : cs.error,
                             ),
                           ),
                           if (pendingErrorPick) ...[

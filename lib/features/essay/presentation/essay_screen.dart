@@ -268,10 +268,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     if (a.$2 != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
-                        child: Text('${a.$1}: ${a.$2}'),
+                        child: SelectableText('${a.$1}: ${a.$2}'),
                       ),
-                  if (fbMap['strengths'] != null) Text('Fortes: ${fbMap['strengths']}'),
-                  if (fbMap['improvements'] != null) Text('Melhorar: ${fbMap['improvements']}'),
+                  if (fbMap['strengths'] != null)
+                    SelectableText('Fortes: ${fbMap['strengths']}'),
+                  if (fbMap['improvements'] != null)
+                    SelectableText('Melhorar: ${fbMap['improvements']}'),
                 ],
                 const SizedBox(height: 16),
                 FilledButton.icon(
