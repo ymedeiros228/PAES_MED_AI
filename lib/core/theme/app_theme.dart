@@ -184,6 +184,9 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          // Hover sutil no desktop — feedback de interatividade
+          minimumSize: const Size(88, 48),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -282,12 +285,35 @@ class AppTheme {
         linearTrackColor: scheme.primaryContainer.withOpacity(0.55),
         circularTrackColor: scheme.primaryContainer.withOpacity(0.55),
       ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: dark ? scheme.surfaceContainerHighest : navy,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: body.copyWith(fontSize: 12, color: Colors.white),
+        waitDuration: const Duration(milliseconds: 500),
+        showDuration: const Duration(milliseconds: 2000),
+        preferBelow: true,
+      ),
       dialogTheme: DialogTheme(
         backgroundColor: scheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         elevation: 0,
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
+      menuTheme: MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainerHigh),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          elevation: const WidgetStatePropertyAll(2),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          side: WidgetStatePropertyAll(
+            BorderSide(color: scheme.outlineVariant.withOpacity(0.6)),
+          ),
+        ),
+      ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           // Transição desktop: slide horizontal sutil + fade (mais fluido que FadeUpwards).
