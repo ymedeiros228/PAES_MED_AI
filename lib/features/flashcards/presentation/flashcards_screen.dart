@@ -336,11 +336,16 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                             ),
                                           ),
                                           width: double.infinity,
-                                          child: Text(
+                                          child: SelectableText(
                                             item['front']?.toString() ?? '',
                                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                  height: 1.4,
+                                                  height: 1.5,
+                                                  fontSize: 16,
                                                 ),
+                                            contextMenuBuilder: (context, editableTextState) =>
+                                                AdaptiveTextSelectionToolbar.editableText(
+                                              editableTextState: editableTextState,
+                                            ),
                                           ),
                                         ),
                                         back: Container(
@@ -356,12 +361,17 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                             ),
                                           ),
                                           width: double.infinity,
-                                          child: Text(
+                                          child: SelectableText(
                                             item['back']?.toString() ?? '',
                                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                  height: 1.4,
+                                                  height: 1.5,
+                                                  fontSize: 16,
                                                   color: cs.onPrimaryContainer,
                                                 ),
+                                            contextMenuBuilder: (context, editableTextState) =>
+                                                AdaptiveTextSelectionToolbar.editableText(
+                                              editableTextState: editableTextState,
+                                            ),
                                           ),
                                         ),
                                       ),
