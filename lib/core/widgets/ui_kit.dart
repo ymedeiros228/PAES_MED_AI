@@ -540,18 +540,20 @@ class PhaseProgressBar extends StatelessWidget {
                           size: 14,
                           color: cs.primary,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 5),
                       ],
                       Text(
                         phases[i],
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: i == currentIndex
-                                  ? cs.onPrimary
-                                  : i < currentIndex
-                                      ? cs.primary
-                                      : cs.onSurface.f72,
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: i == currentIndex ? FontWeight.w700 : FontWeight.w600,
+                          color: i == currentIndex
+                              ? cs.onPrimary
+                              : i < currentIndex
+                                  ? cs.primary
+                                  : cs.onSurface.f72,
+                          letterSpacing: 0.1,
+                        ),
                       ),
                     ],
                   ),
@@ -578,33 +580,34 @@ class QuietEmpty extends StatelessWidget {
       label: message,
       button: action != null,
       child: SurfacePanel(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(kRadiusButton),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                icon ?? Icons.hourglass_empty_rounded,
-                size: 18,
+                icon ?? Icons.inbox_rounded,
+                size: 20,
                 color: cs.onSurface.f55,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Text(
                 message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface.f72,
-                      height: 1.35,
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: cs.onSurface.f72,
+                  height: 1.5,
+                ),
               ),
             ),
-            if (action != null) ...[const SizedBox(width: 8), action!],
+            if (action != null) ...[const SizedBox(width: 10), action!],
           ],
         ),
       ),
@@ -1861,11 +1864,13 @@ class _StaggeredFadeInState extends State<StaggeredFadeIn>
               final end = start + widget.duration.inMilliseconds;
               final t = (_controller.value * 1000 - start).clamp(0, end - start);
               final progress = (t / (end - start)).clamp(0.0, 1.0);
-              final curve = Curves.easeOutCubic.transform(progress.toDouble());
+              // easeOutQuart: saída mais rápida, repouso mais lento — mais natural
+              final curve = Curves.easeOutQuart.transform(progress.toDouble());
               return Opacity(
                 opacity: curve,
                 child: Transform.translate(
-                  offset: Offset(0, 12 * (1 - curve)),
+                  // 16px slide-up (vs 12) — mais perceptível mas ainda sutil
+                  offset: Offset(0, 16 * (1 - curve)),
                   child: child,
                 ),
               );
@@ -2694,48 +2699,58 @@ class SoftTimeline extends StatelessWidget {
             onTap: items[i].onTap,
             borderRadius: BorderRadius.circular(kRadiusButton),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Column(
                     children: [
+                      // Ponto do timeline com anel suave no item atual
                       Container(
-                        width: 12,
-                        height: 12,
+                        width: 14,
+                        height: 14,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: i == 0 ? cs.primary : cs.outlineVariant,
+                          color: i == 0 ? cs.primary : cs.surfaceContainerHighest,
+                          border: i == 0
+                              ? Border.all(color: cs.primary.withOpacity(0.3), width: 3)
+                              : null,
                         ),
                       ),
                       if (i < items.length - 1)
                         Container(
                           width: 2,
-                          height: 36,
-                          color: cs.outlineVariant.withOpacity(0.7),
+                          height: 32,
+                          color: cs.outlineVariant.withOpacity(0.5),
                         ),
                     ],
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           items[i].title,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurface,
+                          ),
                         ),
-                        if (items[i].subtitle != null)
+                        if (items[i].subtitle != null) ...[
+                          const SizedBox(height: 2),
                           Text(
                             items[i].subtitle!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurface.f72,
-                                ),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: cs.onSurface.f72,
+                              height: 1.4,
+                            ),
                           ),
+                        ],
                         if (items[i].trailing != null) ...[
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           items[i].trailing!,
                         ],
                       ],
@@ -2811,13 +2826,15 @@ class SessionResumeBanner extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.history_edu_rounded, color: cs.primary, size: 22),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Continuar sessão',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
                 ),
               ),
               if (onDiscard != null)
@@ -2827,14 +2844,16 @@ class SessionResumeBanner extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurface.f72,
-                ),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: cs.onSurface.f72,
+              height: 1.5,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Row(
             children: [
               for (var i = 0; i < labels.length; i++) ...[
@@ -2861,20 +2880,21 @@ class SessionResumeBanner extends StatelessWidget {
                       ),
                       child: Text(
                         '${i + 1}',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: i <= step ? cs.onPrimary : cs.onSurface.f72,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 10,
-                            ),
+                        style: GoogleFonts.poppins(
+                          color: i <= step ? cs.onPrimary : cs.onSurface.f72,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       labels[i],
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: i == step ? FontWeight.w800 : FontWeight.w500,
-                            color: i == step ? cs.primary : cs.onSurface.f72,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: i == step ? FontWeight.w700 : FontWeight.w500,
+                        color: i == step ? cs.primary : cs.onSurface.f72,
+                      ),
                     ),
                   ],
                 ),

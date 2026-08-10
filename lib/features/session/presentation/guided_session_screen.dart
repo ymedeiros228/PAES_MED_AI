@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
@@ -1624,17 +1625,30 @@ class _BreathingClockState extends State<_BreathingClock>
     final cs = Theme.of(context).colorScheme;
     final label = widget.paused ? 'Pausado ${widget.clock}' : widget.clock;
     final color = widget.paused ? cs.tertiary : cs.primary;
+    final icon = widget.paused ? Icons.pause_circle_outline_rounded : Icons.timer_outlined;
+
+    Widget content(Color c) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: c),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: c,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        );
 
     if (!widget.paused) {
       return SurfacePanel(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-        ),
+        child: content(color),
       );
     }
 
@@ -1644,13 +1658,7 @@ class _BreathingClockState extends State<_BreathingClock>
         final t = Curves.easeInOut.transform(_breath.value);
         return SurfacePanel(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: color.withOpacity(0.6 + t * 0.4),
-                ),
-          ),
+          child: content(color.withOpacity(0.6 + t * 0.4)),
         );
       },
     );
