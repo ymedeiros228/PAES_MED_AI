@@ -685,7 +685,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                   if (a.$3 != null)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 6),
-                                      child: Text(
+                                      child: SelectableText(
                                         a.$3 is num
                                             ? '${a.$2}: ${(a.$3 as num).toStringAsFixed(1)}'
                                             : '${a.$2}: ${a.$3}',
@@ -695,13 +695,14 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                   const SizedBox(height: 8),
                                   Text('O que treinar', style: Theme.of(context).textTheme.titleSmall),
                                   for (final tip in (fb['tips'] as Map).values)
-                                    Text('· $tip', style: Theme.of(context).textTheme.bodySmall),
+                                    SelectableText('· $tip', style: Theme.of(context).textTheme.bodySmall),
                                 ],
                                 if (fb['strengths'] != null) ...[
                                   const SizedBox(height: 6),
-                                  Text('Fortes: ${fb['strengths']}'),
+                                  SelectableText('Fortes: ${fb['strengths']}'),
                                 ],
-                                if (fb['improvements'] != null) Text('Melhorar: ${fb['improvements']}'),
+                                if (fb['improvements'] != null)
+                                  SelectableText('Melhorar: ${fb['improvements']}'),
                                 if (fb['note'] != null)
                                   Text(
                                     '${fb['note']}',
