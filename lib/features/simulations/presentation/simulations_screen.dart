@@ -1045,10 +1045,14 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
                           const SizedBox(height: 8),
-                          Text(q['statement']?.toString() ?? ''),
-                          const SizedBox(height: 4),
+                          StatementView(
+                            key: ValueKey('sim_stmt_$id'),
+                            text: q['statement']?.toString() ?? '',
+                          ),
+                          const SizedBox(height: 8),
                           for (var i = 0; i < opts.length; i++)
                             ChoiceOptionTile(
+                              key: ValueKey('sim_opt_${id}_$i'),
                               index: i,
                               label: opts[i].toString(),
                               selected: answers[id] == i,

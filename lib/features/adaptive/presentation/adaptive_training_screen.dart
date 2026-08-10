@@ -493,7 +493,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const SizedBox(height: 10),
-                        Text(q['statement']?.toString() ?? q['id']?.toString() ?? ''),
+                        StatementView(
+                          key: ValueKey('adapt_stmt_${q['id']}'),
+                          text: q['statement']?.toString() ?? q['id']?.toString() ?? '',
+                        ),
                         const SizedBox(height: 8),
                         if (options.isEmpty)
                           QuietEmpty(

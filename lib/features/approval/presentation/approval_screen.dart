@@ -195,8 +195,15 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                       const SizedBox(height: 6),
                       Text(
                         q['statement']?.toString() ?? '',
-                        maxLines: 4,
+                        maxLines: 5,
                         overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontFamilyFallback: const ['Times New Roman', 'serif'],
+                          fontSize: 13.5,
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.onSurface.f72,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
