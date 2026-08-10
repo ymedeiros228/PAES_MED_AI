@@ -34,17 +34,6 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
   late final Future<dynamic> _aiConfigFuture;
   bool _seedApplied = false;
 
-  static const _styles = <(String, String)>[
-    ('professor', 'Professor'),
-    ('macete', 'Macete'),
-    ('resumo', 'Resumo'),
-    ('analogia', 'Analogia'),
-    ('mapa', 'Mapa'),
-    ('flashcard', 'Cartão de estudo'),
-    ('medico', 'Médico'),
-    ('crianca', 'Simples'),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -205,46 +194,6 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     ),
                   ),
                 ),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final chips = [
-                    for (final s in _styles)
-                      FilterChip(
-                        label: Text(s.$2),
-                        selected: state.style == s.$1,
-                        showCheckmark: false,
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          ref
-                              .read(aiTutorControllerProvider.notifier)
-                              .setStyle(s.$1);
-                        },
-                      ),
-                  ];
-                  if (MediaQuery.sizeOf(context).width < 700) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 0, 28, kGap8),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: chips,
-                      ),
-                    );
-                  }
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, kGap8),
-                    child: Row(
-                      children: [
-                        for (final chip in chips) ...[
-                          chip,
-                          const SizedBox(width: 8),
-                        ],
-                      ],
-                    ),
-                  );
-                },
-              ),
               Expanded(
                 child: (state.messages.length <= 1 && !state.isLoading)
                     ? Center(
@@ -267,57 +216,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                   ),
                                 ),
                               const QuietEmpty(
-                                message: 'Escolha um atalho ou digite abaixo.',
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  ActionChip(
-                                    label: const Text('Meta de hoje'),
-                                    onPressed: state.isLoading
-                                        ? null
-                                        : () {
-                                            HapticFeedback.selectionClick();
-                                            ref
-                                                .read(aiTutorControllerProvider
-                                                    .notifier)
-                                                .send(
-                                                  'Qual a meta de estudo de hoje e o que priorizar?',
-                                                );
-                                          },
-                                  ),
-                                  ActionChip(
-                                    label: const Text('Macete do tópico'),
-                                    onPressed: state.isLoading
-                                        ? null
-                                        : () {
-                                            HapticFeedback.selectionClick();
-                                            ref
-                                                .read(aiTutorControllerProvider
-                                                    .notifier)
-                                                .send(
-                                                  'Me dá um macete do tópico da fila de hoje e como eliminar distratores.',
-                                                );
-                                          },
-                                  ),
-                                  ActionChip(
-                                    label: const Text('Abrir sessão'),
-                                    onPressed: () {
-                                      HapticFeedback.selectionClick();
-                                      context.go('/sessao');
-                                    },
-                                  ),
-                                  ActionChip(
-                                    label: const Text('Biblioteca'),
-                                    onPressed: () {
-                                      HapticFeedback.selectionClick();
-                                      context.go('/biblioteca');
-                                    },
-                                  ),
-                                ],
+                                message: 'Digite sua dúvida abaixo.',
                               ),
                             ],
                           ),
@@ -347,13 +246,35 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                         },
                       ),
               ),
+              // Botão de recarregar conversa (limpa e reinicia)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    tooltip: 'Recarregar conversa',
+                    onPressed: state.isLoading
+                        ? null
+                        : () {
+                            HapticFeedback.selectionClick();
+                            ref
+                                .read(aiTutorControllerProvider.notifier)
+                                .clearConversation();
+                          },
+                    icon: const Icon(Icons.refresh_rounded, size: 20),
+                    style: IconButton.styleFrom(
+                      foregroundColor: cs.onSurface.f55,
+                    ),
+                  ),
+                ),
+              ),
               Material(
                 elevation: 6,
                 color: cs.surface,
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     20,
-                    12,
+                    8,
                     20,
                     16 + MediaQuery.viewInsetsOf(context).bottom,
                   ),
