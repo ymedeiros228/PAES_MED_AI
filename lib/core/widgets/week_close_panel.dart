@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
@@ -101,21 +103,19 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SelectableText(hint, style: Theme.of(context).textTheme.bodyMedium),
+              SelectableText(hint, style: GoogleFonts.inter(fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
               if (due != null) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   'Cartões para revisar: $due',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurface.f65,
-                      ),
+                  style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.f65),
                 ),
               ],
               if (gaps.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Lacunas quentes',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
                 ),
                 for (final raw in gaps)
                   Builder(
@@ -133,7 +133,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                           ? (topic.isNotEmpty ? '$subject · $topic' : subject)
                           : (key.isNotEmpty ? key : 'Lacuna');
                       if (subject.isEmpty) {
-                        return Text('· $label', style: Theme.of(context).textTheme.bodySmall);
+                        return Text('· $label', style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface));
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -141,21 +141,21 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                           children: [
                             Expanded(
                               child: InkWell(
-                                onTap: () => context.go(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  context.go(
                                   '/adaptativo?subject=${Uri.encodeComponent(subject)}'
                                   '&topic=${Uri.encodeComponent(topic)}',
-                                ),
+                                );},
                                 child: Text(
                                   '· $label → treinar',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
                             ),
                             TextButton(
                               onPressed: () async {
+                                HapticFeedback.selectionClick();
                                 try {
                                   await apiClient.post('/api/gaps/recover', {
                                     'subject': subject,
@@ -193,13 +193,16 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 children: [
                   if (canClose && widget.onCloseWeek != null)
                     FilledButton(
-                      onPressed: widget.onCloseWeek,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        widget.onCloseWeek!();
+                      },
                       child: const Text('Encerrar semana'),
                     )
                   else if (closed)
                     Text(
                       'Semana encerrada',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary),
+                      style: GoogleFonts.inter(fontSize: 12, color: cs.primary),
                     )
                   else
                     FilledButton(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
@@ -64,9 +65,9 @@ Future<void> openTheoryReadSheet(
                   children: [
                     Text(
                       'Teoria · $subject · $topic',
-                      style: Theme.of(ctx).textTheme.titleMedium,
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 220),
                       child: Column(
@@ -77,9 +78,7 @@ Future<void> openTheoryReadSheet(
                             children: [
                               Text(
                                 isRead ? 'Passo 2 de 2' : 'Passo 1 de 2',
-                                style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: Theme.of(ctx).colorScheme.onSurface),
                               ),
                               const Spacer(),
                               Icon(
@@ -90,14 +89,11 @@ Future<void> openTheoryReadSheet(
                               const SizedBox(width: 4),
                               Text(
                                 isRead ? 'Treinar' : 'Ler',
-                                style: Theme.of(ctx).textTheme.labelSmall?.copyWith(
-                                      color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62),
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62)),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
@@ -129,10 +125,7 @@ Future<void> openTheoryReadSheet(
                                   readMap['at'] != null
                                       ? 'Marcado como lido · ${readMap['at']}'
                                       : 'Marcado como lido',
-                                  style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                                        color: Theme.of(ctx).colorScheme.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.primary),
                                 ),
                               ),
                             ],
@@ -141,7 +134,7 @@ Future<void> openTheoryReadSheet(
                       ),
                     if (note != null && note.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      SelectableText(note, style: Theme.of(ctx).textTheme.bodySmall),
+                      SelectableText(note, style: GoogleFonts.inter(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
                     ],
                     if (items.isEmpty) ...[
                       const SizedBox(height: 16),
@@ -156,6 +149,7 @@ Future<void> openTheoryReadSheet(
                           children: [
                             FilledButton.tonal(
                               onPressed: () async {
+                                HapticFeedback.selectionClick();
                                 try {
                                   await apiClient.post('/api/library/open-folder', {
                                     'folder': 'edital',
@@ -176,6 +170,7 @@ Future<void> openTheoryReadSheet(
                             ),
                             OutlinedButton(
                               onPressed: () async {
+                                HapticFeedback.selectionClick();
                                 try {
                                   await apiClient.post('/api/library/open-folder', {
                                     'folder': 'provas',
@@ -352,7 +347,7 @@ Future<void> openTheoryReadSheet(
                             fontWeight: FontWeight.w600,
                           ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -360,6 +355,7 @@ Future<void> openTheoryReadSheet(
                         if (isRead)
                           FilledButton.icon(
                             onPressed: () {
+                              HapticFeedback.selectionClick();
                               Navigator.pop(ctx);
                               context.go(nextTrainPath);
                             },
@@ -369,6 +365,7 @@ Future<void> openTheoryReadSheet(
                         else
                           FilledButton(
                             onPressed: () async {
+                              HapticFeedback.selectionClick();
                               try {
                                 final r = await apiClient.post('/api/study/mark-read', {
                                   'subject': subject,

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/data/theme_mode_provider.dart';
@@ -146,16 +147,22 @@ final appRouter = GoRouter(
               children: [
                 Text(
                   'Essa página não existe',
-                  style: Theme.of(ctx).textTheme.titleLarge,
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Volte ao início e siga pelo menu. Se veio de um link antigo, abra Hoje.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.withOpacity(0.65),
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: cs.onSurface.withOpacity(0.65),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 FilledButton(

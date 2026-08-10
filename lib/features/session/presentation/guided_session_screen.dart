@@ -528,18 +528,24 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         children: [
           Text(
             'Bloco encerrado',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             gaps.isEmpty
                 ? 'Boa volta. O próximo passo natural é a Fila do dia.'
                 : 'Houve erro neste bloco — a Fila e o treino do tópico fraco resolvem bem.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurface.f72,
-                ),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              height: 1.5,
+              color: cs.onSurface.f72,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -581,18 +587,26 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 childrenPadding: EdgeInsets.zero,
                 title: Text(
                   'Detalhe do bloco',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
                 ),
                 children: [
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
+                    child: SelectableText(
                       [
                         if (officialInPack != null) 'Oficiais nesta seleção: $officialInPack',
                         if (toppedOff) 'Completamos com oficiais do acervo',
                         if (yearWidened) 'Janela de anos ampliada para achar itens',
                       ].join(' · '),
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        height: 1.5,
+                        color: cs.onSurface.withOpacity(0.7),
+                      ),
                     ),
                   ),
                 ],
@@ -603,7 +617,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             QuietEmpty(
               message: scheduleGapsError!,
               action: TextButton(
-                onPressed: () => context.go('/fila'),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  context.go('/fila');
+                },
                 child: const Text('Abrir fila'),
               ),
             ),
@@ -614,9 +631,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           else ...[
             Text(
               'Tópicos fracos',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -1060,6 +1081,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (error != null) {
       return EmptyState(
         title: 'Sessão indisponível',
@@ -1217,14 +1239,16 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             currentIndex: phaseIndex.clamp(0, phases.length - 1),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 10, bottom: 12),
+            padding: const EdgeInsets.only(top: 12, bottom: 12),
             child: Text(
               started
                   ? (paused ? 'Pausado · ${current['title']}' : '${current['title']} · ${current['minutes'] ?? '?'} min')
                   : '20 teoria → 30 questões → 10 revisão',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.f72,
-                  ),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.5,
+                color: cs.onSurface.f72,
+              ),
             ),
           ),
           if (!started)
@@ -1274,19 +1298,24 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 children: [
                   Text(
                     'Teoria do edital',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
@@ -1315,12 +1344,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                       children: [
                         Text(
                           '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: cs.primary,
+                          ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.center,
                           child: ConstrainedBox(
@@ -1465,7 +1495,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   Text(lastRemediation!['title']?.toString() ?? 'Remediação', style: const TextStyle(fontWeight: FontWeight.w700)),
                   for (final s in (lastRemediation!['steps'] as List? ?? []))
                     Text('• $s'),
-                  Text(lastRemediation!['practiceHint']?.toString() ?? '', style: Theme.of(context).textTheme.bodySmall),
+                  SelectableText(
+                    lastRemediation!['practiceHint']?.toString() ?? '',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: cs.onSurface.withOpacity(0.75),
+                    ),
+                  ),
                 ],
               ],
               const SizedBox(height: 8),
@@ -1568,7 +1605,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ], // !sessionComplete
           if (exportMsg != null) ...[
             const SizedBox(height: 8),
-            Text('Pacote: $exportMsg', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'Pacote: $exportMsg',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.onSurface.withOpacity(0.7),
+              ),
+            ),
           ],
         ],
       ),

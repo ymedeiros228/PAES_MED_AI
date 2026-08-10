@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'app.dart';
 import 'core/theme/app_theme.dart';
@@ -25,26 +26,50 @@ void main() {
               const Row(
                 children: [
                   Icon(Icons.warning_amber_rounded, size: 28),
-                  SizedBox(width: 10),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'PAES MED AI — erro de UI',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        fontFamily: 'Poppins',
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(err, style: const TextStyle(fontSize: 12, height: 1.35)),
-              const SizedBox(height: 16),
-              const Text(
-                'O que fazer:',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              const SizedBox(height: 12),
+              Text(
+                err,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  height: 1.35,
+                  color: Colors.black87,
+                ),
               ),
-              const SizedBox(height: 6),
-              const Text('· Feche e reabra o atalho PAES MED AI na área de trabalho'),
-              const Text('· Hoje → Continuar sessão (se havia checkpoint)'),
-              const Text('· Atalhos: F foco · Ctrl+T tema'),
+              const SizedBox(height: 16),
+              Text(
+                'O que fazer:',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '· Feche e reabra o atalho PAES MED AI na área de trabalho',
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+              ),
+              Text(
+                '· Hoje → Continuar sessão (se havia checkpoint)',
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+              ),
+              Text(
+                '· Atalhos: F foco · Ctrl+T tema',
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+              ),
             ],
           ),
         ),

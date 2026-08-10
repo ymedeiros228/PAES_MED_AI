@@ -130,10 +130,11 @@ class PageHeader extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             subtitle!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurface.f72,
-                  height: 1.4,
-                ),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: cs.onSurface.f72,
+              height: 1.4,
+            ),
           ),
         ],
       ],
@@ -206,10 +207,11 @@ class SectionLabel extends StatelessWidget {
                   ),
                   child: Text(
                     chip!,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onTertiaryContainer,
-                        ),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onTertiaryContainer,
+                    ),
                   ),
                 ),
             ],
@@ -219,9 +221,10 @@ class SectionLabel extends StatelessWidget {
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 hint!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurface.f72,
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: cs.onSurface.f72,
+                ),
               ),
             ),
         ],
@@ -374,16 +377,21 @@ class _PlaylistTileState extends State<PlaylistTile> {
                                   widget.title,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: cs.onSurface,
+                                  ),
                                 ),
                                 if (widget.subtitle != null)
                                   Text(
                                     widget.subtitle!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withOpacity(0.72),
+                                    ),
                                   ),
                               ],
                             ),
@@ -398,15 +406,16 @@ class _PlaylistTileState extends State<PlaylistTile> {
                               ),
                               child: Text(
                                 widget.badge!,
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: widget.badgeColor != null
-                                          ? (ThemeData.estimateBrightnessForColor(widget.badgeColor!) ==
-                                                  Brightness.dark
-                                              ? Colors.white
-                                              : cs.onSurface)
-                                          : null,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: widget.badgeColor != null
+                                      ? (ThemeData.estimateBrightnessForColor(widget.badgeColor!) ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : cs.onSurface)
+                                      : null,
+                                ),
                               ),
                             ),
                           ],
@@ -647,9 +656,10 @@ class CompactStatus extends StatelessWidget {
             Expanded(
               child: Text(
                 message,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurface.f72,
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: cs.onSurface.f72,
+                ),
               ),
             ),
           ],
@@ -857,7 +867,7 @@ class _ConstellationMapState extends State<ConstellationMap>
                     const SizedBox(width: 3),
                     Text(
                       '${widget.streakDays}d',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: starColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 12.5,
@@ -868,7 +878,7 @@ class _ConstellationMapState extends State<ConstellationMap>
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           // Céu estrelado — AnimatedBuilder com Listenable estável
           SizedBox(
             height: rows * 36.0,
@@ -894,7 +904,7 @@ class _ConstellationMapState extends State<ConstellationMap>
               },
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           // Rodapé com estatísticas — mais limpo e espaçado
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2063,7 +2073,7 @@ class _SoftLoaderState extends State<SoftLoader> with TickerProviderStateMixin {
           children: [
             indicator,
             if (widget.label != null) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               AnimatedBuilder(
                 animation: _pulse,
                 builder: (context, _) => Text(
@@ -2348,14 +2358,14 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                   Expanded(
                     child: SelectableText(
                       widget.label,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            height: 1.45,
-                            fontSize: 14,
-                            color: widget.revealCorrect == true
-                                ? cs.onPrimaryContainer
-                                : null,
-                            fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
-                          ),
+                      style: GoogleFonts.inter(
+                        height: 1.45,
+                        fontSize: 14,
+                        color: widget.revealCorrect == true
+                            ? cs.onPrimaryContainer
+                            : cs.onSurface,
+                        fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
+                      ),
                       contextMenuBuilder: (context, editableTextState) =>
                           AdaptiveTextSelectionToolbar.editableText(
                         editableTextState: editableTextState,
@@ -2427,11 +2437,12 @@ class StudyCheckRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    decoration: done ? TextDecoration.lineThrough : null,
-                    color: done ? cs.onSurface.f55 : null,
-                    fontWeight: done ? FontWeight.w500 : FontWeight.w600,
-                  ),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                decoration: done ? TextDecoration.lineThrough : null,
+                color: done ? cs.onSurface.f55 : cs.onSurface,
+                fontWeight: done ? FontWeight.w500 : FontWeight.w600,
+              ),
             ),
           ),
           if (actionLabel != null && onAction != null && !done)
@@ -2540,7 +2551,7 @@ class HeroStudyStrip extends StatelessWidget {
               if (trailing != null) ...[const SizedBox(width: 12), trailing!],
             ],
           ),
-          if (child != null) ...[const SizedBox(height: 14), child!],
+          if (child != null) ...[const SizedBox(height: 16), child!],
         ],
       ),
     );
@@ -2616,7 +2627,7 @@ class MissionQuestCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           SelectableText(
             why,
             style: GoogleFonts.inter(
@@ -2680,10 +2691,11 @@ class DeltaChip extends StatelessWidget {
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(kRadiusHighlight)),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: fg,
-              fontWeight: FontWeight.w700,
-            ),
+        style: GoogleFonts.inter(
+          fontSize: 12,
+          color: fg,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -2880,7 +2892,7 @@ class SessionResumeBanner extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
               for (var i = 0; i < labels.length; i++) ...[
@@ -2928,7 +2940,7 @@ class SessionResumeBanner extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: onContinue,
             icon: const Icon(Icons.play_arrow_rounded),

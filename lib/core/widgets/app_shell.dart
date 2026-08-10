@@ -166,13 +166,10 @@ class AppShell extends ConsumerWidget {
                         for (final group in activeGroups) ...[
                           if (expanded)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 14, 10, 6),
+                              padding: const EdgeInsets.fromLTRB(10, 12, 10, 8),
                               child: Text(
                                 group.label.toUpperCase(),
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurface.f38,
-                                      letterSpacing: 1.4,
-                                    ),
+                                style: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.f38, letterSpacing: 1.4, fontWeight: FontWeight.w600),
                               ),
                             ),
                           for (final item in group.items)

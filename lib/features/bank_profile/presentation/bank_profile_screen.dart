@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -198,18 +199,21 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 children: [
                                   Text(
                                     total != null ? '$total questões na análise' : 'Perfil local',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.onSurface,
+                                    ),
                                   ),
                                   if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 2),
                                       child: Text(
                                         'Enunciado médio: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: cs.onSurface.f72,
-                                            ),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: cs.onSurface.f72,
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -256,18 +260,22 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 DataColumn(
                                   label: Text(
                                     'Disc.',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.onSurface,
+                                    ),
                                   ),
                                 ),
                                 for (final y in yearList)
                                   DataColumn(
                                     label: Text(
                                       y,
-                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: cs.onSurface,
+                                      ),
                                     ),
                                   ),
                               ],
@@ -278,9 +286,11 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                       DataCell(
                                         Text(
                                           entry.key.toString().split(' ').first,
-                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: cs.onSurface,
+                                          ),
                                         ),
                                       ),
                                       for (final y in yearList)
@@ -326,16 +336,21 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       ],
                       ExpansionTile(
                         tilePadding: EdgeInsets.zero,
-                        title: Text('Detalhes e export', style: Theme.of(context).textTheme.titleSmall),
+                        title: Text('Detalhes e export', style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                        )),
                         children: [
                           if (data['difficultyDistribution'] != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 'Dificuldade: ${data['difficultyDistribution']}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.f72,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: cs.onSurface.f72,
+                                ),
                               ),
                             ),
                           if (data['correctAlternativeBias'] != null)
@@ -343,17 +358,20 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(
                                 'Viés de alternativa: ${data['correctAlternativeBias']}',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.f72,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: cs.onSurface.f72,
+                                ),
                               ),
                             ),
                           const SizedBox(height: 12),
                           if ((data['topVerbs'] as List? ?? []).isNotEmpty) ...[
-                            Text('Verbos frequentes', style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            Text('Verbos frequentes', style: GoogleFonts.poppins(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
                                 )),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Wrap(
                               spacing: 6,
                               runSpacing: 6,
@@ -365,10 +383,12 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ],
                           if ((data['topKeywords'] as List? ?? []).isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            Text('Palavras', style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            Text('Palavras', style: GoogleFonts.poppins(
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
                                 )),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Wrap(
                               spacing: 6,
                               runSpacing: 6,
@@ -389,12 +409,13 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ),
                           if (exportMsg != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 6),
+                              padding: const EdgeInsets.only(top: 8),
                               child: Text(
                                 exportMsg!,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: cs.onSurface.f72,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: cs.onSurface.f72,
+                                ),
                               ),
                             ),
                         ],
