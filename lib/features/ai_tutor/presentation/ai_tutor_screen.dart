@@ -596,6 +596,7 @@ class _MessageBubble extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 4),
                   child: InkWell(
                     onTap: () {
+                      HapticFeedback.selectionClick();
                       final type = c['type']?.toString();
                       final id = c['id']?.toString();
                       final subject = c['subject']?.toString() ?? '';

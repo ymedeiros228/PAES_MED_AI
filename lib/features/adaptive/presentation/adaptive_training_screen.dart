@@ -311,6 +311,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       focusNode: focusNode,
       onKeyEvent: _onKey,
       child: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
           PageBody(
             child: Column(
@@ -536,7 +537,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 ChoiceChip(
                                   label: Text(e.value),
                                   selected: errorType == e.key,
-                                  onSelected: (_) => setState(() => errorType = e.key),
+                                  onSelected: (_) {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => errorType = e.key);
+                                  },
                                 ),
                             ],
                           ),
@@ -561,7 +565,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                   ChoiceChip(
                                     label: Text(e.value),
                                     selected: errorType == e.key,
-                                    onSelected: (_) => setState(() => errorType = e.key),
+                                    onSelected: (_) {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => errorType = e.key);
+                                  },
                                   ),
                               ],
                             ),

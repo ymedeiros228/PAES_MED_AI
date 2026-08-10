@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
 import 'ui_kit.dart';
@@ -34,12 +35,26 @@ class ResolutionDebrief extends StatelessWidget {
       final t = (body ?? '').trim();
       if (t.isEmpty) return const SizedBox.shrink();
       return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-            SelectableText(t),
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              t,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    height: 1.6,
+                    color: cs.onPrimaryContainer,
+                  ),
+            ),
           ],
         ),
       );
@@ -56,7 +71,11 @@ class ResolutionDebrief extends StatelessWidget {
               Expanded(
                 child: Text(
                   isReal ? 'Explicação (4 eixos)' : 'Rascunho / modelo',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
               if (label.isNotEmpty || isReal)
@@ -82,21 +101,23 @@ class ResolutionDebrief extends StatelessWidget {
                       : 'Treino rotulado (não oficial UEMA)';
               return Text(
                 similar != null ? '$blabel · similar a $similar' : blabel,
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: board == 'UEMA_PAES' ? cs.primary : cs.tertiary,
                 ),
               );
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           if (!isReal)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Text(
                 'Isto não é texto oficial da banca nem aula fechada — só apoio didático local.',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: cs.onPrimaryContainer.withOpacity(0.7),
+                    ),
               ),
             ),
           if (isReal) ...[
@@ -106,25 +127,72 @@ class ResolutionDebrief extends StatelessWidget {
             axisBlock('Distrator', axes['distrator']?.toString()),
             if (!axes.values.any((v) => (v?.toString() ?? '').trim().isNotEmpty) &&
                 resolution.trim().isNotEmpty)
-              SelectableText(resolution),
+              SelectableText(
+                resolution,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              ),
           ] else if (resolution.trim().isNotEmpty) ...[
-            const Text('Texto', style: TextStyle(fontWeight: FontWeight.w700)),
-            SelectableText(resolution),
-            const SizedBox(height: 8),
+            Text(
+              'Texto',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              resolution,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+            ),
+            const SizedBox(height: 10),
           ],
           if (macete.trim().isNotEmpty) ...[
-            const Text('Macete', style: TextStyle(fontWeight: FontWeight.w700)),
-            Text(macete),
-            const SizedBox(height: 8),
+            Text(
+              'Macete',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              macete,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+            ),
+            const SizedBox(height: 10),
           ],
           if (pegadinha.trim().isNotEmpty) ...[
-            const Text('Pegadinha', style: TextStyle(fontWeight: FontWeight.w700)),
-            Text(pegadinha),
-            const SizedBox(height: 8),
+            Text(
+              'Pegadinha',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              pegadinha,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+            ),
+            const SizedBox(height: 10),
           ],
           if (banca.trim().isNotEmpty) ...[
-            const Text('Intenção da banca', style: TextStyle(fontWeight: FontWeight.w700)),
-            Text(banca),
+            Text(
+              'Intenção da banca',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              banca,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+            ),
           ],
           if (trailing != null) ...[
             const SizedBox(height: 10),

@@ -744,6 +744,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .toList();
 
     final body = ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -886,7 +887,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   icon: Icons.timer_outlined,
                   title: 'Dia de prova',
                   subtitle: 'Cronômetro e sem gabarito até terminar',
-                  onTap: () => setState(() => mode = 'dia_prova'),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => mode = 'dia_prova');
+                  },
                 ),
                 const SizedBox(height: 4),
                 ExpansionTile(
@@ -901,7 +905,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         icon: m.$4,
                         title: m.$2,
                         subtitle: m.$3,
-                        onTap: () => setState(() => mode = m.$1),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => mode = m.$1);
+                        },
                       ),
                   ],
                 ),

@@ -1433,7 +1433,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                         ChoiceChip(
                           label: Text(errorTypeLabelPt(t)),
                           selected: errorType == t,
-                          onSelected: (_) => setState(() => errorType = t),
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            setState(() => errorType = t);
+                          },
                         ),
                     ],
                   ),

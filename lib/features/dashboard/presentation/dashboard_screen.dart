@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -309,13 +310,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   children: [
                     Text(
                       'PAES MED AI',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: Colors.white,
-                            letterSpacing: -0.8,
-                          ),
+                      style: GoogleFonts.poppins(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.8,
+                        height: 1.15,
+                      ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 10),
+                      margin: const EdgeInsets.only(top: 12),
                       width: 40,
                       height: 3,
                       decoration: BoxDecoration(
@@ -323,7 +327,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Text(
                       (countdown['label']?.toString().isNotEmpty == true)
                           ? countdown['label'].toString()
@@ -332,26 +336,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               : examDays >= 0
                                   ? '$examDays dias para a prova'
                                   : 'Prova na conta',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.78),
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Text(
                       coachLine,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            height: 1.28,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        color: Colors.white,
+                        height: 1.3,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if (progress.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         progress,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.f72,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.white.f72,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 24),
@@ -787,6 +795,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                 button: true,
                                                 child: InkWell(
                                                   onTap: () {
+                                                    HapticFeedback.selectionClick();
                                                     showModalBottomSheet<void>(
                                                       context: cellCtx,
                                                       showDragHandle: true,

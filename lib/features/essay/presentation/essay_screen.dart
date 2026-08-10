@@ -362,6 +362,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       child: Focus(
         autofocus: false,
         child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -568,10 +569,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               FilledButton.icon(
                 onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
                 icon: busy
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
                       )
                     : const Icon(Icons.rate_review_outlined),
                 label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
@@ -800,7 +801,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                             SoftTimelineItem(
                               title: (raw as Map)['theme']?.toString() ?? 'Tema',
                               subtitle: 'Nota ${raw['score']} · ${raw['createdAt'] ?? ''}',
-                              onTap: () => _openEssayDetail(Map<String, dynamic>.from(raw)),
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                _openEssayDetail(Map<String, dynamic>.from(raw));
+                              },
                             ),
                         ],
                       ),
