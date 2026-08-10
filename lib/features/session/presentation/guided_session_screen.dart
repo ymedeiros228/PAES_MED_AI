@@ -657,10 +657,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           const SizedBox(height: 16),
           Divider(color: cs.outlineVariant.withOpacity(0.5)),
           const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: () => context.go('/fila'),
-            icon: const Icon(Icons.playlist_play_rounded),
-            label: const Text('Continuar na Fila'),
+          TapScale(
+            child: FilledButton.icon(
+              onPressed: () => context.go('/fila'),
+              icon: const Icon(Icons.playlist_play_rounded),
+              label: const Text('Continuar na Fila'),
+            ),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -1122,6 +1124,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final clockElapsed = Duration(milliseconds: clockMs);
     final clock =
         '${clockElapsed.inMinutes.toString().padLeft(2, '0')}:${(clockElapsed.inSeconds % 60).toString().padLeft(2, '0')}';
+    // Pulse no último minuto da fase atual (quando faltam ≤ 60s e > 0s)
+    final phaseMinutes = (current['minutes'] as num?)?.toInt() ?? 0;
+    final remainingSec = phaseMinutes * 60 - clockElapsed.inSeconds;
+    final lastMinute = started && !paused && phaseMinutes > 0 && remainingSec > 0 && remainingSec <= 60;
 
     return Focus(
       focusNode: focusNode,
@@ -1141,27 +1147,30 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? _BreathingClock(
                     paused: paused,
                     clock: clock,
+                    pulse: lastMinute,
                   )
                 : null,
           ),
           if (sessionComplete) ...[
             _sessionEndPanel(context),
-            FilledButton.tonal(
-              onPressed: () async {
-                await _clearCheckpoint();
-                setState(() {
-                  sessionComplete = false;
-                  phaseIndex = 0;
-                  qIndex = 0;
-                  answeredIds.clear();
-                  sessionErrors.clear();
-                  missTopics.clear();
-                  correctCount = 0;
-                  flashcardsCreated = 0;
-                  sessionQuestions = [];
-                });
-              },
-              child: const Text('Recomeçar (mesma meta)'),
+            TapScale(
+              child: FilledButton.tonal(
+                onPressed: () async {
+                  await _clearCheckpoint();
+                  setState(() {
+                    sessionComplete = false;
+                    phaseIndex = 0;
+                    qIndex = 0;
+                    answeredIds.clear();
+                    sessionErrors.clear();
+                    missTopics.clear();
+                    correctCount = 0;
+                    flashcardsCreated = 0;
+                    sessionQuestions = [];
+                  });
+                },
+                child: const Text('Recomeçar (mesma meta)'),
+              ),
             ),
           ] else if (checkpointLoadError != null && !started) ...[
             QuietEmpty(
@@ -1256,10 +1265,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                FilledButton.icon(
-                  onPressed: _start,
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Iniciar sessão'),
+                TapScale(
+                  child: FilledButton.icon(
+                    onPressed: _start,
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Iniciar sessão'),
+                  ),
                 ),
               ],
             )
@@ -1269,35 +1280,46 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               children: [
                 FilledButton.tonal(onPressed: _togglePause, child: Text(paused ? 'Continuar' : 'Pausar')),
                 if (!isQuestions || sessionQuestions.isEmpty)
-                  FilledButton(
-                    onPressed: () async {
-                      if (isQuestions && sessionQuestions.isEmpty) {
-                        await _enterQuestionsPhase();
-                      } else if (isRevisions && sessionCards.isEmpty && !revisionUsingQuestions) {
-                        await _enterRevisionsPhase();
-                      } else if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty) {
-                        await _enterRevisionsPhase();
-                      } else {
-                        await _nextPhase();
-                      }
-                    },
-                    child: Text(
-                      isQuestions && sessionQuestions.isEmpty
-                          ? 'Carregar questões'
-                          : isRevisions && sessionCards.isEmpty && sessionQuestions.isEmpty
-                              ? 'Carregar revisões'
-                              : 'Próxima fase',
+                  TapScale(
+                    child: FilledButton(
+                      onPressed: () async {
+                        if (isQuestions && sessionQuestions.isEmpty) {
+                          await _enterQuestionsPhase();
+                        } else if (isRevisions && sessionCards.isEmpty && !revisionUsingQuestions) {
+                          await _enterRevisionsPhase();
+                        } else if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty) {
+                          await _enterRevisionsPhase();
+                        } else {
+                          await _nextPhase();
+                        }
+                      },
+                      child: Text(
+                        isQuestions && sessionQuestions.isEmpty
+                            ? 'Carregar questões'
+                            : isRevisions && sessionCards.isEmpty && sessionQuestions.isEmpty
+                                ? 'Carregar revisões'
+                                : 'Próxima fase',
+                      ),
                     ),
                   ),
                 FilledButton.tonal(onPressed: _exportDay, child: const Text('Exportar pacote do dia')),
               ],
             ),
-            if (isTheory) ...[
-              const Divider(height: 24),
-              Row(
-                children: [
-                  Text(
-                    'Teoria do edital',
+            // AnimatedSwitcher: transição suave (FadeTransition) entre fases
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+              child: KeyedSubtree(
+                key: ValueKey(phaseName),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (isTheory) ...[
+                      const Divider(height: 24),
+                      Row(
+                        children: [
+                          Text(
+                            'Teoria do edital',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1318,10 +1340,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: 0.45,
-                  minHeight: 4,
-                  backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 0.45),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    minHeight: 4,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1335,32 +1362,37 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                 )
               else ...[
-                for (var si = 0; si < (snippets.length > 10 ? 10 : snippets.length); si++)
-                  SurfacePanel(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: cs.primary,
-                          ),
+                StaggeredFadeIn(
+                  key: const ValueKey('theory_snippets'),
+                  children: [
+                    for (var si = 0; si < (snippets.length > 10 ? 10 : snippets.length); si++)
+                      SurfacePanel(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: cs.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.center,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 760),
+                                child: SelectableText(snippets[si].toString()),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.center,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 760),
-                            child: SelectableText(snippets[si].toString()),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
+                ),
               ],
               const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
               if (study != null)
@@ -1471,7 +1503,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                         ),
                     ],
                   ),
-                  FilledButton(onPressed: _confirmErrorAndSave, child: const Text('Salvar erro e ver explicação')),
+                  TapScale(
+                    child: FilledButton(onPressed: _confirmErrorAndSave, child: const Text('Salvar erro e ver explicação')),
+                  ),
                 ],
                 if (!pendingErrorPick &&
                     selected !=
@@ -1510,9 +1544,13 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 spacing: 8,
                 children: [
                   if (!revealed)
-                    FilledButton(onPressed: selected == null ? null : _submitAnswer, child: const Text('Responder (Enter)')),
+                    TapScale(
+                      child: FilledButton(onPressed: selected == null ? null : _submitAnswer, child: const Text('Responder (Enter)')),
+                    ),
                   if (revealed && !pendingErrorPick)
-                    FilledButton(onPressed: _nextQuestion, child: const Text('Próxima (N)')),
+                    TapScale(
+                      child: FilledButton(onPressed: _nextQuestion, child: const Text('Próxima (N)')),
+                    ),
                 ],
               ),
               if (answerSaveError != null) ...[
@@ -1577,7 +1615,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   spacing: 8,
                   children: [
                     FilledButton.tonal(onPressed: () => setState(() => cardFlipped = true), child: const Text('Revelar (Space)')),
-                    FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei (L)')),
+                    TapScale(
+                      child: FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei (L)')),
+                    ),
                     OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci (E)')),
                   ],
                 ),
@@ -1601,6 +1641,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   child: const Text('Carregar revisões'),
                 ),
               ),
+                  ],
+                ),
+              ),
+            ),
           ],
           ], // !sessionComplete
           if (exportMsg != null) ...[
@@ -1621,18 +1665,22 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
 /// Relógio da sessão com efeito de "breathing" quando pausado.
 /// Pulsar suave (opacity 0.6 ↔ 1.0) indica que está pausado mas ativo.
+/// Pulse (AnimatedScale) no último minuto da fase avisa que o tempo está acabando.
 class _BreathingClock extends StatefulWidget {
-  const _BreathingClock({required this.paused, required this.clock});
+  const _BreathingClock({required this.paused, required this.clock, this.pulse = false});
   final bool paused;
   final String clock;
+  /// Pulse sutil quando faltam ≤ 60s na fase atual.
+  final bool pulse;
 
   @override
   State<_BreathingClock> createState() => _BreathingClockState();
 }
 
 class _BreathingClockState extends State<_BreathingClock>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _breath;
+  late final AnimationController _pulse;
 
   @override
   void initState() {
@@ -1641,7 +1689,12 @@ class _BreathingClockState extends State<_BreathingClock>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
     if (widget.paused) _breath.repeat(reverse: true);
+    if (widget.pulse && !widget.paused) _pulse.repeat(reverse: true);
   }
 
   @override
@@ -1655,11 +1708,20 @@ class _BreathingClockState extends State<_BreathingClock>
         _breath.value = 1.0;
       }
     }
+    if (oldWidget.pulse != widget.pulse) {
+      if (widget.pulse && !widget.paused) {
+        _pulse.repeat(reverse: true);
+      } else {
+        _pulse.stop();
+        _pulse.value = 0.0;
+      }
+    }
   }
 
   @override
   void dispose() {
     _breath.dispose();
+    _pulse.dispose();
     super.dispose();
   }
 
@@ -1667,8 +1729,10 @@ class _BreathingClockState extends State<_BreathingClock>
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final label = widget.paused ? 'Pausado ${widget.clock}' : widget.clock;
-    final color = widget.paused ? cs.tertiary : cs.primary;
-    final icon = widget.paused ? Icons.pause_circle_outline_rounded : Icons.timer_outlined;
+    final color = widget.paused ? cs.tertiary : (widget.pulse ? cs.tertiary : cs.primary);
+    final icon = widget.paused
+        ? Icons.pause_circle_outline_rounded
+        : (widget.pulse ? Icons.timer_3_outlined : Icons.timer_outlined);
 
     Widget content(Color c) => Row(
           mainAxisSize: MainAxisSize.min,
@@ -1688,10 +1752,29 @@ class _BreathingClockState extends State<_BreathingClock>
           ],
         );
 
-    if (!widget.paused) {
+    if (!widget.paused && !widget.pulse) {
       return SurfacePanel(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: content(color),
+      );
+    }
+
+    if (widget.pulse && !widget.paused) {
+      // Pulse sutil (scale 1.0 ↔ 1.06) no último minuto da fase
+      return AnimatedBuilder(
+        animation: _pulse,
+        builder: (context, _) {
+          final t = Curves.easeInOut.transform(_pulse.value);
+          return SurfacePanel(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: AnimatedScale(
+              scale: 1.0 + t * 0.06,
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeInOut,
+              child: content(color.withOpacity(0.7 + t * 0.3)),
+            ),
+          );
+        },
       );
     }
 

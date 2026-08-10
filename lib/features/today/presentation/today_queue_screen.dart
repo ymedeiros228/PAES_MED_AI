@@ -211,7 +211,9 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         action: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+            TapScale(
+              child: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+            ),
             TextButton(
               onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
               child: const Text('Sessão'),
@@ -292,10 +294,12 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => context.go(sessionPath),
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Começar sessão'),
+                  child: TapScale(
+                    child: FilledButton.icon(
+                      onPressed: () => context.go(sessionPath),
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: const Text('Começar sessão'),
+                    ),
                   ),
                 ),
                 FutureBuilder(
@@ -321,9 +325,39 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   'Outras ações',
                   hint: 'Complementos do dia, abaixo da sessão principal',
                 ),
-                SurfacePanel(
+                // Card de missão de redação com gradiente sutil (tertiary → surface)
+                Container(
                   margin: const EdgeInsets.only(bottom: 2),
                   padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        cs.tertiaryContainer.withOpacity(0.35),
+                        cs.surface.withOpacity(0.98),
+                      ],
+                      stops: const [0.0, 0.6],
+                    ),
+                    borderRadius: BorderRadius.circular(kRadiusPanelSoft),
+                    border: Border.all(
+                      color: cs.outlineVariant.withOpacity(0.5),
+                    ),
+                    boxShadow: Theme.of(context).brightness == Brightness.dark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: const Color(0xFF0A1628).withOpacity(0.03),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFF0A1628).withOpacity(0.02),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                  ),
                   child: Row(
                     children: [
                       Icon(
@@ -423,121 +457,125 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         ),
                       ),
                     ),
-                  for (final raw in gapItems.where((raw) {
-                    if (!gapsOnlyNoMaterial) return true;
-                    if (raw is! Map) return false;
-                    return raw['hasLocalMaterial'] == false;
-                  }).take(6))
-                    Builder(
-                      builder: (_) {
-                        final g = Map<String, dynamic>.from(raw as Map);
-                        final s = g['subject']?.toString() ?? '';
-                        final t = g['topic']?.toString() ?? '';
-                        final hasMaterial = g['hasLocalMaterial'] != false;
-                        final path =
-                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
-                            '&topic=${Uri.encodeComponent(t)}';
-                        return FutureBuilder(
-                          key: ValueKey('gap-tile-$s-$t-$_readRefreshTick'),
-                          future: apiClient.get(
-                            '/api/study/reads',
-                            {'subject': s, 'topic': t},
-                          ),
-                          builder: (context, snap) {
-                            final read = snap.hasData &&
-                                (snap.data is Map) &&
-                                (snap.data as Map)['read'] == true;
-                            final subtitle = !hasMaterial
-                                ? '$t · sem material local'
-                                : read
-                                    ? '$t · li'
-                                    : t;
-                            final badge = !hasMaterial
-                                ? 'sem teoria'
-                                : read
-                                    ? 'teoria lida'
-                                    : 'retomar';
-                            final badgeColor = !hasMaterial
-                                ? Theme.of(context).colorScheme.tertiaryContainer
-                                : read
-                                    ? Theme.of(context).colorScheme.primaryContainer
-                                    : Theme.of(context).colorScheme.surfaceContainerHighest;
-                            return PlaylistTile(
-                              title: s,
-                              subtitle: subtitle,
-                              badge: badge,
-                              badgeColor: badgeColor,
-                              active: navIndexFor(path) == selected,
-                              leadingIcon: hasMaterial
-                                  ? (read ? Icons.menu_book_rounded : Icons.flag_rounded)
-                                  : Icons.folder_off_outlined,
-                              onPlay: () {
-                                HapticFeedback.selectionClick();
-                                final i = navIndexFor(path);
-                                if (i >= 0) setState(() => selected = i);
-                                context.go(path);
-                              },
-                              secondary: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // dots: 1 lido, 2 treinado (gap recuperada ≠, 2 = teórico + lido → pronto)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 4),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        _GapDot(active: read, label: '1'),
-                                        const SizedBox(width: 3),
-                                        _GapDot(active: read && hasMaterial, label: '2'),
-                                      ],
-                                    ),
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Biblioteca deste tópico',
-                                    icon: Icon(
-                                      Icons.library_books_outlined,
-                                      size: 20,
-                                      color: Theme.of(context).colorScheme.tertiary,
-                                    ),
-                                    onPressed: () {
-                                      final qp = <String, String>{
-                                        if (s.isNotEmpty) 'subject': s,
-                                        if (t.isNotEmpty) 'topic': t,
-                                      };
-                                      final qs = qp.entries
-                                          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
-                                          .join('&');
-                                      context.go(qs.isEmpty ? '/biblioteca' : '/biblioteca?$qs');
-                                    },
-                                  ),
-                                  IconButton(
-                                    tooltip: read ? 'Teoria lida' : 'Ler teoria',
-                                    icon: Icon(
-                                      read ? Icons.menu_book_rounded : Icons.menu_book_outlined,
-                                      size: 20,
-                                      color: read ? Theme.of(context).colorScheme.primary : null,
-                                    ),
-                                    onPressed: () => _openTheory(s, t),
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Sessão longa',
-                                    icon: const Icon(Icons.timer_outlined, size: 20),
-                                    onPressed: () => context.go(_sessionFor(s, t)),
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Marcar recuperada',
-                                    icon: const Icon(Icons.check_circle_outline, size: 20),
-                                    onPressed: s.isEmpty || t.isEmpty
-                                        ? null
-                                        : () => _recoverGap(s, t),
-                                  ),
-                                ],
+                  StaggeredFadeIn(
+                    children: [
+                      for (final raw in gapItems.where((raw) {
+                        if (!gapsOnlyNoMaterial) return true;
+                        if (raw is! Map) return false;
+                        return raw['hasLocalMaterial'] == false;
+                      }).take(6))
+                        Builder(
+                          builder: (_) {
+                            final g = Map<String, dynamic>.from(raw as Map);
+                            final s = g['subject']?.toString() ?? '';
+                            final t = g['topic']?.toString() ?? '';
+                            final hasMaterial = g['hasLocalMaterial'] != false;
+                            final path =
+                                '/adaptativo?subject=${Uri.encodeComponent(s)}'
+                                '&topic=${Uri.encodeComponent(t)}';
+                            return FutureBuilder(
+                              key: ValueKey('gap-tile-$s-$t-$_readRefreshTick'),
+                              future: apiClient.get(
+                                '/api/study/reads',
+                                {'subject': s, 'topic': t},
                               ),
+                              builder: (context, snap) {
+                                final read = snap.hasData &&
+                                    (snap.data is Map) &&
+                                    (snap.data as Map)['read'] == true;
+                                final subtitle = !hasMaterial
+                                    ? '$t · sem material local'
+                                    : read
+                                        ? '$t · li'
+                                        : t;
+                                final badge = !hasMaterial
+                                    ? 'sem teoria'
+                                    : read
+                                        ? 'teoria lida'
+                                        : 'retomar';
+                                final badgeColor = !hasMaterial
+                                    ? Theme.of(context).colorScheme.tertiaryContainer
+                                    : read
+                                        ? Theme.of(context).colorScheme.primaryContainer
+                                        : Theme.of(context).colorScheme.surfaceContainerHighest;
+                                return PlaylistTile(
+                                  title: s,
+                                  subtitle: subtitle,
+                                  badge: badge,
+                                  badgeColor: badgeColor,
+                                  active: navIndexFor(path) == selected,
+                                  leadingIcon: hasMaterial
+                                      ? (read ? Icons.menu_book_rounded : Icons.flag_rounded)
+                                      : Icons.folder_off_outlined,
+                                  onPlay: () {
+                                    HapticFeedback.selectionClick();
+                                    final i = navIndexFor(path);
+                                    if (i >= 0) setState(() => selected = i);
+                                    context.go(path);
+                                  },
+                                  secondary: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // dots: 1 lido, 2 treinado (gap recuperada ≠, 2 = teórico + lido → pronto)
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 4),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            _GapDot(active: read, label: '1'),
+                                            const SizedBox(width: 3),
+                                            _GapDot(active: read && hasMaterial, label: '2'),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Biblioteca deste tópico',
+                                        icon: Icon(
+                                          Icons.library_books_outlined,
+                                          size: 20,
+                                          color: Theme.of(context).colorScheme.tertiary,
+                                        ),
+                                        onPressed: () {
+                                          final qp = <String, String>{
+                                            if (s.isNotEmpty) 'subject': s,
+                                            if (t.isNotEmpty) 'topic': t,
+                                          };
+                                          final qs = qp.entries
+                                              .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+                                              .join('&');
+                                          context.go(qs.isEmpty ? '/biblioteca' : '/biblioteca?$qs');
+                                        },
+                                      ),
+                                      IconButton(
+                                        tooltip: read ? 'Teoria lida' : 'Ler teoria',
+                                        icon: Icon(
+                                          read ? Icons.menu_book_rounded : Icons.menu_book_outlined,
+                                          size: 20,
+                                          color: read ? Theme.of(context).colorScheme.primary : null,
+                                        ),
+                                        onPressed: () => _openTheory(s, t),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Sessão longa',
+                                        icon: const Icon(Icons.timer_outlined, size: 20),
+                                        onPressed: () => context.go(_sessionFor(s, t)),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Marcar recuperada',
+                                        icon: const Icon(Icons.check_circle_outline, size: 20),
+                                        onPressed: s.isEmpty || t.isEmpty
+                                            ? null
+                                            : () => _recoverGap(s, t),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
+                        ),
+                    ],
+                  ),
                   if (gapItems.any((raw) {
                     if (raw is! Map) return false;
                     return raw['hasLocalMaterial'] == false;
@@ -569,66 +607,70 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ((queue!['axisCardsDue'] as int?) ?? 0) > 0 ||
                     ((queue!['axisCardsCreatedToday'] as int?) ?? 0) > 0) ...[
                   SectionLabel('Revisões', hint: 'O que está na hora'),
-                  if ((((queue!['axisCardsDue'] as int?) ?? 0) > 0) ||
-                      (((queue!['axisCardsCreatedToday'] as int?) ?? 0) > 0))
-                    PlaylistTile(
-                      title: 'Cartões da revisão',
-                      subtitle: () {
-                        final due = (queue!['axisCardsDue'] as int?) ?? 0;
-                        final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
-                        if (due > 0 && neu > 0) {
-                          return '$due para revisar · $neu dos eixos sem revisão';
-                        }
-                        if (due > 0) return '$due cartões dos eixos para revisar';
-                        return '$neu cartões dos eixos (ainda sem revisão)';
-                      }(),
-                      badge: 'eixos',
-                      active: navIndexFor('/flashcards?due=1') == selected,
-                      leadingIcon: Icons.style_outlined,
-                      onPlay: () {
-                        HapticFeedback.selectionClick();
-                        const path = '/flashcards?due=1';
-                        final i = navIndexFor(path);
-                        if (i >= 0) setState(() => selected = i);
-                        context.go(path);
-                      },
-                    ),
-                  for (final r in revisions.take(8))
-                    Builder(
-                      builder: (_) {
-                        final path =
-                            '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
-                            '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}';
-                        return PlaylistTile(
-                          title: '${(r as Map)['subject']}',
-                          subtitle: '${r['topic']}',
-                          badge: 'revisão',
-                          active: navIndexFor(path) == selected,
-                          leadingIcon: Icons.replay_rounded,
+                  StaggeredFadeIn(
+                    children: [
+                      if ((((queue!['axisCardsDue'] as int?) ?? 0) > 0) ||
+                          (((queue!['axisCardsCreatedToday'] as int?) ?? 0) > 0))
+                        PlaylistTile(
+                          title: 'Cartões da revisão',
+                          subtitle: () {
+                            final due = (queue!['axisCardsDue'] as int?) ?? 0;
+                            final neu = (queue!['axisCardsCreatedToday'] as int?) ?? 0;
+                            if (due > 0 && neu > 0) {
+                              return '$due para revisar · $neu dos eixos sem revisão';
+                            }
+                            if (due > 0) return '$due cartões dos eixos para revisar';
+                            return '$neu cartões dos eixos (ainda sem revisão)';
+                          }(),
+                          badge: 'eixos',
+                          active: navIndexFor('/flashcards?due=1') == selected,
+                          leadingIcon: Icons.style_outlined,
                           onPlay: () {
                             HapticFeedback.selectionClick();
+                            const path = '/flashcards?due=1';
                             final i = navIndexFor(path);
                             if (i >= 0) setState(() => selected = i);
                             context.go(path);
                           },
-                        );
-                      },
-                    ),
-                  if (cards.isNotEmpty)
-                    PlaylistTile(
-                      title: '${cards.length} cartões de estudo',
-                      subtitle: 'Revisão rápida',
-                      badge: 'cartões',
-                      active: navIndexFor('/flashcards?due=1') == selected,
-                      leadingIcon: Icons.style_rounded,
-                      onPlay: () {
-                        HapticFeedback.selectionClick();
-                        const path = '/flashcards?due=1';
-                        final i = navIndexFor(path);
-                        if (i >= 0) setState(() => selected = i);
-                        context.go(path);
-                      },
-                    ),
+                        ),
+                      for (final r in revisions.take(8))
+                        Builder(
+                          builder: (_) {
+                            final path =
+                                '/adaptativo?subject=${Uri.encodeComponent(r['subject']?.toString() ?? '')}'
+                                '&topic=${Uri.encodeComponent(r['topic']?.toString() ?? '')}';
+                            return PlaylistTile(
+                              title: '${(r as Map)['subject']}',
+                              subtitle: '${r['topic']}',
+                              badge: 'revisão',
+                              active: navIndexFor(path) == selected,
+                              leadingIcon: Icons.replay_rounded,
+                              onPlay: () {
+                                HapticFeedback.selectionClick();
+                                final i = navIndexFor(path);
+                                if (i >= 0) setState(() => selected = i);
+                                context.go(path);
+                              },
+                            );
+                          },
+                        ),
+                      if (cards.isNotEmpty)
+                        PlaylistTile(
+                          title: '${cards.length} cartões de estudo',
+                          subtitle: 'Revisão rápida',
+                          badge: 'cartões',
+                          active: navIndexFor('/flashcards?due=1') == selected,
+                          leadingIcon: Icons.style_rounded,
+                          onPlay: () {
+                            HapticFeedback.selectionClick();
+                            const path = '/flashcards?due=1';
+                            final i = navIndexFor(path);
+                            if (i >= 0) setState(() => selected = i);
+                            context.go(path);
+                          },
+                        ),
+                    ],
+                  ),
                 ],
 
                 if (study != null) ...[
@@ -713,28 +755,32 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
                 if (medicineTop.isNotEmpty) ...[
                   SectionLabel('Sugestões de domínio'),
-                  for (final raw in medicineTop.take(5))
-                    Builder(
-                      builder: (_) {
-                        final c = Map<String, dynamic>.from(raw as Map);
-                        final key = c['key']?.toString() ?? '';
-                        final parts = key.split('::');
-                        final s = parts.isNotEmpty ? parts[0] : '';
-                        final t = parts.length > 1 ? parts[1] : '';
-                        final path = _sessionFor(s, t);
-                        return PlaylistTile(
-                          title: s.isEmpty ? key : s,
-                          subtitle: t,
-                          active: navIndexFor(path) == selected,
-                          leadingIcon: Icons.local_hospital_outlined,
-                          onPlay: () {
-                            final i = navIndexFor(path);
-                            if (i >= 0) setState(() => selected = i);
-                            context.go(path);
+                  StaggeredFadeIn(
+                    children: [
+                      for (final raw in medicineTop.take(5))
+                        Builder(
+                          builder: (_) {
+                            final c = Map<String, dynamic>.from(raw as Map);
+                            final key = c['key']?.toString() ?? '';
+                            final parts = key.split('::');
+                            final s = parts.isNotEmpty ? parts[0] : '';
+                            final t = parts.length > 1 ? parts[1] : '';
+                            final path = _sessionFor(s, t);
+                            return PlaylistTile(
+                              title: s.isEmpty ? key : s,
+                              subtitle: t,
+                              active: navIndexFor(path) == selected,
+                              leadingIcon: Icons.local_hospital_outlined,
+                              onPlay: () {
+                                final i = navIndexFor(path);
+                                if (i >= 0) setState(() => selected = i);
+                                context.go(path);
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
+                        ),
+                    ],
+                  ),
                 ],
 
                 const SizedBox(height: 24),
@@ -779,21 +825,41 @@ class _GapDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 20,
-      height: 20,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: active ? cs.primary : cs.surfaceContainerHighest,
-        border: Border.all(color: active ? cs.primary : cs.outlineVariant),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: active ? cs.onPrimary : cs.onSurface.f72,
+    // AnimatedScale: pulso sutil quando ativo — feedback visual moderno
+    return AnimatedScale(
+      scale: active ? 1.15 : 1.0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutBack,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        width: 20,
+        height: 20,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: active ? cs.primary : cs.surfaceContainerHighest,
+          border: Border.all(
+            color: active ? cs.primary : cs.outlineVariant,
+            width: active ? 2 : 1,
+          ),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: cs.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: active ? cs.onPrimary : cs.onSurface.f72,
+          ),
         ),
       ),
     );

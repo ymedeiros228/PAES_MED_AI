@@ -240,9 +240,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           spacing: 8,
           alignment: WrapAlignment.center,
           children: [
-            FilledButton(
-              onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-              child: const Text('Tentar de novo'),
+            TapScale(
+              child: FilledButton(
+                onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                child: const Text('Tentar de novo'),
+              ),
             ),
             TextButton(
               onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
@@ -306,8 +308,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 decoration: BoxDecoration(
                   gradient: AppTheme.heroGradient(Theme.of(context).brightness),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // StaggeredFadeIn: entrada escalonada do hero (título → coach → CTAs)
+                child: StaggeredFadeIn(
                   children: [
                     Text(
                       'PAES MED AI',
@@ -368,16 +370,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        PulseButton(
-                          pulse: checkpoint != null,
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go(sessionPath);
-                          },
-                          child: Text(
-                            checkpoint != null
-                                ? 'Continuar · ${_checkpointShort(checkpoint!)}'
-                                : 'Começar sessão',
+                        // TapScale: micro-interação de scale-down ao pressionar o CTA
+                        TapScale(
+                          child: PulseButton(
+                            pulse: checkpoint != null,
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              context.go(sessionPath);
+                            },
+                            child: Text(
+                              checkpoint != null
+                                  ? 'Continuar · ${_checkpointShort(checkpoint!)}'
+                                  : 'Começar sessão',
+                            ),
                           ),
                         ),
                         if (checkpoint != null)
@@ -476,11 +481,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   Wrap(
                                     spacing: 8,
                                     children: [
-                                      FilledButton(
-                                        onPressed: () {
-                                          context.go('/biblioteca?semana1=1');
-                                        },
-                                        child: const Text('Ir à Semana 1'),
+                                      TapScale(
+                                        child: FilledButton(
+                                          onPressed: () {
+                                            context.go('/biblioteca?semana1=1');
+                                          },
+                                          child: const Text('Ir à Semana 1'),
+                                        ),
                                       ),
                                       TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
                                     ],
@@ -489,64 +496,74 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
-                          SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
-                          // Anel de progresso do dia — RepaintBoundary isola a animação
-                          RepaintBoundary(
-                            child: _DayProgressRing(
-                              sessionDone: checklist['session'] == true,
-                              cardsDone: checklist['cards'] == true,
-                              revisionsDone: checklist['revisions'] == true,
-                              dayClosed: dayClosed,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          StudyCheckRow(
-                            done: checklist['session'] == true,
-                            label: 'Sessão (~15+ min)',
-                            actionLabel: 'Sessão',
-                            onAction: () => context.go(sessionPath),
-                          ),
-                          FutureBuilder(
-                            future: dueCardsFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData) {
-                                return const StudyCheckRow(
-                                  done: false,
-                                  label: 'Cartões do dia…',
-                                );
-                              }
-                              final list = snap.data is List ? snap.data as List : const [];
-                              final n = list.length;
-                              final done = n == 0 || checklist['cards'] == true;
-                              return StudyCheckRow(
-                                done: done,
-                                label: n == 0 ? 'Cartões em dia' : '$n cartão(ões) para revisar',
-                                actionLabel: n == 0 ? null : 'Cartões',
-                                onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
-                              );
-                            },
-                          ),
-                          StudyCheckRow(
-                            done: checklist['revisions'] == true,
-                            label: gapN > 0
-                                ? '$gapN lacuna(s) aberta(s)'
-                                : 'Revisões / lacunas em dia',
-                            actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Fila' : null,
-                            onAction: () => context.go('/fila'),
-                          ),
-                          StudyCheckRow(
-                            done: dayClosed,
-                            label: dayClosed ? 'Dia encerrado' : 'Encerrar o dia',
-                            actionLabel: dayClosed ? null : 'Fechar',
-                            onAction: dayClosed ? null : _closeDay,
+                          // StaggeredFadeIn: entrada escalonada do checklist (anel → itens)
+                          StaggeredFadeIn(
+                            children: [
+                              SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
+                              // Anel de progresso do dia — RepaintBoundary isola a animação
+                              RepaintBoundary(
+                                child: _DayProgressRing(
+                                  sessionDone: checklist['session'] == true,
+                                  cardsDone: checklist['cards'] == true,
+                                  revisionsDone: checklist['revisions'] == true,
+                                  dayClosed: dayClosed,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              StudyCheckRow(
+                                done: checklist['session'] == true,
+                                label: 'Sessão (~15+ min)',
+                                actionLabel: 'Sessão',
+                                onAction: () => context.go(sessionPath),
+                              ),
+                              FutureBuilder(
+                                future: dueCardsFuture,
+                                builder: (context, snap) {
+                                  if (!snap.hasData) {
+                                    return const StudyCheckRow(
+                                      done: false,
+                                      label: 'Cartões do dia…',
+                                    );
+                                  }
+                                  final list = snap.data is List ? snap.data as List : const [];
+                                  final n = list.length;
+                                  final done = n == 0 || checklist['cards'] == true;
+                                  return StudyCheckRow(
+                                    done: done,
+                                    label: n == 0 ? 'Cartões em dia' : '$n cartão(ões) para revisar',
+                                    actionLabel: n == 0 ? null : 'Cartões',
+                                    onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
+                                  );
+                                },
+                              ),
+                              StudyCheckRow(
+                                done: checklist['revisions'] == true,
+                                label: gapN > 0
+                                    ? '$gapN lacuna(s) aberta(s)'
+                                    : 'Revisões / lacunas em dia',
+                                actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Fila' : null,
+                                onAction: () => context.go('/fila'),
+                              ),
+                              StudyCheckRow(
+                                done: dayClosed,
+                                label: dayClosed ? 'Dia encerrado' : 'Encerrar o dia',
+                                actionLabel: dayClosed ? null : 'Fechar',
+                                onAction: dayClosed ? null : _closeDay,
+                              ),
+                            ],
                           ),
 
-                          MissionQuestCard(
-                            title: 'Missão leve · redação',
-                            why: 'Abra a redação, aceite a missão do eixo fraco e treine com delta honesto.',
-                            ctaLabel: 'Ir à redação',
-                            status: MissionQuestStatus.open,
-                            onCta: () => context.go('/redacao'),
+                          // StaggeredFadeIn: entrada suave da missão de redação
+                          StaggeredFadeIn(
+                            children: [
+                              MissionQuestCard(
+                                title: 'Missão leve · redação',
+                                why: 'Abra a redação, aceite a missão do eixo fraco e treine com delta honesto.',
+                                ctaLabel: 'Ir à redação',
+                                status: MissionQuestStatus.open,
+                                onCta: () => context.go('/redacao'),
+                              ),
+                            ],
                           ),
 
                           const SizedBox(height: 8),
@@ -886,12 +903,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                                                   spacing: 8,
                                                                   runSpacing: 8,
                                                                   children: [
-                                                                    FilledButton(
-                                                                      onPressed: () {
-                                                                        Navigator.pop(sheetCtx);
-                                                                        context.go(sessionPath);
-                                                                      },
-                                                                      child: const Text('Sessão'),
+                                                                    TapScale(
+                                                                      child: FilledButton(
+                                                                        onPressed: () {
+                                                                          Navigator.pop(sheetCtx);
+                                                                          context.go(sessionPath);
+                                                                        },
+                                                                        child: const Text('Sessão'),
+                                                                      ),
                                                                     ),
                                                                     if (!closed && !dayClosed)
                                                                       OutlinedButton(
@@ -946,15 +965,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   ),
                                 ),
                               const SizedBox(height: 8),
-                              SectionLabel('Seu ritmo'),
-                              RepaintBoundary(
-                                child: StatsStrip(
-                                  items: [
-                                    ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                                    ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                                    ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                                  ],
-                                ),
+                              // StaggeredFadeIn: entrada escalonada do pulo de ritmo
+                              StaggeredFadeIn(
+                                children: [
+                                  SectionLabel('Seu ritmo'),
+                                  RepaintBoundary(
+                                    child: StatsStrip(
+                                      items: [
+                                        ('${data['streakDays'] ?? 0}', 'dias seguidos'),
+                                        ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
+                                        ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                               if (!focus) ...[
                                 SectionLabel('Explorar'),

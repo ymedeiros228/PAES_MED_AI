@@ -145,7 +145,7 @@ class ExamDateSyncBanner extends ConsumerWidget {
   }
 }
 
-class EmptyState extends StatelessWidget {
+class EmptyState extends StatefulWidget {
   const EmptyState({
     required this.title,
     required this.subtitle,
@@ -161,14 +161,44 @@ class EmptyState extends StatelessWidget {
   final VoidCallback? onAction;
 
   @override
+  State<EmptyState> createState() => _EmptyStateState();
+}
+
+class _EmptyStateState extends State<EmptyState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final cta = action ??
-        (actionLabel != null && onAction != null
-            ? FilledButton(onPressed: onAction, child: Text(actionLabel!))
+    final cta = widget.action ??
+        (widget.actionLabel != null && widget.onAction != null
+            ? FilledButton(onPressed: widget.onAction, child: Text(widget.actionLabel!))
             : null);
-    final labelParts = <String>[title, subtitle];
-    if (actionLabel != null) labelParts.add(actionLabel!);
+    final labelParts = <String>[widget.title, widget.subtitle];
+    if (widget.actionLabel != null) labelParts.add(widget.actionLabel!);
     return Semantics(
       label: labelParts.join('. '),
       button: cta != null,
@@ -177,45 +207,69 @@ class EmptyState extends StatelessWidget {
           padding: const EdgeInsets.all(36),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer.f65,
-                    shape: BoxShape.circle,
+            child: FadeTransition(
+              opacity: _fade,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ScaleTransition(
+                    scale: _scale,
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            cs.primaryContainer,
+                            cs.primaryContainer.withOpacity(0.6),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: cs.primary.withOpacity(0.15),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: cs.primary.withOpacity(0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.auto_stories_outlined,
+                        size: 34,
+                        color: cs.primary.withOpacity(0.9),
+                      ),
+                    ),
                   ),
-                  child: Icon(
-                    Icons.auto_stories_outlined,
-                    size: 34,
-                    color: cs.primary.withOpacity(0.9),
+                  const SizedBox(height: 20),
+                  Text(
+                    widget.title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                      height: 1.25,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
-                    height: 1.25,
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.subtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: cs.onSurface.f72,
+                      height: 1.4,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: cs.onSurface.f72,
-                    height: 1.4,
-                  ),
-                ),
-                if (cta != null) ...[const SizedBox(height: 20), cta],
-              ],
+                  if (cta != null) ...[const SizedBox(height: 20), cta],
+                ],
+              ),
             ),
           ),
         ),

@@ -458,12 +458,12 @@ class StatsStrip extends StatelessWidget {
           children: [
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
-                Container(width: 1, height: 36, color: cs.outlineVariant),
+                Container(width: 1, height: 36, color: cs.outlineVariant.withOpacity(0.4)),
               Expanded(
                 child: Column(
                   children: [
-                    Text(
-                      items[i].$1,
+                    _StatValue(
+                      raw: items[i].$1,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -489,6 +489,25 @@ class StatsStrip extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Extrai sufixo (%, min, etc.) e usa AnimatedCounter para a parte numérica.
+class _StatValue extends StatelessWidget {
+  const _StatValue({required this.raw, required this.style});
+  final String raw;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    // Tenta separar número do sufixo (ex: "78%", "42 min", "5")
+    final match = RegExp(r'^(-?\d+)(.*)$').firstMatch(raw);
+    if (match == null) {
+      return Text(raw, style: style);
+    }
+    final value = int.tryParse(match.group(1)!) ?? 0;
+    final suffix = match.group(2) ?? '';
+    return AnimatedCounter(value: value, suffix: suffix, style: style);
   }
 }
 
@@ -583,31 +602,69 @@ class PhaseProgressBar extends StatelessWidget {
   }
 }
 
-class QuietEmpty extends StatelessWidget {
+class QuietEmpty extends StatefulWidget {
   const QuietEmpty({required this.message, this.action, this.icon, super.key});
   final String message;
   final Widget? action;
   final IconData? icon;
 
   @override
+  State<QuietEmpty> createState() => _QuietEmptyState();
+}
+
+class _QuietEmptyState extends State<QuietEmpty>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 1800),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: message,
-      button: action != null,
+      label: widget.message,
+      button: widget.action != null,
       child: SurfacePanel(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(12),
+            AnimatedBuilder(
+              animation: _ctrl,
+              builder: (context, child) => Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      cs.surfaceContainerHigh,
+                      cs.surfaceContainerHigh.withOpacity(0.6 + _ctrl.value * 0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: cs.outlineVariant.withOpacity(0.3 + _ctrl.value * 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: child,
               ),
               child: Icon(
-                icon ?? Icons.inbox_rounded,
+                widget.icon ?? Icons.inbox_rounded,
                 size: 20,
                 color: cs.onSurface.f55,
               ),
@@ -615,7 +672,7 @@ class QuietEmpty extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                message,
+                widget.message,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: cs.onSurface.f72,
@@ -623,7 +680,7 @@ class QuietEmpty extends StatelessWidget {
                 ),
               ),
             ),
-            if (action != null) ...[const SizedBox(width: 10), action!],
+            if (widget.action != null) ...[const SizedBox(width: 10), widget.action!],
           ],
         ),
       ),
@@ -2343,7 +2400,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: letterBg,
-                        borderRadius: BorderRadius.circular(kRadiusControl),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         letter,
@@ -2378,10 +2435,15 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                     const SizedBox(width: 10),
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: Icon(
-                        trailingIcon,
-                        size: 20,
-                        color: widget.revealCorrect == true ? cs.primary : cs.error,
+                      child: AnimatedScale(
+                        scale: 1.0,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutBack,
+                        child: Icon(
+                          trailingIcon,
+                          size: 20,
+                          color: widget.revealCorrect == true ? cs.primary : cs.error,
+                        ),
                       ),
                     ),
                   ],
@@ -2396,7 +2458,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
 }
 
 /// Linha de checklist do dia (Hoje).
-class StudyCheckRow extends StatelessWidget {
+class StudyCheckRow extends StatefulWidget {
   const StudyCheckRow({
     required this.done,
     required this.label,
@@ -2411,52 +2473,91 @@ class StudyCheckRow extends StatelessWidget {
   final VoidCallback? onAction;
 
   @override
+  State<StudyCheckRow> createState() => _StudyCheckRowState();
+}
+
+class _StudyCheckRowState extends State<StudyCheckRow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scale = Tween<double>(begin: 1.25, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
+    );
+    if (widget.done) _ctrl.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant StudyCheckRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.done && widget.done) {
+      _ctrl.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return SurfacePanel(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       soft: false,
-      color: done ? cs.primaryContainer.withOpacity(0.28) : null,
+      color: widget.done ? cs.primaryContainer.withOpacity(0.28) : null,
       child: Row(
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: done ? cs.primary : cs.surfaceContainerHigh,
-            ),
-            child: Icon(
-              done ? Icons.check_rounded : Icons.circle_outlined,
-              size: 16,
-              color: done ? cs.onPrimary : cs.onSurface.withOpacity(0.4),
+          ScaleTransition(
+            scale: widget.done ? _scale : const AlwaysStoppedAnimation(1.0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.done ? cs.primary : cs.surfaceContainerHigh,
+              ),
+              child: Icon(
+                widget.done ? Icons.check_rounded : Icons.circle_outlined,
+                size: 16,
+                color: widget.done ? cs.onPrimary : cs.onSurface.withOpacity(0.4),
+              ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              label,
+              widget.label,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                decoration: done ? TextDecoration.lineThrough : null,
-                color: done ? cs.onSurface.f55 : cs.onSurface,
-                fontWeight: done ? FontWeight.w500 : FontWeight.w600,
+                decoration: widget.done ? TextDecoration.lineThrough : null,
+                color: widget.done ? cs.onSurface.f55 : cs.onSurface,
+                fontWeight: widget.done ? FontWeight.w500 : FontWeight.w600,
               ),
             ),
           ),
-          if (actionLabel != null && onAction != null && !done)
+          if (widget.actionLabel != null && widget.onAction != null && !widget.done)
             FilledButton.tonal(
               onPressed: () {
                 HapticFeedback.selectionClick();
-                onAction!();
+                widget.onAction!();
               },
               style: FilledButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              child: Text(actionLabel!),
+              child: Text(widget.actionLabel!),
             ),
         ],
       ),
@@ -2948,6 +3049,188 @@ class SessionResumeBanner extends StatelessWidget {
             label: Text('Continuar · ${phaseLabel(phaseName)}'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Conta de 0 até [value] com animação suave (count-up).
+/// Estilo Duolingo/Khan — números ganham vida ao aparecer.
+class AnimatedCounter extends StatefulWidget {
+  const AnimatedCounter({
+    required this.value,
+    this.duration = const Duration(milliseconds: 900),
+    this.style,
+    this.suffix = '',
+    this.prefix = '',
+    super.key,
+  });
+
+  final int value;
+  final Duration duration;
+  final TextStyle? style;
+  final String suffix;
+  final String prefix;
+
+  @override
+  State<AnimatedCounter> createState() => _AnimatedCounterState();
+}
+
+class _AnimatedCounterState extends State<AnimatedCounter>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+  int _lastValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(duration: widget.duration, vsync: this);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    _ctrl.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant AnimatedCounter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _lastValue = oldWidget.value;
+      _ctrl.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, _) {
+        final current = (_lastValue + (widget.value - _lastValue) * _anim.value).round();
+        return Text(
+          '${widget.prefix}$current${widget.suffix}',
+          style: widget.style,
+        );
+      },
+    );
+  }
+}
+
+/// Botão com scale down ao pressionar (micro-interação moderna).
+/// Envolve qualquer botão Material para dar feedback tátil visual.
+class TapScale extends StatefulWidget {
+  const TapScale({
+    required this.child,
+    this.scaleDown = 0.95,
+    this.duration = const Duration(milliseconds: 100),
+    super.key,
+  });
+
+  final Widget child;
+  final double scaleDown;
+  final Duration duration;
+
+  @override
+  State<TapScale> createState() => _TapScaleState();
+}
+
+class _TapScaleState extends State<TapScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? widget.scaleDown : 1.0,
+        duration: widget.duration,
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Fade-in escalonado para listas — cada item aparece com delay progressivo.
+/// Mais simples que AnimatedList para casos estáticos.
+class StaggeredListView extends StatelessWidget {
+  const StaggeredListView({
+    required this.children,
+    this.itemDelay = const Duration(milliseconds: 60),
+    this.initialDelay = const Duration(milliseconds: 80),
+    super.key,
+  });
+
+  final List<Widget> children;
+  final Duration itemDelay;
+  final Duration initialDelay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (var i = 0; i < children.length; i++)
+          _StaggeredItem(
+            delay: initialDelay + itemDelay * i,
+            child: children[i],
+          ),
+      ],
+    );
+  }
+}
+
+class _StaggeredItem extends StatefulWidget {
+  const _StaggeredItem({required this.delay, required this.child});
+  final Duration delay;
+  final Widget child;
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _offset = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+
+    Future.delayed(widget.delay, () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(
+        position: _offset,
+        child: widget.child,
       ),
     );
   }

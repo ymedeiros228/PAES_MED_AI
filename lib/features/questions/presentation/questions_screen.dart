@@ -326,12 +326,20 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   spacing: 8,
                   alignment: WrapAlignment.center,
                   children: [
-                    FilledButton(
-                      onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                      child: const Text('Tentar de novo'),
+                    TapScale(
+                      child: FilledButton(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          ref.read(refreshTickProvider.notifier).state++;
+                        },
+                        child: const Text('Tentar de novo'),
+                      ),
                     ),
                     TextButton(
-                      onPressed: () => context.go('/biblioteca'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go('/biblioteca');
+                      },
                       child: const Text('Biblioteca'),
                     ),
                   ],
@@ -357,27 +365,43 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       alignment: WrapAlignment.center,
                       children: [
                         if (page > 0)
-                          TextButton(onPressed: _prevPage, child: const Text('Página anterior')),
+                          TextButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _prevPage();
+                            },
+                            child: const Text('Página anterior'),
+                          ),
                         if (subject != null ||
                             topic != null ||
                             examBoard != null ||
                             officialWithGab ||
                             source != null)
-                          FilledButton.tonal(
-                            onPressed: () => _resetPage(() {
-                              subject = null;
-                              topic = null;
-                              examBoard = null;
-                              source = null;
-                              officialWithGab = false;
-                              difficulty = null;
-                              year = null;
-                            }),
-                            child: const Text('Limpar filtros'),
+                          TapScale(
+                            child: FilledButton.tonal(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                _resetPage(() {
+                                  subject = null;
+                                  topic = null;
+                                  examBoard = null;
+                                  source = null;
+                                  officialWithGab = false;
+                                  difficulty = null;
+                                  year = null;
+                                });
+                              },
+                              child: const Text('Limpar filtros'),
+                            ),
                           ),
-                        FilledButton(
-                          onPressed: () => context.go('/biblioteca'),
-                          child: const Text('Biblioteca'),
+                        TapScale(
+                          child: FilledButton(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              context.go('/biblioteca');
+                            },
+                            child: const Text('Biblioteca'),
+                          ),
                         ),
                       ],
                     ),
@@ -401,21 +425,24 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             examBoard: q.examBoard,
                           );
                           final subjStyle = subjectStyle(q.subject);
-                          return PlaylistTile(
-                            title: '${q.subject} · ${q.topic}',
-                            subtitle: () {
-                              final st = q.statement;
-                              final short = st.length > 90 ? '${st.substring(0, 90)}…' : st;
-                              return '${q.year} · ${q.difficulty} · $short';
-                            }(),
-                            badge: badge,
-                            badgeColor: subjStyle.color.f22,
-                            leadingIcon: subjStyle.icon,
-                            active: i == selected,
-                            onPlay: () {
-                              setState(() => selected = i);
-                              context.go('/questoes/${q.id}');
-                            },
+                          return _StaggeredItem(
+                            index: i,
+                            child: PlaylistTile(
+                              title: '${q.subject} · ${q.topic}',
+                              subtitle: () {
+                                final st = q.statement;
+                                final short = st.length > 90 ? '${st.substring(0, 90)}…' : st;
+                                return '${q.year} · ${q.difficulty} · $short';
+                              }(),
+                              badge: badge,
+                              badgeColor: subjStyle.color.f22,
+                              leadingIcon: subjStyle.icon,
+                              active: i == selected,
+                              onPlay: () {
+                                setState(() => selected = i);
+                                context.go('/questoes/${q.id}');
+                              },
+                            ),
                           );
                         },
                       ),
@@ -423,25 +450,51 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: page == 0 ? null : _prevPage,
-                            child: const Text('Anterior'),
-                          ),
-                          Text(
-                            'Página ${page + 1} · ${selected + 1} de ${items.length}',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: cs.onSurface.f72,
+                      child: SurfacePanel(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton.icon(
+                              onPressed: page == 0
+                                  ? null
+                                  : () {
+                                      HapticFeedback.selectionClick();
+                                      _prevPage();
+                                    },
+                              icon: const Icon(Icons.chevron_left_rounded, size: 20),
+                              label: const Text('Anterior'),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: items.length < pageSize ? null : _nextPage,
-                            child: const Text('Próxima'),
-                          ),
-                        ],
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                'Página ${page + 1} · ${selected + 1} de ${items.length}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: cs.onSurface.f72,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: items.length < pageSize
+                                  ? null
+                                  : () {
+                                      HapticFeedback.selectionClick();
+                                      _nextPage();
+                                    },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('Próxima'),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.chevron_right_rounded, size: 20, color: cs.primary),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -467,5 +520,61 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     final src = (source ?? '').toLowerCase();
     if (src.contains('pdf') || src.contains('oficial') || src.contains('ingest')) return 'oficial';
     return 'treino';
+  }
+}
+
+/// Wrapper que aplica fade-in + slide-up escalonado por índice.
+/// Compatível com ListView.builder — cada item anima ao entrar na viewport.
+class _StaggeredItem extends StatefulWidget {
+  const _StaggeredItem({required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutQuart));
+
+    // Delay escalonado — capado em 6 itens para não atrasar muito em listas longas
+    final delay = Duration(milliseconds: 50 * (widget.index.clamp(0, 6)));
+    Future.delayed(delay, () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: widget.child,
+      ),
+    );
   }
 }
