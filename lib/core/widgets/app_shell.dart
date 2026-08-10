@@ -180,7 +180,10 @@ class AppShell extends ConsumerWidget {
                               expanded: expanded,
                               selected: location == item.path || location.startsWith('${item.path}/'),
                               badge: item.path == '/configuracoes' && examSyncPending,
-                              onTap: () => context.go(item.path),
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                context.go(item.path);
+                              },
                             ),
                         ],
                       ],
@@ -348,8 +351,10 @@ class AppShell extends ConsumerWidget {
                     ),
                   NavigationBar(
                     selectedIndex: index.clamp(0, (items.length - 1).clamp(0, 4)),
-                    onDestinationSelected: (value) =>
-                        context.go(items[value.clamp(0, items.length - 1)].path),
+                    onDestinationSelected: (value) {
+                      HapticFeedback.selectionClick();
+                      context.go(items[value.clamp(0, items.length - 1)].path);
+                    },
                     destinations: [
                       for (final item in items.take(5))
                         NavigationDestination(
