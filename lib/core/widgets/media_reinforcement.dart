@@ -114,7 +114,7 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
             style: Theme.of(ctx).textTheme.titleSmall,
           ),
           if (disclaimer != null && disclaimer.isNotEmpty)
-            Text(disclaimer, style: Theme.of(ctx).textTheme.bodySmall),
+            SelectableText(disclaimer, style: Theme.of(ctx).textTheme.bodySmall),
           for (final raw in items.take(5))
             ListTile(
               title: Text(raw['title']?.toString() ?? (isVideo ? 'Vídeo' : 'Leitura')),

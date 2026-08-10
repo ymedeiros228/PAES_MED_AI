@@ -141,7 +141,7 @@ Future<void> openTheoryReadSheet(
                       ),
                     if (note != null && note.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text(note, style: Theme.of(ctx).textTheme.bodySmall),
+                      SelectableText(note, style: Theme.of(ctx).textTheme.bodySmall),
                     ],
                     if (items.isEmpty) ...[
                       const SizedBox(height: 16),
@@ -274,7 +274,7 @@ Future<void> openTheoryReadSheet(
                       const SizedBox(height: 16),
                       Text('Leituras de reforço', style: Theme.of(ctx).textTheme.titleSmall),
                       if (artDisclaimer != null)
-                        Text(artDisclaimer, style: Theme.of(ctx).textTheme.bodySmall),
+                        SelectableText(artDisclaimer, style: Theme.of(ctx).textTheme.bodySmall),
                       for (final raw in articles.take(5))
                         ListTile(
                           contentPadding: EdgeInsets.zero,
