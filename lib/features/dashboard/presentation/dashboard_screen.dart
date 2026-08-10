@@ -28,10 +28,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String? checkpointLoadError;
   bool showFirstRunCoach = false;
   final _focusNode = FocusNode();
+  // Futures cached para evitar recriar a cada rebuild (performance)
+  late final Future<dynamic> _essayProgressFuture;
+  late final Future<dynamic> _backupLastFuture;
 
   @override
   void initState() {
     super.initState();
+    _essayProgressFuture = apiClient.get('/api/essays/progress');
+    _backupLastFuture = apiClient.get('/api/backup/last');
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -574,7 +579,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           FutureBuilder(
-                            future: apiClient.get('/api/essays/progress'),
+                            future: _essayProgressFuture,
                             builder: (context, snap) {
                               if (snap.connectionState == ConnectionState.waiting) {
                                 return const CompactStatus(
@@ -666,7 +671,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 },
                               ),
                               FutureBuilder(
-                                future: apiClient.get('/api/backup/last'),
+                                future: _backupLastFuture,
                                 builder: (context, snap) {
                                   if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
                                   final last = Map<String, dynamic>.from(snap.data as Map);

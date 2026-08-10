@@ -32,10 +32,15 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   List<String> _navPaths = const [];
   String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
   bool gapsOnlyNoMaterial = false;
+  // Futures cached para evitar recriar a cada rebuild
+  late final Future<dynamic> _checkpointFuture;
+  late final Future<dynamic> _essayProgressFuture;
 
   @override
   void initState() {
     super.initState();
+    _checkpointFuture = apiClient.get('/api/session/checkpoint');
+    _essayProgressFuture = apiClient.get('/api/essays/progress');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -291,7 +296,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   ),
                 ),
                 FutureBuilder(
-                  future: apiClient.get('/api/session/checkpoint'),
+                  future: _checkpointFuture,
                   builder: (context, snap) {
                     final cp = snap.hasData ? (snap.data as Map)['checkpoint'] : null;
                     if (cp is! Map || cp['started'] != true) return const SizedBox.shrink();
@@ -656,7 +661,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                 ),
 
                 FutureBuilder(
-                  future: apiClient.get('/api/essays/progress'),
+                  future: _essayProgressFuture,
                   builder: (context, snap) {
                     if (snap.connectionState == ConnectionState.waiting) {
                       return const CompactStatus(
