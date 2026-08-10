@@ -373,7 +373,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
               children: [
                 if (!hasGab)
                   Material(
-                    color: Colors.orange.shade50,
+                    color: Theme.of(context).colorScheme.tertiaryContainer.f45,
                     child: Padding(
                       padding: const EdgeInsets.all(10),
                       child: Row(
@@ -383,7 +383,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                               'Sem gabarito aplicado (0/${questions.length}). '
                               'Coloque o gabarito do ano na pasta Gabaritos ou marque as respostas. '
                               'Gravar fica desativado para não inventar acertos.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.orange.shade900),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary),
                             ),
                           ),
                         ],
@@ -392,12 +392,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                   )
                 else
                   Material(
-                    color: Colors.green.shade50,
+                    color: Theme.of(context).colorScheme.primaryContainer.f45,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       child: Text(
                         'Gabarito: $_gabaritoAppliedCount/${questions.length} · altas conf. $highN',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.green.shade900),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer),
                       ),
                     ),
                   ),
@@ -411,14 +411,14 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                     children: [
                       if (needsOcr || ocrFailed)
                         Material(
-                          color: Colors.orange.shade50,
+                          color: Theme.of(context).colorScheme.tertiaryContainer.f45,
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: Text(
                               ocrFailed
                                   ? 'A leitura automática falhou ou está indisponível. Revise o texto manualmente.'
                                   : 'O PDF parece escaneado. Confirme os enunciados e revise o texto antes de importar.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.orange.shade900),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary),
                             ),
                           ),
                         ),
@@ -436,12 +436,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             if (unmatchedQ.isNotEmpty)
                               Text(
                                 'Sem gabarito: ${unmatchedQ.take(12).join(', ')}${unmatchedQ.length > 12 ? '…' : ''}',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.orange.shade800),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onTertiaryContainer),
                               ),
                             if (unmatchedA.isNotEmpty)
                               Text(
                                 'Gabarito sem questão: ${unmatchedA.take(12).join(', ')}${unmatchedA.length > 12 ? '…' : ''}',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.orange.shade800),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onTertiaryContainer),
                               ),
                             FilterChip(
                               label: Text(filterSuspects ? 'Só duvidosas ($suspects)' : 'Todas'),
@@ -465,9 +465,9 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             return ListTile(
                               selected: i == index,
                               dense: true,
-                              tileColor: suspect ? Colors.orange.shade50 : null,
+                              tileColor: suspect ? Theme.of(context).colorScheme.tertiaryContainer.f45 : null,
                               leading: suspect
-                                  ? Icon(Icons.warning_amber, color: Colors.orange.shade800, size: 18)
+                                  ? Icon(Icons.warning_amber, color: Theme.of(context).colorScheme.onTertiaryContainer, size: 18)
                                   : const Icon(Icons.check_circle_outline, color: AppTheme.teal, size: 18),
                               title: Text('Q${q['number'] ?? i + 1}'),
                               subtitle: Text(
@@ -491,7 +491,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       if (_isSuspect(current))
                         SurfacePanel(
                           padding: EdgeInsets.zero,
-                          color: Colors.orange.shade50,
+                          color: Theme.of(context).colorScheme.tertiaryContainer.f45,
                           child: const ListTile(
                             leading: Icon(Icons.priority_high),
                             title: Text('Revisar com atenção'),
@@ -506,7 +506,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         'Confiança parse: ${((current['parseConfidence'] as num?)?.toDouble() ?? 0) * 100 ~/ 1}%'
                         '${current['gabaritoApplied'] == true ? ' · gabarito OK' : ' · gabarito NÃO aplicado'}',
                         style: TextStyle(
-                          color: _isSuspect(current) ? Colors.orange.shade800 : AppTheme.teal,
+                          color: _isSuspect(current) ? Theme.of(context).colorScheme.onTertiaryContainer : AppTheme.teal,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

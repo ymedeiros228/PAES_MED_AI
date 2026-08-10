@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -177,10 +178,25 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     action: Wrap(
                       spacing: 8,
                       children: [
-                        TextButton(onPressed: _load, child: const Text('Tentar')),
-                        TextButton(onPressed: () => context.go('/fila'), child: const Text('Fila')),
                         TextButton(
-                          onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            _load();
+                          },
+                          child: const Text('Tentar'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/fila');
+                          },
+                          child: const Text('Fila'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                          },
                           child: const Text('Sessão'),
                         ),
                       ],
@@ -215,10 +231,19 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         spacing: 8,
                         children: [
                           FilledButton(
-                            onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                            },
                             child: const Text('Sessão'),
                           ),
-                          TextButton(onPressed: () => context.go('/redacao'), child: const Text('Redação')),
+                          TextButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              context.go('/redacao');
+                            },
+                            child: const Text('Redação'),
+                          ),
                         ],
                       ),
                     )
@@ -357,18 +382,27 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     runSpacing: 8,
                     children: [
                       FilledButton(
-                        onPressed: () => context.go(
-                          data?['sessionPath']?.toString() ??
-                              '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
-                        ),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go(
+                            data?['sessionPath']?.toString() ??
+                                '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                          );
+                        },
                         child: const Text('Sessão UEMA'),
                       ),
                       OutlinedButton(
-                        onPressed: () => context.go(data?['essayPath']?.toString() ?? '/redacao'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go(data?['essayPath']?.toString() ?? '/redacao');
+                        },
                         child: const Text('Redação'),
                       ),
                       TextButton(
-                        onPressed: () => context.go(data?['queuePath']?.toString() ?? '/fila'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go(data?['queuePath']?.toString() ?? '/fila');
+                        },
                         child: const Text('Fila'),
                       ),
                     ],
