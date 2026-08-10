@@ -771,78 +771,76 @@ class _ConstellationMapState extends State<ConstellationMap>
     final activeCount = widget.activeDays.where((a) => a).length;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF0A0E27),
-            const Color(0xFF1A1F3A),
-            const Color(0xFF0D1126),
+            const Color(0xFF080B1F),
+            const Color(0xFF11142E),
+            const Color(0xFF0A0D20),
           ],
         ),
         borderRadius: BorderRadius.circular(kRadiusPanel),
-        border: Border.all(color: lineColor.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: starColor.withOpacity(0.15), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho com título e nível
+          // Cabeçalho minimalista
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AnimatedBuilder(
-                animation: _twinkle,
-                builder: (context, _) {
-                  final t = 0.5 + 0.5 * _twinkle.value;
-                  return Icon(
-                    Icons.auto_awesome,
-                    size: 20,
-                    color: starColor.withOpacity(0.6 + 0.4 * t),
-                  );
-                },
-              ),
-              const SizedBox(width: 8),
+              // Título do nível com fonte serif elegante
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: starColor,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
+                      style: const TextStyle(
+                        fontFamily: 'Georgia',
+                        fontFamilyFallback: ['Times New Roman', 'serif'],
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFF0F2F8),
+                        letterSpacing: 0.3,
+                        height: 1.2,
+                      ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       hint,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.5),
-                          ),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.white.withOpacity(0.42),
+                        height: 1.3,
+                        letterSpacing: 0.1,
+                      ),
                     ),
                   ],
                 ),
               ),
-              // Badge de streak
+              // Badge de streak minimalista
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: starColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: starColor.withOpacity(0.4)),
+                  color: starColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: starColor.withOpacity(0.3), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.local_fire_department, size: 14, color: starColor),
-                    const SizedBox(width: 4),
+                    Icon(Icons.local_fire_department_rounded, size: 13, color: starColor),
+                    const SizedBox(width: 3),
                     Text(
                       '${widget.streakDays}d',
                       style: TextStyle(
                         color: starColor,
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 12.5,
                       ),
                     ),
                   ],
@@ -850,10 +848,10 @@ class _ConstellationMapState extends State<ConstellationMap>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           // Céu estrelado
           SizedBox(
-            height: rows * 38.0,
+            height: rows * 36.0,
             child: CustomPaint(
               painter: _ConstellationPainter(
                 activeDays: widget.activeDays,
@@ -869,9 +867,10 @@ class _ConstellationMapState extends State<ConstellationMap>
               child: const SizedBox.expand(),
             ),
           ),
-          const SizedBox(height: 12),
-          // Rodapé com estatísticas
+          const SizedBox(height: 10),
+          // Rodapé com estatísticas — mais limpo e espaçado
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _StatChip(
                 icon: Icons.star_rounded,
@@ -879,14 +878,12 @@ class _ConstellationMapState extends State<ConstellationMap>
                 label: 'estrelas',
                 color: starColor,
               ),
-              const SizedBox(width: 12),
               _StatChip(
                 icon: Icons.whatshot_rounded,
                 value: '${widget.streakDays}',
                 label: 'streak',
                 color: starColor,
               ),
-              const SizedBox(width: 12),
               _StatChip(
                 icon: Icons.gps_fixed_rounded,
                 value: '${(widget.accuracy * 100).toStringAsFixed(0)}%',
@@ -919,22 +916,23 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color.withOpacity(0.7)),
-        const SizedBox(width: 4),
+        Icon(icon, size: 13, color: color.withOpacity(0.6)),
+        const SizedBox(width: 5),
         Text(
           value,
           style: TextStyle(
-            color: color,
+            color: const Color(0xFFF0F2F8),
             fontWeight: FontWeight.w700,
             fontSize: 13,
           ),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 4),
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withOpacity(0.35),
             fontSize: 11,
+            fontWeight: FontWeight.w400,
           ),
         ),
       ],
@@ -971,7 +969,7 @@ class _ConstellationPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cellW = size.width / cols;
     final cellH = size.height / rows;
-    final starRadius = (cellW * 0.16).clamp(3.0, 7.0);
+    final starRadius = (cellW * 0.14).clamp(2.5, 6.0);
 
     // Nebulosa sutil de fundo para profundidade
     _drawNebula(canvas, size);
@@ -996,11 +994,11 @@ class _ConstellationPainter extends CustomPainter {
       final center = Offset(cx, cy);
 
       if (!activeDays[i]) {
-        // Dia inativo: ponto pequeno e escuro
+        // Dia inativo: ponto minúsculo e discreto
         final paint = Paint()
-          ..color = Colors.white.withOpacity(0.06)
+          ..color = Colors.white.withOpacity(0.05)
           ..style = PaintingStyle.fill;
-        canvas.drawCircle(center, starRadius * 0.3, paint);
+        canvas.drawCircle(center, starRadius * 0.25, paint);
       }
     }
 
@@ -1048,9 +1046,9 @@ class _ConstellationPainter extends CustomPainter {
 
       // Brilho central branco
       final whitePaint = Paint()
-        ..color = Colors.white.withOpacity(0.85 * intensity)
+        ..color = Colors.white.withOpacity(0.9 * intensity)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, starRadius * 0.3 * twinkle, whitePaint);
+      canvas.drawCircle(pos, starRadius * 0.28 * twinkle, whitePaint);
     }
   }
 
@@ -1060,14 +1058,14 @@ class _ConstellationPainter extends CustomPainter {
     final nebula1Paint = Paint()
       ..shader = RadialGradient(
         colors: [
-          lineColor.withOpacity(0.06),
-          lineColor.withOpacity(0.02),
+          lineColor.withOpacity(0.04),
+          lineColor.withOpacity(0.01),
           lineColor.withOpacity(0),
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(
-        center: Offset(size.width * 0.2, size.height * 0.15),
-        radius: size.width * 0.5,
+        center: Offset(size.width * 0.15, size.height * 0.1),
+        radius: size.width * 0.45,
       ));
     canvas.drawRect(Offset.zero & size, nebula1Paint);
 
@@ -1075,14 +1073,14 @@ class _ConstellationPainter extends CustomPainter {
     final nebula2Paint = Paint()
       ..shader = RadialGradient(
         colors: [
-          starColor.withOpacity(0.04),
-          starColor.withOpacity(0.01),
+          starColor.withOpacity(0.03),
+          starColor.withOpacity(0.008),
           starColor.withOpacity(0),
         ],
         stops: const [0.0, 0.6, 1.0],
       ).createShader(Rect.fromCircle(
-        center: Offset(size.width * 0.8, size.height * 0.85),
-        radius: size.width * 0.4,
+        center: Offset(size.width * 0.85, size.height * 0.9),
+        radius: size.width * 0.35,
       ));
     canvas.drawRect(Offset.zero & size, nebula2Paint);
   }
@@ -1127,8 +1125,8 @@ class _ConstellationPainter extends CustomPainter {
 
     // Anima a linha crescendo com um PathMetric
     final paint = Paint()
-      ..color = lineColor.withOpacity(0.2 * grow)
-      ..strokeWidth = 1.0
+      ..color = lineColor.withOpacity(0.15 * grow)
+      ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -1156,13 +1154,13 @@ class _ConstellationPainter extends CustomPainter {
     if (intensity <= 0) return;
 
     // Camada externa: glow amplo e suave
-    final outerRadius = radius * 3.5 * intensity;
+    final outerRadius = radius * 3.0 * intensity;
     if (outerRadius > 0.5) {
       final outerPaint = Paint()
         ..shader = RadialGradient(
           colors: [
-            color.withOpacity(0.15 * intensity),
-            color.withOpacity(0.05 * intensity),
+            color.withOpacity(0.10 * intensity),
+            color.withOpacity(0.03 * intensity),
             color.withOpacity(0),
           ],
           stops: const [0.0, 0.4, 1.0],
@@ -1171,12 +1169,12 @@ class _ConstellationPainter extends CustomPainter {
     }
 
     // Camada interna: glow mais concentrado
-    final innerRadius = radius * 1.8 * intensity;
+    final innerRadius = radius * 1.5 * intensity;
     if (innerRadius > 0.5) {
       final innerPaint = Paint()
         ..shader = RadialGradient(
           colors: [
-            color.withOpacity(0.35 * intensity),
+            color.withOpacity(0.25 * intensity),
             color.withOpacity(0),
           ],
         ).createShader(Rect.fromCircle(center: pos, radius: innerRadius));
@@ -1893,11 +1891,21 @@ class StatementView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final paragraphs = _splitParagraphs(text);
 
+    // Estilo serif para enunciados — leitura mais confortável, como livro
+    final statementStyle = TextStyle(
+      fontFamily: 'Georgia',
+      fontFamilyFallback: const ['Times New Roman', 'Liberation Serif', 'serif'],
+      fontSize: 15.5,
+      height: 1.62,
+      letterSpacing: 0.15,
+      color: cs.onSurface,
+    );
+
     if (paragraphs.length <= 1) {
       // Texto curto: SelectableText simples em container
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: cs.surfaceContainerHigh.f38,
           borderRadius: BorderRadius.circular(kRadiusPanel),
@@ -1905,7 +1913,7 @@ class StatementView extends StatelessWidget {
         ),
         child: SelectableText(
           text,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+          style: statementStyle,
           contextMenuBuilder: (context, editableTextState) =>
               AdaptiveTextSelectionToolbar.editableText(
             editableTextState: editableTextState,
@@ -1917,7 +1925,7 @@ class StatementView extends StatelessWidget {
     // Múltiplos parágrafos: container com cada parágrafo separado
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh.f38,
         borderRadius: BorderRadius.circular(kRadiusPanel),
@@ -1927,10 +1935,10 @@ class StatementView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < paragraphs.length; i++) ...[
-            if (i > 0) const SizedBox(height: 10),
+            if (i > 0) const SizedBox(height: 12),
             SelectableText(
               paragraphs[i],
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+              style: statementStyle,
               contextMenuBuilder: (context, editableTextState) =>
                   AdaptiveTextSelectionToolbar.editableText(
                 editableTextState: editableTextState,
@@ -2266,7 +2274,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
                 color: bg,
                 borderRadius: BorderRadius.circular(kRadiusButton),
@@ -2300,26 +2308,34 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: Text(
+                    child: SelectableText(
                       widget.label,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            height: 1.35,
+                            height: 1.45,
+                            fontSize: 14,
                             color: widget.revealCorrect == true
                                 ? cs.onPrimaryContainer
                                 : null,
                             fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
                           ),
+                      contextMenuBuilder: (context, editableTextState) =>
+                          AdaptiveTextSelectionToolbar.editableText(
+                        editableTextState: editableTextState,
+                      ),
                     ),
                   ),
                   // Ícone de feedback (certo/errado) ao revelar gabarito
                   if (trailingIcon != null) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      trailingIcon,
-                      size: 22,
-                      color: widget.revealCorrect == true ? cs.primary : cs.error,
+                    const SizedBox(width: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        trailingIcon,
+                        size: 20,
+                        color: widget.revealCorrect == true ? cs.primary : cs.error,
+                      ),
                     ),
                   ],
                 ],

@@ -379,13 +379,21 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
 
     final cs = Theme.of(context).colorScheme;
     final questionPane = ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       children: [
-        Text('${q.subject} · ${q.topic} · ${q.year}', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          '${q.subject} · ${q.topic} · ${q.year}',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+        ),
+        const SizedBox(height: 2),
         Text(
           kSoftAtalhosHint,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurface.f72,
+                color: cs.onSurface.f60,
+                fontSize: 11.5,
               ),
         ),
         if (saveError != null) ...[
@@ -457,7 +465,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           ),
         const SizedBox(height: 12),
         // StatementView formata o enunciado em parágrafos legíveis
-        StatementView(text: q.statement),
+        StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement),
         const SizedBox(height: 16),
         for (var i = 0; i < q.options.length; i++)
           ChoiceOptionTile(

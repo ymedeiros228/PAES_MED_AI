@@ -1342,6 +1342,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             if ((isQuestions || (isRevisions && revisionUsingQuestions)) && sessionQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
               SurfacePanel(
+                key: ValueKey('question_panel_$qIndex'),
                 padding: const EdgeInsets.all(18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1372,12 +1373,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 760),
                   child: StatementView(
+                    key: ValueKey('statement_$qIndex'),
                     text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               StaggeredFadeIn(
+                key: ValueKey('options_$qIndex'),
                 children: [
                   for (var i = 0; i < (sessionQuestions[qIndex]['options'] as List? ?? []).length; i++)
                     Builder(
