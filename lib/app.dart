@@ -50,81 +50,87 @@ final appRouter = GoRouter(
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
-        GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
-        GoRoute(path: '/fila', builder: (_, __) => const TodayQueueScreen()),
-        GoRoute(path: '/sessao', builder: (context, state) {
+        GoRoute(
+          path: '/dashboard',
+          pageBuilder: (_, __) => _fadePage(const DashboardScreen()),
+        ),
+        GoRoute(
+          path: '/fila',
+          pageBuilder: (_, __) => _fadePage(const TodayQueueScreen()),
+        ),
+        GoRoute(path: '/sessao', pageBuilder: (context, state) {
           final yearRaw = state.uri.queryParameters['year'];
           final natRaw = state.uri.queryParameters['preferNatureza'];
           bool? preferNatureza;
           if (natRaw == '1' || natRaw == 'true') preferNatureza = true;
           if (natRaw == '0' || natRaw == 'false') preferNatureza = false;
-          return GuidedSessionScreen(
+          return _fadePage(GuidedSessionScreen(
             examBoard: state.uri.queryParameters['examBoard'],
             year: yearRaw == null ? null : int.tryParse(yearRaw),
             preferNatureza: preferNatureza,
             subject: state.uri.queryParameters['subject'],
             topic: state.uri.queryParameters['topic'],
-          );
+          ));
         }),
         GoRoute(
           path: '/adaptativo',
-          builder: (context, state) => AdaptiveTrainingScreen(
+          pageBuilder: (context, state) => _fadePage(AdaptiveTrainingScreen(
             initialSubject: state.uri.queryParameters['subject'],
             initialTopic: state.uri.queryParameters['topic'],
-          ),
+          )),
         ),
         GoRoute(
           path: '/questoes',
-          builder: (context, state) => QuestionsScreen(
+          pageBuilder: (context, state) => _fadePage(QuestionsScreen(
             initialSubject: state.uri.queryParameters['subject'],
             initialTopic: state.uri.queryParameters['topic'],
             initialExamBoard: state.uri.queryParameters['examBoard'],
-          ),
+          )),
         ),
         GoRoute(
           path: '/questoes/:id',
-          builder: (_, state) => QuestionDetailScreen(questionId: state.pathParameters['id']!),
+          pageBuilder: (_, state) => _fadePage(QuestionDetailScreen(questionId: state.pathParameters['id']!)),
         ),
-        GoRoute(path: '/simulados', builder: (_, __) => const SimulationsScreen()),
-        GoRoute(path: '/cronograma', builder: (_, __) => const StudyPlanScreen()),
-        GoRoute(path: '/revisoes', builder: (_, __) => const RevisionsScreen()),
+        GoRoute(path: '/simulados', pageBuilder: (_, __) => _fadePage(const SimulationsScreen())),
+        GoRoute(path: '/cronograma', pageBuilder: (_, __) => _fadePage(const StudyPlanScreen())),
+        GoRoute(path: '/revisoes', pageBuilder: (_, __) => _fadePage(const RevisionsScreen())),
         GoRoute(
           path: '/flashcards',
-          builder: (_, state) {
+          pageBuilder: (_, state) {
             final due = state.uri.queryParameters['due'];
             final dueOnly = due != '0' && due != 'false';
-            return FlashcardsScreen(dueOnlyInitial: dueOnly);
+            return _fadePage(FlashcardsScreen(dueOnlyInitial: dueOnly));
           },
         ),
-        GoRoute(path: '/medicina', builder: (_, __) => const MedicineScreen()),
-        GoRoute(path: '/progresso', builder: (_, __) => const ProgressScreen()),
-        GoRoute(path: '/banca', builder: (_, __) => const BankProfileScreen()),
-        GoRoute(path: '/biblioteca', builder: (_, __) => const LibraryScreen()),
+        GoRoute(path: '/medicina', pageBuilder: (_, __) => _fadePage(const MedicineScreen())),
+        GoRoute(path: '/progresso', pageBuilder: (_, __) => _fadePage(const ProgressScreen())),
+        GoRoute(path: '/banca', pageBuilder: (_, __) => _fadePage(const BankProfileScreen())),
+        GoRoute(path: '/biblioteca', pageBuilder: (_, __) => _fadePage(const LibraryScreen())),
         GoRoute(
           path: '/biblioteca/revisao',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final extra = state.extra;
             if (extra is IngestReviewArgs) {
-              return IngestReviewScreen(args: extra);
+              return _fadePage(IngestReviewScreen(args: extra));
             }
-            return const _RevisaoRedirect();
+            return _fadePage(const _RevisaoRedirect());
           },
         ),
-        GoRoute(path: '/aulas', builder: (_, __) => const LessonsScreen()),
-        GoRoute(path: '/redacao', builder: (_, __) => const EssayScreen()),
-        GoRoute(path: '/aprovacao', builder: (_, __) => const ApprovalScreen()),
+        GoRoute(path: '/aulas', pageBuilder: (_, __) => _fadePage(const LessonsScreen())),
+        GoRoute(path: '/redacao', pageBuilder: (_, __) => _fadePage(const EssayScreen())),
+        GoRoute(path: '/aprovacao', pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
         GoRoute(
           path: '/tutor',
-          builder: (_, state) {
+          pageBuilder: (_, state) {
             final q = state.uri.queryParameters;
-            return AiTutorScreen(
+            return _fadePage(AiTutorScreen(
               seedSubject: q['subject'],
               seedTopic: q['topic'],
               seedQuery: q['q'],
-            );
+            ));
           },
         ),
-        GoRoute(path: '/configuracoes', builder: (_, __) => const SettingsScreen()),
+        GoRoute(path: '/configuracoes', pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
       ],
     ),
   ],
@@ -164,6 +170,26 @@ final appRouter = GoRouter(
     ),
   ),
 );
+
+/// Cria uma CustomTransitionPage com fade suave (250ms) para transições
+/// entre telas dentro do ShellRoute. Mais sutil que o slide padrão do
+/// Material, evitando "flicker" ao trocar de aba no NavigationBar.
+CustomTransitionPage<void> _fadePage(Widget child) {
+  return CustomTransitionPage(
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        ),
+        child: child,
+      );
+    },
+  );
+}
 
 class PaesMedAiApp extends ConsumerWidget {
   const PaesMedAiApp({super.key});
