@@ -450,6 +450,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
+                          // Anel de progresso do dia
+                          _DayProgressRing(
+                            sessionDone: checklist['session'] == true,
+                            cardsDone: checklist['cards'] == true,
+                            revisionsDone: checklist['revisions'] == true,
+                            dayClosed: dayClosed,
+                          ),
+                          const SizedBox(height: 4),
                           StudyCheckRow(
                             done: checklist['session'] == true,
                             label: 'Sessão (~15+ min)',
@@ -931,6 +939,151 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         );
       },
+    );
+  }
+}
+
+/// Anel de progresso circular do dia — mostra visualmente quantos itens
+/// do checklist foram concluídos (sessão, cartões, revisões, encerrar dia).
+class _DayProgressRing extends StatefulWidget {
+  const _DayProgressRing({
+    required this.sessionDone,
+    required this.cardsDone,
+    required this.revisionsDone,
+    required this.dayClosed,
+  });
+
+  final bool sessionDone;
+  final bool cardsDone;
+  final bool revisionsDone;
+  final bool dayClosed;
+
+  @override
+  State<_DayProgressRing> createState() => _DayProgressRingState();
+}
+
+class _DayProgressRingState extends State<_DayProgressRing>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(_DayProgressRing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sessionDone != widget.sessionDone ||
+        oldWidget.cardsDone != widget.cardsDone ||
+        oldWidget.revisionsDone != widget.revisionsDone ||
+        oldWidget.dayClosed != widget.dayClosed) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    // 4 itens no checklist
+    final doneCount = [
+      widget.sessionDone,
+      widget.cardsDone,
+      widget.revisionsDone,
+      widget.dayClosed,
+    ].where((d) => d).length;
+    final total = 4;
+    final targetProgress = doneCount / total;
+
+    // Mensagem motivacional baseada no progresso
+    final message = switch (doneCount) {
+      0 => 'Bom começo! Que tal uma sessão?',
+      1 => 'Já começou — siga assim.',
+      2 => 'Metade do caminho. Continue.',
+      3 => 'Quase lá — só falta encerrar.',
+      _ => 'Dia completo. Descanse.',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          // Anel circular animado
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: targetProgress),
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) {
+              return SizedBox(
+                width: 56,
+                height: 56,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Trilha de fundo
+                    CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 5,
+                      color: cs.surfaceContainerHighest,
+                    ),
+                    // Progresso
+                    CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 5,
+                      color: doneCount == total ? cs.primary : cs.tertiary,
+                      strokeCap: StrokeCap.round,
+                    ),
+                    // Texto central
+                    Center(
+                      child: Text(
+                        '$doneCount/$total',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                if (doneCount == total)
+                  Text(
+                    'Dia encerrado — volte amanhã',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
