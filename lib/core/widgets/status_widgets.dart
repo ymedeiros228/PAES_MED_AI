@@ -208,10 +208,11 @@ class EmptyState extends StatelessWidget {
                 Text(
                   subtitle,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurface.f72,
-                        height: 1.4,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: cs.onSurface.f72,
+                    height: 1.4,
+                  ),
                 ),
                 if (cta != null) ...[const SizedBox(height: 20), cta],
               ],

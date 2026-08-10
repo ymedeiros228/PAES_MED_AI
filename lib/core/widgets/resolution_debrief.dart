@@ -50,10 +50,11 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               t,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                    color: cs.onPrimaryContainer,
-                  ),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.6,
+                color: cs.onPrimaryContainer,
+              ),
             ),
           ],
         ),
@@ -109,15 +110,16 @@ class ResolutionDebrief extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (!isReal)
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Isto não é texto oficial da banca nem aula fechada — só apoio didático local.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onPrimaryContainer.withOpacity(0.7),
-                    ),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: cs.onPrimaryContainer.withOpacity(0.7),
+                ),
               ),
             ),
           if (isReal) ...[
@@ -129,7 +131,7 @@ class ResolutionDebrief extends StatelessWidget {
                 resolution.trim().isNotEmpty)
               SelectableText(
                 resolution,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+                style: GoogleFonts.inter(fontSize: 14, height: 1.6),
               ),
           ] else if (resolution.trim().isNotEmpty) ...[
             Text(
@@ -143,9 +145,9 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               resolution,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              style: GoogleFonts.inter(fontSize: 14, height: 1.6),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
           if (macete.trim().isNotEmpty) ...[
             Text(
@@ -159,9 +161,9 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               macete,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              style: GoogleFonts.inter(fontSize: 14, height: 1.6),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
           if (pegadinha.trim().isNotEmpty) ...[
             Text(
@@ -175,9 +177,9 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               pegadinha,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              style: GoogleFonts.inter(fontSize: 14, height: 1.6),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
           if (banca.trim().isNotEmpty) ...[
             Text(
@@ -191,11 +193,11 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               banca,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+              style: GoogleFonts.inter(fontSize: 14, height: 1.6),
             ),
           ],
           if (trailing != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             trailing!,
           ],
         ],

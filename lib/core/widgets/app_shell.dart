@@ -257,10 +257,11 @@ class AppShell extends ConsumerWidget {
                     if (examSyncPending)
                       Text(
                         'Data da prova pendente',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: cs.tertiary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: cs.tertiary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                   ],
                 ),
@@ -335,13 +336,17 @@ class AppShell extends ConsumerWidget {
                           leading: Icon(Icons.sync_problem_rounded, size: 18, color: cs.onTertiaryContainer),
                           title: Text(
                             'Data da prova não sincronizou',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: cs.onTertiaryContainer,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: cs.onTertiaryContainer,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           trailing: TextButton(
-                            onPressed: () => context.go('/configuracoes'),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              context.go('/configuracoes');
+                            },
                             child: const Text('Ajustes'),
                           ),
                         ),
@@ -432,10 +437,11 @@ class _BrandHeader extends StatelessWidget {
                     ),
                     Text(
                       focus ? 'Modo foco' : 'Medicina · UEMA',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: cs.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -447,14 +453,15 @@ class _BrandHeader extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.sync_problem_rounded, size: 14, color: cs.tertiary),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Data da prova pendente',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.tertiary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: cs.tertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -471,7 +478,10 @@ class _BrandHeader extends StatelessWidget {
               ),
               child: Text(
                 examDays! >= 0 ? '$examDays dias para a prova' : 'Data da prova passou',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: cs.onSurface.withOpacity(0.85),
+                ),
               ),
             ),
           ],
@@ -576,12 +586,13 @@ class _NavTileState extends State<_NavTile> {
                             widget.item.label,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
-                                  color: widget.selected
-                                      ? cs.onPrimaryContainer
-                                      : cs.onSurface.withOpacity(0.78),
-                                ),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+                              color: widget.selected
+                                  ? cs.onPrimaryContainer
+                                  : cs.onSurface.withOpacity(0.78),
+                            ),
                           ),
                         ),
                       ],
@@ -634,11 +645,15 @@ class _RailControl extends StatelessWidget {
                       child: Row(
                         children: [
                           Icon(icon, size: 20, color: cs.primary),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               label,
-                              style: Theme.of(context).textTheme.labelLarge,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                              ),
                             ),
                           ),
                         ],
@@ -688,20 +703,20 @@ class _ShortcutHint extends StatelessWidget {
             ),
             child: Text(
               label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 10,
-                    fontFamily: 'Segoe UI',
-                  ),
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 10,
+                color: cs.onSurface,
+              ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Text(
             desc,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: cs.onSurface.f55,
-                  fontSize: 11,
-                ),
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              color: cs.onSurface.f55,
+            ),
           ),
         ],
       ),

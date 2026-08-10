@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -330,6 +331,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final meta = widget.args.meta;
+    final cs = Theme.of(context).colorScheme;
     final needsOcr = meta['needsOcr'] == true;
     final ocrFailed = meta['ocrFailed'] == true;
     final pair = Map<String, dynamic>.from(meta['pairValidation'] as Map? ?? {});
@@ -350,18 +352,18 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
         leading: IconButton(
           tooltip: 'Voltar',
           icon: const Icon(Icons.close),
-          onPressed: () => context.go('/biblioteca'),
+          onPressed: () { HapticFeedback.selectionClick(); context.go('/biblioteca'); },
         ),
         actions: [
-          TextButton(onPressed: busy ? null : () => context.go('/biblioteca'), child: const Text('Descartar')),
+          TextButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); context.go('/biblioteca'); }, child: const Text('Descartar')),
           FilledButton.tonal(
             onPressed: busy || questions.isEmpty || highN == 0
                 ? null
-                : () => _commit(highConfidenceOnly: true),
+                : () { HapticFeedback.mediumImpact(); _commit(highConfidenceOnly: true); },
             child: Text('Só as boas ($highN)'),
           ),
           FilledButton(
-            onPressed: busy || questions.isEmpty || !hasGab ? null : () => _commit(),
+            onPressed: busy || questions.isEmpty || !hasGab ? null : () { HapticFeedback.mediumImpact(); _commit(); },
             child: const Text('Gravar todas no acervo'),
           ),
           const SizedBox(width: 8),
@@ -375,15 +377,15 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                   Material(
                     color: Theme.of(context).colorScheme.tertiaryContainer.f45,
                     child: Padding(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(
+                            child: SelectableText(
                               'Sem gabarito aplicado (0/${questions.length}). '
                               'Coloque o gabarito do ano na pasta Gabaritos ou marque as respostas. '
                               'Gravar fica desativado para não inventar acertos.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary),
+                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.tertiary),
                             ),
                           ),
                         ],
@@ -394,10 +396,10 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                   Material(
                     color: Theme.of(context).colorScheme.primaryContainer.f45,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Text(
                         'Gabarito: $_gabaritoAppliedCount/${questions.length} · altas conf. $highN',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.onPrimaryContainer),
                       ),
                     ),
                   ),
@@ -413,12 +415,12 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         Material(
                           color: Theme.of(context).colorScheme.tertiaryContainer.f45,
                           child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Text(
+                            padding: const EdgeInsets.all(12),
+                            child: SelectableText(
                               ocrFailed
                                   ? 'A leitura automática falhou ou está indisponível. Revise o texto manualmente.'
                                   : 'O PDF parece escaneado. Confirme os enunciados e revise o texto antes de importar.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.tertiary),
+                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.tertiary),
                             ),
                           ),
                         ),
@@ -430,26 +432,26 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             Text(
                               '${questions.length} questões · conf. média ${meta['avgParseConfidence'] ?? '—'} · '
                               '$suspects duvidosas',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                             ),
-                            Text(pair['message']?.toString() ?? '', style: Theme.of(context).textTheme.bodySmall),
+                            Text(pair['message']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                             if (unmatchedQ.isNotEmpty)
                               Text(
                                 'Sem gabarito: ${unmatchedQ.take(12).join(', ')}${unmatchedQ.length > 12 ? '…' : ''}',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onTertiaryContainer),
+                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
                               ),
                             if (unmatchedA.isNotEmpty)
                               Text(
                                 'Gabarito sem questão: ${unmatchedA.take(12).join(', ')}${unmatchedA.length > 12 ? '…' : ''}',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onTertiaryContainer),
+                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
                               ),
                             FilterChip(
                               label: Text(filterSuspects ? 'Só duvidosas ($suspects)' : 'Todas'),
                               selected: filterSuspects,
-                              onSelected: (v) => setState(() {
+                              onSelected: (v) { HapticFeedback.selectionClick(); setState(() {
                                 filterSuspects = v;
                                 if (visible.isNotEmpty) index = visible.first;
-                              }),
+                              }); },
                             ),
                           ],
                         ),
@@ -475,7 +477,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                                 '${conf != null ? ' · ${(conf * 100).round()}%' : ''}'
                                 '${q['gabaritoApplied'] == true ? '' : ' · sem gab'}',
                               ),
-                              onTap: () => setState(() => index = i),
+                              onTap: () { HapticFeedback.selectionClick(); setState(() => index = i); },
                             );
                           },
                         ),
@@ -500,7 +502,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         ),
                       Text(
                         'Q${current['number'] ?? index + 1} · ${current['subject']} / ${current['topic']}',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: cs.onSurface),
                       ),
                       Text(
                         'Confiança parse: ${((current['parseConfidence'] as num?)?.toDouble() ?? 0) * 100 ~/ 1}%'
@@ -511,40 +513,44 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
+                      SelectableText(
                         'Dica: setas mudam a questão · 1–5 marca gabarito · H grava só as boas',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.f72,
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(
+                              color: cs.onSurface.f72,
                             ),
                       ),
                       const SizedBox(height: 12),
-                      Text(current['statement']?.toString() ?? ''),
+                      SelectableText(
+                        current['statement']?.toString() ?? '',
+                        style: GoogleFonts.inter(fontSize: 16, height: 1.5, color: cs.onSurface),
+                      ),
                       const SizedBox(height: 16),
                       for (var i = 0; i < (current['options'] as List? ?? []).length; i++)
                         RadioListTile<int>(
                           value: i,
                           groupValue: current['correctIndex'] as int? ?? 0,
-                          onChanged: (v) => setState(() {
+                          onChanged: (v) { HapticFeedback.selectionClick(); setState(() {
                             current['correctIndex'] = v;
                             current['gabaritoApplied'] = true;
-                          }),
+                          }); },
                           title: Text('${'ABCDE'[i]}) ${(current['options'] as List)[i]}'),
                         ),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         children: [
-                          FilledButton.tonal(onPressed: _editMeta, child: const Text('Editar disciplina/assunto')),
+                          FilledButton.tonal(onPressed: () { HapticFeedback.selectionClick(); _editMeta(); }, child: const Text('Editar disciplina/assunto')),
                           OutlinedButton(
-                            onPressed: _canPrev ? _prevQuestion : null,
+                            onPressed: _canPrev ? () { HapticFeedback.selectionClick(); _prevQuestion(); } : null,
                             child: const Text('Anterior (←/J)'),
                           ),
                           FilledButton(
-                            onPressed: _canNext ? _nextQuestion : null,
+                            onPressed: _canNext ? () { HapticFeedback.mediumImpact(); _nextQuestion(); } : null,
                             child: const Text('Próxima (→/K)'),
                           ),
                           OutlinedButton(
                             onPressed: () {
+                              HapticFeedback.selectionClick();
                               final suspects = [
                                 for (var i = 0; i < questions.length; i++)
                                   if (_isSuspect(questions[i])) i,

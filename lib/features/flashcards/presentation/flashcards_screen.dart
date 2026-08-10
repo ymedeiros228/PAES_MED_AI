@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -178,21 +179,21 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     spacing: 4,
                     children: [
                       TextButton(
-                        onPressed: () => setState(() {
+                        onPressed: () { HapticFeedback.selectionClick(); setState(() {
                           axesOnly = !axesOnly;
                           if (axesOnly) dueOnly = false;
                           showBack = false;
                           currentId = null;
-                        }),
+                        }); },
                         child: Text(axesOnly ? 'Todos tipos' : 'Só eixos'),
                       ),
                       if (!axesOnly)
                         TextButton(
-                          onPressed: () => setState(() {
+                          onPressed: () { HapticFeedback.selectionClick(); setState(() {
                             dueOnly = !dueOnly;
                             showBack = false;
                             currentId = null;
-                          }),
+                          }); },
                           child: Text(dueOnly ? 'Ver todos' : 'Só para revisar'),
                         ),
                     ],
@@ -206,11 +207,11 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                       spacing: 8,
                       children: [
                         TextButton(
-                          onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                          onPressed: () { HapticFeedback.selectionClick(); ref.read(refreshTickProvider.notifier).state++; },
                           child: const Text('Tentar'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/sessao'),
+                          onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
                           child: const Text('Sessão'),
                         ),
                       ],
@@ -237,10 +238,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                           children: [
                             if (dueOnly)
                               FilledButton.tonal(
-                                onPressed: () => setState(() => dueOnly = false),
+                                onPressed: () { HapticFeedback.selectionClick(); setState(() => dueOnly = false); },
                                 child: const Text('Ver todos'),
                               ),
-                            FilledButton(onPressed: () => context.go('/sessao'), child: const Text('Sessão')),
+                            FilledButton(onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); }, child: const Text('Sessão')),
                           ],
                         ),
                       );
@@ -254,13 +255,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                             child: Row(
                               children: [
                                 Icon(Icons.style_outlined, size: 16, color: cs.primary),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Text(
                                   '${items.length} cartão${items.length > 1 ? "ões" : ""} para revisar',
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                        color: cs.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: cs.primary),
                                 ),
                               ],
                             ),
@@ -281,7 +279,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                   final src = item['source']?.toString() ?? '';
                                   final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
                                   return SurfacePanel(
-                                margin: const EdgeInsets.only(bottom: 10),
+                                margin: const EdgeInsets.only(bottom: 8),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -291,10 +289,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                           Expanded(
                                             child: Text(
                                               [subj, top].where((e) => e.isNotEmpty).join(' · '),
-                                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                                    color: cs.primary,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
+                                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                                             ),
                                           )
                                         else
@@ -339,10 +334,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                           width: double.infinity,
                                           child: SelectableText(
                                             item['front']?.toString() ?? '',
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                  height: 1.5,
-                                                  fontSize: 16,
-                                                ),
+                                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface, height: 1.5),
                                             contextMenuBuilder: (context, editableTextState) =>
                                                 AdaptiveTextSelectionToolbar.editableText(
                                               editableTextState: editableTextState,
@@ -364,11 +356,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                           width: double.infinity,
                                           child: SelectableText(
                                             item['back']?.toString() ?? '',
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                  height: 1.5,
-                                                  fontSize: 16,
-                                                  color: cs.onPrimaryContainer,
-                                                ),
+                                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer, height: 1.5),
                                             contextMenuBuilder: (context, editableTextState) =>
                                                 AdaptiveTextSelectionToolbar.editableText(
                                               editableTextState: editableTextState,
@@ -378,25 +366,23 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 6),
-                                    Text(
+                                    SelectableText(
                                       flipped
                                           ? 'Toque / Space · L lembrei · E esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
                                           : 'Toque / Space para revelar · próxima: ${humanDueLabel(item['next_due']?.toString())}',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: cs.onSurface.f55,
-                                          ),
+                                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f55),
                                     ),
-                                    const SizedBox(height: 10),
+                                    const SizedBox(height: 8),
                                     Row(
                                       children: [
                                         FilledButton.tonalIcon(
-                                          onPressed: () => _review(id, true),
+                                          onPressed: () { HapticFeedback.selectionClick(); _review(id, true); },
                                           icon: const Icon(Icons.check_rounded, size: 18),
                                           label: const Text('Lembrei (L)'),
                                         ),
                                         const SizedBox(width: 8),
                                         OutlinedButton.icon(
-                                          onPressed: () => _review(id, false),
+                                          onPressed: () { HapticFeedback.selectionClick(); _review(id, false); },
                                           icon: const Icon(Icons.refresh_rounded, size: 18),
                                           label: const Text('Esqueci (E)'),
                                         ),
@@ -404,6 +390,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                         IconButton(
                                           tooltip: 'Apagar',
                                           onPressed: () async {
+                                            HapticFeedback.selectionClick();
                                             try {
                                               await apiClient.delete('/api/flashcards/$id');
                                               ref.read(refreshTickProvider.notifier).state++;
@@ -436,7 +423,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 const SizedBox(height: 16),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Criar cartão manual', style: Theme.of(context).textTheme.titleSmall),
+                  title: Text('Criar cartão manual', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     TextField(controller: frontCtrl, decoration: const InputDecoration(labelText: 'Frente')),
                     const SizedBox(height: 8),
@@ -444,7 +431,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: FilledButton(onPressed: _create, child: const Text('Salvar cartão')),
+                      child: FilledButton(onPressed: () { HapticFeedback.selectionClick(); _create(); }, child: const Text('Salvar cartão')),
                     ),
                   ],
                 ),

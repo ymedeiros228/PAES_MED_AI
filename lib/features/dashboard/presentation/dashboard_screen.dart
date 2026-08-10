@@ -400,9 +400,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'S inicia a sessão · L abre a fila',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.f72,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: Colors.white.f72,
+                      ),
                     ),
                   ],
                 ),
@@ -450,15 +451,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Primeiro passo: Semana 1', style: Theme.of(context).textTheme.titleMedium),
-                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Primeiro passo: Semana 1',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
                                   Text(
                                     officialN > 0
                                         ? 'Já há $officialN oficiais no PC — complete o import 2024–26 '
                                             'na Biblioteca para fechar a Semana 1.'
                                         : 'Na Biblioteca, toque em Atualizar 2024–26 para importar as provas UEMA. '
                                             'Depois volte ao Hoje para estudar.',
-                                    style: Theme.of(context).textTheme.bodyMedium,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      color: cs.onSurface.withOpacity(0.85),
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   Wrap(
@@ -976,16 +988,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 const SizedBox(height: 8),
                                 Text(
                                   'Modo foco — só sessão e checklist. Desligue com F.',
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: cs.onSurface.withOpacity(0.7),
+                                  ),
                                 ),
                               ],
                               if (exam.isNotEmpty && examDays != null) ...[
                                 const SizedBox(height: 12),
                                 Text(
                                   examDays >= 0 ? 'Prova: $exam' : 'Data da prova: $exam',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface.f45,
-                                      ),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: cs.onSurface.f45,
+                                  ),
                                 ),
                               ],
                             ],
@@ -1129,17 +1145,20 @@ class _DayProgressRingState extends State<_DayProgressRing>
               children: [
                 Text(
                   message,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
                 ),
                 if (doneCount == total)
                   Text(
                     'Dia encerrado — volte amanhã',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: cs.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
               ],
             ),

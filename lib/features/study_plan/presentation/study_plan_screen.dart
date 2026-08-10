@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -238,7 +239,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     ? 'Defina a data da prova em Ajustes'
                     : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'}',
                 trailing: FilledButton.tonal(
-                  onPressed: loading ? null : () => _load(regenerate: true),
+                  onPressed: loading ? null : () { HapticFeedback.selectionClick(); _load(regenerate: true); },
                   child: const Text('Regenerar'),
                 ),
               ),
@@ -250,11 +251,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     spacing: 8,
                     children: [
                       TextButton(
-                        onPressed: () => unawaited(ref.read(examDateProvider.notifier).retrySync()),
+                        onPressed: () { HapticFeedback.selectionClick(); unawaited(ref.read(examDateProvider.notifier).retrySync()); },
                         child: const Text('Sincronizar'),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/configuracoes'),
+                        onPressed: () { HapticFeedback.selectionClick(); context.go('/configuracoes'); },
                         child: const Text('Ajustes'),
                       ),
                     ],
@@ -273,12 +274,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         Expanded(
                           child: Text(
                             plan.isEmpty ? 'Sem plano gerado' : '$doneN / ${plan.length} dias marcados',
-                            style: Theme.of(context).textTheme.titleSmall,
+                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                           ),
                         ),
                         Text(
                           '${(progress * 100).toStringAsFixed(0)}%',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface).copyWith(
                                 color: cs.primary,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -338,18 +339,18 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     },
                   ),
                   OutlinedButton(
-                    onPressed: plan.isEmpty ? null : _exportWeek,
+                    onPressed: plan.isEmpty ? null : () { HapticFeedback.selectionClick(); _exportWeek(); },
                     child: const Text('Exportar plano (semana) (E)'),
                   ),
                   OutlinedButton(
-                    onPressed: plan.isEmpty ? null : _exportMonth,
+                    onPressed: plan.isEmpty ? null : () { HapticFeedback.selectionClick(); _exportMonth(); },
                     child: const Text('Exportar plano (mês)'),
                   ),
                 ],
               ),
               if (exportMsg != null) ...[
                 const SizedBox(height: 8),
-                Text(exportMsg!, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary)),
+                Text(exportMsg!, style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.primary)),
               ],
               if (loading) ...[
                 const SizedBox(height: 12),
@@ -360,7 +361,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 QuietEmpty(
                   message: error!,
                   action: TextButton(
-                    onPressed: () => unawaited(_load()),
+                    onPressed: () { HapticFeedback.selectionClick(); unawaited(_load()); },
                     child: const Text('Tentar de novo'),
                   ),
                 ),
@@ -397,11 +398,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               Expanded(
                                 child: Text(
                                   'Hoje: $rSubj · $rTopic',
-                                  style: Theme.of(context).textTheme.titleSmall,
+                                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                                 ),
                               ),
                               FilledButton(
-                                onPressed: () => context.go(sessionPath),
+                                onPressed: () { HapticFeedback.mediumImpact(); context.go(sessionPath); },
                                 child: const Text('Fazer agora (S)'),
                               ),
                             ],
@@ -413,11 +414,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Foco da semana', style: Theme.of(context).textTheme.titleSmall),
+                            Text('Foco da semana', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                             const SizedBox(height: 4),
                             Text(
                               '${revs.length} revisões · erros recentes abaixo',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                             ),
                             for (final raw in hot)
                               PlaylistTile(
@@ -438,7 +439,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               QuietEmpty(
                                 message: 'Sem erros recentes — treine a fila.',
                                 action: TextButton(
-                                  onPressed: () => context.go('/fila'),
+                                  onPressed: () { HapticFeedback.selectionClick(); context.go('/fila'); },
                                   child: const Text('Fila'),
                                 ),
                               ),
@@ -459,7 +460,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 QuietEmpty(
                   message: 'Gere um plano com Regenerar.',
                   action: FilledButton(
-                    onPressed: () => _load(regenerate: true),
+                    onPressed: () { HapticFeedback.mediumImpact(); _load(regenerate: true); },
                     child: const Text('Gerar'),
                   ),
                 ),
@@ -483,12 +484,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                           : fromErrors
                               ? cs.tertiaryContainer.withOpacity(0.4)
                               : null,
-                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
                       child: Row(
                         children: [
                           Checkbox(
                             value: done,
-                            onChanged: (v) => _toggleDone(item, v ?? false),
+                            onChanged: (v) { HapticFeedback.selectionClick(); _toggleDone(item, v ?? false); },
                           ),
                           Container(
                             width: 36,
@@ -506,28 +507,27 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   '$subject — $topic',
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
                                         decoration: done ? TextDecoration.lineThrough : null,
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
-                                Text(
+                                SelectableText(
                                   item['reason']?.toString() ?? '',
                                   maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                                 ),
                                 if (fromErrors)
                                   Text(
                                     'Erro recente',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
                                           color: cs.tertiary,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -538,6 +538,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                           IconButton(
                             tooltip: 'Sessão neste tópico',
                             onPressed: () {
+                              HapticFeedback.selectionClick();
                               setState(() => selected = i);
                               context.go(_sessionPathFor(item));
                             },
@@ -552,7 +553,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               if (weekOnly && plan.length > 7) ...[
                 const SizedBox(height: 8),
                 OutlinedButton(
-                  onPressed: () => setState(() => weekOnly = false),
+                  onPressed: () { HapticFeedback.selectionClick(); setState(() => weekOnly = false); },
                   child: Text('Ver todos os ${plan.length} dias'),
                 ),
               ],

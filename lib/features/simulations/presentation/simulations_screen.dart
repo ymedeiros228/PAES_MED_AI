@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -474,8 +475,20 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado nesta seleção.'}',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Começar')),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              Navigator.pop(ctx, false);
+            },
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              Navigator.pop(ctx, true);
+            },
+            child: const Text('Começar'),
+          ),
         ],
       ),
     );
@@ -629,9 +642,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(err, style: Theme.of(context).textTheme.bodySmall),
+            Text(err, style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
             TextButton(
               onPressed: () {
+                HapticFeedback.selectionClick();
                 setState(() => debriefErrors.remove(questionId));
                 _ensureDebrief(questionId);
               },
@@ -641,7 +655,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         );
       }
       return TextButton(
-        onPressed: () => _ensureDebrief(questionId),
+        onPressed: () {
+          HapticFeedback.selectionClick();
+          _ensureDebrief(questionId);
+        },
         child: const Text('Carregar explicação'),
       );
     }
@@ -654,17 +671,29 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
           runSpacing: 8,
           children: [
             TextButton(
-              onPressed: () => context.go(
-                '/adaptativo?subject=${Uri.encodeComponent(subject)}'
-                '&topic=${Uri.encodeComponent(topic)}',
-              ),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context.go(
+                  '/adaptativo?subject=${Uri.encodeComponent(subject)}'
+                  '&topic=${Uri.encodeComponent(topic)}',
+                );
+              },
               child: const Text('Remediar'),
             ),
-            TextButton(onPressed: () => context.go('/fila'), child: const Text('Fila')),
             TextButton(
-              onPressed: () => context.go(
-                '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
-              ),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context.go('/fila');
+              },
+              child: const Text('Fila'),
+            ),
+            TextButton(
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context.go(
+                  '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                );
+              },
               child: const Text('Sessão Natureza'),
             ),
           ],
@@ -770,18 +799,22 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           children: [
                             Text(
                               _clock,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontFeatures: const [FontFeature.tabularFigures()],
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: cs.onSurface,
+                                fontFeatures: const [FontFeature.tabularFigures()],
+                              ),
                             ),
                             if (examLocked && diaProvaHardCap != null)
                               Text(
                                 '−$_timeRemainingLabel',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurface.f65,
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: cs.onSurface.f65,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                ),
                               ),
                           ],
                         ),
@@ -820,7 +853,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   QuietEmpty(
                     message: checkpointLoadError!,
                     action: TextButton(
-                      onPressed: _loadSimCheckpoint,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _loadSimCheckpoint();
+                      },
                       child: const Text('Tentar'),
                     ),
                   ),
@@ -831,15 +867,24 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       spacing: 8,
                       children: [
                         TextButton(
-                          onPressed: () => setState(() => startError = null),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => startError = null);
+                          },
                           child: const Text('Ok'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/biblioteca'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/biblioteca');
+                          },
                           child: const Text('Biblioteca'),
                         ),
                         TextButton(
-                          onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                          },
                           child: const Text('Sessão'),
                         ),
                       ],
@@ -854,24 +899,28 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       children: [
                         Text(
                           'Simulado em andamento',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Modo ${pendingSimCheckpoint!['mode'] ?? '—'} · '
                           '${(pendingSimCheckpoint!['answers'] as Map? ?? {}).length} respondida(s)',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           children: [
                             FilledButton(
-                              onPressed: _restoreSimCheckpoint,
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _restoreSimCheckpoint();
+                              },
                               child: const Text('Continuar'),
                             ),
                             OutlinedButton(
                               onPressed: () async {
+                                HapticFeedback.selectionClick();
                                 await _clearSimCheckpoint();
                               },
                               child: const Text('Descartar'),
@@ -897,7 +946,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   tilePadding: EdgeInsets.zero,
                   initiallyExpanded: showOtherModes || mode != 'dia_prova',
                   onExpansionChanged: (v) => setState(() => showOtherModes = v),
-                  title: Text('Outros modos', style: Theme.of(context).textTheme.titleSmall),
+                  title: Text('Outros modos', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     for (final m in _modes.where((e) => e.$1 != 'dia_prova'))
                       _ModeCard(
@@ -928,12 +977,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ],
                 if (mode == 'disciplina' && (subject == null || subject!.isEmpty))
                   Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       'Escolha a disciplina antes de iniciar.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                      style: GoogleFonts.inter(fontSize: 13, color: cs.error),
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -971,7 +1018,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 QuietEmpty(
                   message: checkpointSaveError!,
                   action: TextButton(
-                    onPressed: _saveSimCheckpoint,
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      _saveSimCheckpoint();
+                    },
                     child: const Text('Tentar'),
                   ),
                 ),
@@ -981,14 +1031,17 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
               if (running && report == null && !examLocked) ...[
                 SectionLabel('Se errar, marque o tipo', hint: 'Padrão para o bloco inteiro'),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     for (final e in _errorLabels.entries)
                       ChoiceChip(
                         label: Text(e.value),
                         selected: defaultErrorType == e.key,
-                        onSelected: (_) => setState(() => defaultErrorType = e.key),
+                        onSelected: (_) {
+                          HapticFeedback.selectionClick();
+                          setState(() => defaultErrorType = e.key);
+                        },
                       ),
                   ],
                 ),
@@ -1004,20 +1057,18 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     children: [
                       Text(
                         'Dia de prova em andamento',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Respostas: ${answers.length}/${questions.length} · tempo $_clock'
                         '${diaProvaHardCap != null ? ' · restam $_timeRemainingLabel' : ''}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.f65,
-                            ),
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f65),
                       ),
                     ],
                   ),
@@ -1032,7 +1083,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     final year = q['year'];
                     final kbActive = running && report == null && qi == keyboardQi;
                     return SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 12),
                       color: kbActive ? cs.primaryContainer.withOpacity(0.28) : null,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1041,15 +1092,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                             'Questão ${qi + 1} de ${questions.length}'
                             '${year != null ? ' · $year' : ''}'
                             '${kbActive ? ' · teclado' : ''}',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                            style: Theme.of(context).textTheme.titleSmall,
+                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                           ),
                           const SizedBox(height: 8),
                           StatementView(
@@ -1085,6 +1133,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                                 ],
                                 onChanged: (v) {
                                   if (v == null) return;
+                                  HapticFeedback.selectionClick();
                                   setState(() => errorTypes[id] = v);
                                 },
                               ),
@@ -1143,21 +1192,18 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                                   : cs.error;
                           return Text(
                             '$pct% de acerto',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: color,
-                                ),
+                            style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: color),
                           );
                         },
                       ),
                       Text(
                         '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                       ),
                       if (report!['avgTimeMs'] != null)
                         Text(
                           'Média ${((report!['avgTimeMs'] as num) / 1000).toStringAsFixed(1)}s por item',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                         ),
                       if (report!['warning'] != null) ...[
                         const SizedBox(height: 8),
@@ -1217,13 +1263,13 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   SectionLabel('Erros — debrief', hint: '4 eixos quando a resolução for real'),
                   for (final r in wrongResults.take(8))
                     SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '${r['subject'] ?? ''} · ${r['topic'] ?? ''}',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onSurface),
                           ),
                           _debriefBlock(
                             r['questionId']?.toString() ?? '',
@@ -1241,8 +1287,14 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   children: [
                     FilledButton.icon(
                       onPressed: (report!['gaps'] as List? ?? []).isNotEmpty
-                          ? _remediateGaps
-                          : () => context.go('/fila'),
+                          ? () {
+                              HapticFeedback.selectionClick();
+                              _remediateGaps();
+                            }
+                          : () {
+                              HapticFeedback.selectionClick();
+                              context.go('/fila');
+                            },
                       icon: const Icon(Icons.playlist_play_rounded),
                       label: Text(
                         (report!['gaps'] as List? ?? []).isNotEmpty
@@ -1258,23 +1310,38 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   runSpacing: 8,
                   children: [
                     FilledButton.tonal(
-                      onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                      },
                       child: const Text('Sessão Natureza'),
                     ),
                     TextButton(
-                      onPressed: () => context.go('/redacao'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go('/redacao');
+                      },
                       child: const Text('Redação'),
                     ),
                     TextButton(
-                      onPressed: () => context.go('/dashboard'),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go('/dashboard');
+                      },
                       child: const Text('Hoje'),
                     ),
                     TextButton(
-                      onPressed: _exportReport,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _exportReport();
+                      },
                       child: const Text('Exportar resumo'),
                     ),
                     OutlinedButton(
-                      onPressed: _resetSim,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _resetSim();
+                      },
                       child: const Text('Novo simulado'),
                     ),
                   ],
@@ -1283,7 +1350,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 const SizedBox(height: 8),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Detalhe das respostas', style: Theme.of(context).textTheme.titleSmall),
+                  title: Text('Detalhe das respostas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     for (final r in (report!['results'] as List? ?? []))
                       ListTile(
@@ -1295,13 +1362,16 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         ),
                         title: Text('${r['subject']} · ${r['topic']}'),
                         trailing: TextButton(
-                          onPressed: () => context.go('/questoes/${r['questionId']}'),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/questoes/${r['questionId']}');
+                          },
                           child: const Text('Ver'),
                         ),
                       ),
                     if ((report!['professorHints'] as List? ?? []).isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text('Macete dos erros', style: Theme.of(context).textTheme.titleSmall),
+                      Text('Macete dos erros', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                       for (final h in (report!['professorHints'] as List).take(5))
                         ListTile(
                           dense: true,
@@ -1309,7 +1379,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           title: Text('${(h as Map)['topic']}'),
                           subtitle: Text(h['macete']?.toString() ?? ''),
                           trailing: TextButton(
-                            onPressed: () => context.go('/questoes/${h['questionId']}'),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              context.go('/questoes/${h['questionId']}');
+                            },
                             child: const Text('Abrir'),
                           ),
                         ),
@@ -1375,12 +1448,10 @@ class _ModeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: Theme.of(context).textTheme.titleSmall),
+                      Text(title, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                       Text(
                         subtitle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.f72,
-                            ),
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f72),
                       ),
                     ],
                   ),

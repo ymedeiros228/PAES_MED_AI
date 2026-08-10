@@ -258,14 +258,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   const SizedBox(height: 8),
                   Text(
                     examState.hydrateNote!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.tertiary),
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.tertiary),
                   ),
                 ],
                 if (examState.syncError != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     examState.syncError!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.error),
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.error),
                   ),
                 ],
               ],
@@ -300,7 +300,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 ),
                 if (folderMsg != null) ...[
                   const SizedBox(height: 8),
-                  Text(folderMsg!, style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    folderMsg!,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: cs.onSurface.withOpacity(0.7),
+                    ),
+                  ),
                 ],
               ],
               if (step == 3) ...[
@@ -319,21 +325,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     children: [
                       Text(
                         'Na Biblioteca você verá',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: cs.primary,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: cs.primary,
+                        ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       _MiniLibRow(year: '2024', status: 'Pronto · Estudar'),
                       _MiniLibRow(year: '2025', status: 'Pronto · Estudar'),
                       _MiniLibRow(year: '2026', status: 'Atualizar se faltar'),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
                         'Consulte os materiais disponíveis e adicione outros quando precisar.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.f72,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: cs.onSurface.f72,
+                        ),
                       ),
                     ],
                   ),
@@ -424,15 +432,22 @@ class _MiniLibRow extends StatelessWidget {
             ),
             child: Text(
               year,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: cs.primary,
-                  ),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: cs.primary,
+              ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(status, style: Theme.of(context).textTheme.bodySmall),
+            child: Text(
+              status,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.onSurface.withOpacity(0.7),
+              ),
+            ),
           ),
         ],
       ),

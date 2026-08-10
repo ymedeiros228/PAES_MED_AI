@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -231,6 +232,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       isScrollControlled: true,
       showDragHandle: true,
       builder: (ctx) {
+        final cs = Theme.of(context).colorScheme;
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.65,
@@ -243,21 +245,24 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               children: [
                 Text(
                   item['theme']?.toString() ?? 'Redação',
-                  style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w800, color: cs.onSurface),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Nota ${item['score'] ?? '—'} · ${item['createdAt'] ?? ''} · treino local · não banca',
-                  style: Theme.of(ctx).textTheme.bodySmall,
+                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 12),
-                Text('Texto', style: Theme.of(ctx).textTheme.titleSmall),
-                const SizedBox(height: 6),
-                SelectableText(item['text']?.toString() ?? '(vazio)'),
+                Text('Texto', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                const SizedBox(height: 8),
+                SelectableText(
+                  item['text']?.toString() ?? '(vazio)',
+                  style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                ),
                 if (fbMap.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text('Comentários', style: Theme.of(ctx).textTheme.titleSmall),
-                  const SizedBox(height: 6),
+                  Text('Comentários', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  const SizedBox(height: 8),
                   for (final a in [
                     ('Gramática', fbMap['grammar']),
                     ('Coesão', fbMap['cohesion']),
@@ -268,16 +273,26 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     if (a.$2 != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
-                        child: SelectableText('${a.$1}: ${a.$2}'),
+                        child: SelectableText(
+                          '${a.$1}: ${a.$2}',
+                          style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                        ),
                       ),
                   if (fbMap['strengths'] != null)
-                    SelectableText('Fortes: ${fbMap['strengths']}'),
+                    SelectableText(
+                      'Fortes: ${fbMap['strengths']}',
+                      style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                    ),
                   if (fbMap['improvements'] != null)
-                    SelectableText('Melhorar: ${fbMap['improvements']}'),
+                    SelectableText(
+                      'Melhorar: ${fbMap['improvements']}',
+                      style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                    ),
                 ],
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     Navigator.pop(ctx);
                     _applyEssayToEditor(item);
                   },
@@ -388,11 +403,17 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     spacing: 8,
                     children: [
                       TextButton(
-                        onPressed: () => unawaited(_reloadSetup()),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          unawaited(_reloadSetup());
+                        },
                         child: const Text('Tentar'),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/sessao'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/sessao');
+                        },
                         child: const Text('Sessão'),
                       ),
                     ],
@@ -433,7 +454,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
                         '${streak > 0 ? ' · sequência $streak dia(s)' : ''}'
                         '${progress!['levelLabel'] != null ? ' · ${progress!['levelLabel']}' : ''}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 12),
                       EssayRoseChart(
@@ -448,10 +469,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               ] else if (progress != null) ...[
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: Text(
+                  child: SelectableText(
                     progress!['disclaimer']?.toString() ??
                         'Corrija ao menos 1 redação para ver o progresso por eixos (treino local · não banca).',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                   ),
                 ),
               ],
@@ -464,7 +485,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     FilterChip(
                       label: const Text('Geral'),
                       selected: personaId == null,
-                      onSelected: (_) => setState(() => personaId = null),
+                      onSelected: (_) {
+                        HapticFeedback.selectionClick();
+                        setState(() => personaId = null);
+                      },
                     ),
                     for (final p in personas)
                       Tooltip(
@@ -472,13 +496,16 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         child: FilterChip(
                           label: Text(p['label']?.toString() ?? p['id']?.toString() ?? 'persona'),
                           selected: personaId == p['id']?.toString(),
-                          onSelected: (_) => setState(() => personaId = p['id']?.toString()),
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            setState(() => personaId = p['id']?.toString());
+                          },
                         ),
                       ),
                   ],
                 ),
                 if (personaId != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Builder(
                     builder: (_) {
                       final p = personas.cast<Map?>().firstWhere(
@@ -489,9 +516,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       if (hint == null || hint.isEmpty) return const SizedBox.shrink();
                       return Text(
                         'O que olho: $hint',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.f72,
-                            ),
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f72),
                       );
                     },
                   ),
@@ -504,6 +529,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   label: const Text('Tema'),
                   width: double.infinity,
                   onSelected: (v) {
+                    HapticFeedback.selectionClick();
                     setState(() => theme = v);
                     _scheduleDraftSave();
                   },
@@ -527,14 +553,12 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 6, bottom: 4),
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
                 child: Row(
                   children: [
                     Text(
                       '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: cs.onSurface.f72,
-                          ),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f72),
                     ),
                     const SizedBox(width: 8),
                     // Barra de progresso visual para mínimo de caracteres
@@ -556,11 +580,13 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       textCtrl.text.trim().length >= 50
                           ? 'pronto para corrigir'
                           : '${50 - textCtrl.text.trim().length} chars',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: textCtrl.text.trim().length >= 50
-                                ? cs.primary
-                                : cs.onSurface.f55,
-                          ),
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: textCtrl.text.trim().length >= 50
+                            ? cs.primary
+                            : cs.onSurface.f55,
+                      ),
                     ),
                   ],
                 ),
@@ -578,7 +604,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 6),
+                padding: const EdgeInsets.only(top: 8),
                 child: Row(
                   children: [
                     Icon(
@@ -586,20 +612,21 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       size: 14,
                       color: cs.onSurface.f55,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
+                      child: SelectableText(
                         _draftRestored
                             ? 'Rascunho restaurado · salvo automaticamente no seu PC'
                             : 'Rascunho salvo automaticamente no seu PC',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.f55,
-                            ),
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f55),
                       ),
                     ),
                     if (textCtrl.text.trim().isNotEmpty)
                       TextButton(
-                        onPressed: () => _clearDraft(clearEditor: true),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _clearDraft(clearEditor: true);
+                        },
                         child: const Text('Limpar rascunho'),
                       ),
                   ],
@@ -617,7 +644,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         QuietEmpty(
                           message: '${last!['error']}',
                           action: TextButton(
-                            onPressed: () => unawaited(_grade()),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              unawaited(_grade());
+                            },
                             child: const Text('Tentar de novo'),
                           ),
                         )
@@ -628,15 +658,13 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           curve: Curves.easeOut,
                           builder: (context, v, _) => Text(
                             'Nota ${v.toStringAsFixed(1)}',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w800, color: cs.onSurface),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         const HonestBadge(),
                         if (last!['deltas'] is Map) ...[
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
@@ -657,11 +685,11 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                             ],
                           ),
                         ],
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Builder(
                           builder: (_) {
                             final fb = last!['feedback'];
-                            if (fb is! Map) return Text('$fb');
+                            if (fb is! Map) return SelectableText('$fb', style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface));
                             final axisRows = [
                               ('grammar', 'Gramática', fb['grammar']),
                               ('cohesion', 'Coesão', fb['cohesion']),
@@ -674,39 +702,46 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                               children: [
                                 if (fb['personaLabel'] != null || fb['persona'] != null)
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 6),
+                                    padding: const EdgeInsets.only(bottom: 8),
                                     child: Text(
                                       'Mentor: ${fb['personaLabel'] ?? fb['persona']}'
                                       '${fb['focusAxis'] != null ? ' · eixo ${_axisPt(fb['focusAxis'].toString())}' : ''}',
-                                      style: Theme.of(context).textTheme.labelLarge,
+                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
                                     ),
                                   ),
                                 for (final a in axisRows)
                                   if (a.$3 != null)
                                     Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
+                                      padding: const EdgeInsets.only(bottom: 8),
                                       child: SelectableText(
                                         a.$3 is num
                                             ? '${a.$2}: ${(a.$3 as num).toStringAsFixed(1)}'
                                             : '${a.$2}: ${a.$3}',
+                                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                                       ),
                                     ),
                                 if (fb['tips'] is Map) ...[
                                   const SizedBox(height: 8),
-                                  Text('O que treinar', style: Theme.of(context).textTheme.titleSmall),
+                                  Text('O que treinar', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                                   for (final tip in (fb['tips'] as Map).values)
-                                    SelectableText('· $tip', style: Theme.of(context).textTheme.bodySmall),
+                                    SelectableText('· $tip', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                                 ],
                                 if (fb['strengths'] != null) ...[
-                                  const SizedBox(height: 6),
-                                  SelectableText('Fortes: ${fb['strengths']}'),
+                                  const SizedBox(height: 8),
+                                  SelectableText(
+                                    'Fortes: ${fb['strengths']}',
+                                    style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                                  ),
                                 ],
                                 if (fb['improvements'] != null)
-                                  SelectableText('Melhorar: ${fb['improvements']}'),
+                                  SelectableText(
+                                    'Melhorar: ${fb['improvements']}',
+                                    style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                                  ),
                                 if (fb['note'] != null)
-                                  Text(
+                                  SelectableText(
                                     '${fb['note']}',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                                   ),
                                 const SizedBox(height: 12),
                                 Wrap(
@@ -714,11 +749,17 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                   runSpacing: 8,
                                   children: [
                                     FilledButton.tonal(
-                                      onPressed: () => _startMissionRewrite(history),
+                                      onPressed: () {
+                                        HapticFeedback.lightImpact();
+                                        _startMissionRewrite(history);
+                                      },
                                       child: const Text('Reescrever no tema'),
                                     ),
                                     OutlinedButton(
-                                      onPressed: () => context.go('/progresso'),
+                                      onPressed: () {
+                                        HapticFeedback.selectionClick();
+                                        context.go('/progresso');
+                                      },
                                       child: const Text('Ver relevo'),
                                     ),
                                   ],
@@ -738,7 +779,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Histórico indisponível.'),
                   action: TextButton(
-                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      ref.read(refreshTickProvider.notifier).state++;
+                    },
                     child: const Text('Tentar'),
                   ),
                 ),
@@ -748,6 +792,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       message: 'Ainda sem redações corrigidas.',
                       action: TextButton(
                         onPressed: () {
+                          HapticFeedback.selectionClick();
                           final c = PrimaryScrollController.maybeOf(context);
                           c?.animateTo(
                             0,

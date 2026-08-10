@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -327,19 +328,22 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           : 'Semelhantes → mais difíceis no mesmo tópico',
                   trailing: (inQueue || finished)
                       ? TextButton(
-                          onPressed: () => setState(() {
-                            queue = [];
-                            meta = null;
-                            finished = false;
-                          }),
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              queue = [];
+                              meta = null;
+                              finished = false;
+                            });
+                          },
                           child: const Text('Trocar tópico'),
                         )
                       : null,
                 ),
                 if (generatedPartialNote != null) ...[
-                  Text(
+                  SelectableText(
                     generatedPartialNote!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.tertiary),
+                    style: GoogleFonts.inter(fontSize: 13, color: cs.tertiary),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -347,7 +351,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   QuietEmpty(
                     message: answerSaveError!,
                     action: TextButton(
-                      onPressed: loading ? null : () => unawaited(_start()),
+                      onPressed: loading ? null : () { HapticFeedback.selectionClick(); unawaited(_start()); },
                       child: const Text('Tentar'),
                     ),
                   ),
@@ -358,7 +362,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Fim da fila', style: Theme.of(context).textTheme.titleMedium),
+                        Text('Fim da fila', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
                         const SizedBox(height: 8),
                         Text(
                           'Acertos $correctCount de $answeredCount'
@@ -366,15 +370,15 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           ' · $subject · $topic',
                         ),
                         if (meta?['dominantErrorType'] != null) ...[
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Text(
                             'Tipo dominante recente: ${errorTypeLabelPt(meta!['dominantErrorType'].toString())}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                           ),
                         ],
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 16),
                         FilledButton.icon(
-                          onPressed: () => context.go('/fila'),
+                          onPressed: () { HapticFeedback.selectionClick(); context.go('/fila'); },
                           icon: const Icon(Icons.playlist_play_rounded),
                           label: const Text('Continuar na Fila'),
                         ),
@@ -384,12 +388,13 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           runSpacing: 8,
                           children: [
                             FilledButton.tonal(
-                              onPressed: () => context.go('/flashcards?due=1'),
+                              onPressed: () { HapticFeedback.selectionClick(); context.go('/flashcards?due=1'); },
                               child: const Text('Cartões'),
                             ),
                             if (subject.isNotEmpty && topic.isNotEmpty)
                               OutlinedButton(
                                 onPressed: () async {
+                                  HapticFeedback.selectionClick();
                                   final messenger = ScaffoldMessenger.of(context);
                                   try {
                                     await apiClient.post('/api/gaps/recover', {
@@ -410,7 +415,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 child: const Text('Reforçar na Fila'),
                               ),
                             TextButton(
-                              onPressed: loading ? null : () => unawaited(_start()),
+                              onPressed: loading ? null : () { HapticFeedback.selectionClick(); unawaited(_start()); },
                               child: const Text('Remontar treino'),
                             ),
                           ],
@@ -431,14 +436,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                       DropdownMenuEntry(value: 'Física', label: 'Física'),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: topicCtrl,
                     decoration: const InputDecoration(labelText: 'Assunto'),
                   ),
                   const SizedBox(height: 12),
                   FilledButton.icon(
-                    onPressed: loading || topic.isEmpty ? null : _start,
+                    onPressed: loading || topic.isEmpty ? null : () { HapticFeedback.selectionClick(); _start(); },
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(loading ? 'Montando…' : 'Iniciar treino'),
                   ),
@@ -450,15 +455,15 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                         spacing: 8,
                         children: [
                           TextButton(
-                            onPressed: loading || topic.isEmpty ? null : _start,
+                            onPressed: loading || topic.isEmpty ? null : () { HapticFeedback.selectionClick(); _start(); },
                             child: const Text('Tentar'),
                           ),
                           TextButton(
-                            onPressed: () => context.go('/biblioteca'),
+                            onPressed: () { HapticFeedback.selectionClick(); context.go('/biblioteca'); },
                             child: const Text('Biblioteca'),
                           ),
                           TextButton(
-                            onPressed: () => context.go('/sessao'),
+                            onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
                             child: const Text('Sessão'),
                           ),
                         ],
@@ -469,7 +474,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                   QuietEmpty(
                     message: 'Escolha tópico ou volte à sessão do dia.',
                     action: TextButton(
-                      onPressed: () => context.go('/sessao'),
+                      onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
                       child: const Text('Abrir sessão'),
                     ),
                   ),
@@ -483,15 +488,12 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           'Questão ${index + 1}/${queue.length}'
                           ' · ${_phaseLabel[q['_phase']] ?? q['_phase']}'
                           '${q['generated'] == true ? ' · revisar depois' : ''}',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${q['subject'] ?? subject} · ${q['topic'] ?? topic}',
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                         ),
                         const SizedBox(height: 10),
                         StatementView(
@@ -504,6 +506,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             message: 'Sem alternativas — abra a questão completa se precisar.',
                             action: TextButton(
                               onPressed: () {
+                                HapticFeedback.selectionClick();
                                 final id = q['id']?.toString() ?? '';
                                 if (id.isNotEmpty) context.go('/questoes/$id');
                               },
@@ -528,10 +531,10 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               },
                             ),
                         if (!revealed) ...[
-                          const SizedBox(height: 6),
-                          Text('Se errar, tipo de erro:', style: Theme.of(context).textTheme.bodySmall),
+                          const SizedBox(height: 8),
+                          Text('Se errar, tipo de erro:', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                           Wrap(
-                            spacing: 6,
+                            spacing: 8,
                             children: [
                               for (final e in _errorLabels.entries)
                                 ChoiceChip(
@@ -557,9 +560,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           ),
                           if (pendingErrorPick) ...[
                             const SizedBox(height: 8),
-                            Text('Tipo de erro (1–5):', style: Theme.of(context).textTheme.bodySmall),
+                            Text('Tipo de erro (1–5):', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                             Wrap(
-                              spacing: 6,
+                              spacing: 8,
                               children: [
                                 for (final e in _errorLabels.entries)
                                   ChoiceChip(
@@ -574,12 +577,12 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             ),
                             const SizedBox(height: 8),
                             FilledButton(
-                              onPressed: () => unawaited(_confirmErrorAndSave()),
+                              onPressed: () { HapticFeedback.selectionClick(); unawaited(_confirmErrorAndSave()); },
                               child: const Text('Registrar tipo e continuar'),
                             ),
                           ],
                           if (!pendingErrorPick) ...[
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           ResolutionDebrief(
                             question: q,
                             trailing: Wrap(
@@ -587,6 +590,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                               children: [
                                 TextButton(
                                   onPressed: () {
+                                    HapticFeedback.selectionClick();
                                     final s = (q['subject'] ?? subject).toString();
                                     final t = (q['topic'] ?? topic).toString();
                                     context.go(
@@ -598,6 +602,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 ),
                                 TextButton(
                                   onPressed: () async {
+                                    HapticFeedback.selectionClick();
                                     final id = q['id']?.toString();
                                     if (id == null) return;
                                     final messenger = ScaffoldMessenger.of(context);
@@ -636,34 +641,32 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           runSpacing: 8,
                           children: [
                             FilledButton(
-                              onPressed: revealed || selected == null ? null : _submit,
+                              onPressed: revealed || selected == null ? null : () { HapticFeedback.selectionClick(); _submit(); },
                               child: const Text('Confirmar'),
                             ),
                             FilledButton.tonal(
-                              onPressed: revealed && !pendingErrorPick ? _next : null,
+                              onPressed: revealed && !pendingErrorPick ? () { HapticFeedback.selectionClick(); _next(); } : null,
                               child: Text(index >= queue.length - 1 ? 'Concluir' : 'Próxima'),
                             ),
                             TextButton(
                               onPressed: index == 0
                                   ? null
-                                  : () => setState(() {
+                                  : () { HapticFeedback.selectionClick(); setState(() {
                                         index--;
                                         selected = null;
                                         revealed = false;
                                         pendingErrorPick = false;
-                                      }),
+                                      }); },
                               child: const Text('Anterior'),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
+                        const SizedBox(height: 8),
+                        SelectableText(
                           pendingErrorPick
                               ? 'Atalhos: 1–5 tipo de erro · Enter registra'
                               : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.f45,
-                              ),
+                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f45),
                         ),
                       ],
                     ),
