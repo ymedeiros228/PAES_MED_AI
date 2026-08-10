@@ -462,12 +462,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
 
                           SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
-                          // Anel de progresso do dia
-                          _DayProgressRing(
-                            sessionDone: checklist['session'] == true,
-                            cardsDone: checklist['cards'] == true,
-                            revisionsDone: checklist['revisions'] == true,
-                            dayClosed: dayClosed,
+                          // Anel de progresso do dia — RepaintBoundary isola a animação
+                          RepaintBoundary(
+                            child: _DayProgressRing(
+                              sessionDone: checklist['session'] == true,
+                              cardsDone: checklist['cards'] == true,
+                              revisionsDone: checklist['revisions'] == true,
+                              dayClosed: dayClosed,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           StudyCheckRow(

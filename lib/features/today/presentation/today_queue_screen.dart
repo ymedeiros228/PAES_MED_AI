@@ -213,7 +213,18 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
         ),
       );
     }
-    if (queue == null) return const SoftLoader(label: 'Carregando fila…');
+    if (queue == null) {
+      return ListView(
+        padding: const EdgeInsets.all(24),
+        children: const [
+          SkeletonCard(lines: 2),
+          SizedBox(height: 12),
+          SkeletonCard(lines: 3),
+          SizedBox(height: 12),
+          SkeletonCard(lines: 2),
+        ],
+      );
+    }
 
     final revisions = (queue!['revisions'] as List? ?? []);
     final cards = (queue!['flashcards'] as List? ?? []);

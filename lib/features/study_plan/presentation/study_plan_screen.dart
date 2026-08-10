@@ -308,6 +308,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                       onSelected: loading
                           ? null
                           : (_) {
+                              HapticFeedback.selectionClick();
                               setState(() => days = d);
                               _load(regenerate: true);
                             },
@@ -319,6 +320,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                       onSelected: loading
                           ? null
                           : (_) {
+                              HapticFeedback.selectionClick();
                               setState(() => days = until);
                               _load(regenerate: true);
                             },
@@ -326,10 +328,13 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   FilterChip(
                     label: Text(weekOnly ? 'Só semana' : 'Plano completo'),
                     selected: weekOnly,
-                    onSelected: (v) => setState(() {
-                      weekOnly = v;
-                      selected = 0;
-                    }),
+                    onSelected: (v) {
+                      HapticFeedback.selectionClick();
+                      setState(() {
+                        weekOnly = v;
+                        selected = 0;
+                      });
+                    },
                   ),
                   OutlinedButton(
                     onPressed: plan.isEmpty ? null : _exportWeek,

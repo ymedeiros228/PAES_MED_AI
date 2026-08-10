@@ -192,12 +192,26 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       runSpacing: 8,
                       children: [
                         FilledButton.icon(
-                          onPressed: busy || transcriptCtrl.text.trim().length < 80 ? null : _submitText,
-                          icon: const Icon(Icons.auto_awesome_rounded),
+                          onPressed: busy || transcriptCtrl.text.trim().length < 80
+                              ? null
+                              : () {
+                                  HapticFeedback.selectionClick();
+                                  _submitText();
+                                },
+                          icon: busy
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.auto_awesome_rounded),
                           label: Text(busy ? 'Processando…' : 'Estruturar legenda (Ctrl+Enter)'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: busy ? null : _uploadAudio,
+                          onPressed: busy ? null : () {
+                            HapticFeedback.selectionClick();
+                            _uploadAudio();
+                          },
                           icon: const Icon(Icons.mic_none_rounded),
                           label: const Text('Áudio'),
                         ),

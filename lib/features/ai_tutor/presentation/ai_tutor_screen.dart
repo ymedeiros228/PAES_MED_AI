@@ -303,7 +303,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                             state.messages.length + (state.isLoading ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index == state.messages.length) {
-                            return const _TypingIndicator();
+                            return const RepaintBoundary(child: _TypingIndicator());
                           }
                           // Anima apenas a última mensagem (nova)
                           final isLast = index == state.messages.length - 1;

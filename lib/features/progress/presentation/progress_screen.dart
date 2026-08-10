@@ -163,11 +163,14 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   title: 'Progresso',
                   subtitle: 'Seu relevo: picos firmes e vales a treinar — treino local, não % de aprovação',
                 ),
-                if (loading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: SoftLoader(label: 'Carregando progresso…'),
-                  )
+                if (loading) ...[
+                  // Skeleton placeholders em vez de spinner
+                  const SkeletonCard(lines: 2),
+                  const SizedBox(height: 16),
+                  const SkeletonCard(lines: 3),
+                  const SizedBox(height: 16),
+                  const SkeletonCard(lines: 2),
+                ]
                 else if (error != null)
                   QuietEmpty(
                     message: error!,
@@ -194,11 +197,13 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     ),
                   ),
                   if (peaks.isNotEmpty && !(peaks.length == 1 && peaks.first['kind'] == 'hint'))
-                    AnimatedBuilder(
-                      animation: _morph,
-                      builder: (context, _) => _ReadableRelief(
-                        peaks: peaks,
-                        progress: Curves.easeOut.transform(_morph.value),
+                    RepaintBoundary(
+                      child: AnimatedBuilder(
+                        animation: _morph,
+                        builder: (context, _) => _ReadableRelief(
+                          peaks: peaks,
+                          progress: Curves.easeOut.transform(_morph.value),
+                        ),
                       ),
                     ),
                   const SizedBox(height: 8),
@@ -257,14 +262,17 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     ),
                   ],
                   // Constelação de Conhecimento — gamificação do progresso
-                  SectionLabel('Sua constelação', hint: 'cada estrela = um dia de estudo'),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ConstellationMap(
-                      activeDays: _extractActiveDays(data),
-                      streakDays: (data?['streakDays'] as num?)?.toInt() ?? 0,
-                      totalDays: 28,
-                      accuracy: ((data?['accuracy'] as num?) ?? 0).toDouble(),
+                  const SectionLabel('Sua constelação', hint: 'cada estrela = um dia de estudo'),
+                  // RepaintBoundary isola as animações da constelação do resto da tela
+                  RepaintBoundary(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: ConstellationMap(
+                        activeDays: _extractActiveDays(data),
+                        streakDays: (data?['streakDays'] as num?)?.toInt() ?? 0,
+                        totalDays: 28,
+                        accuracy: ((data?['accuracy'] as num?) ?? 0).toDouble(),
+                      ),
                     ),
                   ),
                   // Ritmo de treino (mantido abaixo, mais compacto)
