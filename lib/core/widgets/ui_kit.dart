@@ -1171,6 +1171,166 @@ class _SeededRandom {
 /// e saída automática após [duration]. Use [AchievementToast.show] para exibir.
 /// Botão com efeito de pulso suave para chamar atenção.
 /// Útil para CTAs importantes como "Continuar sessão" quando há checkpoint.
+/// Efeito de confete leve — partículas coloridas que caem e somem.
+/// Usa OverlayEntry temporário; não precisa de dependência externa.
+class ConfettiBurst {
+  ConfettiBurst._();
+
+  static OverlayEntry? _entry;
+
+  /// Dispara confete por [duration] (default 2.5s).
+  static void fire(
+    BuildContext context, {
+    Duration duration = const Duration(milliseconds: 2500),
+  }) {
+    _entry?.remove();
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final entry = OverlayEntry(
+      builder: (ctx) => _ConfettiOverlay(duration: duration),
+    );
+    _entry = entry;
+    overlay.insert(entry);
+  }
+}
+
+class _ConfettiOverlay extends StatefulWidget {
+  const _ConfettiOverlay({required this.duration});
+  final Duration duration;
+
+  @override
+  State<_ConfettiOverlay> createState() => _ConfettiOverlayState();
+}
+
+class _ConfettiOverlayState extends State<_ConfettiOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<_ConfettiParticle> _particles;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+    )..forward().then((_) {
+        if (mounted) {
+          ConfettiBurst._entry?.remove();
+          ConfettiBurst._entry = null;
+        }
+      });
+    // Gera 40 partículas com cores e posições aleatórias
+    final colors = [
+      const Color(0xFFFFD700), // dourado
+      const Color(0xFF4FC3F7), // azul
+      const Color(0xFF80CBC4), // verde-agua
+      const Color(0xFFB39DDB), // lilas
+      const Color(0xFFFF8A65), // laranja
+      const Color(0xFFFFFFFF), // branco
+    ];
+    final rng = DateTime.now().microsecond;
+    _particles = List.generate(40, (i) {
+      return _ConfettiParticle(
+        x: 0.1 + (i * 0.02 + (rng % 100) / 100 * 0.8) % 0.8,
+        startY: -0.1 - (i % 5) * 0.05,
+        endY: 0.8 + (i % 3) * 0.1,
+        drift: ((i * 7 + rng) % 100 - 50) / 200.0,
+        color: colors[i % colors.length],
+        size: 4.0 + (i % 4) * 2.0,
+        rotation: (i * 37) % 360,
+        rotationSpeed: (i % 2 == 0 ? 1 : -1) * (90.0 + i * 10),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            return CustomPaint(
+              painter: _ConfettiPainter(
+                particles: _particles,
+                progress: _controller.value,
+              ),
+              child: const SizedBox.expand(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfettiParticle {
+  _ConfettiParticle({
+    required this.x,
+    required this.startY,
+    required this.endY,
+    required this.drift,
+    required this.color,
+    required this.size,
+    required this.rotation,
+    required this.rotationSpeed,
+  });
+
+  final double x; // 0..1 (posicao horizontal relativa)
+  final double startY; // 0..1 (posicao vertical inicial)
+  final double endY; // 0..1 (posicao vertical final)
+  final double drift; // desvio horizontal
+  final Color color;
+  final double size;
+  final double rotation; // graus
+  final double rotationSpeed; // graus por segundo
+}
+
+class _ConfettiPainter extends CustomPainter {
+  _ConfettiPainter({required this.particles, required this.progress});
+  final List<_ConfettiParticle> particles;
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in particles) {
+      // Posicao vertical: cai de startY para endY
+      final y = (p.startY + (p.endY - p.startY) * progress) * size.height;
+      // Drift horizontal: seno para dar efeito de balanco
+      final driftX = p.drift * size.width * progress * (1 - progress * 0.3);
+      final x = p.x * size.width + driftX;
+      // Fade out nos ultimos 30%
+      final alpha = progress < 0.7 ? 1.0 : (1.0 - (progress - 0.7) / 0.3);
+      // Rotacao
+      final angle = (p.rotation + p.rotationSpeed * progress) * 3.14159 / 180;
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(angle);
+
+      final paint = Paint()
+        ..color = p.color.withOpacity(alpha.clamp(0.0, 1.0))
+        ..style = PaintingStyle.fill;
+
+      // Retangulo colorido (confete classico)
+      canvas.drawRect(
+        Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.6),
+        paint,
+      );
+
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter old) => old.progress != progress;
+}
+
 class PulseButton extends StatefulWidget {
   const PulseButton({
     required this.onPressed,

@@ -164,6 +164,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final data = await apiClient.post('/api/study/day-close', {});
       final map = Map<String, dynamic>.from(data as Map);
       if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      // Confete se o dia foi completo (todos os itens do checklist)
+      final checklist = map['checklist'] is Map
+          ? Map<String, dynamic>.from(map['checklist'] as Map)
+          : <String, dynamic>{};
+      final allDone = checklist['session'] == true &&
+          checklist['cards'] == true &&
+          checklist['revisions'] == true;
+      if (allDone || map['complete'] == true) {
+        ConfettiBurst.fire(context);
+      }
       ref.read(refreshTickProvider.notifier).state++;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(map['message']?.toString() ?? 'Dia encerrado.')),
