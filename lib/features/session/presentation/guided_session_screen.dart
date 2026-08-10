@@ -1115,15 +1115,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     ? 'Inicie a sessão para montar o plano de estudo de hoje.'
                     : 'Meta: ${study['subject']} · ${study['topic']}${started ? _keyboardHintForPhase(phaseName) : ''}',
             trailing: started
-                ? SurfacePanel(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Text(
-                      paused ? 'Pausado $clock' : clock,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                    ),
+                ? _BreathingClock(
+                    paused: paused,
+                    clock: clock,
                   )
                 : null,
           ),
@@ -1571,6 +1565,88 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Relógio da sessão com efeito de "breathing" quando pausado.
+/// Pulsar suave (opacity 0.6 ↔ 1.0) indica que está pausado mas ativo.
+class _BreathingClock extends StatefulWidget {
+  const _BreathingClock({required this.paused, required this.clock});
+  final bool paused;
+  final String clock;
+
+  @override
+  State<_BreathingClock> createState() => _BreathingClockState();
+}
+
+class _BreathingClockState extends State<_BreathingClock>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _breath;
+
+  @override
+  void initState() {
+    super.initState();
+    _breath = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    );
+    if (widget.paused) _breath.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(_BreathingClock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.paused != widget.paused) {
+      if (widget.paused) {
+        _breath.repeat(reverse: true);
+      } else {
+        _breath.stop();
+        _breath.value = 1.0;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _breath.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final label = widget.paused ? 'Pausado ${widget.clock}' : widget.clock;
+    final color = widget.paused ? cs.tertiary : cs.primary;
+
+    if (!widget.paused) {
+      return SurfacePanel(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _breath,
+      builder: (context, _) {
+        final t = Curves.easeInOut.transform(_breath.value);
+        return SurfacePanel(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: color.withOpacity(0.6 + t * 0.4),
+                ),
+          ),
+        );
+      },
     );
   }
 }
