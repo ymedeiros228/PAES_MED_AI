@@ -1331,6 +1331,106 @@ class _ConfettiPainter extends CustomPainter {
   bool shouldRepaint(_ConfettiPainter old) => old.progress != progress;
 }
 
+/// Cartão com efeito de virar 3D (rotação no eixo Y).
+/// Mostra [front] quando não virado e [back] quando virado.
+/// Animação suave com perspective transform — mais realista que fade.
+class FlipCard3D extends StatefulWidget {
+  const FlipCard3D({
+    required this.front,
+    required this.back,
+    required this.flipped,
+    super.key,
+  });
+
+  final Widget front;
+  final Widget back;
+  final bool flipped;
+
+  @override
+  State<FlipCard3D> createState() => _FlipCard3DState();
+}
+
+class _FlipCard3DState extends State<FlipCard3D>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _flipAnim;
+  late final Animation<double> _frontScale;
+  late final Animation<double> _backScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+    _flipAnim = CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic);
+    // Escala para simular profundidade 3D
+    _frontScale = Tween(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      ),
+    );
+    _backScale = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+      ),
+    );
+    if (widget.flipped) _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(FlipCard3D oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.flipped != widget.flipped) {
+      if (widget.flipped) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final angle = _flipAnim.value * 3.14159; // 0 a pi
+        // Determina qual face mostrar baseado no angulo
+        final showFront = angle < 1.5708; // < pi/2
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.001) // perspective
+            ..rotateY(angle),
+          child: showFront
+              ? Transform.scale(
+                  scale: _frontScale.value,
+                  child: widget.front,
+                )
+              : Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()..rotateY(3.14159),
+                  child: Transform.scale(
+                    scale: _backScale.value,
+                    child: widget.back,
+                  ),
+                ),
+        );
+      },
+    );
+  }
+}
+
 class PulseButton extends StatefulWidget {
   const PulseButton({
     required this.onPressed,

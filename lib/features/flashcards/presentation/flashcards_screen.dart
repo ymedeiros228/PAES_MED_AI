@@ -321,45 +321,46 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                         });
                                       },
                                       borderRadius: BorderRadius.circular(kRadiusButton),
-                                      child: AnimatedSwitcher(
-                                        duration: const Duration(milliseconds: 280),
-                                        transitionBuilder: (child, anim) {
-                                          // Efeito de virar carta: fade + slide vertical
-                                          final offset = Tween<Offset>(
-                                            begin: const Offset(0, 0.12),
-                                            end: Offset.zero,
-                                          ).animate(anim);
-                                          return FadeTransition(
-                                            opacity: anim,
-                                            child: SlideTransition(
-                                              position: offset,
-                                              child: child,
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          key: ValueKey('${id}_$flipped'),
+                                      child: FlipCard3D(
+                                        flipped: flipped,
+                                        front: Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                             vertical: 10,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: flipped
-                                                ? cs.primaryContainer.f38
-                                                : cs.surfaceContainerHigh.f38,
+                                            color: cs.surfaceContainerHigh.f38,
                                             borderRadius: BorderRadius.circular(kRadiusButton),
                                             border: Border.all(
-                                              color: flipped ? cs.primary.f38 : cs.outlineVariant.f38,
+                                              color: cs.outlineVariant.f38,
                                             ),
                                           ),
                                           width: double.infinity,
                                           child: Text(
-                                            flipped
-                                                ? (item['back']?.toString() ?? '')
-                                                : (item['front']?.toString() ?? ''),
+                                            item['front']?.toString() ?? '',
                                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                                   height: 1.4,
-                                                  color: flipped ? cs.onPrimaryContainer : null,
+                                                ),
+                                          ),
+                                        ),
+                                        back: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: cs.primaryContainer.f38,
+                                            borderRadius: BorderRadius.circular(kRadiusButton),
+                                            border: Border.all(
+                                              color: cs.primary.f38,
+                                            ),
+                                          ),
+                                          width: double.infinity,
+                                          child: Text(
+                                            item['back']?.toString() ?? '',
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                  height: 1.4,
+                                                  color: cs.onPrimaryContainer,
                                                 ),
                                           ),
                                         ),
