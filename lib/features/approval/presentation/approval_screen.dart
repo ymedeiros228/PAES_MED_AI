@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,6 +116,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -148,9 +150,18 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                   action: Wrap(
                     spacing: 8,
                     children: [
-                      TextButton(onPressed: _load, child: const Text('Tentar')),
                       TextButton(
-                        onPressed: () => context.go('/biblioteca'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          _load();
+                        },
+                        child: const Text('Tentar'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/biblioteca');
+                        },
                         child: const Text('Biblioteca'),
                       ),
                     ],
@@ -165,23 +176,32 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                     alignment: WrapAlignment.center,
                     children: [
                       FilledButton(
-                        onPressed: () => context.go('/biblioteca'),
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context.go('/biblioteca');
+                        },
                         child: const Text('Biblioteca'),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                        },
                         child: const Text('Sessão'),
                       ),
                     ],
                   ),
                 ),
-              for (var i = 0; i < items.length; i++)
-                Builder(
-                  builder: (_) {
-                    final q = items[i];
-                    final active = i == selected;
-                    return SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 10),
+              StaggeredFadeIn(
+                itemDelay: const Duration(milliseconds: 70),
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    Builder(
+                      builder: (_) {
+                        final q = items[i];
+                        final active = i == selected;
+                        return SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
                   color: active
                       ? Theme.of(context).colorScheme.primaryContainer.f45
                       : null,
@@ -190,9 +210,9 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                     children: [
                       Text(
                         '${q['subject']} · ${q['topic']} (${q['year']})',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
                         q['statement']?.toString() ?? '',
                         maxLines: 5,
@@ -205,7 +225,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                           color: Theme.of(context).colorScheme.onSurface.f72,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -241,6 +261,8 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                 );
                   },
                 ),
+                ],
+              ),
             ],
           ),
         ),

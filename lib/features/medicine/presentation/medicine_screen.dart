@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -141,6 +142,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         final cs = Theme.of(context).colorScheme;
 
         return ListView(
+          padding: const EdgeInsets.only(bottom: 24),
           children: [
             PageBody(
               child: Column(
@@ -171,7 +173,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           Expanded(
                             child: Text(
                               'Provas UEMA na base',
-                              style: Theme.of(context).textTheme.titleSmall,
+                              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
                             ),
                           ),
                           FilledButton.tonal(
@@ -198,46 +200,51 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                     )
                   else
-                    for (var i = 0; i < _rankItems.length; i++)
-                      Builder(
-                        builder: (context) {
-                          final item = _rankItems[i];
-                          final s = item['subject']?.toString() ?? '';
-                          final t = item['topic']?.toString() ?? '';
-                          final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
-                          final status = item['curationStatus']?.toString() ?? '';
-                          final curated = item['curated'] == true;
-                          final dirty = item['crossDomain'] == true || status == 'sujo';
-                          String? badge;
-                          if (dirty) {
-                            badge = 'revisar label';
-                          } else if (curated) {
-                            badge = 'curado';
-                          } else if (status == 'natureza' || nat) {
-                            badge = 'pendente';
-                          }
-                          final nOff = item['frequency'] ?? item['realInTopic'] ?? item['n'];
-                          final years = item['years'] as List? ?? const [];
-                          final yearHint = years.isNotEmpty
-                              ? ' · anos ${years.take(3).join(', ')}'
-                              : '';
-                          final countHint = nOff != null
-                              ? ' · $nOff na base'
-                              : '';
-                          final sessao = _sessionPath(item, officialN);
-                          return PlaylistTile(
-                            title: s,
-                            subtitle: '$t$countHint$yearHint',
-                            badge: badge,
-                            active: i == selected,
-                            leadingIcon: Icons.play_circle_outline_rounded,
-                            onPlay: () {
-                              setState(() => selected = i);
-                              context.go(sessao);
+                    StaggeredFadeIn(
+                      itemDelay: const Duration(milliseconds: 70),
+                      children: [
+                        for (var i = 0; i < _rankItems.length; i++)
+                          Builder(
+                            builder: (context) {
+                              final item = _rankItems[i];
+                              final s = item['subject']?.toString() ?? '';
+                              final t = item['topic']?.toString() ?? '';
+                              final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
+                              final status = item['curationStatus']?.toString() ?? '';
+                              final curated = item['curated'] == true;
+                              final dirty = item['crossDomain'] == true || status == 'sujo';
+                              String? badge;
+                              if (dirty) {
+                                badge = 'revisar label';
+                              } else if (curated) {
+                                badge = 'curado';
+                              } else if (status == 'natureza' || nat) {
+                                badge = 'pendente';
+                              }
+                              final nOff = item['frequency'] ?? item['realInTopic'] ?? item['n'];
+                              final years = item['years'] as List? ?? const [];
+                              final yearHint = years.isNotEmpty
+                                  ? ' · anos ${years.take(3).join(', ')}'
+                                  : '';
+                              final countHint = nOff != null
+                                  ? ' · $nOff na base'
+                                  : '';
+                              final sessao = _sessionPath(item, officialN);
+                              return PlaylistTile(
+                                title: s,
+                                subtitle: '$t$countHint$yearHint',
+                                badge: badge,
+                                active: i == selected,
+                                leadingIcon: Icons.play_circle_outline_rounded,
+                                onPlay: () {
+                                  setState(() => selected = i);
+                                  context.go(sessao);
+                                },
+                              );
                             },
-                          );
-                        },
-                      ),
+                          ),
+                      ],
+                    ),
 
                   const SizedBox(height: 16),
                   ExpansionTile(
@@ -385,7 +392,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SectionLabel('Inventário (base local)'),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Text(
                               'Oficiais: $officialN · Natureza: $natN\n'
                               'Resoluções reais: $realN'

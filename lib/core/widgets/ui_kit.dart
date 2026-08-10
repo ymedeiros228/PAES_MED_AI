@@ -455,22 +455,29 @@ class StatsStrip extends StatelessWidget {
                   children: [
                     Text(
                       items[i].$1,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.3,
-                          ),
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                        color: cs.onSurface,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       items[i].$2,
-                      style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: cs.onSurface.f72,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -2497,10 +2504,10 @@ class HeroStudyStrip extends StatelessWidget {
                     if (eyebrow != null) ...[
                       Text(
                         eyebrow!.toUpperCase(),
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           color: isDark ? const Color(0xFF3DC9A8) : const Color(0xFF0C7A63),
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.4,
                           fontSize: 11,
                         ),
                       ),
@@ -2508,20 +2515,23 @@ class HeroStudyStrip extends StatelessWidget {
                     ],
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: textOn,
-                            fontWeight: FontWeight.w800,
-                            height: 1.15,
-                          ),
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        color: textOn,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                        letterSpacing: -0.3,
+                      ),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 8),
                       Text(
                         subtitle!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: muted,
-                              height: 1.4,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: muted,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ],
@@ -2582,7 +2592,11 @@ class MissionQuestCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
                 ),
               ),
               Container(
@@ -2593,20 +2607,32 @@ class MissionQuestCard extends StatelessWidget {
                 ),
                 child: Text(
                   statusLabel,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: statusColor,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          SelectableText(
+            why,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: cs.onSurface.withOpacity(0.88),
+              height: 1.55,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(why, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 6),
           Text(
             honestNote,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: cs.primary,
+            ),
           ),
           if (onCta != null && status != MissionQuestStatus.cleared) ...[
             const SizedBox(height: 12),
@@ -2672,10 +2698,11 @@ class HonestBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Text(
       label,
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: cs.primary,
-            fontWeight: FontWeight.w700,
-          ),
+      style: GoogleFonts.inter(
+        fontSize: 12,
+        color: cs.primary,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

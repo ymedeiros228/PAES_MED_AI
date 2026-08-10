@@ -3,6 +3,7 @@ library;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'ui_kit.dart';
 
@@ -64,12 +65,13 @@ class EssayRoseChart extends StatelessWidget {
               radarBorderData: BorderSide(color: cs.outlineVariant),
               tickBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.5)),
               gridBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.6)),
-              ticksTextStyle: Theme.of(context).textTheme.labelSmall,
+              ticksTextStyle: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.withOpacity(0.5)),
               tickCount: 5,
-              titleTextStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ) ??
-                  const TextStyle(fontSize: 11),
+              titleTextStyle: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface.withOpacity(0.8),
+              ),
               getTitle: (index, angle) {
                 if (index < 0 || index >= keys.length) {
                   return const RadarChartTitle(text: '');
@@ -87,7 +89,10 @@ class EssayRoseChart extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Radar dos eixos (0–10) · treino local',
-          style: Theme.of(context).textTheme.labelSmall,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: cs.onSurface.withOpacity(0.6),
+          ),
         ),
         const SizedBox(height: 12),
         for (final key in keys)
@@ -99,20 +104,33 @@ class EssayRoseChart extends StatelessWidget {
               final t = value == null ? 0.0 : (value / 10.0).clamp(0.0, 1.0);
               final d = deltas?[key];
               return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
+                        Expanded(
+                          child: Text(
+                            label,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
                         if (d != null) ...[
                           DeltaChip(label: label.split(' ').first, delta: d),
                           const SizedBox(width: 8),
                         ],
                         Text(
                           value == null ? '—' : value.toStringAsFixed(1),
-                          style: Theme.of(context).textTheme.labelLarge,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurface,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
                         ),
                       ],
                     ),

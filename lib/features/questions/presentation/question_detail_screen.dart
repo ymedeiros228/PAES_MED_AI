@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -388,25 +389,30 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       children: [
         Text(
           '${q.subject} · ${q.topic} · ${q.year}',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+            color: cs.onSurface,
+          ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           kSoftAtalhosHint,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurface.f60,
-                fontSize: 11.5,
-              ),
+          style: GoogleFonts.inter(
+            fontSize: 11.5,
+            color: cs.onSurface.f60,
+          ),
         ),
         if (saveError != null) ...[
           const SizedBox(height: 8),
           QuietEmpty(
             message: saveError!,
             action: TextButton(
-              onPressed: () => setState(() => saveError = null),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                setState(() => saveError = null);
+              },
               child: const Text('Ok'),
             ),
           ),
@@ -415,7 +421,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
-              onPressed: _openSourcePdf,
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                _openSourcePdf();
+              },
               icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
               label: Text('Abrir PDF do ano ${q.year}'),
             ),
@@ -428,10 +437,14 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               children: [
                 Text(
                   'PDF ${q.year}: ainda não está na pasta Provas do PC (sem inventar).',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: cs.onSurface.withOpacity(0.7),
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () async {
+                    HapticFeedback.selectionClick();
                     final messenger = ScaffoldMessenger.of(context);
                     try {
                       await apiClient.post('/api/library/open-folder', {'folder': 'provas'});
@@ -544,20 +557,36 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   ChoiceChip(
                     label: Text(e.value),
                     selected: errorType == e.key,
-                    onSelected: (_) => setState(() => errorType = e.key),
+                    onSelected: (_) {
+                      HapticFeedback.selectionClick();
+                      setState(() => errorType = e.key);
+                    },
                   ),
               ],
             ),
-            FilledButton(onPressed: _confirmErrorAndSave, child: const Text('Salvar erro')),
+            FilledButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                _confirmErrorAndSave();
+              },
+              child: const Text('Salvar erro'),
+            ),
           ],
         ],
       ],
     );
 
     final professorPane = ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
       children: [
-        Text('Professor', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Professor',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: cs.onSurface,
+          ),
+        ),
         if (!revealed || pendingErrorPick)
           Text(
             pendingErrorPick
@@ -621,14 +650,18 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go(
-                    '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
-                    '&topic=${Uri.encodeComponent(q.topic)}',
-                  ),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    context.go(
+                      '/adaptativo?subject=${Uri.encodeComponent(q.subject)}'
+                      '&topic=${Uri.encodeComponent(q.topic)}',
+                    );
+                  },
                   child: const Text('Treinar este tópico'),
                 ),
                 TextButton(
                   onPressed: () {
+                    HapticFeedback.selectionClick();
                     final stmt = q.statement;
                     final seed = stmt.length > 240 ? '${stmt.substring(0, 240)}…' : stmt;
                     final qp = <String, String>{
@@ -643,7 +676,13 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   },
                   child: const Text('Perguntar ao tutor'),
                 ),
-                TextButton(onPressed: _cardsFromQuestion, child: const Text('Criar cartão')),
+                TextButton(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    _cardsFromQuestion();
+                  },
+                  child: const Text('Criar cartão'),
+                ),
               ],
             ),
           ),
@@ -661,13 +700,24 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           _Block('No acervo', 'Anos: ${(freq['years'] as List?)?.join(', ') ?? q.year} · ${freq['count'] ?? 1}x'),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            title: Text('Prioridade local (não é incidência UEMA)', style: Theme.of(context).textTheme.titleSmall),
+            title: Text(
+              'Prioridade local (não é incidência UEMA)',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface,
+              ),
+            ),
             children: [
-              Text(
+              SelectableText(
                 'Prioridade ${chance['priorityScore'] ?? chance['probability'] ?? '—'}'
                 ' · ${chance['confidence'] ?? '—'}\n'
                 '${chance['reason'] ?? ''}\n${chance['disclaimer'] ?? ''}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: cs.onSurface.withOpacity(0.75),
+                ),
               ),
             ],
           ),
@@ -677,12 +727,28 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             runSpacing: 8,
             children: [
               FilledButton.tonal(
-                onPressed: professorBusy ? null : _generateProfessor,
+                onPressed: professorBusy
+                    ? null
+                    : () {
+                        HapticFeedback.mediumImpact();
+                        _generateProfessor();
+                      },
                 child: const Text('Rascunho IA'),
               ),
-              FilledButton.tonal(onPressed: _cardsFromQuestion, child: const Text('Criar cartões')),
               FilledButton.tonal(
-                onPressed: adaptiveLoading ? null : _adaptive,
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  _cardsFromQuestion();
+                },
+                child: const Text('Criar cartões'),
+              ),
+              FilledButton.tonal(
+                onPressed: adaptiveLoading
+                    ? null
+                    : () {
+                        HapticFeedback.mediumImpact();
+                        _adaptive();
+                      },
                 child: const Text('Mais do tópico'),
               ),
             ],
@@ -693,10 +759,33 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rascunho', style: Theme.of(context).textTheme.titleSmall),
-                  Text(professorDraft!['resolution']?.toString() ?? ''),
-                  const SizedBox(height: 8),
-                  FilledButton(onPressed: professorBusy ? null : _acceptProfessor, child: const Text('Aceitar')),
+                  Text(
+                    'Rascunho',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    professorDraft!['resolution']?.toString() ?? '',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      height: 1.55,
+                      color: cs.onSurface.withOpacity(0.88),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: professorBusy
+                        ? null
+                        : () {
+                            HapticFeedback.mediumImpact();
+                            _acceptProfessor();
+                          },
+                    child: const Text('Aceitar'),
+                  ),
                 ],
               ),
             ),
@@ -706,7 +795,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             QuietEmpty(
               message: adaptiveLoadError!,
               action: TextButton(
-                onPressed: () => setState(() => adaptiveLoadError = null),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => adaptiveLoadError = null);
+                },
                 child: const Text('Ok'),
               ),
             ),
@@ -755,7 +847,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ],
             )
           : ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
               children: [
                 Center(
                   child: ConstrainedBox(

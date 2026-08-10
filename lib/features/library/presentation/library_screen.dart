@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1180,6 +1181,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       focusNode: _focusNode,
       onKeyEvent: (node, event) => _onKey(node, event, officialN),
       child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -1225,23 +1227,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bem-vindo — Semana 1', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 6),
+                      Text('Bem-vindo — Semana 1', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+                      const SizedBox(height: 8),
                       Text(
                         'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
                         'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85)),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         children: [
                           FilledButton.icon(
-                            onPressed: busy ? null : () => unawaited(_semana1Real()),
+                            onPressed: busy ? null : () { HapticFeedback.mediumImpact(); unawaited(_semana1Real()); },
                             icon: const Icon(Icons.download_rounded, size: 18),
                             label: const Text('Atualizar 2024–26'),
                           ),
-                          TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
+                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
                         ],
                       ),
                     ],
@@ -1253,7 +1255,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 QuietEmpty(
                   message: partialLoadNote!,
                   action: TextButton(
-                    onPressed: busy ? null : _load,
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
                     child: const Text('Tentar'),
                   ),
                 ),
@@ -1269,7 +1271,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   hintText: 'ex.: genética, osmose…',
                   suffixIcon: IconButton(
                     tooltip: 'Buscar',
-                    onPressed: searching ? null : _runSearch,
+                    onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
                     icon: searching
                         ? const SizedBox(
                             width: 18,
@@ -1307,9 +1309,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   searchHistoryNote!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+                  style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.error),
                 ),
               ],
               if (searchHistory.isNotEmpty) ...[
@@ -1387,30 +1387,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   children: [
                     Text(
                       officialN == 0 ? 'Semana 1 · 2024–26' : 'Acervo 2024–26',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Text(
                       officialN == 0
                           ? 'Atualize o acervo e estude de verdade — sem inventar prova antiga.'
                           : 'Um toque atualiza o que estiver no PC ou no portal.'
                               '${anosParciais > 0 ? ' · $anosParciais ano(s) só com prova (sem gabarito).' : ''}'
                               '${anosCompletos > 0 ? ' · $anosCompletos par(es) prova+gab.' : ''}',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: GoogleFonts.inter(fontSize: 14, height: 1.5),
                     ),
                     if (anosParciais > 0) ...[
                       const SizedBox(height: 8),
                       Text(
                         'Parcial: coloque o gabarito do ano na pasta Gabaritos, depois Importar / Importar do PC. '
                         'Sem gabarito o app não grava oficiais (não inventa resposta).',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         children: [
                           OutlinedButton.icon(
-                            onPressed: busy ? null : () => _openFolder('gabaritos'),
+                            onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
                             icon: const Icon(Icons.folder_open_rounded, size: 18),
                             label: const Text('Abrir gabaritos'),
                           ),
@@ -1423,23 +1423,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       runSpacing: 8,
                       children: [
                         FilledButton.icon(
-                          onPressed: busy ? null : _semana1Real,
+                          onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
                           icon: const Icon(Icons.download_rounded),
                           label: Text(officialN == 0 ? 'Atualizar 2024–26' : 'Atualizar'),
                         ),
                         FilledButton.tonalIcon(
-                          onPressed: busy ? null : _importAllComplete,
+                          onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
                           icon: const Icon(Icons.library_add_check_rounded),
                           label: const Text('Importar todos com gabarito'),
                         ),
                         OutlinedButton(
-                          onPressed: busy ? null : _commitOnDisk,
+                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
                           child: const Text('Gravar PDFs do PC'),
                         ),
                         FilledButton.tonal(
-                          onPressed: () => context.go(
+                          onPressed: () { HapticFeedback.mediumImpact(); context.go(
                             '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                          ),
+                          ); },
                           child: const Text('Estudar agora'),
                         ),
                       ],
@@ -1456,11 +1456,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     spacing: 8,
                     children: [
                       FilledButton(
-                        onPressed: busy ? null : _semana1Real,
+                        onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
                         child: const Text('Atualizar 2024–26'),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                        onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'); },
                         child: const Text('Sessão'),
                       ),
                     ],
@@ -1495,7 +1495,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                     : partial
                                         ? cs.tertiaryContainer
                                         : cs.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 '$y',

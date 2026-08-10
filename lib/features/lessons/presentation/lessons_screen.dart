@@ -2,6 +2,7 @@
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -223,14 +224,12 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           'Cole pelo menos ~80 caracteres de legenda.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: cs.onSurface.f55,
-                              ),
+                          style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
                     if (status != null) ...[
                       const SizedBox(height: 8),
-                      Text(status!, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.primary)),
+                      Text(status!, style: GoogleFonts.inter(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
                     ],
                   ],
                 ),
@@ -245,17 +244,17 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     children: [
                       Text(
                         '${lastLesson!['subject']} · ${lastLesson!['topic']}',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
                       ),
                       if (lastLesson!['summary'] != null) ...[
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Text('${lastLesson!['summary']}'),
                       ],
                       if (lastLesson!['macetes'] != null) ...[
-                        const SizedBox(height: 6),
-                        Text('Macete: ${lastLesson!['macetes']}', style: Theme.of(context).textTheme.bodySmall),
+                        const SizedBox(height: 8),
+                        SelectableText('Macete: ${lastLesson!['macetes']}', style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85))),
                       ],
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                       FilledButton.tonal(
                         onPressed: () => context.go(
                           '/adaptativo?subject=${Uri.encodeComponent('${lastLesson!['subject']}')}'
@@ -309,7 +308,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                         if (item['incidenceNote'] != null)
                                           Text(
                                             '${item['incidenceNote']}',
-                                            style: Theme.of(context).textTheme.bodySmall,
+                                            style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                           ),
                                         const SizedBox(height: 8),
                                         FilledButton.tonal(

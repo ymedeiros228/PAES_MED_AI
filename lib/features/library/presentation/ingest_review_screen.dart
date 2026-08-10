@@ -165,9 +165,9 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
               : 'Ainda não há questões boas o suficiente — confira gabarito e use “Só as boas” depois.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, 'review'), child: const Text('Revisar primeiro')),
+          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'review'); }, child: const Text('Revisar primeiro')),
           if (high > 0)
-            FilledButton(onPressed: () => Navigator.pop(ctx, 'commit'), child: const Text('Sim, gravar')),
+            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'commit'); }, child: const Text('Sim, gravar')),
         ],
       ),
     );
@@ -241,7 +241,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           content: Text(toast),
           action: SnackBarAction(
             label: 'Estudar agora',
-            onPressed: () => context.go(sessaoPath),
+            onPressed: () { HapticFeedback.selectionClick(); context.go(sessaoPath); },
           ),
           duration: const Duration(seconds: 6),
         ),
@@ -253,11 +253,11 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           content: Text('$toast\n\nQuer estudar Natureza/UEMA agora?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx, 'professor'),
+              onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'professor'); },
               child: const Text('Preparar explicações'),
             ),
-            TextButton(onPressed: () => Navigator.pop(ctx, 'later'), child: const Text('Depois')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, 'study'), child: const Text('Estudar agora')),
+            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'later'); }, child: const Text('Depois')),
+            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
           ],
         ),
       );
@@ -306,8 +306,8 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salvar')),
+          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('Cancelar')),
+          FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); }, child: const Text('Salvar')),
         ],
       ),
     );
@@ -486,7 +486,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                 const VerticalDivider(width: 1),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
                     children: [
                       if (_isSuspect(current))
                         SurfacePanel(

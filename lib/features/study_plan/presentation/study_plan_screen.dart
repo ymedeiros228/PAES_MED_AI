@@ -225,6 +225,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -284,9 +285,9 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(kRadiusControl),
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 8,
@@ -495,7 +496,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: fromErrors ? cs.tertiaryContainer : cs.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(kRadiusControl),
                             ),
                             child: Text(
                               '${item['day']}',

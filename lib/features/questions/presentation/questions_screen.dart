@@ -381,7 +381,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       child: RepaintBoundary(
                         child: ListView.builder(
                           controller: _scrollCtrl,
-                          padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
+                          padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
                           cacheExtent: 500, // pré-renderiza além da viewport — scroll smoother
                           itemCount: items.length,
                           itemBuilder: (context, i) {
