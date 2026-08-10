@@ -4,6 +4,7 @@ import 'dart:io' show File, Platform;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -310,6 +311,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       focusNode: _focusNode,
       onKeyEvent: _onKey,
       child: ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -333,9 +335,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Expanded(
                           child: Text(
                             'PAES MED AI',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                         Container(
@@ -355,10 +358,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 kAppVersionLabel,
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
                               ),
                             ],
                           ),
@@ -371,9 +375,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       '• Funciona sem internet — dados no seu PC\n'
                       '• Não inventa % de aprovação nem prova oficial ausente\n'
                       '• Catálogo de reforço (vídeo/leitura) não é edital da banca',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: GoogleFonts.inter(fontSize: 14, height: 1.5),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Builder(
                       builder: (_) {
                         final isWin = !kIsWeb && Platform.isWindows;
@@ -412,17 +416,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 isWin
                                     ? 'Build Windows · modo desenvolvimento (flutter run)'
                                     : 'Build de estudo',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.f72,
-                                    ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface.f72,
+                                ),
                               ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Text(
                               'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
                               'e redação com missões (treino local · não banca).',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.f72,
-                                  ),
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                height: 1.5,
+                                color: Theme.of(context).colorScheme.onSurface.f72,
+                              ),
                             ),
                           ],
                         );
@@ -474,9 +482,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             if (d == 0) return 'Prova: é hoje (treino local)';
                             return 'Prova em $d dia(s) · contagem local';
                           }(),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.f72,
-                              ),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            height: 1.5,
+                            color: Theme.of(context).colorScheme.onSurface.f72,
+                          ),
                         ),
                       ),
                     ],
@@ -486,18 +496,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Data inválida — use AAAA-MM-DD válido.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ],
                     if (examState.hydrateNote != null && exam.isEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
                         examState.hydrateNote!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.tertiary,
-                            ),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
                       ),
                     ],
                     if (examState.syncError != null) ...[
@@ -559,7 +573,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               msg.isEmpty
                                   ? 'oficiais ${c['realCount'] ?? '—'} · transversais ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: GoogleFonts.inter(fontSize: 13, height: 1.5),
                             ),
                             trailing: focus
                                 ? Tooltip(
@@ -625,13 +639,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             final at = lastBackup!['at']?.toString() ?? '—';
                             return at;
                           }(),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: GoogleFonts.inter(fontSize: 13, height: 1.5),
                         ),
                       ),
                     ],
                     if (backups.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text('Restaurar', style: Theme.of(context).textTheme.titleSmall),
+                      Text('Restaurar', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
                       for (final b in backups.take(5))
                         ListTile(
                           dense: true,
@@ -704,7 +718,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ? 'Nenhum provedor ativo'
                                     : 'Ativo: ${providerNames[active] ?? active}'
                                         '${activeModel == null ? '' : ' · $activeModel'}',
-                                style: Theme.of(context).textTheme.titleSmall,
+                                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
                               ),
                             ),
                             IconButton(
@@ -794,7 +808,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'As chaves ficam somente neste computador, fora das cópias de segurança e do repositório.',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: GoogleFonts.inter(fontSize: 13, height: 1.5),
                         ),
                         if (aiBusy)
                           const CompactStatus(
@@ -815,7 +829,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Avançado', style: Theme.of(context).textTheme.titleSmall),
+                title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Mídia · oficina · índices · caminhos'),
                 children: [
                   SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
@@ -1025,14 +1039,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: const Text('Pasta de dados'),
                     subtitle: Text(
                       health?['dataDir']?.toString() ?? '—',
-                      style: Theme.of(context).textTheme.labelSmall,
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
               ),
               if (msg != null) ...[
                 const SizedBox(height: 12),
-                Text(msg!, style: Theme.of(context).textTheme.bodySmall),
+                Text(msg!, style: GoogleFonts.inter(fontSize: 13, height: 1.5)),
               ],
             ],
           ),
@@ -1058,13 +1072,13 @@ class _ThemeModePicker extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tema', style: Theme.of(context).textTheme.titleSmall),
+          Text('Tema', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text(
             'Também na barra lateral ou Ctrl+T',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: GoogleFonts.inter(fontSize: 13, height: 1.5),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           SegmentedButton<ThemeMode>(
             segments: [
               for (final o in options)
@@ -1142,7 +1156,7 @@ class _AiProviderEditor extends StatelessWidget {
             Expanded(
               child: Text(
                 '$name · $_statusText',
-                style: Theme.of(context).textTheme.titleSmall,
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
           ],

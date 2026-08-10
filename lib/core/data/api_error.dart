@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'api_client.dart';
 
@@ -85,12 +86,17 @@ void showOpenPathSnackBar(
             color: Colors.white,
             size: 22,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.45,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
