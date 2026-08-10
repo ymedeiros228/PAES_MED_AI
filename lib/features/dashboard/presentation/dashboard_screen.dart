@@ -253,6 +253,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       data: (data) {
         final routine = Map<String, dynamic>.from(data['dailyRoutine'] as Map? ?? {});
+        final cs = Theme.of(context).colorScheme;
         final checklist = Map<String, dynamic>.from(routine['checklist'] as Map? ?? {});
         final sessionPath = routine['sessionPath']?.toString() ??
             (data['officialUnlocked'] == true
@@ -628,8 +629,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ExpansionTile(
                             tilePadding: EdgeInsets.zero,
                             initiallyExpanded: true,
-                            title: Text('Mais do dia', style: Theme.of(context).textTheme.titleSmall),
-                            subtitle: const Text('semana, pulso, relevo e ritmo'),
+                            title: Text(
+                              'Mais do dia',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'semana, pulso, relevo e ritmo',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: cs.onSurface.f72,
+                              ),
+                            ),
                             children: [
                               PlaylistTile(
                                 title: 'Ver meu relevo',
@@ -646,20 +660,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     children: [
                                       Text(
                                         week['label']?.toString() ?? 'Semana',
-                                        style: Theme.of(context).textTheme.titleSmall,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: cs.onSurface,
+                                        ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 10),
                                       LinearProgressIndicator(
                                         value: ((week['minutesPercent'] as num?) ?? 0) / 100.0,
                                         minHeight: 6,
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      const SizedBox(height: 6),
+                                      const SizedBox(height: 8),
                                       Text(
                                         '${week['minutes'] ?? 0}/${week['goalMinutes'] ?? 300} min · '
                                         '${week['daysActive'] ?? 0}/${week['goalDays'] ?? 5} dias · '
                                         'streak ${week['streakDays'] ?? data['streakDays'] ?? 0}',
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: cs.onSurface.f72,
+                                          fontFeatures: const [FontFeature.tabularFigures()],
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -724,26 +746,36 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     children: [
                                       Text(
                                         readiness['label']?.toString() ?? 'Pulso',
-                                        style: Theme.of(context).textTheme.titleSmall,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: cs.onSurface,
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Indicador ${readyScore.toStringAsFixed(0)}/100',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                              color: Theme.of(context).colorScheme.onSurface.f55,
-                                            ),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: cs.onSurface.f55,
+                                          fontFeatures: const [FontFeature.tabularFigures()],
+                                        ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(height: 10),
                                       LinearProgressIndicator(
                                         value: (readyScore / 100).clamp(0.0, 1.0),
                                         minHeight: 6,
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       if (readiness['tip'] != null) ...[
-                                        const SizedBox(height: 8),
-                                        Text(
+                                        const SizedBox(height: 10),
+                                        SelectableText(
                                           readiness['tip'].toString(),
-                                          style: Theme.of(context).textTheme.bodySmall,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: cs.onSurface.f72,
+                                            height: 1.5,
+                                          ),
                                         ),
                                       ],
                                     ],
