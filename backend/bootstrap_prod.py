@@ -7,14 +7,39 @@ Idempotente: se o banco já tem questões, só reindexa o RAG.
 
 from __future__ import annotations
 
+import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
+def _restore_seed_data() -> None:
+    """Copia PDFs/dados do image (data-seed) para o disco persistente (data).
+
+    No Render, o disco mount em /app/data esconde os arquivos do Docker image.
+    Esta função restaura os PDFs originais se não existirem no disco.
+    """
+    seed = Path("/app/data-seed")
+    target = Path("/app/data")
+    if not seed.is_dir():
+        return  # não estamos em Docker/Render
+    for subdir in ("provas", "gabaritos", "edital"):
+        src = seed / subdir
+        dst = target / subdir
+        if not src.is_dir():
+            continue
+        dst.mkdir(parents=True, exist_ok=True)
+        for f in src.iterdir():
+            dst_file = dst / f.name
+            if not dst_file.exists():
+                shutil.copy2(str(f), str(dst_file))
+
+
 def bootstrap_production() -> dict:
     """Garante que o banco tem questões oficiais + RAG indexado."""
+    _restore_seed_data()
+
     from db import DB_PATH, init_db
     from seed import seed
     from ingest_pdf import import_and_commit_year, pair_prova_gabarito, sanitize_question_statements

@@ -28,10 +28,14 @@ RUN cd /app && flutter build web --release --base-href=/
 # Move o build web pra onde o backend espera
 RUN mkdir -p /app/backend/build/web && cp -r /app/build/web/* /app/backend/build/web/
 
+# Preserva PDFs/dados originais antes do mount do disco Render
+# (o disco /app/data overlay esconde os arquivos do image)
+RUN cp -r /app/data /app/data-seed
+
 # Expõe a porta
 ENV PORT=8000
 EXPOSE $PORT
 
-# Comando de start
+# Comando de start (shell form para expandir $PORT)
 WORKDIR /app/backend
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
