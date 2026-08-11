@@ -63,7 +63,9 @@
     <div class="spinner"></div>
   </div>
   <script>
-    // Bootstrap Flutter web usando a API moderna (flutter.js)
+    // flutter_bootstrap.js (auto-carregado por flutter.js) ja chama
+    // _flutter.loader.load(). Nao chamamos novamente — apenas escondemos
+    // o splash quando o Flutter adiciona sua view ao DOM.
     function _hideSplash() {
       var splash = document.getElementById('splash');
       if (splash) {
@@ -71,22 +73,26 @@
         setTimeout(function() { splash.remove(); }, 500);
       }
     }
-    window.addEventListener('load', function() {
-      _flutter.loader.load({
-        onEntrypointLoaded: async function(engineInitializer) {
-          let appRunner = await engineInitializer.initializeEngine();
-          await appRunner.runApp();
+    // Observer: detecta quando o Flutter injeta o <flt-glass-pane> ou <flutter-view>
+    var _observer = new MutationObserver(function(mutations) {
+      if (document.querySelector('flutter-view, flt-glass-pane, flt-scene-host')) {
+        _hideSplash();
+        _observer.disconnect();
+      }
+    });
+    _observer.observe(document.body, { childList: true, subtree: true });
+    // Fallback: se der timeout, esconde o splash e mostra erro
+    setTimeout(function() {
+      var splash = document.getElementById('splash');
+      if (splash && !splash.classList.contains('hidden')) {
+        if (document.querySelector('flutter-view, flt-glass-pane, flt-scene-host')) {
           _hideSplash();
-        }
-      }).catch(function(err) {
-        console.error('Flutter loader error:', err);
-        var splash = document.getElementById('splash');
-        if (splash) {
+        } else {
           splash.querySelector('p').textContent = 'Erro ao carregar. Recarregue a página.';
           splash.querySelector('.spinner').style.display = 'none';
         }
-      });
-    });
+      }
+    }, 30000);
   </script>
 </body>
 </html>
