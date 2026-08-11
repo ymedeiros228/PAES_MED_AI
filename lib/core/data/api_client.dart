@@ -7,9 +7,6 @@ import 'package:http/http.dart' as http;
 // Conditional import: na web usa open_url_web.dart (JS interop), no desktop usa stub.
 import 'open_url_stub.dart' if (dart.library.html) 'open_url_web.dart' show openUrlInBrowser;
 
-// JS interop para window.open (web only — ignorado em outras plataformas)
-import 'dart:js_interop' if (dart.library.html) 'dart:html' show js;
-
 class ApiException implements Exception {
   const ApiException(this.message);
   final String message;
