@@ -30,10 +30,11 @@ backend/.env
 !.env.example
 !backend/.env.example
 
-# Banco e dados de estudo do usuário
+# Banco e dados de estudo do usuário (exceto deploy/data/ para Render)
 data/paes_med_ai.db
 data/paes_med_ai.db-*
 data/**/*.db
+!deploy/data/paes_med_ai.db
 data/backups/
 data/aulas/*
 !data/aulas/.gitkeep
