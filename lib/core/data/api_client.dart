@@ -4,6 +4,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+// Conditional import: na web usa open_url_web.dart (JS interop), no desktop usa stub.
+import 'open_url_stub.dart' if (dart.library.html) 'open_url_web.dart' show openUrlInBrowser;
+
+// JS interop para window.open (web only — ignorado em outras plataformas)
+import 'dart:js_interop' if (dart.library.html) 'dart:html' show js;
+
 class ApiException implements Exception {
   const ApiException(this.message);
   final String message;
@@ -38,10 +44,26 @@ class ApiClient {
     if (_configuredBaseUrl.trim().isNotEmpty) {
       return _configuredBaseUrl.trim().replaceFirst(RegExp(r'/$'), '');
     }
+    // Web sem API_BASE_URL: tenta o mesmo host (deploy unificado backend+front).
+    if (kIsWeb) {
+      return '${windowOrigin}';
+    }
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8000';
     }
     return 'http://127.0.0.1:8000';
+  }
+
+  /// Origin atual no browser (vazio fora da web).
+  static String get windowOrigin {
+    if (kIsWeb) {
+      try {
+        return Uri.base.origin;
+      } catch (_) {
+        return '';
+      }
+    }
+    return '';
   }
 
   Future<dynamic> get(String path, [Map<String, String>? query]) async {
@@ -100,6 +122,27 @@ class ApiClient {
     }
   }
 
+  /// Upload a partir de bytes (web: FilePicker retorna bytes, não path).
+  Future<dynamic> postMultipartBytes(
+    String path, {
+    required String fileField,
+    required List<int> fileBytes,
+    required String filename,
+    Map<String, String> fields = const {},
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final req = http.MultipartRequest('POST', uri);
+    req.fields.addAll(fields);
+    req.files.add(http.MultipartFile.fromBytes(fileField, fileBytes, filename: filename));
+    try {
+      final streamed = await req.send().timeout(_uploadTimeout);
+      final response = await http.Response.fromStream(streamed);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Upload esgotou (180s). PDFs muito grandes podem falhar.');
+    }
+  }
+
   dynamic _decode(http.Response response) {
     final raw = response.body.trim().isEmpty ? '{}' : utf8.decode(response.bodyBytes);
     final decoded = jsonDecode(raw);
@@ -108,6 +151,23 @@ class ApiClient {
     }
     final detail = decoded is Map ? decoded['detail']?.toString() : null;
     throw ApiException(detail ?? 'Erro HTTP ${response.statusCode}');
+  }
+
+  /// Abre arquivo/pasta via /api/library/open-path.
+  /// Na web, se o backend retornar webUrl, abre no browser (window.open).
+  /// No desktop, o backend abre no SO (os.startfile).
+  Future<Map<String, dynamic>> openPath(String path) async {
+    final result = await post('/api/library/open-path', {'path': path});
+    final map = Map<String, dynamic>.from(result as Map);
+    // Se veio webUrl (web mode), abre no browser
+    final webUrl = map['webUrl']?.toString();
+    if (kIsWeb && webUrl != null && webUrl.isNotEmpty) {
+      final fullUrl = webUrl.startsWith('http')
+          ? webUrl
+          : '$baseUrl$webUrl';
+      openUrlInBrowser(fullUrl);
+    }
+    return map;
   }
 }
 

@@ -109,6 +109,7 @@ if exist "data\ACERVO.md" copy /y "data\ACERVO.md" "%OUT%\data\" >nul
 if exist "data\ACERVO_MANIFEST.json" copy /y "data\ACERVO_MANIFEST.json" "%OUT%\data\" >nul
 xcopy /e /i /y "data\provas" "%OUT%\data\provas\" >nul 2>nul
 xcopy /e /i /y "data\gabaritos" "%OUT%\data\gabaritos\" >nul 2>nul
+if exist "data\paes_med_ai.db" copy /y "data\paes_med_ai.db" "%OUT%\data\" >nul
 copy /y PAES_MED_AI_Iniciar.bat "%OUT%\Iniciar_PAES_MED_AI.bat" >nul
 
 REM Verificacao minima do pacote

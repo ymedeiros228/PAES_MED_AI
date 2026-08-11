@@ -152,7 +152,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
           final dir = parent.contains('/')
               ? parent.substring(0, parent.lastIndexOf('/'))
               : path;
-          await apiClient.post('/api/library/open-path', {'path': dir});
+          await apiClient.openPath(dir);
         } catch (e) {
           if (mounted) {
             setState(

@@ -977,7 +977,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       if (path.isNotEmpty) {
         try {
           final parent = p.dirname(path);
-          await apiClient.post('/api/library/open-path', {'path': parent});
+          await apiClient.openPath(parent);
         } catch (e) {
           setState(
             () => exportMsg =

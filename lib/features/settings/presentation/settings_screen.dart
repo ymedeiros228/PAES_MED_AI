@@ -262,15 +262,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickPdf() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-    if (result == null || result.files.single.path == null) return;
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.single;
     setState(() => msg = 'Lendo PDF…');
     try {
-      final data = await apiClient.postMultipart(
-        '/api/ingest/pdf?kind=$kind&subject=Geral',
-        fileField: 'file',
-        filePath: result.files.single.path!,
-        filename: result.files.single.name,
-      );
+      final dynamic data;
+      if (kIsWeb || file.bytes != null) {
+        // Web: FilePicker retorna bytes, não path
+        data = await apiClient.postMultipartBytes(
+          '/api/ingest/pdf?kind=$kind&subject=Geral',
+          fileField: 'file',
+          fileBytes: file.bytes!,
+          filename: file.name,
+        );
+      } else {
+        data = await apiClient.postMultipart(
+          '/api/ingest/pdf?kind=$kind&subject=Geral',
+          fileField: 'file',
+          filePath: file.path!,
+          filename: file.name,
+        );
+      }
       final map = Map<String, dynamic>.from(data as Map);
       final qs = (map['questions'] as List? ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))
@@ -409,6 +421,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
                                 label: Text('Build de demonstração · $buildIdentity'),
+                                visualDensity: VisualDensity.compact,
+                              )
+                            else if (kIsWeb)
+                              Chip(
+                                avatar: Icon(
+                                  Icons.language_outlined,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                label: Text('Versão web · $buildIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else

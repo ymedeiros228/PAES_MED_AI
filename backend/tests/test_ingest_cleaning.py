@@ -44,6 +44,21 @@ def test_clean_question_statement_preserves_number_before_embedded_header() -> N
     assert clean_question_statement(value) == "A análise cita 123 Antes. Depois do cabeçalho."
 
 
+def test_clean_question_statement_removes_paes_duplicated_header() -> None:
+    dirty = "PAES 2026PAES 2026 3 Há total evidência de que a mulher sofreu um apagamento."
+    assert clean_question_statement(dirty) == "Há total evidência de que a mulher sofreu um apagamento."
+
+
+def test_clean_question_statement_removes_prova_prod_textual_header() -> None:
+    dirty = "PROVA DE PRODUÇÃO TEXTUAL - PAES 2024 A liberdade é um valor social."
+    assert clean_question_statement(dirty) == "A liberdade é um valor social."
+
+
+def test_clean_question_statement_preserves_legitimate_paes_reference() -> None:
+    value = "O PAES 2024 teve 60 questões. O candidato acertou 35."
+    assert clean_question_statement(value) == value
+
+
 def test_sanitize_question_statements_updates_only_dirty_rows(tmp_path, monkeypatch) -> None:
     import sqlite3
     from contextlib import contextmanager

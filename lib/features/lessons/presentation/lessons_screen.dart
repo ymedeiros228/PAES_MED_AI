@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -94,20 +95,34 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
 
   Future<void> _uploadAudio() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.audio);
-    if (result == null || result.files.single.path == null) return;
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.single;
+    // Web: FilePicker retorna bytes, não path
+    if (!kIsWeb && file.path == null) return;
+    if (kIsWeb && file.bytes == null) return;
     setState(() {
       busy = true;
       status = 'Enviando áudio…';
     });
     try {
-      final path = result.files.single.path!;
-      final data = await apiClient.postMultipart(
-        '/api/lessons/from-audio',
-        fileField: 'file',
-        filePath: path,
-        filename: result.files.single.name,
-        fields: {'title': titleCtrl.text.trim()},
-      );
+      final dynamic data;
+      if (kIsWeb || file.bytes != null) {
+        data = await apiClient.postMultipartBytes(
+          '/api/lessons/from-audio',
+          fileField: 'file',
+          fileBytes: file.bytes!,
+          filename: file.name,
+          fields: {'title': titleCtrl.text.trim()},
+        );
+      } else {
+        data = await apiClient.postMultipart(
+          '/api/lessons/from-audio',
+          fileField: 'file',
+          filePath: file.path!,
+          filename: file.name,
+          fields: {'title': titleCtrl.text.trim()},
+        );
+      }
       ref.read(refreshTickProvider.notifier).state++;
       setState(() {
         lastLesson = data is Map ? Map<String, dynamic>.from(data) : null;

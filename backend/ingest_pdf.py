@@ -130,6 +130,18 @@ _ORPHAN_SUPERIOR_RE = re.compile(
     r"(?i)à\s+educa[cç][aã]o\s+superior(?:à\s+educa[cç][aã]o\s+superior)?\s*",
 )
 
+# "PAES 2026PAES 2026 3" — cabeçalho de página duplicado colado no enunciado.
+# Exige a duplicação (PAES 20XXPAES 20XX) + número de página para não remover
+# referências legítimas como "o PAES 2024 teve...".
+_PAES_DUP_HEADER_RE = re.compile(
+    r"(?i)\bPAES\s+20\d{2}\s*PAES\s+20\d{2}\s*\d{1,3}\s*",
+)
+
+# "PROVA DE PRODUÇÃO TEXTUAL - PAES 2024" — cabeçalho de seção de redação
+_PROVA_PROD_TEXTUAL_RE = re.compile(
+    r"(?i)prova\s+de\s+produ[cç][aã]o\s+textual\s*[-–—]?\s*paes\s+20\d{2}\s*",
+)
+
 
 def clean_question_statement(statement: str) -> str:
     """Remove artefatos de cabeçalho do PDF sem tocar nos números do conteúdo."""
@@ -149,6 +161,8 @@ def clean_question_statement(statement: str) -> str:
     cleaned = _EXAM_TIME_RE.sub(" ", cleaned)
     cleaned = _CADELHO_DESC_RE.sub(" ", cleaned)
     cleaned = _ORPHAN_SUPERIOR_RE.sub(" ", cleaned)
+    cleaned = _PAES_DUP_HEADER_RE.sub(" ", cleaned)
+    cleaned = _PROVA_PROD_TEXTUAL_RE.sub(" ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     # O número de página só pode ser removido imediatamente após o artefato.
     if had_pdf_header:

@@ -320,7 +320,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       return;
     }
     try {
-      await apiClient.post('/api/library/open-path', {'path': path});
+      await apiClient.openPath(path);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Abrindo PDF PAES ${q.year}')),

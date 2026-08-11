@@ -86,7 +86,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
         final i = path.lastIndexOf(sep);
         if (i > 0) {
           try {
-            await apiClient.post('/api/library/open-path', {'path': path.substring(0, i)});
+            await apiClient.openPath(path.substring(0, i));
           } catch (e) {
             msg = '$msg · ${humanApiError(e, fallback: 'Pasta de export não abriu.')}';
           }

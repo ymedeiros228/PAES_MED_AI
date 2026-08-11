@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Assistente pessoal de estudos PAES/UEMA Medicina.">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="PAES MED AI">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <title>PAES MED AI</title>
+  <meta name="theme-color" content="#0d6e6e">
+
+  <script>
+    // Flutter injeta a versão do service worker aqui via template token.
+    var serviceWorkerVersion = "{{flutter_service_worker_version}}";
+  </script>
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <style>
+    /* Splash screen while Flutter loads */
+    #splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d6e6e;
+      color: white;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+    #splash h1 { font-size: 1.8rem; margin: 0 0 0.5rem; font-weight: 700; }
+    #splash p { font-size: 0.9rem; opacity: 0.8; margin: 0; }
+    #splash .spinner {
+      margin-top: 1.5rem;
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <div id="splash">
+    <h1>PAES MED AI</h1>
+    <p>Carregando seus estudos...</p>
+    <div class="spinner"></div>
+  </div>
+  <script>
+    // Bootstrap Flutter web usando a API moderna (flutter.js)
+    window.addEventListener('load', function() {
+      _flutter.loader.load({
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          await appRunner.runApp();
+        }
+      }).then(function() {
+        // Remove splash once Flutter is ready
+        var splash = document.getElementById('splash');
+        if (splash) {
+          splash.classList.add('hidden');
+          setTimeout(function() { splash.remove(); }, 500);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -26,8 +26,14 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview").strip()
 
 # Origens locais (app desktop, Flutter web em porta aleatoria, emulador Android).
 # Sites externos abertos no navegador do usuario nao podem falar com a API local.
+# Em producao (web), set PAES_ALLOWED_ORIGINS=https://seu-site.vercel.app
 LOCAL_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1|\[::1\]|10\.0\.2\.2)(:\d+)?$"
 
 EXTRA_ORIGINS = [o.strip() for o in os.getenv("PAES_ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
+# Em deploy unificado (Render), o mesmo servidor serve front + API — permitir mesma origin.
+RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "").strip()
+if RENDER_EXTERNAL_URL:
+    EXTRA_ORIGINS.append(RENDER_EXTERNAL_URL)
 
 MAX_UPLOAD_BYTES = int(os.getenv("PAES_MAX_UPLOAD_MB", "50")) * 1024 * 1024

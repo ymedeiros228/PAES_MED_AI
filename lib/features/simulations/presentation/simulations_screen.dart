@@ -374,7 +374,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       final dir = map['dir']?.toString() ?? '';
       if (dir.isNotEmpty) {
         try {
-          await apiClient.post('/api/library/open-path', {'path': dir});
+          await apiClient.openPath(dir);
         } catch (e) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

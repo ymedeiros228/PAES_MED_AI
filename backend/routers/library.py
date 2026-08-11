@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 
 from db import DATA_DIR, db
 from ingest_pdf import (
@@ -201,7 +202,11 @@ def api_library_open_folder(payload: OpenFolderRequest) -> dict[str, Any]:
 
 @router.post("/api/library/open-path")
 def api_library_open_path(payload: OpenPathRequest) -> dict[str, Any]:
-    """Abre arquivo/pasta local dentro de DATA_DIR (Ciclo AP)."""
+    """Abre arquivo/pasta local dentro de DATA_DIR (Ciclo AP).
+
+    No desktop: abre no SO (os.startfile/xdg-open).
+    Na web: retorna uma URL que o front abre no browser (window.open).
+    """
     from pathlib import Path as _Path
 
     target = _Path(payload.path).resolve()
@@ -215,6 +220,20 @@ def api_library_open_path(payload: OpenPathRequest) -> dict[str, Any]:
             404,
             "Arquivo não encontrado no disco — pode ter sido movido ou apagado.",
         )
+    # Se é um arquivo PDF, retorna URL para o front abrir no browser (web mode)
+    if target.is_file() and target.suffix.lower() == ".pdf":
+        rel = target.relative_to(root)
+        parts = rel.parts
+        if len(parts) >= 2:
+            folder = parts[0]
+            filename = "/".join(parts[1:])
+            return {
+                "ok": True,
+                "path": str(target),
+                "webUrl": f"/api/library/file/{folder}/{filename}",
+                "isWeb": True,
+            }
+    # Desktop: abre no SO
     try:
         if os.name == "nt":
             os.startfile(str(target))  # type: ignore[attr-defined]
@@ -229,6 +248,35 @@ def api_library_open_path(payload: OpenPathRequest) -> dict[str, Any]:
     except OSError as exc:
         raise HTTPException(500, f"Não foi possível abrir: {exc}") from exc
     return {"ok": True, "path": str(target)}
+
+
+@router.get("/api/library/file/{folder}/{filename}")
+def api_library_serve_file(folder: str, filename: str) -> FileResponse:
+    """Serve um arquivo de data/ (provas, gabaritos, edital) para a versão web.
+
+    No desktop o app usa os.startfile; na web o front abre esta URL no browser.
+    Só permite pastas seguras dentro de DATA_DIR — sem path traversal.
+    """
+    allowed_folders = {"provas", "gabaritos", "edital", "aulas"}
+    if folder not in allowed_folders:
+        raise HTTPException(403, "Pasta não permitida")
+    # Sanitiza filename: só basename, sem barras/.. 
+    safe_name = Path(filename).name
+    if safe_name != filename or ".." in filename:
+        raise HTTPException(400, "Nome de arquivo inválido")
+    target = (DATA_DIR / folder / safe_name).resolve()
+    root = DATA_DIR.resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise HTTPException(403, "Fora da pasta de dados") from exc
+    if not target.exists() or not target.is_file():
+        raise HTTPException(404, "Arquivo não encontrado")
+    return FileResponse(
+        str(target),
+        media_type="application/pdf" if safe_name.lower().endswith(".pdf") else "application/octet-stream",
+        filename=safe_name,
+    )
 
 @router.get("/api/library/materials")
 def api_library_materials(subject: str | None = None, topic: str | None = None) -> dict[str, Any]:

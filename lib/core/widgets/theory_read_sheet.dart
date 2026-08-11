@@ -221,7 +221,7 @@ Future<void> openTheoryReadSheet(
                                       icon: const Icon(Icons.open_in_new_rounded),
                                       onPressed: () async {
                                         try {
-                                          await apiClient.post('/api/library/open-path', {'path': path});
+                                          await apiClient.openPath(path);
                                           if (ctx.mounted) {
                                             showOpenPathSnackBar(
                                               ctx,

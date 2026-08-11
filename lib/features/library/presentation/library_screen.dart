@@ -970,7 +970,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final label = map['label']?.toString() ?? '$year';
       final pdfPath = map['path']!.toString();
       try {
-        await apiClient.post('/api/library/open-path', {'path': pdfPath});
+        await apiClient.openPath(pdfPath);
         if (mounted) {
           showOpenPathSnackBar(context, message: 'Abrindo PDF $label');
         }
@@ -1002,7 +1002,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     if (path.isNotEmpty) {
       try {
-        await apiClient.post('/api/library/open-path', {'path': path});
+        await apiClient.openPath(path);
         setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
         setState(

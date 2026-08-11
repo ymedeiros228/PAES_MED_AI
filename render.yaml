@@ -1,0 +1,35 @@
+# Render Blueprint — PAES MED AI
+# Deploy unificado: backend FastAPI serve API + front Flutter web (build/web)
+#
+# Como usar:
+#   1. Push este repo pro GitHub (privado)
+#   2. Conecte no Render > New > Blueprint > selecione este render.yaml
+#   3. Configure env vars: GEMINI_API_KEY, GEMINI_MODEL
+#   4. Deploy
+#
+# O que acontece no deploy:
+#   - Docker build: instala Python deps + compila Flutter web
+#   - Start: uvicorn serve API + front web no mesmo servidor
+#   - Primeiro startup: ingere PDFs oficiais + indexa RAG (se banco vazio)
+#   - Disco persistente: data/ sobrevive entre deploys (banco + PDFs)
+
+services:
+  - type: web
+    name: paes-med-ai
+    dockerfilePath: ./Dockerfile
+    plan: free
+    dockerCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerContext: .
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # configure manualmente no Render dashboard
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+      - key: PAES_BOOTSTRAP_PROD
+        value: "1"
+      - key: PAES_ALLOWED_ORIGINS
+        sync: false  # URL do front se for deploy separado (Vercel)
+    disk:
+      name: paes-data
+      mountPath: /app/data
+      sizeGB: 1
