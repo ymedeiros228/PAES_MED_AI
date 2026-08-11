@@ -63,7 +63,9 @@
     <div class="spinner"></div>
   </div>
   <script>
-    // Inicia o Flutter web e esconde o splash quando o app estiver pronto.
+    // flutter.js (com defer) carrega flutter_bootstrap.js que chama
+    // _flutter.loader.load() automaticamente. Nao chamamos load() aqui.
+    // Apenas escondemos o splash quando o Flutter injeta sua view no DOM.
     function _hideSplash() {
       var splash = document.getElementById('splash');
       if (splash) {
@@ -71,22 +73,21 @@
         setTimeout(function() { splash.remove(); }, 500);
       }
     }
-    window.addEventListener('load', function() {
-      _flutter.loader.load({
-        onEntrypointLoaded: async function(engineInitializer) {
-          var appRunner = await engineInitializer.initializeEngine();
-          await appRunner.runApp();
-          _hideSplash();
-        }
-      }).catch(function(err) {
-        console.error('Flutter loader error:', err);
-        var splash = document.getElementById('splash');
-        if (splash) {
-          splash.querySelector('p').textContent = 'Erro ao carregar. Recarregue a página.';
-          splash.querySelector('.spinner').style.display = 'none';
-        }
-      });
+    // Observer: detecta quando o Flutter injeta sua view
+    var _observer = new MutationObserver(function() {
+      if (document.querySelector('flutter-view, flt-glass-pane')) {
+        _hideSplash();
+        _observer.disconnect();
+      }
     });
+    _observer.observe(document.body, { childList: true, subtree: true });
+    // Fallback: timeout de 60s
+    setTimeout(function() {
+      var splash = document.getElementById('splash');
+      if (splash && !splash.classList.contains('hidden')) {
+        _hideSplash();
+      }
+    }, 60000);
   </script>
 </body>
 </html>
