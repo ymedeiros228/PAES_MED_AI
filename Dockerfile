@@ -14,8 +14,7 @@ WORKDIR /app
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# Instala Flutter SDK
-ENV FLUTTER_VERSION=3.24.5
+# Instala Flutter SDK (stable channel)
 RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git /opt/flutter
 ENV PATH="/opt/flutter/bin:$PATH"
 RUN flutter precache --web
@@ -23,8 +22,8 @@ RUN flutter precache --web
 # Copia o projeto
 COPY . /app/
 
-# Compila o front web
-RUN cd /app && flutter build web --release
+# Compila o front web (base-href=/ para servir da raiz)
+RUN cd /app && flutter build web --release --base-href=/
 
 # Move o build web pra onde o backend espera
 RUN mkdir -p /app/backend/build/web && cp -r /app/build/web/* /app/backend/build/web/

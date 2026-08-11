@@ -13,10 +13,13 @@ REM e descomente a linha --dart-define abaixo.
 set "API_URL=%API_URL%"
 
 echo Compilando Flutter web...
+REM --wasm pode nao existir em Flutter antigo; tentamos primeiro, fallback sem wasm.
 if "%API_URL%"=="" (
-  call flutter build web --release --wasm
+  call flutter build web --release --wasm --base-href=/ 2>nul
+  if errorlevel 1 call flutter build web --release --base-href=/
 ) else (
-  call flutter build web --release --wasm --dart-define=API_BASE_URL=%API_URL%
+  call flutter build web --release --wasm --base-href=/ --dart-define=API_BASE_URL=%API_URL% 2>nul
+  if errorlevel 1 call flutter build web --release --base-href=/ --dart-define=API_BASE_URL=%API_URL%
 )
 if errorlevel 1 (
   echo Build Flutter web falhou.

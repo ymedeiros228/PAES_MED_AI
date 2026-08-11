@@ -81,13 +81,17 @@ def on_startup() -> None:
 
 
 # --- Servir front web (deploy unificado) ---
-# Se a pasta build/web existir ao lado do backend, serve o app Flutter compilado.
-# Em desenvolvimento web, o flutter run usa sua própria porta; em produção (Render),
-# este mount permite que o mesmo servidor entregue API + front.
-_WEB_BUILD = Path(__file__).resolve().parent.parent / "build" / "web"
+# Se a pasta build/web existir, serve o app Flutter compilado.
+# Em desenvolvimento: <repo>/build/web. Em Docker: <backend>/build/web.
+_REPO_WEB = Path(__file__).resolve().parent.parent / "build" / "web"
+_BACKEND_WEB = Path(__file__).resolve().parent / "build" / "web"
+_WEB_BUILD = _REPO_WEB if _REPO_WEB.is_dir() else _BACKEND_WEB
 if _WEB_BUILD.is_dir():
-    # Assets do Flutter (main.dart.js, ícones, etc.) sob /assets
-    app.mount("/assets", StaticFiles(directory=str(_WEB_BUILD / "assets")), name="flutter-assets")
+    # Diretórios estáticos do Flutter web
+    for _subdir in ("assets", "canvaskit", "icons"):
+        _subdir_path = _WEB_BUILD / _subdir
+        if _subdir_path.is_dir():
+            app.mount(f"/{_subdir}", StaticFiles(directory=str(_subdir_path)), name=f"flutter-{_subdir}")
     # Arquivos soltos na raiz do build web (manifest.json, favicon, etc.)
     for _f in _WEB_BUILD.iterdir():
         if _f.is_file():
@@ -105,5 +109,10 @@ if _WEB_BUILD.is_dir():
     @app.get("/{full_path:path}")
     def spa_fallback(full_path: str) -> FileResponse:
         """SPA fallback: qualquer rota não-API retorna index.html (go_router cuida)."""
+        # Rotas de API não encontradas devolvem JSON 404, não HTML
+        if full_path.startswith("api/") or full_path in ("health", "docs", "openapi.json"):
+            from fastapi import HTTPException
+
+            raise HTTPException(404, f"Endpoint não encontrado: /{full_path}")
         return FileResponse(str(_WEB_BUILD / "index.html"))
 

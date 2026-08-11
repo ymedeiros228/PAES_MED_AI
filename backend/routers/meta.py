@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 
 from ai_state import (
     configure_provider,
@@ -37,7 +39,17 @@ router = APIRouter(tags=["meta"])
 
 
 @router.get("/")
-def root() -> dict[str, str]:
+def root() -> Any:
+    # Se o build web existir, serve o SPA; caso contrário, JSON informativo.
+    # meta.py está em backend/routers/, então:
+    #   .parent = routers/, .parent.parent = backend/, .parent.parent.parent = repo root
+    for _web in (
+        Path(__file__).resolve().parent.parent.parent / "build" / "web",
+        Path(__file__).resolve().parent.parent / "build" / "web",
+    ):
+        _idx = _web / "index.html"
+        if _idx.is_file():
+            return FileResponse(str(_idx))
     return {"message": "PAES MED AI API", "docs": "/docs", "health": "/health"}
 
 @router.get("/health")

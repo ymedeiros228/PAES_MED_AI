@@ -64,18 +64,26 @@
   </div>
   <script>
     // Bootstrap Flutter web usando a API moderna (flutter.js)
+    function _hideSplash() {
+      var splash = document.getElementById('splash');
+      if (splash) {
+        splash.classList.add('hidden');
+        setTimeout(function() { splash.remove(); }, 500);
+      }
+    }
     window.addEventListener('load', function() {
       _flutter.loader.load({
         onEntrypointLoaded: async function(engineInitializer) {
           let appRunner = await engineInitializer.initializeEngine();
           await appRunner.runApp();
+          _hideSplash();
         }
-      }).then(function() {
-        // Remove splash once Flutter is ready
+      }).catch(function(err) {
+        console.error('Flutter loader error:', err);
         var splash = document.getElementById('splash');
         if (splash) {
-          splash.classList.add('hidden');
-          setTimeout(function() { splash.remove(); }, 500);
+          splash.querySelector('p').textContent = 'Erro ao carregar. Recarregue a página.';
+          splash.querySelector('.spinner').style.display = 'none';
         }
       });
     });
