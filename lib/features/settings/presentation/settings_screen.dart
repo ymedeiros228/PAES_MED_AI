@@ -235,9 +235,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _reindex() async {
     try {
       await apiClient.post('/api/rag/reindex', {});
-      setState(() => msg = 'Índice atualizado.');
+      setState(() => msg = 'Base de estudos atualizada.');
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Falha no índice.'));
+      setState(() => msg = humanApiError(e, fallback: 'Falha ao atualizar base de estudos.'));
     }
   }
 
@@ -593,7 +593,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             subtitle: Text(
                               msg.isEmpty
-                                  ? 'oficiais ${c['realCount'] ?? '—'} · transversais ${c['crossDomainCount'] ?? '—'}'
+                                  ? 'com gabarito: ${c['realCount'] ?? '—'} · interdisciplinares: ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
                               style: GoogleFonts.inter(fontSize: 13, height: 1.5),
                             ),
@@ -852,7 +852,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Mídia · oficina · índices · caminhos'),
+                subtitle: const Text('Mídia · ferramentas · base de estudos'),
                 children: [
                   SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
                   SwitchListTile(

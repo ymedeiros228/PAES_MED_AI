@@ -1705,11 +1705,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 children: [
                   if (curation != null) ...[
                     Text(
-                      'Oficiais: ${curation!['officialCount'] ?? '—'} · '
-                      'Natureza: ${curation!['naturezaCount'] ?? '—'}\n'
-                      'Resoluções reais: ${curation!['realCount'] ?? 0}'
+                      'Questões oficiais: ${curation!['officialCount'] ?? '—'}\n'
+                      'Com gabarito oficial: ${curation!['realCount'] ?? 0}'
                       '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
-                      'Cross-domain: ${curation!['crossDomainCount'] ?? 0}',
+                      'Questões interdisciplinares: ${curation!['crossDomainCount'] ?? 0}',
                       style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                     if (curation!['message'] != null)

@@ -215,11 +215,11 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               final dirty = item['crossDomain'] == true || status == 'sujo';
                               String? badge;
                               if (dirty) {
-                                badge = 'revisar label';
+                                badge = 'interdisciplinar';
                               } else if (curated) {
-                                badge = 'curado';
+                                badge = 'confirmado';
                               } else if (status == 'natureza' || nat) {
-                                badge = 'pendente';
+                                badge = 'a revisar';
                               }
                               final nOff = item['frequency'] ?? item['realInTopic'] ?? item['n'];
                               final years = item['years'] as List? ?? const [];
