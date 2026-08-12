@@ -224,8 +224,15 @@ def _api_chat(
 @router.post("/api/chat", response_model=ChatResponse)
 def api_chat(payload: ChatRequest) -> ChatResponse:
     first_error: HTTPException | None = None
+    # Se o usuário forçou um provedor específico, tenta ele primeiro
+    forced = payload.provider if payload.provider and provider_configured(payload.provider) else None
+    if forced:
+        try:
+            return _api_chat(payload, provider_override=forced)
+        except HTTPException as error:
+            first_error = error
     providers = configured_providers()
-    preferred = _configured_provider()
+    preferred = forced or _configured_provider()
     if preferred and preferred not in providers:
         providers.insert(0, preferred)
     for candidate in ("gemini", "groq", "openrouter", "openai"):

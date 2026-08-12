@@ -24,6 +24,10 @@ class ChatRequest(BaseModel):
         default="professor",
         description="professor|medico|crianca|analogia|mapa|resumo|macete|flashcard",
     )
+    provider: str | None = Field(
+        default=None,
+        description="gemini|groq|openrouter|openai — permite forçar um provedor específico.",
+    )
 
 class ChatResponse(BaseModel):
     answer: str

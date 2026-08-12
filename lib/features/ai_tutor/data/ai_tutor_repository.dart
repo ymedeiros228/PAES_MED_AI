@@ -31,13 +31,18 @@ class AiTutorRepository {
     required String message,
     required List<ChatMessage> history,
     String style = 'professor',
+    String? provider,
   }) async {
     try {
-      final data = await apiClient.post('/api/chat', {
+      final body = <String, dynamic>{
         'message': message,
         'style': style,
         'history': history.map((item) => item.toJson()).toList(),
-      });
+      };
+      if (provider != null && provider.isNotEmpty) {
+        body['provider'] = provider;
+      }
+      final data = await apiClient.post('/api/chat', body);
       final map = Map<String, dynamic>.from(data as Map);
       final answer = map['answer']?.toString();
       if (answer == null || answer.trim().isEmpty) {

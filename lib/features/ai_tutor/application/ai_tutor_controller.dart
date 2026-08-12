@@ -8,18 +8,21 @@ class AiTutorState {
     this.isLoading = false,
     this.error,
     this.style = 'professor',
+    this.provider,
   });
 
   final List<ChatMessage> messages;
   final bool isLoading;
   final String? error;
   final String style;
+  final String? provider;
 
   AiTutorState copyWith({
     List<ChatMessage>? messages,
     bool? isLoading,
     String? error,
     String? style,
+    String? provider,
     bool clearError = false,
   }) {
     return AiTutorState(
@@ -27,6 +30,7 @@ class AiTutorState {
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
       style: style ?? this.style,
+      provider: provider ?? this.provider,
     );
   }
 }
@@ -61,6 +65,10 @@ class AiTutorController extends StateNotifier<AiTutorState> {
     state = state.copyWith(style: style);
   }
 
+  void setProvider(String? provider) {
+    state = state.copyWith(provider: provider);
+  }
+
   Future<void> send(String rawText) async {
     final text = rawText.trim();
     if (text.isEmpty || state.isLoading) return;
@@ -78,6 +86,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
         message: text,
         history: previousHistory,
         style: state.style,
+        provider: state.provider,
       );
       final localizedAnswer = answer.answer.replaceAllMapped(
         RegExp(r'\bStep\s+(\d+)\b', caseSensitive: false),
