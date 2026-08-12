@@ -332,7 +332,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               PageHeader(
                 eyebrow: 'Conta',
                 title: 'Ajustes',
-                subtitle: 'Preferências · atalho B = cópia de segurança',
+                subtitle: 'Personalize sua experiência de estudo',
               ),
 
               SectionLabel('Sobre'),
@@ -344,6 +344,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     Row(
                       children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.primaryContainer,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.local_hospital_rounded,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'PAES MED AI',
@@ -383,10 +403,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'App local de treino para PAES UEMA Medicina.\n'
-                      '• Funciona sem internet — dados no seu PC\n'
-                      '• Não inventa % de aprovação nem prova oficial ausente\n'
-                      '• Catálogo de reforço (vídeo/leitura) não é edital da banca',
+                      'Plataforma de estudos para PAES UEMA Medicina.\n'
+                      '• Funciona sem internet — dados no seu computador\n'
+                      '• Usa apenas questões oficiais reais\n'
+                      '• Tutor IA com seu material de estudo',
                       style: GoogleFonts.inter(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 12),
@@ -404,7 +424,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Build de demonstração · $displayIdentity'),
+                                label: Text('Versão desktop · $displayIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else if (kIsWeb)
@@ -420,24 +440,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             else
                               Text(
                                 defaultTargetPlatform == TargetPlatform.windows
-                                    ? 'Build Windows · modo desenvolvimento (flutter run)'
-                                    : 'Build de estudo',
+                                    ? 'Versão Windows · modo desenvolvimento'
+                                    : 'Versão de estudo',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).colorScheme.onSurface.f72,
                                 ),
                               ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
-                              'e redação com missões (prática · não banca).',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                height: 1.5,
-                                color: Theme.of(context).colorScheme.onSurface.f72,
-                              ),
-                            ),
                           ],
                         );
                       },
@@ -456,6 +466,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
+                      secondary: Icon(Icons.center_focus_strong_rounded, color: Theme.of(context).colorScheme.primary),
                       title: const Text('Modo foco'),
                       subtitle: const Text('Esconde telas extras. Atalho F'),
                       value: focus,
@@ -464,10 +475,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ref.read(focusModeProvider.notifier).setFocus(v);
                       },
                     ),
+                    const Divider(height: 20),
                     TextField(
                       decoration: const InputDecoration(
                         labelText: 'Data da prova',
                         hintText: 'AAAA-MM-DD',
+                        prefixIcon: Icon(Icons.event_rounded),
                       ),
                       controller: examCtrl,
                       onSubmitted: (v) => ref.read(examDateProvider.notifier).setDate(v.trim()),
@@ -484,9 +497,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: Text(
                           () {
                             final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
-                            if (d < 0) return 'Prova: $d dias atrás (data local)';
-                            if (d == 0) return 'Prova: é hoje (prática)';
-                            return 'Prova em $d dia(s) · contagem local';
+                            if (d < 0) return 'Prova: $d dias atrás';
+                            if (d == 0) return 'Prova: é hoje!';
+                            return 'Prova em $d dia(s)';
                           }(),
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -542,15 +555,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: Theme.of(context).colorScheme.primary),
-                      title: Text(online ? 'Tudo certo nesta máquina' : 'App sem conexão local'),
+                      leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: online ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error),
+                      title: Text(online ? 'Tudo certo' : 'Sem conexão'),
                       subtitle: Text(
                         online
                             ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
                             : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
                       ),
                       trailing: IconButton(
-                        tooltip: 'Checar backend',
+                        tooltip: 'Verificar conexão',
                         onPressed: () {
                           HapticFeedback.selectionClick();
                           _health();
@@ -568,30 +581,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             contentPadding: EdgeInsets.zero,
                             leading: Icon(
                               floorOk ? Icons.biotech_outlined : Icons.warning_amber_rounded,
-                              color: Theme.of(context).colorScheme.primary,
+                              color: floorOk ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.tertiary,
                             ),
                             title: Text(
                               floorOk
-                                  ? 'Base de Natureza em dia'
-                                  : 'Base de Natureza ainda fraca',
+                                  ? 'Questões de Natureza em dia'
+                                  : 'Questões de Natureza insuficientes',
                             ),
                             subtitle: Text(
                               msg.isEmpty
-                                  ? 'com gabarito: ${c['realCount'] ?? '—'} · interdisciplinares: ${c['crossDomainCount'] ?? '—'}'
+                                  ? 'Com gabarito: ${c['realCount'] ?? '—'} · Interdisciplinares: ${c['crossDomainCount'] ?? '—'}'
                                   : msg,
                               style: GoogleFonts.inter(fontSize: 13, height: 1.5),
                             ),
                             trailing: focus
                                 ? Tooltip(
-                                    message: 'Desligue F (modo foco) para abrir Domínio',
+                                    message: 'Desligue o modo foco para ver as áreas',
                                     child: TextButton(
                                       onPressed: null,
-                                      child: const Text('Domínio'),
+                                      child: const Text('Áreas'),
                                     ),
                                   )
                                 : TextButton(
                                     onPressed: () => context.go('/medicina'),
-                                    child: const Text('Domínio'),
+                                    child: const Text('Áreas'),
                                   ),
                           );
                         },
@@ -599,16 +612,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Divider(height: 20),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.menu_book_rounded, color: Theme.of(context).colorScheme.primary),
                       title: const Text('Biblioteca de provas'),
-                      subtitle: const Text('Onde entram PDFs oficiais'),
+                      subtitle: const Text('Onde ficam os PDFs oficiais'),
                       trailing: TextButton(onPressed: () => context.go('/biblioteca'), child: const Text('Abrir')),
                     ),
-                    FilledButton.tonal(
+                    const SizedBox(height: 8),
+                    FilledButton.tonalIcon(
                       onPressed: () {
                         HapticFeedback.mediumImpact();
                         _backup();
                       },
-                      child: const Text('Salvar cópia de segurança (B)'),
+                      icon: const Icon(Icons.backup_rounded, size: 18),
+                      label: const Text('Salvar cópia de segurança'),
                     ),
                     if (backupListError != null) ...[
                       const SizedBox(height: 8),
@@ -688,7 +704,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
 
               const SizedBox(height: 8),
-              SectionLabel('Tutor IA'),
+              SectionLabel('Tutor IA', hint: 'Configure sua chave de IA'),
               SurfacePanel(
                 child: Builder(
                   builder: (context) {
@@ -836,16 +852,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Opções avançadas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Mídia · ferramentas · base de estudos'),
+                subtitle: const Text('Mídia, ferramentas e índices'),
                 children: [
-                  SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
+                  SectionLabel('Mídia', hint: 'Sugestões de vídeos e artigos'),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
+                    secondary: Icon(Icons.smart_toy_rounded, color: Theme.of(context).colorScheme.primary),
                     title: const Text('Tutor com IA conectada'),
                     subtitle: Text(
                       aiOnline
                           ? 'Chave configurada'
-                          : 'Sem chave — tutor só com material local',
+                          : 'Sem chave — tutor usa apenas seu material',
                     ),
                     value: aiOnline && ref.watch(tutorOnlinePrefProvider),
                     onChanged: aiOnline
@@ -871,11 +888,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         children: [
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('Sugerir vídeos na Fila'),
+                            title: const Text('Sugerir vídeos'),
                             subtitle: Text(
                               yt
-                                  ? 'YouTube no .env + catálogo local (não é edital UEMA)'
-                                  : 'Catálogo local · YOUTUBE_API_KEY no .env é opcional',
+                                  ? 'YouTube configurado + catálogo local'
+                                  : 'Catálogo local · YouTube opcional',
                             ),
                             value: suggest,
                             onChanged: (v) async {
@@ -891,11 +908,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('Sugerir artigos na Fila'),
+                            title: const Text('Sugerir artigos'),
                             subtitle: Text(
                               serper
-                                  ? 'Serper no .env + catálogo local (não é edital UEMA)'
-                                  : 'Catálogo local · SERPER_API_KEY no .env é opcional',
+                                  ? 'Serper configurado + catálogo local'
+                                  : 'Catálogo local · Serper opcional',
                             ),
                             value: suggestArt,
                             onChanged: (v) async {
@@ -938,8 +955,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 children: [
                                   const ListTile(
                                     contentPadding: EdgeInsets.zero,
-                                    title: Text('Últimas aberturas de mídia'),
-                                    subtitle: Text('local · não é progresso de banca'),
+                                    title: Text('Materiais abertos recentemente'),
+                                    subtitle: Text('Histórico local'),
                                   ),
                                   for (final raw in items.take(6))
                                     ListTile(
@@ -988,11 +1005,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
-                  SectionLabel('Ferramentas', hint: 'PDF, aprovação, rascunhos'),
+                  SectionLabel('Ferramentas', hint: 'PDF, questões e índices'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Importar PDF aqui'),
-                    subtitle: Text('Tipo: $kind — o habitual é Biblioteca'),
+                    leading: Icon(Icons.picture_as_pdf_outlined, color: Theme.of(context).colorScheme.primary),
+                    title: const Text('Importar PDF'),
+                    subtitle: Text('Tipo: $kind — use a Biblioteca para importar'),
                     trailing: FilledButton.tonal(onPressed: _pickPdf, child: const Text('Escolher')),
                   ),
                   Wrap(
@@ -1008,10 +1026,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.fact_check_outlined, color: Theme.of(context).colorScheme.primary),
                     title: const Text('Aprovar questões geradas'),
                     trailing: focus
                         ? Tooltip(
-                            message: 'Desligue F (modo foco) para aprovar',
+                            message: 'Desligue o modo foco para aprovar',
                             child: FilledButton.tonal(
                               onPressed: null,
                               child: const Text('Abrir'),
@@ -1024,24 +1043,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Lote de rascunhos (professor)'),
-                    trailing: FilledButton.tonal(onPressed: _professorBatch, child: const Text('Rodar')),
+                    leading: Icon(Icons.edit_document, color: Theme.of(context).colorScheme.primary),
+                    title: const Text('Gerar questões automaticamente'),
+                    trailing: FilledButton.tonal(onPressed: _professorBatch, child: const Text('Executar')),
                   ),
-                  SectionLabel('Índices', hint: 'Busca na base e recálculo local'),
+                  SectionLabel('Índices', hint: 'Busca e estatísticas'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Reindexar material local'),
-                    trailing: FilledButton.tonal(onPressed: _reindex, child: const Text('Rodar')),
+                    leading: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.primary),
+                    title: const Text('Reindexar material'),
+                    trailing: FilledButton.tonal(onPressed: _reindex, child: const Text('Executar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Recalcular base local'),
-                    subtitle: const Text('POST reprocess — frequência/perfil na leitura'),
-                    trailing: FilledButton.tonal(onPressed: _reprocess, child: const Text('Rodar')),
+                    leading: Icon(Icons.analytics_outlined, color: Theme.of(context).colorScheme.primary),
+                    title: const Text('Recalcular estatísticas'),
+                    subtitle: const Text('Frequência e perfil das questões'),
+                    trailing: FilledButton.tonal(onPressed: _reprocess, child: const Text('Executar')),
                   ),
                   SectionLabel('Pastas', hint: 'Onde ficam os dados'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.folder_outlined, color: Theme.of(context).colorScheme.primary),
                     title: const Text('Pasta de dados'),
                     subtitle: Text(
                       health?['dataDir']?.toString() ?? '—',
@@ -1078,10 +1101,16 @@ class _ThemeModePicker extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tema', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
+          Row(
+            children: [
+              Icon(Icons.palette_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 8),
+              Text('Tema', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
+            ],
+          ),
           const SizedBox(height: 4),
           Text(
-            'Também na barra lateral ou Ctrl+T',
+            'Escolha claro, escuro ou automático. Atalho: Ctrl+T',
             style: GoogleFonts.inter(fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 12),
