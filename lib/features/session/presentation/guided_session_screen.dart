@@ -480,7 +480,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ],
         });
       } catch (e) {
-        gapsErr = humanApiError(e, fallback: 'Lacunas não agendadas na fila — abra a Fila para revisar.');
+        gapsErr = humanApiError(e, fallback: 'Tópicos para revisar não agendados na fila — abra a Fila para revisar.');
       }
     }
     if (!mounted) return;
@@ -1526,7 +1526,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ],
                 if (!pendingErrorPick && lastRemediation != null && lastRemediation!.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Text(lastRemediation!['title']?.toString() ?? 'Remediação', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(lastRemediation!['title']?.toString() ?? 'Reforço', style: const TextStyle(fontWeight: FontWeight.w700)),
                   for (final s in (lastRemediation!['steps'] as List? ?? []))
                     Text('• $s'),
                   SelectableText(

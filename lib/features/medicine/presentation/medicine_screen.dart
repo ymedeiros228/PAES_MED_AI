@@ -188,8 +188,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   SectionLabel(
                     'Prioridade',
                     hint: officialN >= 10
-                        ? 'Pontuação local de estudo (base oficial) — não é % de aprovação UEMA'
-                        : 'Pontuação local com base de treino — não é incidência UEMA',
+                        ? 'Sua pontuação de estudo (base oficial) — não é taxa de aprovação'
+                        : 'Sua pontuação de estudo com base de treino — não é frequência na prova',
                   ),
                   if (items.isEmpty)
                     QuietEmpty(
@@ -421,7 +421,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               ),
                             ],
                             Text(
-                              'Números da base — sem inventar % de incidência.',
+                              'Números da base — sem inventar % de frequência na prova.',
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -511,7 +511,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Completar base didática (todas as áreas)'),
-                        subtitle: const Text('Não inventa incidência; só preenche explicação de treino'),
+                        subtitle: const Text('Não inventa frequência na prova; só preenche explicação de treino'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             try {

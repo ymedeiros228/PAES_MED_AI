@@ -36,11 +36,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   final stopwatch = Stopwatch();
   String errorType = 'conceito';
   static const _errorTypes = {
-    'conceito': 'Conceito',
-    'interpretacao': 'Interpretação',
-    'calculo': 'Cálculo',
-    'distracao': 'Distração',
-    'tempo': 'Tempo',
+    'conceito': 'Não sabia o conteúdo',
+    'interpretacao': 'Li errado',
+    'calculo': 'Erro de conta',
+    'distracao': 'Marquei outra',
+    'tempo': 'Faltou tempo',
   };
   Map<String, dynamic>? adaptive;
   bool adaptiveLoading = false;
@@ -251,7 +251,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       setState(() => professorDraft = null);
       await _load();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Modo professor salvo.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ver explicação salvo.')));
       }
     } catch (e) {
       if (mounted) {

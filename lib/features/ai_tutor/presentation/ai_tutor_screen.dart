@@ -63,7 +63,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     if (q.isNotEmpty) {
       buf.writeln('Questão (trecho): $q');
     }
-    buf.write('Explique com base local, sem inventar incidência UEMA.');
+    buf.write('Explique com seu material, sem inventar incidência UEMA.');
     setState(() {
       _controller.text = buf.toString().trim();
       _seedApplied = true;
@@ -117,7 +117,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                   eyebrow: 'Ajuda',
                   title: 'Tutor',
                   subtitle:
-                      'Pergunte sobre o plano · Ctrl+Enter envia · fontes clicáveis na resposta',
+                      'Pergunte sobre o plano · Ctrl+Enter envia · fontes na resposta',
                   trailing: IconButton(
                     tooltip: 'Limpar conversa',
                     onPressed: state.isLoading
@@ -147,7 +147,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     child: QuietEmpty(
                       icon: Icons.cloud_off_outlined,
                       message:
-                          'Modo sem internet com base local. Configure uma chave em Ajustes para conversar com a IA conectada.',
+                          'Sem internet no momento. Configure uma chave de IA em Ajustes para usar o tutor.',
                       action: TextButton(
                         onPressed: () {
                           HapticFeedback.selectionClick();
@@ -458,7 +458,7 @@ class _MessageBubble extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Conteúdo geral · sem questão da base local',
+                  'Conteúdo geral · sem questão do seu material',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -485,7 +485,7 @@ class _MessageBubble extends StatelessWidget {
                   label: Text(
                     message.model!.startsWith('offline-')
                         ? 'Modo sem internet'
-                        : 'IA conectada · ${message.model}',
+                        : 'IA conectada',
                   ),
                   visualDensity: VisualDensity.compact,
                 ),
@@ -522,7 +522,7 @@ class _MessageBubble extends StatelessWidget {
                     icon: Icons.lightbulb_outline_rounded,
                     onPressed: () => onPrompt!(
                       'Explique a resposta anterior de forma mais simples, '
-                      'com um exemplo curto e sem inventar informação fora da base local.',
+                      'com um exemplo curto e sem inventar informação fora do seu material.',
                     ),
                   ),
                   _TutorAction(
@@ -538,7 +538,7 @@ class _MessageBubble extends StatelessWidget {
                     icon: Icons.style_outlined,
                     onPressed: () => onPrompt!(
                       'Transforme a resposta anterior em até 3 cartões de estudo de pergunta e resposta, '
-                      'usando somente a base local quando houver.',
+                      'usando somente o seu material quando houver.',
                     ),
                   ),
                 ],
@@ -547,7 +547,7 @@ class _MessageBubble extends StatelessWidget {
             if (message.citations.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                'Fontes na base (clique abre ficha/treino)',
+                'Fontes na resposta',
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

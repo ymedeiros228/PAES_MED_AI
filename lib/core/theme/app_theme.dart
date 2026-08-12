@@ -20,6 +20,14 @@ class AppTheme {
   static const danger = Color(0xFFD3544A);
   static const brandAccent = teal;
 
+  // Cores semânticas — usadas em todas as telas para feedback visual
+  static const success = Color(0xFF2E9B6B);
+  static const successBg = Color(0xFFE4F5EE);
+  static const error = Color(0xFFD3544A);
+  static const errorBg = Color(0xFFFDEAE8);
+  static const info = Color(0xFF3B82F6);
+  static const infoBg = Color(0xFFE8F0FE);
+
   /// Compat com código antigo que usava gradient fixo.
   static const scaffoldGradient = LinearGradient(
     begin: Alignment.topLeft,

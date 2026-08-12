@@ -187,7 +187,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       controller: linkCtrl,
                       decoration: const InputDecoration(
                         labelText: 'Link (opcional)',
-                        hintText: 'YouTube só como referência',
+                        hintText: 'Vídeos como referência',
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -198,7 +198,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       maxLines: 14,
                       onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
-                        labelText: 'Legenda / transcrição',
+                        labelText: 'Transcrição',
                         alignLabelWithHint: true,
                         border: OutlineInputBorder(),
                       ),

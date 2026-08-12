@@ -59,7 +59,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   int keyboardQi = 0;
 
   static const _modes = <(String, String, String, IconData)>[
-    ('dia_prova', 'Dia de prova', 'Cronômetro e sem gabarito até terminar', Icons.timer_outlined),
+    ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
     ('prova_completa', 'Prova completa', 'Treino com o recorte usual da prova', Icons.assignment_outlined),
     ('medicina', 'Medicina', 'Foco em Natureza e raciocínio biomédico', Icons.biotech_outlined),
     ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
@@ -332,7 +332,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     buf.writeln('**Modo:** ${lastSimMeta?['mode'] ?? mode}');
     buf.writeln('**Cronômetro:** $_clock');
     buf.writeln('');
-    buf.writeln('## Resultado (treino local)');
+    buf.writeln('## Resultado (prática)');
     final acc = ((r['accuracy'] as num?) ?? 0) * 100;
     buf.writeln('- Acerto: ${acc.toStringAsFixed(0)}% (${r['correct']}/${r['total']})');
     if (r['avgTimeMs'] != null) {
@@ -349,10 +349,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       buf.writeln('- ${s['subject']}: ${s['correct']}/${s['total']} · ${a.toStringAsFixed(0)}%');
     }
     buf.writeln('');
-    buf.writeln('## Lacunas');
+    buf.writeln('## Tópicos para revisar');
     final gaps = r['gaps'] as List? ?? [];
     if (gaps.isEmpty) {
-      buf.writeln('- (nenhuma lacuna no relatório)');
+      buf.writeln('- (nenhum tópico para revisar no relatório)');
     } else {
       for (final g in gaps.take(12)) {
         if (g is! Map) continue;
@@ -362,7 +362,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     buf.writeln('');
     buf.writeln('## Disclaimer');
     buf.writeln(
-      'Treino local · estimativa ≠ garantia. Não inventa probabilidade de aprovação UEMA.',
+      'Prática · estimativa ≠ garantia. Não inventa probabilidade de aprovação UEMA.',
     );
     try {
       final data = await apiClient.post('/api/study/export-day', {
@@ -466,7 +466,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Pronto para o dia de prova?'),
+        title: const Text('Pronto para o simulado do dia?'),
         content: Text(
           '${healthNote != null ? '$healthNote\n\n' : ''}'
           '${n < 10
@@ -712,13 +712,13 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       final cta = map['cta']?.toString() ?? '/fila';
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lacunas na fila (${map['scheduled'] ?? 0}).')),
+        SnackBar(content: Text('Tópicos para revisar na fila (${map['scheduled'] ?? 0}).')),
       );
       context.go(cta);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para agendar as lacunas.'))),
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para agendar os tópicos para revisar.'))),
       );
     }
   }
@@ -786,7 +786,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     ? (report != null
                         ? 'Enter Hoje · 1 Natureza · 2 Fila · 3 Redação · E export · N novo'
                         : examLocked
-                            ? 'Dia de prova · restam $_timeRemainingLabel · 1–5 · Enter avança · gabarito no fim'
+                            ? 'Simulado do dia · restam $_timeRemainingLabel · 1–5 · Enter avança · gabarito no fim'
                             : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
                     : 'Escolha um modo e faça um bloco como no dia da prova',
                 trailing: inSession && report == null
@@ -832,7 +832,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                             ? (genInPack > 0
                                 ? 'Seleção com $genInPack questão(ões) geradas — não confunda com oficiais.'
                                 : null)
-                            : 'Este bloco usou base de treino. Monte a Biblioteca para Dia de prova sério.'),
+                            : 'Este bloco usou base de treino. Monte a Biblioteca para Simulado do dia sério.'),
                     showLibraryCta: lastSimMeta!['basis'] != 'oficial',
                     areaKey: 'simulados',
                   ),
@@ -843,7 +843,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   child: TrainingBasisBanner(
                     basis: 'treino',
                     message:
-                        'Dia de prova e Medicina pedem oficiais. Sem acervo, o app rotula treino — não inventa incidência.',
+                        'Simulado do dia e Medicina pedem oficiais. Sem acervo, o app rotula treino — não inventa frequência na prova.',
                     areaKey: 'simulados',
                   ),
                 ),
@@ -930,12 +930,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       ],
                     ),
                   ),
-                SectionLabel('Dia de prova', hint: 'Caminho principal · cronômetro · gabarito no fim'),
+                SectionLabel('Simulado do dia', hint: 'Caminho principal · cronômetro · gabarito no fim'),
                 _ModeCard(
                   selected: mode == 'dia_prova',
                   icon: Icons.timer_outlined,
-                  title: 'Dia de prova',
-                  subtitle: 'Cronômetro e sem gabarito até terminar',
+                  title: 'Simulado do dia',
+                  subtitle: 'Cronômetro ligado, gabarito no final',
                   onTap: () {
                     HapticFeedback.selectionClick();
                     setState(() => mode = 'dia_prova');
@@ -1009,7 +1009,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   label: Text(starting
                       ? 'Carregando questões…'
                       : mode == 'dia_prova'
-                          ? 'Começar dia de prova'
+                          ? 'Começar simulado do dia'
                           : 'Iniciar simulado'),
                 ),
               ],
@@ -1056,7 +1056,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Dia de prova em andamento',
+                        'Simulado do dia em andamento',
                         style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
                       ),
                       const SizedBox(height: 4),
@@ -1228,7 +1228,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ],
 
                 if ((report!['gaps'] as List? ?? []).isNotEmpty) ...[
-                  SectionLabel('Lacunas para treinar'),
+                  SectionLabel('Tópicos para revisar'),
                   for (final g in (report!['gaps'] as List).take(6))
                     PlaylistTile(
                       title: '${(g as Map)['subject']} · ${g['topic']}',
@@ -1298,7 +1298,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       icon: const Icon(Icons.playlist_play_rounded),
                       label: Text(
                         (report!['gaps'] as List? ?? []).isNotEmpty
-                            ? 'Mandar lacunas para a Fila'
+                            ? 'Mandar tópicos para revisar para a Fila'
                             : 'Continuar na Fila',
                       ),
                     ),

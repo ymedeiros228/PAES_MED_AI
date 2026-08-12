@@ -126,8 +126,8 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                 eyebrow: 'Avançado',
                 title: 'Aprovar',
                 subtitle: items.isEmpty
-                    ? 'Itens gerados só entram em simulado sério depois de aprovados'
-                    : '${items.length} pendente(s) · ↑/↓ J/K · A aprovar · R rejeitar · F5 atualiza · Enter/O abrir',
+                    ? 'Questões geradas entram nos simulados após aprovação'
+                    : '${items.length} pendente(s) · ↑/↓ J/K · A = aprovar · R = rejeitar · Enter/O abrir',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: loading

@@ -117,7 +117,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               PageHeader(
                 eyebrow: 'Analisar',
                 title: 'Banca',
-                subtitle: 'Estimativa local com base no acervo — sem % de aprovação',
+                subtitle: 'Estimativa baseada no seu material',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: () {
@@ -209,7 +209,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 2),
                                       child: Text(
-                                        'Enunciado médio: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
+                                        'Tamanho médio do enunciado: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: cs.onSurface.f72,

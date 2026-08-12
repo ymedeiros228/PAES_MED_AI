@@ -3,10 +3,10 @@ library;
 
 /// Tipos de erro na sessão / simulado.
 const Map<String, String> kErrorTypeLabelsPt = {
-  'conceito': 'Conceito',
+  'conceito': 'Conteúdo',
   'interpretacao': 'Interpretação',
   'calculo': 'Cálculo',
-  'distracao': 'Distração',
+  'distracao': 'Atração',
   'tempo': 'Tempo',
 };
 

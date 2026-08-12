@@ -127,7 +127,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       if (!mounted) return;
       setState(() {
         personas = [];
-        setupError ??= humanApiError(e, fallback: 'Personas indisponíveis.');
+        setupError ??= humanApiError(e, fallback: 'Temas indisponíveis.');
       });
     }
   }
@@ -249,7 +249,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Nota ${item['score'] ?? '—'} · ${item['createdAt'] ?? ''} · treino local · não banca',
+                  'Nota ${item['score'] ?? '—'} · ${item['createdAt'] ?? ''} · prática de redação',
                   style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 12),
@@ -329,7 +329,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
       final first = Map<String, dynamic>.from(items.first as Map);
       _applyEssayToEditor(first);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Texto da última redação no editor · treino local')),
+        const SnackBar(content: Text('Texto da última redação no editor · prática de redação')),
       );
       return;
     }
@@ -386,7 +386,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               const PageHeader(
                 eyebrow: 'Conteúdo',
                 title: 'Redação',
-                subtitle: 'Escreva com calma, corrija por eixos e feche missões — treino local, não banca',
+                subtitle: 'Escreva com calma, corrija por eixos e feche missões — prática de redação',
               ),
               HeroStudyStrip(
                 eyebrow: 'Loop de treino',
@@ -424,7 +424,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               if (progress != null && count > 0) ...[
                 SectionLabel(
                   'Progresso local',
-                  hint: progress!['disclaimer']?.toString() ?? 'treino local · não banca',
+                  hint: progress!['disclaimer']?.toString() ?? 'prática de redação',
                 ),
                 if (progress!['nextMission'] is Map) ...[
                   MissionQuestCard(
@@ -471,7 +471,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   child: SelectableText(
                     progress!['disclaimer']?.toString() ??
-                        'Corrija ao menos 1 redação para ver o progresso por eixos (treino local · não banca).',
+                        'Corrija ao menos 1 redação para ver o progresso por eixos (prática de redação).',
                     style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                   ),
                 ),
@@ -492,9 +492,9 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     ),
                     for (final p in personas)
                       Tooltip(
-                        message: p['hint']?.toString() ?? 'Mentor de treino local',
+                        message: p['hint']?.toString() ?? 'Mentor de redação',
                         child: FilterChip(
-                          label: Text(p['label']?.toString() ?? p['id']?.toString() ?? 'persona'),
+                          label: Text(p['label']?.toString() ?? p['id']?.toString() ?? 'tema'),
                           selected: personaId == p['id']?.toString(),
                           onSelected: (_) {
                             HapticFeedback.selectionClick();

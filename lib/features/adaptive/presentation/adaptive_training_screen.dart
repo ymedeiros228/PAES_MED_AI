@@ -61,9 +61,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   };
 
   static const _phaseLabel = {
-    'semelhante': 'semelhante',
+    'semelhante': 'similar',
     'difícil': 'mais difícil',
-    'inédita': 'inédita',
+    'inédita': 'nova',
   };
 
   @override
@@ -140,7 +140,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
           ...generatedFull,
         ];
         generatedPartialNote = partialGenerated > 0
-            ? '$partialGenerated inédita(s) carregadas parcialmente — API instável?'
+            ? '$partialGenerated nova(s) carregadas parcialmente — Problema de conexão?'
             : null;
         if (queue.isEmpty) {
           error =
@@ -325,7 +325,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                       ? 'Fila concluída · $correctCount/$answeredCount'
                       : inQueue
                           ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length}'
-                          : 'Semelhantes → mais difíceis no mesmo tópico',
+                          : 'Similares → mais difíceis no mesmo tópico',
                   trailing: (inQueue || finished)
                       ? TextButton(
                           onPressed: () {
@@ -403,12 +403,12 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                     });
                                     if (!mounted) return;
                                     messenger.showSnackBar(
-                                      const SnackBar(content: Text('Lacuna enviada para reforço na Fila.')),
+                                      const SnackBar(content: Text('Tópico para revisar enviado para reforço na Fila.')),
                                     );
                                   } catch (e) {
                                     if (!mounted) return;
                                     messenger.showSnackBar(
-                                      SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a lacuna.'))),
+                                      SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar o tópico para revisar.'))),
                                     );
                                   }
                                 },

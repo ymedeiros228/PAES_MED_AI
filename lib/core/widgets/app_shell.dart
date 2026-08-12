@@ -18,10 +18,8 @@ class AppShell extends ConsumerWidget {
   static const focusItems = <_NavItem>[
     _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
     _NavItem('/sessao', 'Sessão', Icons.timer_rounded),
-    _NavItem('/fila', 'Fila', Icons.playlist_play_rounded),
-    _NavItem('/flashcards', 'Cartões', Icons.style_rounded),
-    _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
-    _NavItem('/tutor', 'Tutor', Icons.auto_awesome_rounded),
+    _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
+    _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
     _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
   ];
 
@@ -60,24 +58,16 @@ class AppShell extends ConsumerWidget {
       const _NavGroup('Estudar', [
         _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
         _NavItem('/sessao', 'Sessão', Icons.timer_rounded),
-        _NavItem('/fila', 'Fila', Icons.playlist_play_rounded),
         _NavItem('/questoes', 'Questões', Icons.quiz_rounded),
-        _NavItem('/simulados', 'Simulados', Icons.bolt_rounded),
-        _NavItem('/cronograma', 'Plano', Icons.calendar_month_rounded),
-        _NavItem('/flashcards', 'Cartões', Icons.style_rounded),
-        _NavItem('/tutor', 'Tutor', Icons.auto_awesome_rounded),
-      ]),
-      const _NavGroup('Analisar', [
-        _NavItem('/progresso', 'Progresso', Icons.terrain_rounded),
-        _NavItem('/medicina', 'Domínio', Icons.local_hospital_rounded),
-        _NavItem('/banca', 'Banca', Icons.analytics_rounded),
-        _NavItem('/revisoes', 'Revisões', Icons.replay_circle_filled_rounded),
+        _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
+        _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
       ]),
       const _NavGroup('Conteúdo', [
         _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
-        _NavItem('/aulas', 'Aulas', Icons.video_library_rounded),
+        _NavItem('/simulados', 'Simulados', Icons.bolt_rounded),
         _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),
-        _NavItem('/adaptativo', 'Treino', Icons.psychology_rounded),
+        _NavItem('/aulas', 'Aulas', Icons.video_library_rounded),
+        _NavItem('/progresso', 'Progresso', Icons.terrain_rounded),
       ]),
       const _NavGroup('Conta', [
         _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),

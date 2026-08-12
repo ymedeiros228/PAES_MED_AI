@@ -263,16 +263,10 @@ class SurfacePanel extends StatelessWidget {
         border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.5 : 0.85)),
         boxShadow: soft && !isDark
             ? [
-                // Sombra dupla: difusa + próxima (estilo Apple/Coursera)
                 BoxShadow(
-                  color: const Color(0xFF0A1628).withOpacity(0.03),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: const Color(0xFF0A1628).withOpacity(0.025),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  color: const Color(0xFF0A1628).withOpacity(0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
               ]
             : null,

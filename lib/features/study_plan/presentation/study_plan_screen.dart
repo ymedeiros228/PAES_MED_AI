@@ -172,7 +172,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     final buf = StringBuffer('# Plano da semana — PAES MED AI\n\n');
     final exam = ref.read(examDateProvider).date;
     if (exam.isNotEmpty) buf.writeln('Prova: $exam\n');
-    buf.writeln('Estimativas de incidência ≠ garantia.\n');
+    buf.writeln('Estimativas, não garantia.\n');
     for (final raw in week) {
       final item = Map<String, dynamic>.from(raw as Map);
       buf.writeln('## Dia ${item['day']}: ${item['subject']} — ${item['topic']}');
@@ -187,7 +187,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     final buf = StringBuffer('# Plano do mês — PAES MED AI\n\n');
     final exam = ref.read(examDateProvider).date;
     if (exam.isNotEmpty) buf.writeln('Prova: $exam\n');
-    buf.writeln('Estimativas ≠ garantia.\n');
+    buf.writeln('Estimativas, não garantia.\n');
     for (final raw in month) {
       final item = Map<String, dynamic>.from(raw as Map);
       buf.writeln('- Dia ${item['day']}: ${item['subject']} — ${item['topic']}');

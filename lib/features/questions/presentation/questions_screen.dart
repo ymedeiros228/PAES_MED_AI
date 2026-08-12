@@ -212,7 +212,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       ],
                     ),
                     FilterChip(
-                      label: const Text('Só UEMA'),
+                      label: const Text('Apenas UEMA'),
                       selected: examBoard == 'UEMA_PAES' && !officialWithGab,
                       onSelected: (v) {
                         HapticFeedback.selectionClick();
@@ -224,7 +224,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                       },
                     ),
                     FilterChip(
-                      label: const Text('Oficiais com gabarito'),
+                      label: const Text('Provas oficiais'),
                       selected: officialWithGab,
                       onSelected: (v) {
                         HapticFeedback.selectionClick();
@@ -292,7 +292,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                           onSelected: (v) => _resetPage(() => examBoard = (v == null || v.isEmpty) ? null : v),
                           dropdownMenuEntries: const [
                             DropdownMenuEntry(value: '', label: 'Todas'),
-                            DropdownMenuEntry(value: 'UEMA_PAES', label: 'Só UEMA'),
+                            DropdownMenuEntry(value: 'UEMA_PAES', label: 'Apenas UEMA'),
                             DropdownMenuEntry(value: 'TREINO', label: 'Treino'),
                             DropdownMenuEntry(value: 'OUTRA', label: 'Outra'),
                           ],
@@ -358,7 +358,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                     subtitle: page > 0
                         ? 'Volte uma página ou limpe os filtros.'
                         : officialWithGab
-                            ? 'Sem oficiais com gabarito neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
+                            ? 'Sem provas oficiais neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
                             : 'Importe provas na Biblioteca ou afrouxe os filtros.',
                     action: Wrap(
                       spacing: 8,

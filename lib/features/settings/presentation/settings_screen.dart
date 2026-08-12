@@ -431,7 +431,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             const SizedBox(height: 8),
                             Text(
                               'Notas desta versão: conforto de sessão/fila, Relevo em Progresso, '
-                              'e redação com missões (treino local · não banca).',
+                              'e redação com missões (prática · não banca).',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 height: 1.5,
@@ -485,7 +485,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           () {
                             final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
                             if (d < 0) return 'Prova: $d dias atrás (data local)';
-                            if (d == 0) return 'Prova: é hoje (treino local)';
+                            if (d == 0) return 'Prova: é hoje (prática)';
                             return 'Prova em $d dia(s) · contagem local';
                           }(),
                           style: GoogleFonts.inter(
@@ -769,7 +769,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 8),
                         _AiProviderEditor(
-                          name: 'Gemini',
+                          name: 'Chave do Gemini',
                           hint: 'Cole a chave do Google AI Studio',
                           controller: geminiKeyCtrl,
                           configured: geminiConfigured,
@@ -780,7 +780,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 12),
                         _AiProviderEditor(
-                          name: 'Groq',
+                          name: 'Chave do Groq',
                           hint: 'Gere em console.groq.com',
                           controller: groqKeyCtrl,
                           configured: groqConfigured,
@@ -791,7 +791,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 12),
                         _AiProviderEditor(
-                          name: 'OpenRouter',
+                          name: 'Chave do OpenRouter',
                           hint: 'Gere em openrouter.ai/settings/keys',
                           controller: openRouterKeyCtrl,
                           configured: openRouterConfigured,
@@ -835,7 +835,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
+                title: Text('Opções avançadas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Mídia · ferramentas · base de estudos'),
                 children: [
                   SectionLabel('Mídia', hint: 'Sugestões na Fila (não é edital)'),
@@ -988,7 +988,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
-                  SectionLabel('Oficina', hint: 'PDF, aprovação, rascunhos'),
+                  SectionLabel('Ferramentas', hint: 'PDF, aprovação, rascunhos'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Importar PDF aqui'),

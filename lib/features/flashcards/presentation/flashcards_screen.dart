@@ -169,9 +169,9 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
               children: [
                 PageHeader(
                   eyebrow: 'Estudar',
-                  title: 'Cartões',
+                  title: 'Flashcards',
                   subtitle: axesOnly
-                      ? 'Só eixos de resolução · toque para virar'
+                      ? 'Por área · toque para virar'
                       : dueOnly
                           ? 'Só o que é para revisar hoje'
                           : 'Todos os cartões · toque para virar',
@@ -185,7 +185,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                           showBack = false;
                           currentId = null;
                         }); },
-                        child: Text(axesOnly ? 'Todos tipos' : 'Só eixos'),
+                        child: Text(axesOnly ? 'Todos tipos' : 'Por área'),
                       ),
                       if (!axesOnly)
                         TextButton(
@@ -194,7 +194,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                             showBack = false;
                             currentId = null;
                           }); },
-                          child: Text(dueOnly ? 'Ver todos' : 'Só para revisar'),
+                          child: Text(dueOnly ? 'Ver todos' : 'Para hoje'),
                         ),
                     ],
                   ),
@@ -368,7 +368,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                     const SizedBox(height: 6),
                                     SelectableText(
                                       flipped
-                                          ? 'Toque / Space · L lembrei · E esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
+                                          ? 'Toque / Space · Lembrei · Esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
                                           : 'Toque / Space para revelar · próxima: ${humanDueLabel(item['next_due']?.toString())}',
                                       style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f55),
                                     ),
@@ -378,13 +378,13 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                         FilledButton.tonalIcon(
                                           onPressed: () { HapticFeedback.selectionClick(); _review(id, true); },
                                           icon: const Icon(Icons.check_rounded, size: 18),
-                                          label: const Text('Lembrei (L)'),
+                                          label: const Text('Lembrei'),
                                         ),
                                         const SizedBox(width: 8),
                                         OutlinedButton.icon(
                                           onPressed: () { HapticFeedback.selectionClick(); _review(id, false); },
                                           icon: const Icon(Icons.refresh_rounded, size: 18),
-                                          label: const Text('Esqueci (E)'),
+                                          label: const Text('Esqueci'),
                                         ),
                                         const Spacer(),
                                         IconButton(

@@ -129,7 +129,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                       eyebrow: 'Analisar',
                       title: 'Revisões',
                       subtitle: _items.isEmpty
-                          ? 'Os erros viram revisões'
+                          ? 'Revise os tópicos que você errou'
                           : '${_items.length} assunto(s) para reforço',
                       trailing: IconButton(
                         tooltip: 'Atualizar',
@@ -143,7 +143,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                     if (_items.isEmpty)
                       EmptyState(
                         title: 'Nada agendado',
-                        subtitle: 'Erre na sessão ou no simulado — as lacunas aparecem aqui.',
+                        subtitle: 'Erre na sessão ou no simulado — os tópicos para revisar aparecem aqui.',
                         action: Wrap(
                           spacing: 8,
                           alignment: WrapAlignment.center,
@@ -220,7 +220,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                'Lacuna marcada como recuperada (treino local).',
+                                                'Tópico para revisar marcado como recuperado (prática).',
                                               ),
                                             ),
                                           );
@@ -231,7 +231,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                humanApiError(e, fallback: 'Não deu para marcar a lacuna.'),
+                                                humanApiError(e, fallback: 'Não deu para marcar o tópico para revisar.'),
                                               ),
                                             ),
                                           );

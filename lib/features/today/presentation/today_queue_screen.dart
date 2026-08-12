@@ -154,13 +154,13 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lacuna marcada como recuperada (treino local).')),
+        const SnackBar(content: Text('Tópico revisado')),
       );
       await _load();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar a lacuna.'))),
+        SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para marcar o tópico para revisar.'))),
       );
     }
   }
@@ -311,7 +311,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     final phaseLabel = SessionResumeBanner.phaseLabel(phase);
                     final q = (cp['qIndex'] as num?)?.toInt();
                     final sub = phase == 'questions' && q != null
-                        ? '$phaseLabel · questão ${q + 1} · treino local'
+                        ? '$phaseLabel · questão ${q + 1} · prática'
                         : '$phaseLabel · retomamos de onde parou';
                     return SessionResumeBanner(
                       phaseName: phase,
@@ -378,7 +378,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                               ),
                             ),
                             Text(
-                              'Treino local · não banca',
+                              'Prática · não banca',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
@@ -438,7 +438,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
                 if (gapN > 0) ...[
                   SectionLabel(
-                    'Lacunas',
+                    'Tópicos para revisar',
                     hint: 'Erros recentes a retomar',
                     chip: gapNoMaterialN > 0 ? '$gapNoMaterialN sem teoria' : null,
                   ),
@@ -584,7 +584,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       padding: const EdgeInsets.only(top: 10),
                       child: QuietEmpty(
                         message:
-                            'Lacuna(s) sem teoria local — o app não inventa edital. '
+                            'Tópico(s) para revisar sem teoria local — o app não inventa edital. '
                             'Atualize 2024–26 na Biblioteca ou treine direto no tópico.',
                         action: FilledButton.tonal(
                           onPressed: () => context.go('/biblioteca'),
@@ -740,10 +740,10 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SectionLabel('Missão de redação', hint: 'treino local · não banca'),
+                        SectionLabel('Missão de redação', hint: 'prática · não banca'),
                         PlaylistTile(
                           title: 'Subir $label',
-                          subtitle: mission['prompt']?.toString() ?? 'Treino local por eixos',
+                          subtitle: mission['prompt']?.toString() ?? 'Prática por eixos',
                           badge: 'missão',
                           leadingIcon: Icons.edit_note_rounded,
                           onPlay: () => context.go('/redacao'),

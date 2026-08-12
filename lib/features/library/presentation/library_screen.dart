@@ -193,7 +193,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           msg = [
             map['message']?.toString() ?? map['error']?.toString() ?? 'A preparação do acervo falhou.',
             if (portal != null && portal.isNotEmpty) 'Portal: $portal',
-            'Use Biblioteca → Manual / Abrir provas se o host falhar.',
+            'Use a Biblioteca para abrir as provas.',
           ].join(' ');
         });
         return;
@@ -229,7 +229,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         msg = humanApiError(
           e,
           fallback:
-              'Falha de rede/download — confira o portal no manifesto ou use Biblioteca → Manual / Abrir provas.',
+              'Falha de rede/download — confira o portal na lista de materiais ou use Biblioteca → Manual / Abrir provas.',
         );
       });
     } finally {
@@ -476,7 +476,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       if (mounted) {
         await _showFetchPlaybook(
           title: 'Semana 1 — erro',
-          body: '$err\nUse Abrir provas/gabaritos ou o portal do manifesto.',
+          body: '$err\nUse Abrir provas/gabaritos ou o portal da lista de materiais.',
           canCommitDisk: true,
         );
       }
@@ -1751,7 +1751,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Baixar todos do manifesto'),
+                    title: const Text('Baixar todos da lista de materiais'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); }, child: const Text('Baixar')),
                   ),
                   ListTile(

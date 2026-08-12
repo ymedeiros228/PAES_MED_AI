@@ -60,7 +60,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        error = humanApiError(e, fallback: 'Não deu para carregar o relevo.');
+        error = humanApiError(e, fallback: 'Não deu para carregar seu desempenho.');
         loading = false;
       });
     }
@@ -163,7 +163,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 const PageHeader(
                   eyebrow: 'Analisar',
                   title: 'Progresso',
-                  subtitle: 'Seu relevo: picos firmes e vales a treinar — treino local, não % de aprovação',
+                  subtitle: 'Seu desempenho: pontos fortes e pontos a melhorar — prática, não % de aprovação',
                 ),
                 if (loading) ...[
                   // Skeleton placeholders em vez de spinner
@@ -205,12 +205,12 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   )
                 else ...[
                   HeroStudyStrip(
-                    eyebrow: 'Relevo do aluno',
-                    title: 'Onde você sobe e onde ainda vale treinar',
+                    eyebrow: 'Seu desempenho',
+                    title: 'Onde você vai bem e onde pode melhorar',
                     subtitle: data?['disclaimer']?.toString() ??
-                        'Mapa local · não é banca nem garantia de aprovação',
+                        'Seu progresso de estudo',
                     trailing: HonestBadge(
-                      label: essay['levelLabel']?.toString() ?? 'treino local',
+                      label: essay['levelLabel']?.toString() ?? 'prática',
                     ),
                   ),
                   if (peaks.isNotEmpty && !(peaks.length == 1 && peaks.first['kind'] == 'hint'))
@@ -227,7 +227,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   if (peaks.isEmpty || (peaks.length == 1 && peaks.first['kind'] == 'hint'))
                     QuietEmpty(
                       message:
-                          'Seu relevo ainda está plano. Faça uma sessão ou uma redação para ver picos e vales.',
+                          'Seu desempenho ainda está plano. Faça uma sessão ou uma redação para ver pontos fortes e pontos a melhorar.',
                       action: Wrap(
                         spacing: 8,
                         children: [
@@ -261,7 +261,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     ],
                   ),
                   if (mission is Map) ...[
-                    const SectionLabel('Missão de redação', hint: 'treino local · não banca'),
+                    const SectionLabel('Missão de redação', hint: 'prática · não banca'),
                     MissionQuestCard(
                       title: 'Missão · ${mission['label'] ?? 'eixo'}',
                       why: mission['prompt']?.toString() ?? 'Treine o eixo mais fraco.',
@@ -336,7 +336,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Consistência de treino local — não é % de aprovação.',
+                          'Consistência de prática — não é % de aprovação.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             color: cs.onSurface.f72,
@@ -346,7 +346,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     ),
                   ),
                   if (gaps.isNotEmpty) ...[
-                    const SectionLabel('Vales a treinar', hint: 'próximo passo concreto'),
+                    const SectionLabel('Pontos a melhorar', hint: 'próximo passo concreto'),
                     for (final raw in gaps.take(3))
                       Builder(
                         builder: (_) {
@@ -358,7 +358,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                               ? parts.sublist(1).join('::')
                               : (g['topic']?.toString() ?? '');
                           return PlaylistTile(
-                            title: subj.isEmpty ? 'Lacuna' : subj,
+                            title: subj.isEmpty ? 'Tópico para revisar' : subj,
                             subtitle: top.isEmpty ? 'Abrir sessão Natureza' : top,
                             badge: 'vale',
                             leadingIcon: Icons.terrain_rounded,
@@ -481,11 +481,11 @@ class _ReadableRelief extends StatelessWidget {
                 children: [
                   _ReliefLegend(
                     color: AppTheme.teal,
-                    label: 'Pico firme',
+                    label: 'Ponto forte',
                   ),
                   _ReliefLegend(
                     color: AppTheme.sand,
-                    label: 'Vale a treinar (< 5.5)',
+                    label: 'Ponto a melhorar (< 5.5)',
                   ),
                 ],
               ),
@@ -568,7 +568,7 @@ class _ReliefRow extends StatelessWidget {
     final note = '${value.toStringAsFixed(1)} de ${max.toStringAsFixed(0)}';
 
     return Semantics(
-      label: 'Eixo $label, nota $note${isValley ? ', vale a treinar' : ', pico firme'}',
+      label: 'Eixo $label, nota $note${isValley ? ', ponto a melhorar' : ', ponto forte'}',
       child: Padding(
         padding: const EdgeInsets.only(bottom: kGap8),
         child: LayoutBuilder(

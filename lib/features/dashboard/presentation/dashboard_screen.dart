@@ -110,7 +110,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         checkpoint = null;
         checkpointLoadError = humanApiError(
           e,
-          fallback: 'Checkpoint de sessão indisponível no Hoje.',
+          fallback: 'Sessão salva indisponível agora.',
         );
       });
     }
@@ -301,76 +301,74 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           onKeyEvent: (node, event) => _onKey(node, event, sessionPath, closePath),
           child: CustomScrollView(
           slivers: [
+            // Hero compacto: gradient + countdown + CTA principal
             SliverToBoxAdapter(
               child: Container(
-                constraints: const BoxConstraints(minHeight: 300),
-                padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                 decoration: BoxDecoration(
                   gradient: AppTheme.heroGradient(Theme.of(context).brightness),
                 ),
-                // StaggeredFadeIn: entrada escalonada do hero (título → coach → CTAs)
-                child: StaggeredFadeIn(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'PAES MED AI',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: -0.8,
-                        height: 1.15,
+                    // Contagem regressiva destacada
+                    if (examDays != null && examDays >= 0) ...[
+                      Text(
+                        '$examDays',
+                        style: GoogleFonts.poppins(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.0,
+                          letterSpacing: -1,
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      width: 40,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.white.f55,
-                        borderRadius: BorderRadius.circular(2),
+                      Text(
+                        'dias para a prova',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      (countdown['label']?.toString().isNotEmpty == true)
-                          ? countdown['label'].toString()
-                          : examDays == null
-                              ? 'Medicina · UEMA'
-                              : examDays >= 0
-                                  ? '$examDays dias para a prova'
-                                  : 'Prova na conta',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.78),
-                        fontWeight: FontWeight.w500,
+                    ] else ...[
+                      Text(
+                        'PAES MED AI',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                          height: 1.1,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Medicina · UEMA',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.75),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    // Coach line — uma frase curta
                     Text(
                       coachLine,
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: 17,
                         color: Colors.white,
                         height: 1.3,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (progress.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        progress,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.white.f72,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+                    // CTA principal + ação secundária
                     Wrap(
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        // TapScale: micro-interação de scale-down ao pressionar o CTA
                         TapScale(
                           child: PulseButton(
                             pulse: checkpoint != null,
@@ -391,24 +389,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               HapticFeedback.mediumImpact();
                               _discardCheckpoint();
                             },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                            ),
                             child: const Text('Recomeçar'),
                           ),
-                        OutlinedButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go(closePath);
-                          },
-                          child: Text(closeLabel),
-                        ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'S inicia a sessão · L abre a fila',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.white.f72,
-                      ),
                     ),
                   ],
                 ),
@@ -457,7 +444,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Primeiro passo: Semana 1',
+                                    'Primeiros passos',
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
@@ -467,10 +454,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   const SizedBox(height: 8),
                                   Text(
                                     officialN > 0
-                                        ? 'Já há $officialN oficiais no PC — complete o import 2024–26 '
-                                            'na Biblioteca para fechar a Semana 1.'
-                                        : 'Na Biblioteca, toque em Atualizar 2024–26 para importar as provas UEMA. '
-                                            'Depois volte ao Hoje para estudar.',
+                                        ? 'Você já tem $officialN questões oficiais. '
+                                            'Acesse a Biblioteca para importar mais provas.'
+                                        : 'Acesse a Biblioteca para importar as provas oficiais da UEMA '
+                                            'e comece a estudar.',
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       height: 1.5,
@@ -486,7 +473,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                           onPressed: () {
                                             context.go('/biblioteca?semana1=1');
                                           },
-                                          child: const Text('Ir à Semana 1'),
+                                          child: const Text('Ir à Biblioteca'),
                                         ),
                                       ),
                                       TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
@@ -512,8 +499,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               const SizedBox(height: 4),
                               StudyCheckRow(
                                 done: checklist['session'] == true,
-                                label: 'Sessão (~15+ min)',
-                                actionLabel: 'Sessão',
+                                label: 'Sessão de estudo',
+                                actionLabel: 'Estudar',
                                 onAction: () => context.go(sessionPath),
                               ),
                               FutureBuilder(
@@ -522,7 +509,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   if (!snap.hasData) {
                                     return const StudyCheckRow(
                                       done: false,
-                                      label: 'Cartões do dia…',
+                                      label: 'Flashcards do dia…',
                                     );
                                   }
                                   final list = snap.data is List ? snap.data as List : const [];
@@ -530,8 +517,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   final done = n == 0 || checklist['cards'] == true;
                                   return StudyCheckRow(
                                     done: done,
-                                    label: n == 0 ? 'Cartões em dia' : '$n cartão(ões) para revisar',
-                                    actionLabel: n == 0 ? null : 'Cartões',
+                                    label: n == 0 ? 'Flashcards em dia' : '$n flashcard(s) para revisar',
+                                    actionLabel: n == 0 ? null : 'Revisar',
                                     onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
                                   );
                                 },
@@ -539,9 +526,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               StudyCheckRow(
                                 done: checklist['revisions'] == true,
                                 label: gapN > 0
-                                    ? '$gapN lacuna(s) aberta(s)'
-                                    : 'Revisões / lacunas em dia',
-                                actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Fila' : null,
+                                    ? '$gapN tópico(s) para revisar'
+                                    : 'Revisões em dia',
+                                actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Ver fila' : null,
                                 onAction: () => context.go('/fila'),
                               ),
                               StudyCheckRow(
@@ -557,9 +544,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           StaggeredFadeIn(
                             children: [
                               MissionQuestCard(
-                                title: 'Missão leve · redação',
-                                why: 'Abra a redação, aceite a missão do eixo fraco e treine com delta honesto.',
-                                ctaLabel: 'Ir à redação',
+                                title: 'Treino de redação',
+                                why: 'Pratique a redação com temas baseados no que você precisa melhorar.',
+                                ctaLabel: 'Praticar',
                                 status: MissionQuestStatus.open,
                                 onCta: () => context.go('/redacao'),
                               ),
@@ -567,7 +554,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
 
                           const SizedBox(height: 8),
-                          SectionLabel('Agora', hint: 'próximo passo · espelha Fila'),
+                          SectionLabel('Próximo passo', hint: 'baseado na sua fila'),
                           if (gapN > 0)
                             for (final raw in gapItems.take(1))
                               Builder(
@@ -576,9 +563,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   final s = g['subject']?.toString() ?? '';
                                   final t = g['topic']?.toString() ?? '';
                                   return PlaylistTile(
-                                    title: 'Retomar · $s',
+                                    title: 'Revisar · $s',
                                     subtitle: t,
-                                    badge: 'lacuna',
+                                    badge: 'revisar',
                                     leadingIcon: Icons.flag_rounded,
                                     onPlay: () => context.go(
                                       '/adaptativo?subject=${Uri.encodeComponent(s)}'
@@ -623,13 +610,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             builder: (context, snap) {
                               if (snap.connectionState == ConnectionState.waiting) {
                                 return const CompactStatus(
-                                  message: 'Carregando missão de redação…',
+                                  message: 'Carregando treino de redação…',
                                   icon: Icons.hourglass_empty_rounded,
                                 );
                               }
                               if (snap.hasError || snap.data is! Map) {
                                 return const CompactStatus(
-                                  message: 'Missão de redação indisponível no momento.',
+                                  message: 'Treino de redação indisponível agora.',
                                   icon: Icons.sync_problem_outlined,
                                 );
                               }
@@ -638,16 +625,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               final mission = prog['nextMission'];
                               if (c < 1 || mission is! Map) {
                                 return const CompactStatus(
-                                  message: 'Nenhuma missão de redação disponível.',
+                                  message: 'Nenhum treino de redação disponível.',
                                   icon: Icons.edit_note_outlined,
                                 );
                               }
                               return Padding(
                                 padding: const EdgeInsets.only(top: 4),
                                 child: PlaylistTile(
-                                  title: 'Missão de redação · ${mission['label'] ?? 'eixo'}',
-                                  subtitle: 'treino local · não banca',
-                                  badge: 'missão',
+                                  title: 'Redação · ${mission['label'] ?? 'tema'}',
+                                  subtitle: 'prática de redação',
+                                  badge: 'redação',
                                   leadingIcon: Icons.edit_note_rounded,
                                   onPlay: () => context.go('/redacao'),
                                 ),
@@ -667,7 +654,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              'semana, pulso, relevo e ritmo',
+                              'semana, progresso e ritmo',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: cs.onSurface.f72,
@@ -993,7 +980,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     ),
                                     ActionChip(
                                       avatar: const Icon(Icons.local_hospital_rounded, size: 18),
-                                      label: const Text('Domínio'),
+                                      label: const Text('Áreas'),
                                       onPressed: () => context.go('/medicina'),
                                     ),
                                     ActionChip(
@@ -1011,7 +998,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ] else ...[
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Modo foco — só sessão e checklist. Desligue com F.',
+                                  'Modo foco ativado — só o essencial. Desligue no menu lateral.',
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     color: cs.onSurface.withOpacity(0.7),
