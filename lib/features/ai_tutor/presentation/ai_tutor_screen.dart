@@ -218,6 +218,48 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                               const QuietEmpty(
                                 message: 'Digite sua dúvida abaixo.',
                               ),
+                              const SizedBox(height: 16),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  ActionChip(
+                                    label: const Text('Explique osmose'),
+                                    onPressed: () {
+                                      _sendPrompt('Explique osmose');
+                                    },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('O que é homeostase?'),
+                                    onPressed: () {
+                                      _sendPrompt('O que é homeostase?');
+                                    },
+                                  ),
+                                  ActionChip(
+                                    label: const Text(
+                                        'Diferença entre mitose e meiose'),
+                                    onPressed: () {
+                                      _sendPrompt(
+                                          'Diferença entre mitose e meiose');
+                                    },
+                                  ),
+                                  ActionChip(
+                                    label: const Text(
+                                        'Como funciona a fotossíntese?'),
+                                    onPressed: () {
+                                      _sendPrompt(
+                                          'Como funciona a fotossíntese?');
+                                    },
+                                  ),
+                                  ActionChip(
+                                    label: const Text('Explique o ciclo de Krebs'),
+                                    onPressed: () {
+                                      _sendPrompt('Explique o ciclo de Krebs');
+                                    },
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -429,9 +471,7 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Align(
-      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
+    final bubble = Container(
         constraints: const BoxConstraints(maxWidth: 760),
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -593,7 +633,34 @@ class _MessageBubble extends StatelessWidget {
             ],
           ],
         ),
-      ),
+      );
+    return Align(
+      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: message.isUser
+          ? bubble
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  margin: const EdgeInsets.only(right: 8, bottom: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [scheme.primary, scheme.primaryContainer],
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 20,
+                    color: scheme.onPrimary,
+                  ),
+                ),
+                Flexible(child: bubble),
+              ],
+            ),
     );
   }
 }

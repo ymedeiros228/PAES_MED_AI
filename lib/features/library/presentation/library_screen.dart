@@ -1190,11 +1190,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
-                eyebrow: 'Acervo',
+                eyebrow: 'Materiais',
                 title: 'Biblioteca',
                 subtitle: officialN > 0
-                    ? '$officialN oficiais · importe provas com um clique'
-                    : 'Semana 1: importe 2024–26 e comece a estudar de verdade',
+                    ? '$officialN questões oficiais disponíveis'
+                    : 'Importe as provas oficiais e comece a estudar',
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
@@ -1380,204 +1380,198 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
               ],
 
-              SurfacePanel(
-                key: _semana1PanelKey,
-                margin: const EdgeInsets.only(bottom: 16),
-                color: cs.primaryContainer.withOpacity(highlightSemana1 ? 0.65 : 0.4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      officialN == 0 ? 'Semana 1 · 2024–26' : 'Acervo 2024–26',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      officialN == 0
-                          ? 'Atualize o acervo e estude de verdade — sem inventar prova antiga.'
-                          : 'Um toque atualiza o que estiver no PC ou no portal.'
-                              '${anosParciais > 0 ? ' · $anosParciais ano(s) só com prova (sem gabarito).' : ''}'
-                              '${anosCompletos > 0 ? ' · $anosCompletos par(es) prova+gab.' : ''}',
-                      style: GoogleFonts.inter(fontSize: 14, height: 1.5),
-                    ),
-                    if (anosParciais > 0) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Parcial: coloque o gabarito do ano na pasta Gabaritos, depois Importar / Importar do PC. '
-                        'Sem gabarito o app não grava oficiais (não inventa resposta).',
-                        style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+              // Painel de boas-vindas só aparece quando não há oficiais
+              if (showFirstRunCoach && officialN == 0) ...[
+                SurfacePanel(
+                  key: _semana1PanelKey,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  color: cs.primaryContainer.withOpacity(0.65),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.waving_hand_rounded, color: cs.primary, size: 24),
+                          const SizedBox(width: 8),
+                          Text('Bem-vindo!', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
+                        ],
                       ),
                       const SizedBox(height: 8),
+                      Text(
+                        'Importe as provas oficiais da UEMA para começar a estudar. '
+                        'Toque em "Importar todos" abaixo.',
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                      ),
+                      const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         children: [
-                          OutlinedButton.icon(
-                            onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                            icon: const Icon(Icons.folder_open_rounded, size: 18),
-                            label: const Text('Abrir gabaritos'),
+                          FilledButton.icon(
+                            onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
+                            icon: const Icon(Icons.download_rounded, size: 18),
+                            label: const Text('Importar provas 2024–26'),
                           ),
+                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
                         ],
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        FilledButton.icon(
-                          onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
-                          icon: const Icon(Icons.download_rounded),
-                          label: Text(officialN == 0 ? 'Atualizar 2024–26' : 'Atualizar'),
-                        ),
-                        FilledButton.tonalIcon(
-                          onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
-                          icon: const Icon(Icons.library_add_check_rounded),
-                          label: const Text('Importar todos com gabarito'),
-                        ),
-                        OutlinedButton(
-                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
-                          child: const Text('Gravar PDFs do PC'),
-                        ),
-                        FilledButton.tonal(
-                          onPressed: () { HapticFeedback.mediumImpact(); context.go(
-                            '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                          ); },
-                          child: const Text('Estudar agora'),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
 
-              SectionLabel('2024–26', hint: 'Toque Estudar quando estiver Pronto'),
+              SectionLabel('Provas recentes', hint: '2024–26'),
               if (board.isEmpty)
                 QuietEmpty(
-                  message: 'Nenhum ano 2024–26 ainda — use Atualizar 2024–26 ou vá direto à sessão.',
+                  message: 'Nenhuma prova 2024–26 ainda. Toque para importar.',
                   action: Wrap(
                     spacing: 8,
                     children: [
                       FilledButton(
                         onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
-                        child: const Text('Atualizar 2024–26'),
+                        child: const Text('Importar provas'),
                       ),
                       TextButton(
                         onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'); },
-                        child: const Text('Sessão'),
+                        child: const Text('Ir para Sessão'),
                       ),
                     ],
                   ),
                 )
               else
-                for (final g in board)
-                  Builder(
-                    builder: (_) {
-                      final y = g['year'] as int? ?? 0;
-                      final status = g['uiStatus']?.toString() ?? 'empty';
-                      final n = g['committedCount'] as int? ?? 0;
-                      final canFetch = g['canFetch'] == true;
-                      final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                      final hasProva = onDisk['hasProva'] == true;
-                      final hasGab = onDisk['hasGabarito'] == true;
-                      final diskOk = hasProva && hasGab;
-                      final partial = hasProva && !hasGab;
-                      final ready = status == 'committed' || n > 0;
-                      final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
-                      return SurfacePanel(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: ready
-                                    ? cs.primaryContainer
-                                    : partial
-                                        ? cs.tertiaryContainer
-                                        : cs.surfaceContainerHigh,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(
-                                '$y',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: ready ? cs.primary : cs.onSurface,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('PAES $y', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                                  Text(
-                                    ready
-                                        ? '${n > 0 ? '$n questões · ' : ''}$label'
-                                        : label,
-                                    style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (ready)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Tooltip(
-                                    message: hasProva
-                                        ? 'Abrir PDF do ano $y'
-                                        : 'PDF sumiu do disco — coloque paes_$y.pdf na pasta Provas',
-                                    child: TextButton(
-                                      onPressed: busy || !hasProva ? null : () { HapticFeedback.selectionClick(); _openYearPdf(y); },
-                                      child: const Text('PDF'),
-                                    ),
-                                  ),
-                                  FilledButton(
-                                    onPressed: busy
-                                        ? null
-                                        : () { HapticFeedback.mediumImpact(); _goStudy(
-                                              '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                            ); },
-                                    child: const Text('Estudar'),
-                                  ),
-                                ],
-                              )
-                            else if (partial)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextButton(
-                                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                                    child: const Text('Gabaritos'),
-                                  ),
-                                  OutlinedButton(
-                                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYear(y); },
-                                    child: const Text('Preview'),
-                                  ),
-                                ],
-                              )
-                            else if (canFetch || diskOk)
-                              OutlinedButton(
-                                onPressed: busy
-                                    ? null
-                                    : () { HapticFeedback.selectionClick(); diskOk
-                                        ? _importYearSafe(y)
-                                        : _bootstrapAndCommitYear(y); },
-                                child: Text(diskOk && !canFetch ? 'Importar do PC' : 'Importar'),
-                              )
-                            else
-                              TextButton(
-                                onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchYear(y); },
-                                child: const Text('Baixar'),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 200,
+                    childAspectRatio: 1.1,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
+                  itemCount: board.length,
+                  itemBuilder: (context, i) {
+                    final g = board[i];
+                    final y = g['year'] as int? ?? 0;
+                    final status = g['uiStatus']?.toString() ?? 'empty';
+                    final n = g['committedCount'] as int? ?? 0;
+                    final canFetch = g['canFetch'] == true;
+                    final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
+                    final hasProva = onDisk['hasProva'] == true;
+                    final hasGab = onDisk['hasGabarito'] == true;
+                    final diskOk = hasProva && hasGab;
+                    final partial = hasProva && !hasGab;
+                    final ready = status == 'committed' || n > 0;
+                    final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
+                    final cardColor = ready
+                        ? cs.primaryContainer
+                        : partial
+                            ? cs.tertiaryContainer
+                            : cs.surfaceContainerHigh;
+                    final iconColor = ready ? cs.primary : partial ? cs.tertiary : cs.onSurfaceVariant;
+                    final statusIcon = ready ? Icons.check_circle_rounded : partial ? Icons.warning_amber_rounded : Icons.hourglass_empty_rounded;
+                    return TapScale(
+                      child: Material(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: busy ? null : () {
+                            HapticFeedback.selectionClick();
+                            if (ready) {
+                              _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1');
+                            } else if (partial) {
+                              _importYear(y);
+                            } else if (canFetch || diskOk) {
+                              diskOk ? _importYearSafe(y) : _bootstrapAndCommitYear(y);
+                            } else {
+                              _fetchYear(y);
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '$y',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w800,
+                                        color: iconColor,
+                                      ),
+                                    ),
+                                    Icon(statusIcon, color: iconColor, size: 22),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ready ? '${n} questões' : label,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: cs.onSurface.withOpacity(0.85),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        color: cs.onSurface.withOpacity(0.6),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+              // Ações rápidas em linha
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
+                    icon: const Icon(Icons.library_add_check_rounded, size: 18),
+                    label: const Text('Importar todos com gabarito'),
+                  ),
+                  if (officialN > 0)
+                    FilledButton.tonal(
+                      onPressed: () { HapticFeedback.mediumImpact(); context.go(
+                        '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
+                      ); },
+                      child: const Text('Estudar agora'),
+                    ),
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
+                    icon: const Icon(Icons.save_outlined, size: 18),
+                    label: const Text('Gravar PDFs do PC'),
+                  ),
+                ],
+              ),
+              if (anosParciais > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '$anosParciais ano(s) com prova mas sem gabarito. Coloque o gabarito na pasta para importar.',
+                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                ),
+              ],
 
               if (pendingN > 0) ...[
                 SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
@@ -1599,17 +1593,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Anos antigos (2014–23)', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                title: Text('Provas antigas (2014–23)', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 subtitle: Text(
                   anosParciais > 0
-                      ? '$anosParciais parcial(is) · falta gabarito_YYYY.pdf'
-                      : 'Só se você tiver o PDF no PC — sem inventar cobertura',
+                      ? '$anosParciais sem gabarito — coloque o arquivo na pasta'
+                      : 'Importe se tiver os PDFs no computador',
                 ),
                 children: [
                   if (hist.isEmpty)
                     QuietEmpty(
                       message:
-                          'Falta o PDF deste intervalo (2014–23). Coloque paes_YYYY.pdf + gabarito_YYYY.pdf nas pastas Provas e Gabaritos e use Gravar — sem arquivo no disco não há cobertura. Sem gabarito, o app mostra prova e preview, mas não inventa resposta correta.',
+                          'Nenhuma prova 2014–23 no computador. Coloque os PDFs nas pastas Provas e Gabaritos para importar.',
                       action: TextButton(
                         onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importAllComplete(); },
                         child: const Text('Importar todos com gabarito'),
@@ -1635,9 +1629,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           return PlaylistTile(
                             title: 'PAES $y',
                             subtitle: partial
-                                ? 'Parcial · sem gabarito · use gabarito_$y.pdf'
+                                ? 'Sem gabarito — coloque o arquivo'
                                 : ready
-                                    ? 'No acervo ($n qs)'
+                                    ? 'Pronto ($n questões)'
                                     : label,
                             badge: _uiBadge(
                               status,
@@ -1700,8 +1694,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 initiallyExpanded: false,
-                title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: const Text('Curação %, pastas, inventário, download, edital'),
+                title: Text('Opções avançadas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                subtitle: const Text('Estatísticas, pastas, download e edital'),
                 children: [
                   if (curation != null) ...[
                     Text(
@@ -1741,22 +1735,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Sincronizar edital'),
+                    title: const Text('Atualizar conteúdos da prova'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _syncEdital(); }, child: const Text('Atualizar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Reclassificar assuntos'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); }, child: const Text('Rodar')),
+                    title: const Text('Organizar questões por assunto'),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); }, child: const Text('Executar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Baixar todos da lista de materiais'),
+                    title: const Text('Baixar todos os materiais'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); }, child: const Text('Baixar')),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Baixar e revisar 1º ano'),
+                    title: const Text('Importar e revisar 1º ano'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); }, child: const Text('Ir')),
                   ),
                   if (coverage != null) ...[

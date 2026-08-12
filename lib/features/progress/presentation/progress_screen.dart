@@ -150,6 +150,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
       'active' => MissionQuestStatus.active,
       _ => MissionQuestStatus.open,
     };
+    final subjectScores = <String, double>{
+      for (final p in peaks)
+        (p['label']?.toString() ?? 'Eixo'):
+            ((_relevoValue(p) / _relevoMax(p)) * 100).clamp(0, 100).toDouble(),
+    };
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -345,6 +350,28 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ],
                     ),
                   ),
+                  if (subjectScores.isNotEmpty)
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Desempenho por área',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 200,
+                            child: _SubjectBarChart(scores: subjectScores),
+                          ),
+                        ],
+                      ),
+                    ),
                   if (gaps.isNotEmpty) ...[
                     const SectionLabel('Pontos a melhorar', hint: 'próximo passo concreto'),
                     for (final raw in gaps.take(3))
@@ -703,4 +730,110 @@ double _relevoValue(Map<String, dynamic> peak) =>
 double _relevoMax(Map<String, dynamic> peak) {
   final max = (peak['max'] as num?)?.toDouble();
   return max != null && max > 0 ? max : 10.0;
+}
+
+class _SubjectBarChart extends StatelessWidget {
+  const _SubjectBarChart({required this.scores});
+
+  final Map<String, double> scores;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _BarChartPainter(scores: scores, cs: cs),
+    );
+  }
+}
+
+class _BarChartPainter extends CustomPainter {
+  _BarChartPainter({required this.scores, required this.cs});
+
+  final Map<String, double> scores;
+  final ColorScheme cs;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final entries = scores.entries.toList();
+    if (entries.isEmpty) return;
+
+    const labelArea = 44.0;
+    const valueArea = 16.0;
+    final chartTop = valueArea;
+    final chartBottom = size.height - labelArea;
+    final chartHeight = chartBottom - chartTop;
+    final chartWidth = size.width;
+    final barCount = entries.length;
+    final slotWidth = chartWidth / barCount;
+    final barWidth = (slotWidth * 0.55).clamp(8.0, 48.0);
+
+    final gridPaint = Paint()
+      ..color = cs.onSurface.withOpacity(0.12)
+      ..strokeWidth = 1;
+    for (var p = 25; p < 100; p += 25) {
+      final y = chartBottom - (p / 100) * chartHeight;
+      canvas.drawLine(Offset(0, y), Offset(chartWidth, y), gridPaint);
+    }
+
+    final axisPaint = Paint()
+      ..color = cs.onSurface.withOpacity(0.28)
+      ..strokeWidth = 1;
+    canvas.drawLine(
+        Offset(0, chartBottom), Offset(chartWidth, chartBottom), axisPaint);
+
+    final valueStyle = GoogleFonts.inter(
+      fontSize: 10,
+      fontWeight: FontWeight.w700,
+      color: cs.onSurface,
+    );
+    final labelStyle = GoogleFonts.inter(
+      fontSize: 10,
+      color: cs.onSurface.withOpacity(0.78),
+    );
+
+    for (var i = 0; i < barCount; i++) {
+      final entry = entries[i];
+      final value = entry.value.clamp(0.0, 100.0);
+      final barColor = value > 70
+          ? cs.primary
+          : value >= 50
+              ? cs.tertiary
+              : cs.error;
+      final barHeight = (value / 100) * chartHeight;
+      final cx = slotWidth * i + slotWidth / 2;
+      final left = cx - barWidth / 2;
+      final top = chartBottom - barHeight;
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, top, barWidth, barHeight),
+        const Radius.circular(4),
+      );
+      canvas.drawRRect(rect, Paint()..color = barColor);
+
+      final tpValue = TextPainter(
+        text: TextSpan(text: '${value.toStringAsFixed(0)}%', style: valueStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tpValue.paint(
+        canvas,
+        Offset(cx - tpValue.width / 2, top - tpValue.height - 2),
+      );
+
+      canvas.save();
+      canvas.translate(cx, chartBottom + 6);
+      canvas.rotate(-0.785);
+      final tpLabel = TextPainter(
+        text: TextSpan(text: entry.key, style: labelStyle),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+        ellipsis: '…',
+      )..layout(maxWidth: labelArea);
+      tpLabel.paint(canvas, Offset(0, 0));
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarChartPainter old) =>
+      old.scores != scores || old.cs != cs;
 }

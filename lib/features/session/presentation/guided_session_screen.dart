@@ -1151,6 +1151,18 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   )
                 : null,
           ),
+          _SessionStepper(
+            currentStep: sessionComplete
+                ? 3
+                : isTheory
+                    ? 0
+                    : isQuestions
+                        ? 1
+                        : isRevisions
+                            ? 2
+                            : 0,
+          ),
+          const SizedBox(height: 16),
           if (sessionComplete) ...[
             _sessionEndPanel(context),
             TapScale(
@@ -1787,6 +1799,109 @@ class _BreathingClockState extends State<_BreathingClock>
           child: content(color.withOpacity(0.6 + t * 0.4)),
         );
       },
+    );
+  }
+}
+
+class _SessionStepper extends StatelessWidget {
+  const _SessionStepper({required this.currentStep, this.totalSteps = 4});
+
+  final int currentStep;
+  final int totalSteps;
+
+  static const _labels = ['Teoria', 'Questões', 'Revisão', 'Concluído'];
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: Row(
+        children: [
+          for (int i = 0; i < totalSteps; i++) ...[
+            if (i > 0)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  color: i <= currentStep ? cs.primary : cs.surfaceContainerHigh,
+                ),
+              ),
+            _StepNode(
+              index: i,
+              isCurrent: i == currentStep,
+              isCompleted: i < currentStep,
+              label: _labels[i],
+              cs: cs,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepNode extends StatelessWidget {
+  const _StepNode({
+    required this.index,
+    required this.isCurrent,
+    required this.isCompleted,
+    required this.label,
+    required this.cs,
+  });
+
+  final int index;
+  final bool isCurrent;
+  final bool isCompleted;
+  final String label;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg;
+    final Color fg;
+    final double size;
+    if (isCompleted || isCurrent) {
+      bg = cs.primary;
+      fg = Colors.white;
+      size = isCurrent ? 32 : 28;
+    } else {
+      bg = cs.surfaceContainerHigh;
+      fg = cs.onSurfaceVariant;
+      size = 28;
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: isCompleted
+              ? Icon(Icons.check, size: 16, color: fg)
+              : Text(
+                  '${index + 1}',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: fg,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: isCurrent ? cs.onSurface : cs.onSurfaceVariant,
+            fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ],
     );
   }
 }

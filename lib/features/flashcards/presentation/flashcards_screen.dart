@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -317,7 +318,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                         });
                                       },
                                       borderRadius: BorderRadius.circular(kRadiusButton),
-                                      child: FlipCard3D(
+                                      child: _FlipCard(
                                         flipped: flipped,
                                         front: Container(
                                           padding: const EdgeInsets.symmetric(
@@ -375,18 +376,20 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        FilledButton.tonalIcon(
-                                          onPressed: () { HapticFeedback.selectionClick(); _review(id, true); },
-                                          icon: const Icon(Icons.check_rounded, size: 18),
-                                          label: const Text('Lembrei'),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        OutlinedButton.icon(
-                                          onPressed: () { HapticFeedback.selectionClick(); _review(id, false); },
-                                          icon: const Icon(Icons.refresh_rounded, size: 18),
-                                          label: const Text('Esqueci'),
-                                        ),
-                                        const Spacer(),
+                                        if (flipped) ...[
+                                          FilledButton.tonalIcon(
+                                            onPressed: () { HapticFeedback.selectionClick(); _review(id, true); },
+                                            icon: const Icon(Icons.check_rounded, size: 18),
+                                            label: const Text('Lembrei'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: () { HapticFeedback.selectionClick(); _review(id, false); },
+                                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                                            label: const Text('Esqueci'),
+                                          ),
+                                          const Spacer(),
+                                        ],
                                         IconButton(
                                           tooltip: 'Apagar',
                                           onPressed: () async {
@@ -440,6 +443,76 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FlipCard extends StatefulWidget {
+  const _FlipCard({required this.front, required this.back, required this.flipped});
+
+  final Widget front;
+  final Widget back;
+  final bool flipped;
+
+  @override
+  State<_FlipCard> createState() => _FlipCardState();
+}
+
+class _FlipCardState extends State<_FlipCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+    );
+    if (widget.flipped) _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(covariant _FlipCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.flipped != widget.flipped) {
+      if (widget.flipped) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final angle = _animation.value * pi;
+        final showFront = angle < 0.5 * pi;
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.001)
+            ..rotateY(angle),
+          child: showFront
+              ? widget.front
+              : Transform.flip(
+                  flipX: true,
+                  child: widget.back,
+                ),
+        );
+      },
     );
   }
 }
