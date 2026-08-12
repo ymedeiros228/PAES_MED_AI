@@ -1131,6 +1131,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  Future<void> _fixQuestions() async {
+    setState(() => busy = true);
+    try {
+      final data = await apiClient.post('/api/library/fix-questions', {});
+      final msgStr = data is Map ? (data['message']?.toString() ?? 'Correção concluída') : 'Correção concluída';
+      setState(() => msg = msgStr);
+      await _load();
+    } catch (e) {
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para corrigir agora. Tente de novo.'));
+    } finally {
+      setState(() => busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (busy && library == null) {
@@ -1753,6 +1767,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Importar e revisar 1º ano'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); }, child: const Text('Ir')),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
+                    subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); }, child: const Text('Corrigir')),
                   ),
                   if (coverage != null) ...[
                     const SizedBox(height: 8),

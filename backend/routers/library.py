@@ -17,6 +17,7 @@ from ingest_pdf import (
     sanitize_question_statements,
     sanitize_questions_full,
 )
+from fix_questions import diagnose_questions, fix_all
 from schemas import (
     OpenFolderRequest,
     OpenPathRequest,
@@ -501,6 +502,34 @@ def api_library_reprocess() -> dict[str, Any]:
         "sanitizedFull": full,
         "rag": indexed,
     }
+
+
+@router.post("/api/library/fix-questions")
+def api_library_fix_questions() -> dict[str, Any]:
+    """Correção completa: diagnóstica, limpa, corta contaminação, aplica gabaritos."""
+    result = fix_all()
+    try:
+        indexed = index_all_questions(allow_remote=False)
+    except Exception as exc:
+        indexed = {"ok": False, "error": str(exc)}
+    return {
+        "ok": True,
+        "message": (
+            f"Correção concluída: {result['fixes']['deleted']} removidas, "
+            f"{result['fixes']['changedStatements']} enunciados limpos, "
+            f"{result['fixes']['changedOptions']} alternativas corrigidas, "
+            f"{result['gabarito']['gabaritoApplied']} gabaritos aplicados, "
+            f"{result['gabarito']['sourceUpdated']} marcadas como oficial."
+        ),
+        "result": result,
+        "rag": indexed,
+    }
+
+
+@router.get("/api/library/diagnose-questions")
+def api_library_diagnose_questions() -> dict[str, Any]:
+    """Diagnóstico de qualidade das questões (read-only)."""
+    return diagnose_questions()
 
 @router.get("/api/backups")
 def api_list_backups() -> list[dict[str, str]]:
