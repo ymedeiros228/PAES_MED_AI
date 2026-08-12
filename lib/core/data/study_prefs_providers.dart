@@ -1,28 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/onboarding/presentation/onboarding_screen.dart';
 import 'api_client.dart';
 import 'api_error.dart';
+
+/// Chaves de preferências persistidas em SharedPreferences.
+class StudyPrefs {
+  static const focusModeKey = 'focus_mode';
+  static const examDateKey = 'exam_date';
+}
 
 final focusModeProvider = StateNotifierProvider<FocusModeNotifier, bool>((ref) {
   return FocusModeNotifier();
 });
 
 class FocusModeNotifier extends StateNotifier<bool> {
-  FocusModeNotifier() : super(true) {
+  FocusModeNotifier() : super(false) {
     _load();
   }
 
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
-    // Default ON (ciclo I): primeira abertura foca estudar, não Analytics.
+    // Default OFF: novos usuários veem todos os recursos.
     if (!p.containsKey(StudyPrefs.focusModeKey)) {
-      await p.setBool(StudyPrefs.focusModeKey, true);
-      state = true;
+      await p.setBool(StudyPrefs.focusModeKey, false);
+      state = false;
       return;
     }
-    state = p.getBool(StudyPrefs.focusModeKey) ?? true;
+    state = p.getBool(StudyPrefs.focusModeKey) ?? false;
   }
 
   Future<void> setFocus(bool value) async {
