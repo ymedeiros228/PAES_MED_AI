@@ -37,8 +37,10 @@ GROQ_MODEL_CANDIDATES = (
     "llama-3.1-8b-instant",
 )
 OPENROUTER_MODEL_CANDIDATES = (
-    "deepseek/deepseek-r1:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "liquid/lfm-2.5-2.6b:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "google/gemma-4-26b-a4b-it:free",
 )
 PROVIDER_ORDER: tuple[Provider, ...] = ("gemini", "groq", "openrouter", "openai")
 
