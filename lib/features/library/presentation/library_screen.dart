@@ -31,6 +31,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String? msg;
   String? partialLoadNote;
   bool busy = false;
+  String? resolutionStats;
+  String? lessonStats;
   final _searchCtrl = TextEditingController();
   List<Map<String, dynamic>> searchHits = [];
   String? searchNote;
@@ -167,6 +169,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         partialLoadNote = partialNote;
       });
       _scheduleSemana1Scroll();
+      unawaited(_loadResolutionStats());
+      unawaited(_loadLessonStats());
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
@@ -1145,6 +1149,48 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  Future<void> _generateResolutions() async {
+    setState(() { busy = true; msg = 'Gerando resoluções com IA... isso pode levar alguns minutos.'; });
+    try {
+      final data = await apiClient.post('/api/ai/generate-resolutions', {'limit': 20});
+      final msgStr = data is Map ? (data['message']?.toString() ?? 'Resoluções geradas') : 'Resoluções geradas';
+      setState(() => msg = msgStr);
+      await _loadResolutionStats();
+    } catch (e) {
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para gerar resoluções agora. Tente de novo.'));
+    } finally {
+      setState(() => busy = false);
+    }
+  }
+
+  Future<void> _generateLessons() async {
+    setState(() { busy = true; msg = 'Gerando aulas com IA... isso pode levar alguns minutos.'; });
+    try {
+      final data = await apiClient.post('/api/ai/generate-lessons', {'limit': 10});
+      final msgStr = data is Map ? (data['message']?.toString() ?? 'Aulas geradas') : 'Aulas geradas';
+      setState(() => msg = msgStr);
+      await _loadLessonStats();
+    } catch (e) {
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para gerar aulas agora. Tente de novo.'));
+    } finally {
+      setState(() => busy = false);
+    }
+  }
+
+  Future<void> _loadResolutionStats() async {
+    try {
+      final data = await apiClient.get('/api/ai/resolution-stats');
+      if (data is Map) setState(() => resolutionStats = data['message']?.toString());
+    } catch (_) {}
+  }
+
+  Future<void> _loadLessonStats() async {
+    try {
+      final data = await apiClient.get('/api/ai/lesson-stats');
+      if (data is Map) setState(() => lessonStats = data['message']?.toString());
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     if (busy && library == null) {
@@ -1773,6 +1819,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
                     subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); }, child: const Text('Corrigir')),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Gerar resoluções com IA'),
+                    subtitle: Text(resolutionStats ?? 'Cria resoluções didáticas (Comando, Conceito, Gabarito, Distrator)'),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateResolutions(); }, child: const Text('Gerar')),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Gerar aulas com IA'),
+                    subtitle: Text(lessonStats ?? 'Cria aulas estruturadas para cada tópico do edital'),
+                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateLessons(); }, child: const Text('Gerar')),
                   ),
                   if (coverage != null) ...[
                     const SizedBox(height: 8),

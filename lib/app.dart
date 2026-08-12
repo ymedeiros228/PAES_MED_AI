@@ -16,6 +16,7 @@ import 'features/bank_profile/presentation/bank_profile_screen.dart';
 import 'features/dashboard/presentation/dashboard_screen.dart';
 import 'features/essay/presentation/essay_screen.dart';
 import 'features/flashcards/presentation/flashcards_screen.dart';
+import 'features/focus/presentation/focus_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
 import 'features/library/presentation/library_screen.dart';
@@ -132,6 +133,17 @@ final appRouter = GoRouter(
           },
         ),
         GoRoute(path: '/configuracoes', pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
+        GoRoute(
+          path: '/foco',
+          pageBuilder: (context, state) {
+            final subject = state.uri.queryParameters['subject'];
+            final yearRaw = state.uri.queryParameters['year'];
+            return _fadePage(FocusScreen(
+              subject: subject,
+              year: yearRaw == null ? null : int.tryParse(yearRaw),
+            ));
+          },
+        ),
       ],
     ),
   ],

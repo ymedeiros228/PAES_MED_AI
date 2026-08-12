@@ -254,6 +254,46 @@ def api_chat(payload: ChatRequest) -> ChatResponse:
 def api_rag_reindex() -> dict[str, Any]:
     return index_all_questions()
 
+
+@router.post("/api/ai/generate-resolutions")
+def api_generate_resolutions(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Gera resoluções didáticas com IA em lote para questões com resolução template."""
+    from generate_resolutions import generate_resolutions
+
+    body = payload or {}
+    limit = int(body.get("limit", 20))
+    offset = int(body.get("offset", 0))
+    limit = max(1, min(limit, 50))
+    return generate_resolutions(limit=limit, offset=offset, delay_seconds=2.0)
+
+
+@router.get("/api/ai/resolution-stats")
+def api_resolution_stats() -> dict[str, Any]:
+    """Estatísticas de qualidade das resoluções."""
+    from generate_resolutions import resolution_stats
+
+    return resolution_stats()
+
+
+@router.post("/api/ai/generate-lessons")
+def api_generate_lessons(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Gera aulas estruturadas com IA em lote para tópicos do syllabus."""
+    from generate_lessons import generate_lessons
+
+    body = payload or {}
+    limit = int(body.get("limit", 10))
+    offset = int(body.get("offset", 0))
+    limit = max(1, min(limit, 30))
+    return generate_lessons(limit=limit, offset=offset, delay_seconds=3.0)
+
+
+@router.get("/api/ai/lesson-stats")
+def api_lesson_stats() -> dict[str, Any]:
+    """Estatísticas das aulas geradas."""
+    from generate_lessons import lesson_stats
+
+    return lesson_stats()
+
 def _professor_draft(question: dict[str, Any]) -> dict[str, Any]:
     """Rascunho explicitamente revisável; nunca declara explicação oficial da banca."""
     base = question.get("professorMode") or {}

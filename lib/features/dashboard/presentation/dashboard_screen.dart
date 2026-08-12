@@ -993,6 +993,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       label: const Text('Simulados'),
                                       onPressed: () => context.go('/simulados'),
                                     ),
+                                    ActionChip(
+                                      avatar: const Icon(Icons.center_focus_strong_rounded, size: 18),
+                                      label: const Text('Modo Foco'),
+                                      onPressed: () => context.go('/foco'),
+                                    ),
                                   ],
                                 ),
                               ] else ...[
