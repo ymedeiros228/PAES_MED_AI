@@ -2010,6 +2010,245 @@ def progress_overview() -> dict[str, Any]:
         "queuePath": "/fila",
     }
 
+
+def gamification_overview() -> dict[str, Any]:
+    """Sistema de gamificacao: niveis, conquistas, medalhas baseados no progresso."""
+    from services_core import dashboard_stats, stats_basis
+
+    dash = dashboard_stats()
+    basis = stats_basis()
+
+    total_answered = int(dash.get("totalAnswered") or 0)
+    accuracy = float(dash.get("accuracy") or 0)
+    streak = int(dash.get("streakDays") or 0)
+    study_minutes_week = float(dash.get("studyMinutesWeek") or 0)
+    study_minutes_today = float(dash.get("studyMinutesToday") or 0)
+
+    with db() as conn:
+        essays_count = conn.execute("SELECT COUNT(*) FROM essays").fetchone()[0]
+        flashcards_count = conn.execute("SELECT COUNT(*) FROM flashcards").fetchone()[0]
+        flashcards_reviewed = conn.execute(
+            "SELECT COUNT(*) FROM flashcards WHERE reviews > 0"
+        ).fetchone()[0]
+        simulations_graded = conn.execute(
+            "SELECT COUNT(DISTINCT date(answered_at)) FROM answers"
+        ).fetchone()[0]
+
+    # Nivel baseado em XP (questoes respondidas + ensaios + flashcards revisados + streak)
+    xp = (
+        total_answered * 10
+        + essays_count * 50
+        + flashcards_reviewed * 5
+        + streak * 30
+        + int(study_minutes_week / 10)
+    )
+
+    # Niveis: a cada 500 XP = 1 nivel
+    level = max(1, xp // 500)
+    xp_in_level = xp % 500
+    xp_for_next = 500
+    level_progress = xp_in_level / xp_for_next if xp_for_next > 0 else 0
+
+    # Titulo do nivel
+    level_titles = {
+        1: "Iniciante",
+        2: "Aprendiz",
+        3: "Estudante",
+        4: "Dedicado",
+        5: "Focado",
+        6: "Persistente",
+        7: "Experiente",
+        8: "Avancado",
+        9: "Especialista",
+        10: "Mestre",
+    }
+    level_title = level_titles.get(min(level, 10), "Lenda")
+
+    # Conquistas / Medalhas
+    achievements: list[dict[str, Any]] = []
+
+    # Conquistas de questoes
+    achievements.append({
+        "id": "first_question",
+        "title": "Primeira Questao",
+        "description": "Responda sua primeira questao",
+        "icon": "play_circle",
+        "unlocked": total_answered >= 1,
+        "progress": min(1, total_answered / 1),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "questions_10",
+        "title": "Dezena",
+        "description": "Responda 10 questoes",
+        "icon": "looks_one",
+        "unlocked": total_answered >= 10,
+        "progress": min(1, total_answered / 10),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "questions_50",
+        "title": "Meio Centenar",
+        "description": "Responda 50 questoes",
+        "icon": "looks_two",
+        "unlocked": total_answered >= 50,
+        "progress": min(1, total_answered / 50),
+        "tier": "silver",
+    })
+    achievements.append({
+        "id": "questions_100",
+        "title": "Centenar",
+        "description": "Responda 100 questoes",
+        "icon": "looks_3",
+        "unlocked": total_answered >= 100,
+        "progress": min(1, total_answered / 100),
+        "tier": "silver",
+    })
+    achievements.append({
+        "id": "questions_200",
+        "title": "Maratonista",
+        "description": "Responda 200 questoes",
+        "icon": "directions_run",
+        "unlocked": total_answered >= 200,
+        "progress": min(1, total_answered / 200),
+        "tier": "gold",
+    })
+
+    # Conquistas de streak
+    achievements.append({
+        "id": "streak_3",
+        "title": "Trinca",
+        "description": "Estude 3 dias seguidos",
+        "icon": "local_fire_department",
+        "unlocked": streak >= 3,
+        "progress": min(1, streak / 3),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "streak_7",
+        "title": "Semana de Foco",
+        "description": "Estude 7 dias seguidos",
+        "icon": "whatshot",
+        "unlocked": streak >= 7,
+        "progress": min(1, streak / 7),
+        "tier": "silver",
+    })
+    achievements.append({
+        "id": "streak_30",
+        "title": "Mes de Ferro",
+        "description": "Estude 30 dias seguidos",
+        "icon": "shield",
+        "unlocked": streak >= 30,
+        "progress": min(1, streak / 30),
+        "tier": "gold",
+    })
+
+    # Conquistas de redacao
+    achievements.append({
+        "id": "first_essay",
+        "title": "Primeira Redacao",
+        "description": "Corrija sua primeira redacao",
+        "icon": "edit_note",
+        "unlocked": essays_count >= 1,
+        "progress": min(1, essays_count / 1),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "essays_5",
+        "title": "Escritor",
+        "description": "Corrija 5 redacoes",
+        "icon": "rate_review",
+        "unlocked": essays_count >= 5,
+        "progress": min(1, essays_count / 5),
+        "tier": "silver",
+    })
+
+    # Conquistas de flashcards
+    achievements.append({
+        "id": "flashcard_review_10",
+        "title": "Memoria",
+        "description": "Revise 10 flashcards",
+        "icon": "psychology",
+        "unlocked": flashcards_reviewed >= 10,
+        "progress": min(1, flashcards_reviewed / 10),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "flashcard_review_50",
+        "title": "Mente Afiada",
+        "description": "Revise 50 flashcards",
+        "icon": "lightbulb",
+        "unlocked": flashcards_reviewed >= 50,
+        "progress": min(1, flashcards_reviewed / 50),
+        "tier": "gold",
+    })
+
+    # Conquistas de acerto
+    if total_answered >= 20:
+        achievements.append({
+            "id": "accuracy_70",
+            "title": "Mira Certeira",
+            "description": "Acerte 70% das questoes (min 20 respondidas)",
+            "icon": "gps_fixed",
+            "unlocked": accuracy >= 0.7,
+            "progress": min(1, accuracy / 0.7),
+            "tier": "gold",
+        })
+
+    # Conquistas de tempo de estudo
+    achievements.append({
+        "id": "study_60min_week",
+        "title": "Hora Cheia",
+        "description": "Estude 60 minutos na semana",
+        "icon": "schedule",
+        "unlocked": study_minutes_week >= 60,
+        "progress": min(1, study_minutes_week / 60),
+        "tier": "bronze",
+    })
+    achievements.append({
+        "id": "study_300min_week",
+        "title": "Dedicacao Total",
+        "description": "Estude 5 horas na semana",
+        "icon": "hourglass_full",
+        "unlocked": study_minutes_week >= 300,
+        "progress": min(1, study_minutes_week / 300),
+        "tier": "gold",
+    })
+
+    unlocked_count = sum(1 for a in achievements if a["unlocked"])
+    total_achievements = len(achievements)
+
+    # Proxima conquista (primeira nao desbloqueada com maior progresso)
+    next_achievement = None
+    locked = [a for a in achievements if not a["unlocked"]]
+    if locked:
+        locked.sort(key=lambda a: a["progress"], reverse=True)
+        next_achievement = locked[0]
+
+    return {
+        "ok": True,
+        "level": level,
+        "levelTitle": level_title,
+        "xp": xp,
+        "xpInLevel": xp_in_level,
+        "xpForNext": xp_for_next,
+        "levelProgress": round(level_progress, 3),
+        "achievements": achievements,
+        "unlockedCount": unlocked_count,
+        "totalAchievements": total_achievements,
+        "nextAchievement": next_achievement,
+        "stats": {
+            "totalAnswered": total_answered,
+            "accuracy": round(accuracy, 4),
+            "streakDays": streak,
+            "essaysCount": essays_count,
+            "flashcardsReviewed": flashcards_reviewed,
+            "studyMinutesWeek": round(study_minutes_week, 1),
+        },
+        "disclaimer": "Gamificacao local · treino · nao oficial.",
+    }
+
+
 def create_backup() -> dict[str, Any]:
     import hashlib
     import zipfile

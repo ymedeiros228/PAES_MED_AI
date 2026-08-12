@@ -28,6 +28,7 @@ from services_core import (
     topic_frequency,
 )
 from services_extra import (
+    gamification_overview,
     list_study_gaps,
     progress_overview,
     recover_study_gap,
@@ -184,3 +185,9 @@ def api_curation_dirty_labels(limit: int = 40) -> dict[str, Any]:
 def api_progress_overview() -> dict[str, Any]:
     """Painel Relevo — cola dashboard + redação + gaps (Ciclo HR)."""
     return progress_overview()
+
+
+@router.get("/api/gamification")
+def api_gamification() -> dict[str, Any]:
+    """Sistema de gamificacao: niveis, conquistas, medalhas."""
+    return gamification_overview()
