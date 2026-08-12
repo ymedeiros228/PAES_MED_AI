@@ -5,7 +5,8 @@
 # Como usar:
 #   1. Push este repo pro GitHub (privado)
 #   2. Conecte no Render > New > Blueprint > selecione este repositorio
-#   3. Configure env vars: GEMINI_API_KEY, GEMINI_MODEL
+#   3. Configure as env vars com sync: false no Render dashboard:
+#      - GEMINI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, OPENAI_API_KEY
 #   4. Deploy
 #
 # O que acontece no deploy:
@@ -22,8 +23,20 @@ services:
     dockerContext: .
     envVars:
       - key: GEMINI_API_KEY
-        sync: false  # configure manualmente no Render dashboard
+        sync: false
       - key: GEMINI_MODEL
-        value: gemini-2.0-flash
+        value: gemini-flash-latest
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: nvidia/nemotron-3-super-120b-a12b:free
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
       - key: PAES_ALLOWED_ORIGINS
-        sync: false  # URL do front se for deploy separado (Vercel)
+        sync: false
