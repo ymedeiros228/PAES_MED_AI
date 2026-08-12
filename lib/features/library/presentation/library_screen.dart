@@ -1141,6 +1141,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     if (error != null) {
       return EmptyState(
+        icon: Icons.menu_book_outlined,
         title: 'Biblioteca indisponível',
         subtitle: error!,
         action: FilledButton(onPressed: () { HapticFeedback.mediumImpact(); _load(); }, child: const Text('Tentar de novo')),

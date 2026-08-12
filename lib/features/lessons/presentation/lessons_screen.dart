@@ -283,7 +283,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               ],
               SectionLabel('Suas aulas'),
               lessons.when(
-                loading: () => const LinearProgressIndicator(),
+                loading: () => const SkeletonList(count: 3, lines: 2),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Lista indisponível.'),
                   action: TextButton(

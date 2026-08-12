@@ -229,6 +229,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                     _itemIds = ids;
                     if (items.isEmpty) {
                       return EmptyState(
+                        icon: Icons.style_outlined,
                         title: dueOnly ? 'Nada para revisar agora' : 'Nenhum cartão ainda',
                         subtitle: dueOnly
                             ? 'Quando errar na sessão, os cartões aparecem aqui. Ou veja todos.'

@@ -344,6 +344,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     if (error != null) {
       return Center(
         child: EmptyState(
+          icon: Icons.quiz_outlined,
           title: 'Não deu para abrir a ficha',
           subtitle: error!,
           action: Wrap(
@@ -387,13 +388,19 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     final questionPane = ListView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       children: [
-        Text(
-          '${q.subject} · ${q.topic} · ${q.year}',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
-            color: cs.onSurface,
+        Hero(
+          tag: 'question_${q.id}',
+          child: Material(
+            type: MaterialType.transparency,
+            child: Text(
+              '${q.subject} · ${q.topic} · ${q.year}',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+                color: cs.onSurface,
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 4),

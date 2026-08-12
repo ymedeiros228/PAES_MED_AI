@@ -1086,6 +1086,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final cs = Theme.of(context).colorScheme;
     if (error != null) {
       return EmptyState(
+        icon: Icons.school_outlined,
         title: 'Sessão indisponível',
         subtitle: error!,
         action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),

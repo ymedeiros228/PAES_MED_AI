@@ -320,6 +320,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 child: SkeletonList(count: 5, lines: 2),
               ),
               error: (e, _) => EmptyState(
+                icon: Icons.quiz_outlined,
                 title: 'Não foi possível carregar',
                 subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
                 action: Wrap(
@@ -354,6 +355,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 }
                 if (items.isEmpty) {
                   return EmptyState(
+                    icon: Icons.quiz_outlined,
                     title: 'Nenhuma questão aqui',
                     subtitle: page > 0
                         ? 'Volte uma página ou limpe os filtros.'
@@ -425,7 +427,9 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             examBoard: q.examBoard,
                           );
                           final subjStyle = subjectStyle(q.subject);
-                          return _StaggeredItem(
+                          return Hero(
+                            tag: 'question_${q.id}',
+                            child: _StaggeredItem(
                             index: i,
                             child: PlaylistTile(
                               title: '${q.subject} · ${q.topic}',
@@ -443,7 +447,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                                 context.go('/questoes/${q.id}');
                               },
                             ),
-                          );
+                          ));
                         },
                       ),
                       ),

@@ -152,6 +152,7 @@ class EmptyState extends StatefulWidget {
     this.action,
     this.actionLabel,
     this.onAction,
+    this.icon,
     super.key,
   });
   final String title;
@@ -159,6 +160,7 @@ class EmptyState extends StatefulWidget {
   final Widget? action;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final IconData? icon;
 
   @override
   State<EmptyState> createState() => _EmptyStateState();
@@ -240,7 +242,7 @@ class _EmptyStateState extends State<EmptyState>
                         ],
                       ),
                       child: Icon(
-                        Icons.auto_stories_outlined,
+                        widget.icon ?? Icons.auto_stories_outlined,
                         size: 34,
                         color: cs.primary.withOpacity(0.9),
                       ),
