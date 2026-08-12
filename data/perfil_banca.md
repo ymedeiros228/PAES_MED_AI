@@ -1,18 +1,18 @@
 # Como a UEMA cobra — perfil da banca (operacional)
 
-Base usada: **oficial** · oficiais=205 · treino=52.
+Base usada: **oficial** · oficiais=203 · treino=52.
 Anos na amostra: 2015, 2022, 2024, 2025, 2026.
 Perfil derivado apenas das questões presentes na base local. Não inventa % oficiais.
 
-- Questões analisadas: 205
-- Tamanho médio do enunciado: 621.8
-- Viés de gabarito (A–E): {"E": 42, "B": 46, "A": 37, "D": 37, "C": 43}
+- Questões analisadas: 203
+- Tamanho médio do enunciado: 620.5
+- Viés de gabarito (A–E): {"E": 40, "B": 46, "A": 37, "D": 37, "C": 43}
 - Verbos mais comuns: []
-- Distribuição por disciplina: {"Física": 56, "História": 73, "Filosofia": 16, "Língua Portuguesa e Literatura": 13, "Matemática": 10, "Biologia": 17, "Sociologia": 2, "Química": 10, "Humanas": 1, "Geografia": 7}
-- Dificuldade: {"Média": 205}
+- Distribuição por disciplina: {"Física": 55, "História": 73, "Filosofia": 16, "Língua Portuguesa e Literatura": 13, "Matemática": 9, "Biologia": 17, "Sociologia": 2, "Química": 10, "Humanas": 1, "Geografia": 7}
+- Dificuldade: {"Média": 203}
 
 ## Coocorrência de tópicos
-- História::Brasil República × História::Interpretação de texto: 6
+- História::Brasil República × História::Interpretação de texto: 7
 - História::Brasil República × História::Literatura: 5
 - Física::Cinemática × Física::Fisiologia humana: 5
 - História::Interpretação de texto × História::Literatura: 4
@@ -37,12 +37,12 @@ Perfil derivado apenas das questões presentes na base local. Não inventa % ofi
 
 - **Biologia**: {"2024": 4, "2025": 1, "2026": 4, "2015": 5, "2022": 3}
 - **Filosofia**: {"2026": 7, "2025": 2, "2015": 5, "2022": 2}
-- **Física**: {"2025": 7, "2024": 8, "2026": 16, "2015": 15, "2022": 10}
+- **Física**: {"2025": 6, "2024": 8, "2026": 16, "2015": 15, "2022": 10}
 - **Geografia**: {"2026": 1, "2015": 6}
 - **História**: {"2025": 18, "2024": 9, "2026": 11, "2015": 23, "2022": 12}
 - **Humanas**: {"2026": 1}
 - **Língua Portuguesa e Literatura**: {"2024": 6, "2025": 4, "2015": 2, "2022": 1}
-- **Matemática**: {"2024": 2, "2025": 2, "2015": 4, "2022": 2}
+- **Matemática**: {"2024": 2, "2025": 2, "2015": 3, "2022": 2}
 - **Química**: {"2024": 1, "2025": 1, "2026": 6, "2022": 2}
 - **Sociologia**: {"2024": 1, "2025": 1}
 

@@ -8,6 +8,11 @@ import 'api_error.dart';
 class StudyPrefs {
   static const focusModeKey = 'focus_mode';
   static const examDateKey = 'exam_date';
+  static const dailyGoalKey = 'daily_goal_minutes';
+  static const studyStartKey = 'study_start_hour';
+  static const studyEndKey = 'study_end_hour';
+  static const studyDaysKey = 'study_days';
+  static const onboardingDoneKey = 'onboarding_done_v2';
 }
 
 final focusModeProvider = StateNotifierProvider<FocusModeNotifier, bool>((ref) {
@@ -155,5 +160,77 @@ class TutorOnlinePrefNotifier extends StateNotifier<bool> {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_key, value);
     state = value;
+  }
+}
+
+/// Meta diária de estudo em minutos.
+final dailyGoalProvider = StateNotifierProvider<DailyGoalNotifier, int>((ref) {
+  return DailyGoalNotifier();
+});
+
+class DailyGoalNotifier extends StateNotifier<int> {
+  DailyGoalNotifier() : super(60) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
+    state = p.getInt(StudyPrefs.dailyGoalKey) ?? 60;
+  }
+
+  Future<void> setGoal(int minutes) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setInt(StudyPrefs.dailyGoalKey, minutes);
+    state = minutes;
+  }
+}
+
+/// Horário de início e fim dos estudos.
+final studyHoursProvider = StateNotifierProvider<StudyHoursNotifier, ({int start, int end})>((ref) {
+  return StudyHoursNotifier();
+});
+
+class StudyHoursNotifier extends StateNotifier<({int start, int end})> {
+  StudyHoursNotifier() : super((start: 8, end: 22)) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
+    final s = p.getInt(StudyPrefs.studyStartKey) ?? 8;
+    final e = p.getInt(StudyPrefs.studyEndKey) ?? 22;
+    state = (start: s, end: e);
+  }
+
+  Future<void> setHours(int start, int end) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setInt(StudyPrefs.studyStartKey, start);
+    await p.setInt(StudyPrefs.studyEndKey, end);
+    state = (start: start, end: end);
+  }
+}
+
+/// Dias da semana para estudar (1=dom, 2=seg, ..., 7=sab).
+final studyDaysProvider = StateNotifierProvider<StudyDaysNotifier, List<int>>((ref) {
+  return StudyDaysNotifier();
+});
+
+class StudyDaysNotifier extends StateNotifier<List<int>> {
+  StudyDaysNotifier() : super([2, 3, 4, 5, 6]) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(StudyPrefs.studyDaysKey);
+    if (raw != null && raw.isNotEmpty) {
+      state = raw.split(',').map((e) => int.tryParse(e) ?? 0).where((e) => e > 0).toList();
+    }
+  }
+
+  Future<void> setDays(List<int> days) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(StudyPrefs.studyDaysKey, days.join(','));
+    state = days;
   }
 }

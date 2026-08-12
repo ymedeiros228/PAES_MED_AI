@@ -497,6 +497,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
+                              // Meta diária
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.flag_outlined, size: 16, color: cs.primary),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Meta: ${ref.watch(dailyGoalProvider)}min/dia',
+                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.6)),
+                                    ),
+                                    const Spacer(),
+                                    if (examDaysLocal != null && examDaysLocal > 0)
+                                      Text(
+                                        '$examDaysLocal dias até a prova',
+                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: cs.primary),
+                                      ),
+                                  ],
+                                ),
+                              ),
                               StudyCheckRow(
                                 done: checklist['session'] == true,
                                 label: 'Sessão de estudo',

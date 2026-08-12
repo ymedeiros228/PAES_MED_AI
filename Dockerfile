@@ -10,8 +10,11 @@ FROM ghcr.io/cirruslabs/flutter:3.24.5 AS flutter-build
 WORKDIR /app
 COPY . /app/
 
-# Build do front web
-RUN flutter build web --release --base-href=/
+# Build do front web (HTML renderer = 5.5MB vs 25MB com CanvasKit)
+RUN flutter build web --release --base-href=/ --web-renderer html
+
+# Remove CanvasKit nao usado (renderer HTML) para reduzir tamanho da imagem
+RUN rm -rf /app/build/web/canvaskit
 
 # ------------------------------------------------------------------------
 # STAGE 2: Runtime Python

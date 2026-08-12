@@ -27,6 +27,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     with TickerProviderStateMixin {
   DateTime? _examDate;
   bool _saving = false;
+  int _dailyGoal = 60;
+  int _studyStart = 8;
+  int _studyEnd = 22;
+  List<int> _studyDays = [2, 3, 4, 5, 6];
 
   late final AnimationController _bgCtrl;
   late final AnimationController _cardCtrl;
@@ -123,8 +127,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           '${_examDate!.year}-${_examDate!.month.toString().padLeft(2, '0')}-${_examDate!.day.toString().padLeft(2, '0')}';
       await ref.read(examDateProvider.notifier).setDate(iso);
     }
+    await ref.read(dailyGoalProvider.notifier).setGoal(_dailyGoal);
+    await ref.read(studyHoursProvider.notifier).setHours(_studyStart, _studyEnd);
+    await ref.read(studyDaysProvider.notifier).setDays(_studyDays);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_done_v1', true);
+    await prefs.setBool('onboarding_done_v2', true);
     await prefs.setBool('first_run_coach_pending', true);
     notifyOnboardingFinished();
     if (mounted) context.go('/dashboard');
@@ -214,6 +222,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                                   onPickDate: _pickDate,
                                   onFinish: _finish,
                                   cs: cs,
+                                  dailyGoal: _dailyGoal,
+                                  onGoalChanged: (g) {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => _dailyGoal = g);
+                                  },
                                 ),
                               ),
                             ),
@@ -324,6 +337,8 @@ class _MainCard extends StatelessWidget {
     required this.onPickDate,
     required this.onFinish,
     required this.cs,
+    required this.dailyGoal,
+    required this.onGoalChanged,
   });
 
   final DateTime? examDate;
@@ -333,6 +348,8 @@ class _MainCard extends StatelessWidget {
   final VoidCallback onPickDate;
   final VoidCallback onFinish;
   final ColorScheme cs;
+  final int dailyGoal;
+  final ValueChanged<int> onGoalChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -531,6 +548,48 @@ class _MainCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
+
+          // Meta diária
+          Text(
+            'Meta diária de estudo',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Quantos minutos por dia você quer estudar?',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: cs.onSurface.withOpacity(0.55),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Seletor de meta
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final goal in [30, 60, 90, 120, 180])
+                ChoiceChip(
+                  label: Text(
+                    goal < 60 ? '${goal}min' : '${goal ~/ 60}h${goal % 60 > 0 ? '${goal % 60}min' : ''}',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  selected: dailyGoal == goal,
+                  selectedColor: AppTheme.teal,
+                  onSelected: saving ? null : (_) => onGoalChanged(goal),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 28),
 
           // CTA
           SizedBox(
