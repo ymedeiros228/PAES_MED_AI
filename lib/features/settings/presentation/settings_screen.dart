@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'dart:io' show File, Platform;
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// Conditional import: dart:io so existe em desktop/mobile, nao na web
+import 'platform_io.dart' if (dart.library.html) 'platform_io_web.dart' show readVersionFile;
 import 'package:go_router/go_router.dart';
-import 'package:path/path.dart' as p;
 
 import '../../../core/data/api_client.dart';
 import '../../../core/app_version.dart';
@@ -392,24 +392,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const SizedBox(height: 12),
                     Builder(
                       builder: (_) {
-                        final isWin = !kIsWeb && Platform.isWindows;
-                        var desktopBuild = false;
-                        var buildIdentity = kAppVersionLabel;
-                        if (isWin) {
-                          try {
-                            final exe = Platform.resolvedExecutable;
-                            final dir = p.dirname(exe);
-                            // dist layout: .../app/paes_med_ai.exe → ../VERSION.txt
-                            final sibling = File(p.join(p.dirname(dir), 'VERSION.txt'));
-                            final same = File(p.join(dir, 'VERSION.txt'));
-                            final buildFile = sibling.existsSync() ? sibling : same;
-                            desktopBuild = buildFile.existsSync();
-                            if (desktopBuild) {
-                              final value = buildFile.readAsStringSync().trim();
-                              if (value.isNotEmpty) buildIdentity = value;
-                            }
-                          } catch (_) {}
-                        }
+                        final (buildIdentity, desktopBuild) = readVersionFile();
+                        final displayIdentity = buildIdentity.isNotEmpty ? buildIdentity : kAppVersionLabel;
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -420,7 +404,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Build de demonstração · $buildIdentity'),
+                                label: Text('Build de demonstração · $displayIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else if (kIsWeb)
@@ -430,12 +414,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Versão web · $buildIdentity'),
+                                label: Text('Versão web · $displayIdentity'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else
                               Text(
-                                isWin
+                                defaultTargetPlatform == TargetPlatform.windows
                                     ? 'Build Windows · modo desenvolvimento (flutter run)'
                                     : 'Build de estudo',
                                 style: GoogleFonts.inter(
