@@ -8,9 +8,12 @@ from typing import Any
 from fastapi import APIRouter
 
 from api_helpers import (
+    _ask_gemini,
+    _ask_groq,
     _ask_openai,
-    _openai_client,
+    _ask_openrouter,
 )
+from ai_state import configured_providers
 from schemas import EssayRequest
 from services_extra import (
     essay_grade_deltas,
@@ -36,9 +39,60 @@ def api_essay_themes() -> list[str]:
 def api_essays_personas() -> dict[str, Any]:
     return {"ok": True, "items": essay_personas(), "disclaimer": "Personas = prompts locais · treino, não banca."}
 
+_ESSAY_INSTRUCTIONS = (
+    "Você é um corretor de redações no espírito do PAES/UEMA. "
+    "Avalie a redação do aluno e responda APENAS em JSON válido com estes campos:\n"
+    "- score: nota geral (0-10, número)\n"
+    "- grammar: gramática (0-10, número)\n"
+    "- cohesion: coesão (0-10, número)\n"
+    "- coherence: coerência (0-10, número)\n"
+    "- argumentation: argumentação (0-10, número)\n"
+    "- intervention: proposta de intervenção (0-10, número)\n"
+    "- strengths: lista de 2-3 pontos fortes (strings)\n"
+    "- improvements: lista de 2-3 pontos a melhorar (strings)\n"
+    "- rewriteExample: exemplo de uma frase reescrita de forma melhor\n"
+    "- grammarTip: dica curta de gramática\n"
+    "- cohesionTip: dica curta de coesão\n"
+    "- coherenceTip: dica curta de coerência\n"
+    "- argumentationTip: dica curta de argumentação\n"
+    "- interventionTip: dica curta de proposta de intervenção\n"
+    "Responda SEMPRE em português. Nunca invente nota de banca oficial. "
+    "Retorne apenas o JSON, sem texto adicional."
+)
+
+
+def _try_essay_ai(theme: str, text: str, focus: str | None, style_line: str) -> str | None:
+    """Tenta corrigir a redação com o cascade de providers de IA."""
+    user_content = (
+        f"Tema: {theme}\n"
+        f"Foco eixo: {focus or 'geral'}\n\n"
+        f"Redação:\n{text}"
+    )
+    instructions = _ESSAY_INSTRUCTIONS + "\n" + style_line
+
+    providers = configured_providers()
+    # Cascade: gemini -> groq -> openrouter -> openai
+    provider_fns = {
+        "gemini": _ask_gemini,
+        "groq": _ask_groq,
+        "openrouter": _ask_openrouter,
+        "openai": _ask_openai,
+    }
+    for provider in providers:
+        fn = provider_fns.get(provider)
+        if fn is None:
+            continue
+        try:
+            raw = fn(instructions, user_content)
+            if raw and len(raw) > 20:
+                return raw
+        except Exception:
+            continue
+    return None
+
+
 @router.post("/api/essay/grade")
 def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
-    client = _openai_client()
     feedback: dict[str, Any]
     score: float
     persona = persona_by_id(payload.persona)
@@ -48,7 +102,28 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
     style_line = ""
     if persona:
         style_line = f"Persona: {persona['label']}. Foque o eixo {persona.get('focusAxis')}. {persona.get('hint') or ''}\n"
-    if client is None:
+
+    # Tentar cascade de IA primeiro
+    raw = _try_essay_ai(payload.theme, payload.text, focus, style_line)
+
+    if raw:
+        try:
+            start = raw.find("{")
+            end = raw.rfind("}") + 1
+            feedback = json.loads(raw[start:end])
+            score = float(feedback.get("score", 7))
+        except Exception:
+            score = 7.0
+            feedback = {"raw": raw, "note": "Não foi possível parsear JSON; segue texto bruto."}
+        feedback = dict(feedback) if isinstance(feedback, dict) else {"raw": feedback}
+        feedback["persona"] = persona_id
+        feedback["personaLabel"] = persona_label
+        feedback["focusAxis"] = focus
+        if "note" not in feedback:
+            feedback["note"] = "Correção com IA · não é nota de banca UEMA."
+        feedback["aiProvider"] = True
+    else:
+        # Fallback: heurístico offline
         heur = offline_essay_axis_scores(payload.theme, payload.text)
         score = float(heur["score"])
         scores = heur["scores"]
@@ -64,7 +139,7 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
             "interventionTip": tips["intervention"],
             "note": (
                 "Rascunho offline por eixos (0–10) — NÃO é nota de banca UEMA. "
-                "Configure OpenAI para correção mais rica."
+                "Configure um provedor de IA em Ajustes para correção mais rica."
             ),
             "offlineHeuristic": True,
             "wordCount": heur["wordCount"],
@@ -73,33 +148,11 @@ def api_essay_grade(payload: EssayRequest) -> dict[str, Any]:
             "personaLabel": persona_label,
             "focusAxis": focus,
         }
-        # Manter strings de leitura humana nos eixos também (UI antiga)
         for ax, tip in tips.items():
             feedback[f"{ax}_note"] = tip
         if focus in tips:
             feedback["missionHint"] = tips[focus]
-    else:
-        raw = _ask_openai(
-            "Você corrige redações no espírito do PAES/UEMA. Responda JSON com "
-            "score (0-10), grammar, cohesion, coherence, argumentation, intervention "
-            "(números 0-10), strengths, improvements, tips opcional por eixo. "
-            "Nunca invente nota de banca oficial. " + style_line,
-            f"Tema: {payload.theme}\nFoco eixo: {focus or 'geral'}\n\nRedação:\n{payload.text}",
-        )
-        try:
-            start = raw.find("{")
-            end = raw.rfind("}") + 1
-            feedback = json.loads(raw[start:end])
-            score = float(feedback.get("score", 7))
-        except Exception:
-            score = 7.0
-            feedback = {"raw": raw, "note": "Não foi possível parsear JSON; segue texto bruto."}
-        feedback = dict(feedback) if isinstance(feedback, dict) else {"raw": feedback}
-        feedback["persona"] = persona_id
-        feedback["personaLabel"] = persona_label
-        feedback["focusAxis"] = focus
-        if "note" not in feedback:
-            feedback["note"] = "Treino local com IA · não é nota de banca UEMA."
+
     saved = save_essay(payload.theme, payload.text, feedback, score)
     deltas = essay_grade_deltas(payload.theme, feedback if isinstance(feedback, dict) else {})
     out = dict(saved)

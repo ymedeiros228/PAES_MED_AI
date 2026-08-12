@@ -989,6 +989,101 @@ def import_and_commit_year(year: int) -> dict[str, Any]:
     return {**preview, "backup": backup, "commit": committed, "rag": rag}
 
 
+def reimport_weak_years() -> dict[str, Any]:
+    """Reimporta provas dos anos com poucas questões na base.
+
+    Anos com prova+gabarito: importação completa (high-conf).
+    Anos com prova mas sem gabarito: importação permitindo sem gabarito,
+    marcadas como source='pdf_ingest_sem_gabarito' para revisão posterior.
+    """
+    from services_extra import create_backup
+
+    # Anos fracos e seus status de gabarito
+    # 2017 e 2018: gabaritos escaneados (OCR indisponivel) — importar sem gabarito
+    # 2020, 2021, 2023: sem gabarito no disco
+    weak_years = [2017, 2018, 2020, 2021, 2023]
+
+    backup = create_backup()
+    results: list[dict[str, Any]] = []
+    total_imported = 0
+
+    for year in weak_years:
+        try:
+            # Tentar importação com gabarito primeiro
+            preview = import_year_pair(year)
+            questions = preview.get("questions", [])
+            gabarito_applied = int(preview.get("gabaritoApplied") or 0)
+
+            if gabarito_applied > 0:
+                # Gabarito funcionou — commit normal
+                committed = commit_preview(
+                    preview["previewId"],
+                    questions,
+                    high_confidence_only=True,
+                    allow_without_gabarito=False,
+                )
+                imported = committed.get("committed", 0) if isinstance(committed, dict) else 0
+                results.append({
+                    "year": year,
+                    "hasGabarito": True,
+                    "ok": committed.get("ok", False) if isinstance(committed, dict) else False,
+                    "imported": imported,
+                    "message": committed.get("message", "") if isinstance(committed, dict) else "",
+                })
+                total_imported += imported
+            else:
+                # Sem gabarito ou gabarito escaneado — importar sem gabarito
+                for q in questions:
+                    q["source"] = f"pdf_ingest_sem_gabarito:{year}"
+                    q["similarityNote"] = "Importado sem gabarito oficial — gabarito precisa revisão."
+                committed = commit_preview(
+                    preview["previewId"],
+                    questions,
+                    high_confidence_only=False,
+                    min_confidence=0.4,
+                    allow_without_gabarito=True,
+                )
+                imported = committed.get("committed", 0) if isinstance(committed, dict) else 0
+                results.append({
+                    "year": year,
+                    "hasGabarito": False,
+                    "ok": committed.get("ok", False) if isinstance(committed, dict) else False,
+                    "imported": imported,
+                    "message": committed.get("message", "") if isinstance(committed, dict) else "",
+                    "note": "Questões importadas sem gabarito — revisar respostas corretas.",
+                })
+                total_imported += imported
+        except Exception as exc:
+            results.append({
+                "year": year,
+                "hasGabarito": False,
+                "ok": False,
+                "imported": 0,
+                "error": str(exc),
+            })
+
+    # Sanitizar e indexar após importação
+    try:
+        sanitize_questions_full()
+    except Exception:
+        pass
+    rag = None
+    try:
+        from services_advanced import index_all_questions
+        rag = index_all_questions()
+    except Exception as exc:
+        rag = {"ok": False, "error": str(exc)}
+
+    return {
+        "ok": True,
+        "totalImported": total_imported,
+        "years": results,
+        "backup": backup,
+        "rag": rag,
+        "message": f"Reimportação concluída: {total_imported} questões importadas em {len(results)} anos.",
+    }
+
+
 def save_preview(kind: str, filename: str, questions: list[dict[str, Any]], raw_text: str) -> dict[str, Any]:
     preview_id = str(uuid.uuid4())
     with db() as conn:

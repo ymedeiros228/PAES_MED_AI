@@ -592,16 +592,18 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              FilledButton.icon(
-                onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
-                icon: busy
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
-                      )
-                    : const Icon(Icons.rate_review_outlined),
-                label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
+              TapScale(
+                child: FilledButton.icon(
+                  onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
+                  icon: busy
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
+                        )
+                      : const Icon(Icons.rate_review_outlined),
+                  label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -738,6 +740,39 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                     'Melhorar: ${fb['improvements']}',
                                     style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                                   ),
+                                if (fb['rewriteExample'] != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: cs.primaryContainer.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Exemplo de reescrita',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: cs.onSurface.withOpacity(0.7),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        SelectableText(
+                                          '${fb['rewriteExample']}',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            height: 1.5,
+                                            color: cs.onSurface,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                                 if (fb['note'] != null)
                                   SelectableText(
                                     '${fb['note']}',

@@ -14,6 +14,7 @@ from ingest_pdf import (
     compute_year_statuses,
     list_pdf_inventory,
     pair_prova_gabarito,
+    reimport_weak_years,
     sanitize_question_statements,
     sanitize_questions_full,
 )
@@ -502,6 +503,12 @@ def api_library_reprocess() -> dict[str, Any]:
         "sanitizedFull": full,
         "rag": indexed,
     }
+
+
+@router.post("/api/library/reimport-weak-years")
+def api_library_reimport_weak_years() -> dict[str, Any]:
+    """Reimporta provas dos anos com poucas questões (2017-2021, 2023)."""
+    return reimport_weak_years()
 
 
 @router.post("/api/library/fix-questions")

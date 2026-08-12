@@ -367,66 +367,70 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ],
                     ),
                   ),
-                  if (evolutionCurve.length >= 2) ...[
-                    const SectionLabel('Evolução temporal', hint: 'acerto acumulado ao longo do tempo'),
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Curva de acerto',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
+                  StaggeredFadeIn(
+                    children: [
+                      if (evolutionCurve.length >= 2) ...[
+                        const SectionLabel('Evolução temporal', hint: 'acerto acumulado ao longo do tempo'),
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Curva de acerto',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 180,
+                                child: _EvolutionLineChart(points: evolutionCurve),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 180,
-                            child: _EvolutionLineChart(points: evolutionCurve),
+                        ),
+                      ],
+                      if (subjectAccScores.isNotEmpty)
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Desempenho por área',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                height: 220,
+                                child: _SubjectBarChart(scores: subjectAccScores),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  if (subjectAccScores.isNotEmpty)
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Desempenho por área',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 220,
-                            child: _SubjectBarChart(scores: subjectAccScores),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (errorHotTopics.isNotEmpty) ...[
-                    const SectionLabel('Mapa de pontos fracos', hint: 'tópicos com menor acerto'),
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: _WeakTopicsHeatmap(topics: errorHotTopics),
-                    ),
-                  ],
-                  if (errorTypesMap.isNotEmpty) ...[
-                    const SectionLabel('Tipos de erro', hint: 'onde você mais erra'),
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: _ErrorTypeDonut(errorTypes: errorTypesMap),
-                    ),
-                  ],
+                        ),
+                      if (errorHotTopics.isNotEmpty) ...[
+                        const SectionLabel('Mapa de pontos fracos', hint: 'tópicos com menor acerto'),
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: _WeakTopicsHeatmap(topics: errorHotTopics),
+                        ),
+                      ],
+                      if (errorTypesMap.isNotEmpty) ...[
+                        const SectionLabel('Tipos de erro', hint: 'onde você mais erra'),
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: _ErrorTypeDonut(errorTypes: errorTypesMap),
+                        ),
+                      ],
+                    ],
+                  ),
                   if (gaps.isNotEmpty) ...[
                     const SectionLabel('Pontos a melhorar', hint: 'próximo passo concreto'),
                     for (final raw in gaps.take(3))
