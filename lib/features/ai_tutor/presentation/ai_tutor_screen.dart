@@ -162,6 +162,8 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                   }
                   final config = Map<String, dynamic>.from(snapshot.data as Map);
                   final configured = config['geminiConfigured'] == true ||
+                      config['groqConfigured'] == true ||
+                      config['openrouterConfigured'] == true ||
                       config['openaiConfigured'] == true;
                   if (configured) return const SizedBox.shrink();
                   return Padding(
@@ -803,8 +805,7 @@ class _ModelSelectorButton extends StatelessWidget {
   static const _providerInfo = <String, ({String label, String icon, String modelKey})>{
     'gemini': (label: 'Gemini', icon: 'gemini-3-flash-preview', modelKey: 'geminiModel'),
     'groq': (label: 'Groq Llama', icon: 'llama-3.3-70b-versatile', modelKey: 'groqModel'),
-    'openrouter': (label: 'OpenRouter', icon: 'llama-3.3-70b-instruct:free', modelKey: 'openrouterModel'),
-    'openai': (label: 'OpenAI GPT', icon: 'gpt-4.1-mini', modelKey: 'openaiModel'),
+    'openrouter': (label: 'OpenRouter', icon: 'nvidia/nemotron-3-super-120b-a12b:free', modelKey: 'openrouterModel'),
   };
 
   String? _currentLabel() {
