@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -155,6 +156,22 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
         (p['label']?.toString() ?? 'Eixo'):
             ((_relevoValue(p) / _relevoMax(p)) * 100).clamp(0, 100).toDouble(),
     };
+
+    // Novos dados para graficos (Mega Plan 3)
+    final evolutionCurve = (data?['evolutionCurve'] as List? ?? [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+    final errorTypesMap = Map<String, dynamic>.from(
+      (data?['errorTypes'] as Map?) ?? {},
+    );
+    final errorHotTopics = (data?['errorHotTopics'] as List? ?? [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+    // subjectAccuracy do backend (mais preciso que peaks)
+    final subjectAccuracy = Map<String, double>.from(
+      (data?['subjectAccuracy'] as Map?) ?? {},
+    );
+    final subjectAccScores = subjectAccuracy.isNotEmpty ? subjectAccuracy : subjectScores;
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -350,7 +367,31 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ],
                     ),
                   ),
-                  if (subjectScores.isNotEmpty)
+                  if (evolutionCurve.length >= 2) ...[
+                    const SectionLabel('Evolução temporal', hint: 'acerto acumulado ao longo do tempo'),
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Curva de acerto',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 180,
+                            child: _EvolutionLineChart(points: evolutionCurve),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (subjectAccScores.isNotEmpty)
                     SurfacePanel(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: Column(
@@ -366,12 +407,26 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            height: 200,
-                            child: _SubjectBarChart(scores: subjectScores),
+                            height: 220,
+                            child: _SubjectBarChart(scores: subjectAccScores),
                           ),
                         ],
                       ),
                     ),
+                  if (errorHotTopics.isNotEmpty) ...[
+                    const SectionLabel('Mapa de pontos fracos', hint: 'tópicos com menor acerto'),
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: _WeakTopicsHeatmap(topics: errorHotTopics),
+                    ),
+                  ],
+                  if (errorTypesMap.isNotEmpty) ...[
+                    const SectionLabel('Tipos de erro', hint: 'onde você mais erra'),
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: _ErrorTypeDonut(errorTypes: errorTypesMap),
+                    ),
+                  ],
                   if (gaps.isNotEmpty) ...[
                     const SectionLabel('Pontos a melhorar', hint: 'próximo passo concreto'),
                     for (final raw in gaps.take(3))
@@ -836,4 +891,292 @@ class _BarChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _BarChartPainter old) =>
       old.scores != scores || old.cs != cs;
+}
+
+// ============================================================
+// Mega Plan 3 — Graficos de Progresso com fl_chart
+// ============================================================
+
+/// Grafico de linha: evolucao do acerto acumulado ao longo do tempo.
+class _EvolutionLineChart extends StatelessWidget {
+  const _EvolutionLineChart({required this.points});
+
+  final List<Map<String, dynamic>> points;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    if (points.length < 2) return const SizedBox.shrink();
+
+    final spots = <FlSpot>[];
+    for (final p in points) {
+      final n = (p['n'] as num?)?.toDouble() ?? 0;
+      final acc = ((p['accuracy'] as num?)?.toDouble() ?? 0) * 100;
+      spots.add(FlSpot(n, acc.clamp(0, 100)));
+    }
+    final maxX = spots.last.x;
+    final lineColor = cs.primary;
+
+    return LineChart(
+      LineChartData(
+        minX: 1,
+        maxX: maxX,
+        minY: 0,
+        maxY: 100,
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: 25,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: cs.onSurface.withOpacity(0.1),
+            strokeWidth: 1,
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 28,
+              interval: (maxX / 5).ceilToDouble().clamp(1, double.infinity),
+              getTitlesWidget: (value, meta) => Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  value.toInt().toString(),
+                  style: GoogleFonts.inter(fontSize: 10, color: cs.onSurface.withOpacity(0.6)),
+                ),
+              ),
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 32,
+              interval: 25,
+              getTitlesWidget: (value, meta) => Text(
+                '${value.toInt()}%',
+                style: GoogleFonts.inter(fontSize: 10, color: cs.onSurface.withOpacity(0.6)),
+              ),
+            ),
+          ),
+        ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => cs.surfaceContainerHighest,
+            getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
+              '${s.x.toInt()} questões\n${s.y.toStringAsFixed(1)}% acerto',
+              GoogleFonts.inter(fontSize: 11, color: cs.onSurface),
+            )).toList(),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            curveSmoothness: 0.3,
+            color: lineColor,
+            barWidth: 3,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: lineColor.withOpacity(0.12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Donut chart: distribuicao dos tipos de erro.
+class _ErrorTypeDonut extends StatelessWidget {
+  const _ErrorTypeDonut({required this.errorTypes});
+
+  final Map<String, dynamic> errorTypes;
+
+  static const _labels = {
+    'conceito': 'Conceito',
+    'interpretacao': 'Interpretação',
+    'calculo': 'Cálculo',
+    'distracao': 'Distração',
+    'tempo': 'Tempo',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final entries = errorTypes.entries.where((e) => (e.value as num).toInt() > 0).toList();
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    final total = entries.fold(0, (sum, e) => sum + (e.value as num).toInt());
+    final colors = <Color>[
+      cs.error,
+      cs.tertiary,
+      cs.primary,
+      cs.secondary,
+      cs.outline,
+    ];
+
+    final sections = <PieChartSectionData>[];
+    for (var i = 0; i < entries.length; i++) {
+      final e = entries[i];
+      final value = (e.value as num).toDouble();
+      final pct = (value / total * 100);
+      sections.add(PieChartSectionData(
+        value: value,
+        color: colors[i % colors.length],
+        radius: 42,
+        title: '${pct.toStringAsFixed(0)}%',
+        titleStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 160,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: PieChart(
+                  PieChartData(
+                    sections: sections,
+                    centerSpaceRadius: 36,
+                    sectionsSpace: 2,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < entries.length; i++) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: colors[i % colors.length],
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${_labels[entries[i].key] ?? entries[i].key}: ${entries[i].value}',
+                              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Total de erros registrados: $total',
+          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
+        ),
+      ],
+    );
+  }
+}
+
+/// Mapa de calor: tópicos com menor acerto destacados por cor.
+class _WeakTopicsHeatmap extends StatelessWidget {
+  const _WeakTopicsHeatmap({required this.topics});
+
+  final List<Map<String, dynamic>> topics;
+
+  Color _colorFor(double acc, ColorScheme cs) {
+    if (acc < 0.4) return cs.error.withOpacity(0.85);
+    if (acc < 0.6) return cs.error.withOpacity(0.55);
+    if (acc < 0.8) return cs.tertiary.withOpacity(0.65);
+    return cs.primary.withOpacity(0.7);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final sorted = List<Map<String, dynamic>>.from(topics)
+      ..sort((a, b) {
+        final aa = (a['accuracy'] as num?)?.toDouble() ?? 1.0;
+        final bb = (b['accuracy'] as num?)?.toDouble() ?? 1.0;
+        return aa.compareTo(bb);
+      });
+    final display = sorted.take(12).toList();
+    if (display.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: display.map((t) {
+        final key = t['key']?.toString() ?? '';
+        final parts = key.split('::');
+        final subj = parts.isNotEmpty ? parts[0] : (t['subject']?.toString() ?? '');
+        final topic = parts.length > 1 ? parts.sublist(1).join('::') : (t['topic']?.toString() ?? '');
+        final acc = (t['accuracy'] as num?)?.toDouble() ?? 0;
+        final n = (t['n'] as num?)?.toInt() ?? 0;
+        final color = _colorFor(acc, cs);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          constraints: const BoxConstraints(maxWidth: 180),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                subj,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                topic,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${(acc * 100).toStringAsFixed(0)}% · $n resp.',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

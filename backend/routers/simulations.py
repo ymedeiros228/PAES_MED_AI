@@ -33,6 +33,7 @@ def api_simulations(payload: SimulationRequest) -> dict[str, Any]:
         payload.difficulty,
         payload.year,
         payload.limit,
+        payload.exam_minutes,
     )
 
 @router.post("/api/simulations/grade")

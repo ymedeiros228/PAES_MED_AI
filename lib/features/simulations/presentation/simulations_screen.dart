@@ -60,6 +60,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   int keyboardQi = 0;
 
   static const _modes = <(String, String, String, IconData)>[
+    ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
     ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
     ('prova_completa', 'Prova completa', 'Treino com o recorte usual da prova', Icons.assignment_outlined),
     ('medicina', 'Medicina', 'Foco em Natureza e raciocínio biomédico', Icons.biotech_outlined),
@@ -462,14 +463,18 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       );
     }
     final n = basis['officialCount'] as int? ?? 0;
-    final mins = (limit * 1.5).ceil().clamp(15, 90);
+    final isPaes = mode == 'paes_realista';
+    final mins = isPaes ? 240 : (limit * 1.5).ceil().clamp(15, 90);
     if (!mounted) return false;
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Pronto para o simulado do dia?'),
+        title: Text(isPaes ? 'Simulado PAES — 60 questões' : 'Pronto para o simulado do dia?'),
         content: Text(
           '${healthNote != null ? '$healthNote\n\n' : ''}'
+          '${isPaes
+              ? 'Simulado no estilo UEMA com 60 questões distribuídas por matéria.\nTempo: 4 horas.\nGabarito só ao finalizar.\n\n'
+              : ''}'
           '${n < 10
               ? 'Há poucas oficiais na base ($n). Este modo NÃO inventa prova UEMA — sem acervo sério, a base de treino fica rotulada como treino.\n\n'
                   'Tempo estimado: ~$mins min.\nResolução só ao finalizar.'
@@ -497,7 +502,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   }
 
   Future<void> _start() async {
-    if (mode == 'dia_prova') {
+    if (mode == 'dia_prova' || mode == 'paes_realista') {
       final ok = await _preflightDiaProva();
       if (!ok) return;
     }
@@ -507,11 +512,16 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       starting = true;
     });
     try {
-      final data = await apiClient.post('/api/simulations', {
+      final body = <String, dynamic>{
         'mode': mode,
         'subject': subject,
         'limit': limit,
-      });
+      };
+      if (mode == 'paes_realista') {
+        body['exam_minutes'] = 240;
+        body['limit'] = 60;
+      }
+      final data = await apiClient.post('/api/simulations', body);
       final map = Map<String, dynamic>.from(data as Map);
       final qs = map['questions'] as List<dynamic>? ?? [];
       if (qs.isEmpty) {
@@ -523,6 +533,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         return;
       }
       ticker?.cancel();
+      // Hard cap dinamico: backend pode retornar examMinutes (modo PAES = 240min)
+      final examMin = (map['examMinutes'] as num?)?.toInt();
+      final dynamicCap = examMin != null && examMin > 0
+          ? Duration(minutes: examMin)
+          : null;
       setState(() {
         lastSimMeta = map;
         questions = qs;
@@ -534,8 +549,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         running = true;
         starting = false;
         keyboardQi = 0;
-        examLocked = mode == 'dia_prova';
-        preflightDone = mode == 'dia_prova';
+        examLocked = (map['examLocked'] as bool?) ??
+            (mode == 'dia_prova' || mode == 'paes_realista');
+        preflightDone = mode == 'dia_prova' || mode == 'paes_realista';
+        diaProvaHardCap = dynamicCap;
         resumeOffset = Duration.zero;
         sw
           ..reset()
@@ -743,7 +760,16 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
 
   void _armDiaProvaTicker() {
     ticker?.cancel();
-    diaProvaHardCap = mode == 'dia_prova' ? _diaProvaHardCapForLimit(limit) : null;
+    // PAES realista: mantem o hard cap de 4h vindo do backend (ja setado em _start)
+    // Dia de prova: calcula pelo limite
+    if (mode == 'paes_realista') {
+      // diaProvaHardCap ja foi setado em _start a partir do examMinutes do backend
+      // nao sobrescrever
+    } else if (mode == 'dia_prova') {
+      diaProvaHardCap = _diaProvaHardCapForLimit(limit);
+    } else {
+      diaProvaHardCap = null;
+    }
     ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final cap = diaProvaHardCap;
@@ -1215,6 +1241,28 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
                         style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                       ),
+                      if (report!['estimatedScore'] != null) ...[
+                        const SizedBox(height: 6),
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0.0, end: ((report!['estimatedScore'] as num)).toDouble()),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) {
+                            return Text(
+                              'Nota estimada: ${value.toStringAsFixed(0)}/1000',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: cs.primary,
+                              ),
+                            );
+                          },
+                        ),
+                        Text(
+                          'Estimativa local — não é nota oficial UEMA.',
+                          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
+                        ),
+                      ],
                       if (report!['avgTimeMs'] != null)
                         Text(
                           'Média ${((report!['avgTimeMs'] as num) / 1000).toStringAsFixed(1)}s por item',

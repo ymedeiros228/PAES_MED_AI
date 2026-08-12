@@ -1163,6 +1163,7 @@ def create_simulation(
     difficulty: str | None = None,
     year: int | None = None,
     limit: int = 10,
+    exam_minutes: int | None = None,
 ) -> dict[str, Any]:
     medicine = mode == "medicina"
     # Ciclo J: disciplina real (não vira prova completa)
@@ -1170,7 +1171,7 @@ def create_simulation(
         mode_eff = "disciplina"
     else:
         mode_eff = mode
-    serious_mode = mode_eff in {"dia_prova", "prova_completa", "medicina", "disciplina"}
+    serious_mode = mode_eff in {"dia_prova", "prova_completa", "medicina", "disciplina", "paes_realista"}
     basis_info = stats_basis()
     official_required = serious_mode and basis_info["officialCount"] >= 10 and mode_eff != "revisao"
     # Dia de prova / prova completa: pool sério sem gerados
@@ -1230,6 +1231,60 @@ def create_simulation(
     if mode_eff == "disciplina" and subject:
         questions = [q for q in questions if (q.get("subject") or "") == subject] or questions
 
+    # Modo PAES realista: distribui 60 questoes por materia conforme pesos do edital
+    if mode_eff == "paes_realista":
+        import random as _random
+        _PAES_WEIGHTS = {
+            "História": 12, "Física": 10, "Biologia": 10, "Matemática": 8,
+            "Língua Portuguesa e Literatura": 8, "Filosofia": 5, "Química": 5,
+            "Geografia": 2,
+        }
+        target_total = 60
+        # Pool oficial primeiro
+        official_qs = [q for q in questions if not q.get("generated")]
+        # Agrupa por materia
+        by_subj: dict[str, list[dict[str, Any]]] = {}
+        for q in official_qs:
+            s = q.get("subject") or ""
+            by_subj.setdefault(s, []).append(q)
+        selected_paes: list[dict[str, Any]] = []
+        used_ids: set[str] = set()
+        # Primeiro passa: pega oficiais conforme peso
+        for subj, weight in _PAES_WEIGHTS.items():
+            pool = by_subj.get(subj, [])
+            _random.shuffle(pool)
+            for q in pool[:weight]:
+                if q["id"] not in used_ids:
+                    selected_paes.append(q)
+                    used_ids.add(q["id"])
+        # Se faltou, completa com outras materias oficiais
+        if len(selected_paes) < target_total:
+            leftover = [q for q in official_qs if q["id"] not in used_ids]
+            _random.shuffle(leftover)
+            for q in leftover:
+                if len(selected_paes) >= target_total:
+                    break
+                selected_paes.append(q)
+                used_ids.add(q["id"])
+        # Se ainda faltou, completa com treino
+        if len(selected_paes) < target_total:
+            treino_qs = [q for q in questions if q.get("generated") and q["id"] not in used_ids]
+            _random.shuffle(treino_qs)
+            for q in treino_qs:
+                if len(selected_paes) >= target_total:
+                    break
+                selected_paes.append(q)
+                used_ids.add(q["id"])
+        # Embaralha ordem final
+        _random.shuffle(selected_paes)
+        questions = selected_paes
+        limit = len(selected_paes)
+        if not warning:
+            warning = (
+                f"Simulado PAES com {len(selected_paes)} questões distribuídas por matéria. "
+                "Nota estimada é apenas referência local — não é nota oficial UEMA."
+            )
+
     selected = questions[:limit]
     safe = []
     stub_n = 0
@@ -1254,12 +1309,18 @@ def create_simulation(
         mixed_treino = True
     years_used = sorted({int(q["year"]) for q in selected if q.get("year")})
     generated_in_pack = sum(1 for q in safe if q.get("generated"))
+    # Tempo limite do simulado (modo PAES realista: 4h padrao)
+    effective_exam_minutes = exam_minutes
+    if mode_eff == "paes_realista" and not effective_exam_minutes:
+        effective_exam_minutes = 240
     return {
         "mode": mode_eff,
         "count": len(safe),
         "questions": safe,
         "startedAt": now_iso(),
         "examDayMode": mode_eff == "dia_prova",
+        "examLocked": mode_eff in {"dia_prova", "paes_realista"},
+        "examMinutes": effective_exam_minutes,
         "note": "Cronometre no app. Após enviar, o relatório usa o modo professor.",
         "basis": "oficial" if official_required and warning is None else "treino",
         "warning": warning,
@@ -1365,10 +1426,14 @@ def grade_simulation(answers: list[dict[str, Any]]) -> dict[str, Any]:
         for s, v in sorted(subject_stats.items(), key=lambda x: -x[1]["wrong"])
     ]
     avg_time = round(sum(times) / len(times), 1) if times else 0
+    accuracy_val = round(correct_n / total, 4) if total else 0
+    # Nota estimada 0-1000 (estimativa grosseira baseada no acerto local)
+    estimated_score = round(accuracy_val * 1000) if total else 0
     return {
         "total": total,
         "correct": correct_n,
-        "accuracy": round(correct_n / total, 4) if total else 0,
+        "accuracy": accuracy_val,
+        "estimatedScore": estimated_score,
         "avgTimeMs": avg_time,
         "subjectBreakdown": subject_breakdown,
         "cardsDueCreated": cards_due,
@@ -1935,6 +2000,10 @@ def progress_overview() -> dict[str, Any]:
         "gaps": gaps,
         "peaks": peaks,
         "officialCount": basis.get("officialCount", 0),
+        "subjectAccuracy": subject_force,
+        "evolutionCurve": dash.get("evolutionCurve") or [],
+        "errorTypes": dash.get("errorTypes") or {},
+        "errorHotTopics": dash.get("errorHotTopics") or [],
         "disclaimer": "Progresso local · treino · não é % de aprovação nem banca UEMA.",
         "sessionPath": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
         "essayPath": "/redacao",

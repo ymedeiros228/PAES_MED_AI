@@ -64,6 +64,7 @@ class SimulationRequest(BaseModel):
     difficulty: str | None = None
     year: int | None = None
     limit: int = 10
+    exam_minutes: int | None = None
 
 class GradeRequest(BaseModel):
     answers: list[dict[str, Any]]
