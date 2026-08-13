@@ -355,14 +355,29 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                             minLines: 1,
                             maxLines: 5,
                             textInputAction: TextInputAction.send,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: cs.onSurface,
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Sua dúvida… (Ctrl+Enter envia)',
+                              hintStyle: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: cs.onSurface.withOpacity(0.5),
+                              ),
                               filled: true,
-                              fillColor:
-                                  cs.surfaceContainerHigh.f45,
+                              fillColor: cs.surfaceContainerHighest,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
+                                borderSide: BorderSide(color: cs.outline.withOpacity(0.3)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(color: cs.primary, width: 1.5),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(color: cs.outline.withOpacity(0.2)),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 12),
@@ -507,6 +522,21 @@ class _MessageBubble extends StatelessWidget {
             bottomRight: message.isUser ? const Radius.circular(4) : null,
             bottomLeft: message.isUser ? null : const Radius.circular(4),
           ),
+          border: Border.all(
+            color: message.isUser
+                ? scheme.primary.withOpacity(0.25)
+                : scheme.outlineVariant.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: message.isUser
+              ? [
+                  BoxShadow(
+                    color: scheme.primary.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,13 +575,22 @@ class _MessageBubble extends StatelessWidget {
                         ? Icons.cloud_off_outlined
                         : Icons.auto_awesome_outlined,
                     size: 16,
+                    color: scheme.onPrimaryContainer,
                   ),
                   label: Text(
                     message.model!.startsWith('offline-')
                         ? 'Modo sem internet'
                         : 'IA conectada',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onPrimaryContainer,
+                    ),
                   ),
+                  backgroundColor: scheme.primaryContainer,
+                  side: BorderSide(color: scheme.primary.withOpacity(0.3), width: 1),
                   visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                 ),
               ),
             ],

@@ -1138,7 +1138,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: kbActive ? cs.onPrimaryContainer : cs.onSurface),
                           ),
                           const SizedBox(height: 8),
                           StatementView(
@@ -1239,7 +1239,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       ),
                       Text(
                         '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       if (report!['estimatedScore'] != null) ...[
                         const SizedBox(height: 6),

@@ -634,7 +634,7 @@ class _SmartPlanCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
+                          color: cs.onPrimaryContainer,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -642,7 +642,7 @@ class _SmartPlanCard extends StatelessWidget {
                         '$studyDays dias de estudo + $reviewDays de revisao - $totalTopics topicos',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: cs.onSurface.withOpacity(0.6),
+                          color: cs.onPrimaryContainer.withOpacity(0.85),
                         ),
                       ),
                     ],
