@@ -260,6 +260,16 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       label: essay['levelLabel']?.toString() ?? 'prática',
                     ),
                   ),
+                  // Heatmap de estudo + insights do coach
+                  FutureBuilder(
+                    future: apiClient.get('/api/coach/insights'),
+                    builder: (context, snap) {
+                      if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                      final insights = Map<String, dynamic>.from(snap.data as Map);
+                      return _StudyHeatmapCard(insights: insights);
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   if (peaks.isNotEmpty && !(peaks.length == 1 && peaks.first['kind'] == 'hint'))
                     RepaintBoundary(
                       child: AnimatedBuilder(
@@ -1206,6 +1216,165 @@ class _WeakTopicsHeatmap extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+
+class _StudyHeatmapCard extends StatelessWidget {
+  const _StudyHeatmapCard({required this.insights});
+  final Map<String, dynamic> insights;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final studyDays = (insights['studyDays'] as List?) ?? [];
+    final trend = Map<String, dynamic>.from(insights['weeklyTrend'] as Map? ?? {});
+    final streakInfo = Map<String, dynamic>.from(insights['streakInsight'] as Map? ?? {});
+    final streak = streakInfo['streak'] ?? 0;
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.calendar_month_rounded, color: cs.primary, size: 22),
+                const SizedBox(width: 10),
+                Text(
+                  'Sua semana',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                if (streak is int && streak > 0) ...[
+                  Icon(Icons.local_fire_department_rounded, color: const Color(0xFFE8A04B), size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$streak dias',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFE8A04B),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Heatmap: 14 dias em grid
+            if (studyDays.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (final day in studyDays)
+                    _HeatmapCell(
+                      dayLabel: day['dayLabel']?.toString() ?? '',
+                      studied: day['studied'] == true,
+                      minutes: (day['minutes'] ?? 0) as int,
+                    ),
+                ],
+              ),
+
+            const SizedBox(height: 16),
+
+            // Tendencia
+            if (trend.isNotEmpty) ...[
+              _ProgressTrendChip(trend: trend),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _HeatmapCell extends StatelessWidget {
+  const _HeatmapCell({required this.dayLabel, required this.studied, required this.minutes});
+  final String dayLabel;
+  final bool studied;
+  final int minutes;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final intensity = studied ? (minutes / 30).clamp(0.3, 1.0) : 0.0;
+
+    return Column(
+      children: [
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: studied
+                ? cs.primary.withOpacity(intensity)
+                : cs.surfaceContainerHighest.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          dayLabel,
+          style: GoogleFonts.inter(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: cs.onSurface.withOpacity(0.4),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class _ProgressTrendChip extends StatelessWidget {
+  const _ProgressTrendChip({required this.trend});
+  final Map<String, dynamic> trend;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = trend['trend']?.toString() ?? 'sem_dados';
+    final msg = trend['message']?.toString() ?? '';
+
+    final (icon, color) = switch (t) {
+      'melhorou' => (Icons.trending_up_rounded, const Color(0xFF4CAF50)),
+      'piorou' => (Icons.trending_down_rounded, cs.error),
+      'estavel' => (Icons.trending_flat_rounded, cs.onSurface.withOpacity(0.5)),
+      'novo' => (Icons.auto_awesome_rounded, cs.primary),
+      _ => (Icons.info_outline_rounded, cs.onSurface.withOpacity(0.4)),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              msg,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface.withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

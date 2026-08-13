@@ -669,6 +669,15 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
           ],
           const SizedBox(height: 16),
+          // Insight inteligente pos-sessao
+          _SessionInsightBanner(
+            correctCount: correctCount,
+            wrongCount: wrong,
+            total: total,
+            subject: subj,
+            topic: top,
+          ),
+          const SizedBox(height: 16),
           Divider(color: cs.outlineVariant.withOpacity(0.5)),
           const SizedBox(height: 12),
           TapScale(
@@ -1971,6 +1980,84 @@ class _StepNode extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+
+class _SessionInsightBanner extends StatelessWidget {
+  const _SessionInsightBanner({
+    required this.correctCount,
+    required this.wrongCount,
+    required this.total,
+    required this.subject,
+    required this.topic,
+  });
+
+  final int correctCount;
+  final int wrongCount;
+  final int total;
+  final String subject;
+  final String topic;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final acc = total > 0 ? correctCount / total : 0.0;
+
+    String message;
+    IconData icon;
+    Color color;
+
+    if (total == 0) {
+      return const SizedBox.shrink();
+    } else if (acc >= 0.8) {
+      message = 'Excelente! Voce dominou $topic em $subject. '
+          'Hora de tentar um topico novo ou um simulado completo.';
+      icon = Icons.celebration_rounded;
+      color = const Color(0xFF4CAF50);
+    } else if (acc >= 0.6) {
+      message = 'Bom ritmo em $topic! Revise os $wrongCount erro(s) e '
+          'tente novamente amanha para consolidar.';
+      icon = Icons.trending_up_rounded;
+      color = cs.primary;
+    } else if (acc >= 0.4) {
+      message = 'Voce acertou ${correctCount} de $total em $topic. '
+          'Leia a teoria antes de tentar de novo - vai fazer diferenca.';
+      icon = Icons.menu_book_rounded;
+      color = const Color(0xFFE8A04B);
+    } else {
+      message = 'Topico dificil: $topic em $subject. Nao desanime! '
+          'Comece pela teoria e volte com calma.';
+      icon = Icons.school_rounded;
+      color = cs.error;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.5,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

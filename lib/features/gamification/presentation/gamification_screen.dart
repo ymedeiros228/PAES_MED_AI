@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
+import '../../../core/widgets/confetti_overlay.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class GamificationScreen extends ConsumerStatefulWidget {
@@ -38,6 +39,15 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
         data = raw is Map<String, dynamic> ? raw : null;
         loading = false;
       });
+      // Confete se tem conquistas desbloqueadas
+      if (mounted && data != null) {
+        final unlocked = data!['unlockedCount'] ?? 0;
+        if (unlocked is int && unlocked > 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) ConfettiOverlay.show(context);
+          });
+        }
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {

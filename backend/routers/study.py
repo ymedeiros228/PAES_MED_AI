@@ -24,6 +24,7 @@ from services_advanced import (
 )
 from services_core import (
     build_exam_countdown,
+    build_smart_insights,
     build_smart_study_plan,
     build_study_calendar,
     build_study_plan,
@@ -156,6 +157,12 @@ def api_study_export_day(payload: ExportDayPayload) -> dict[str, Any]:
 def api_study_export_week() -> dict[str, Any]:
     """Relatório semanal real em data/exports (Ciclo BT)."""
     return export_study_week_markdown()
+
+@router.get("/api/coach/insights")
+def api_coach_insights() -> dict[str, Any]:
+    """Coach inteligente: insights personalizados baseados no desempenho."""
+    return build_smart_insights()
+
 
 @router.get("/api/today")
 def api_today(

@@ -35,6 +35,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   late final Future<dynamic> _backupLastFuture;
   late final Future<dynamic> _dueCardsFuture;
   late final Future<dynamic> _gamificationFuture;
+  late final Future<dynamic> _insightsFuture;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _backupLastFuture = apiClient.get('/api/backup/last');
     _dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
     _gamificationFuture = apiClient.get('/api/gamification');
+    _insightsFuture = apiClient.get('/api/coach/insights');
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -504,6 +506,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
                               final g = Map<String, dynamic>.from(snap.data as Map);
                               return _DashboardGamificationCard(data: g);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Coach inteligente: dica do dia + alertas + proxima acao
+                          FutureBuilder(
+                            future: _insightsFuture,
+                            builder: (context, snap) {
+                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                              final insights = Map<String, dynamic>.from(snap.data as Map);
+                              return _SmartCoachCard(insights: insights);
                             },
                           ),
                           const SizedBox(height: 16),
@@ -1591,6 +1603,274 @@ class _DueCardsCard extends StatelessWidget {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _SmartCoachCard extends StatelessWidget {
+  const _SmartCoachCard({required this.insights});
+  final Map<String, dynamic> insights;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final dailyTip = insights['dailyTip']?.toString() ?? '';
+    final weakAlerts = (insights['weakAlerts'] as List?) ?? [];
+    final trend = Map<String, dynamic>.from(insights['weeklyTrend'] as Map? ?? {});
+    final nextAction = insights['nextAction'] as Map?;
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [cs.primary, cs.tertiary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Coach IA',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            if (dailyTip.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.lightbulb_rounded, color: cs.primary, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        dailyTip,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          height: 1.5,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (trend.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _TrendChip(trend: trend),
+            ],
+            if (nextAction != null) ...[
+              const SizedBox(height: 12),
+              TapScale(
+                child: Material(
+                  color: cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      context.go(nextAction['path']?.toString() ?? '/sessao');
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Icon(_iconFor(nextAction['icon']?.toString() ?? 'play_arrow'),
+                              color: cs.primary, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  nextAction['title']?.toString() ?? 'Estudar agora',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                                if (nextAction['subtitle'] != null)
+                                  Text(
+                                    nextAction['subtitle'].toString(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withOpacity(0.6),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (weakAlerts.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                'Pontos de atencao',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final wa in weakAlerts.take(3))
+                _WeakAlertChip(alert: wa as Map),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _iconFor(String name) => switch (name) {
+    'style' => Icons.style_rounded,
+    'school' => Icons.school_rounded,
+    'bolt' => Icons.bolt_rounded,
+    'edit' => Icons.edit_rounded,
+    _ => Icons.play_arrow_rounded,
+  };
+}
+
+
+class _TrendChip extends StatelessWidget {
+  const _TrendChip({required this.trend});
+  final Map<String, dynamic> trend;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = trend['trend']?.toString() ?? 'sem_dados';
+    final msg = trend['message']?.toString() ?? '';
+
+    final (icon, color) = switch (t) {
+      'melhorou' => (Icons.trending_up_rounded, const Color(0xFF4CAF50)),
+      'piorou' => (Icons.trending_down_rounded, cs.error),
+      'estavel' => (Icons.trending_flat_rounded, cs.onSurface.withOpacity(0.5)),
+      'novo' => (Icons.auto_awesome_rounded, cs.primary),
+      _ => (Icons.info_outline_rounded, cs.onSurface.withOpacity(0.4)),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              msg,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface.withOpacity(0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+class _WeakAlertChip extends StatelessWidget {
+  const _WeakAlertChip({required this.alert});
+  final Map alert;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final subj = alert['subject']?.toString() ?? '';
+    final topic = alert['topic']?.toString() ?? '';
+    final msg = alert['message']?.toString() ?? '';
+    final path = alert['actionPath']?.toString() ?? '/sessao';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TapScale(
+        child: Material(
+          color: cs.errorContainer.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              context.go(path);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: cs.error, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$subj - $topic',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        Text(
+                          msg,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: cs.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded, size: 16, color: cs.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

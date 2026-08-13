@@ -2376,6 +2376,233 @@ def dashboard_stats() -> dict[str, Any]:
     }
 
 
+def build_smart_insights() -> dict[str, Any]:
+    """Coach inteligente: gera insights personalizados baseados no desempenho.
+
+    Retorna:
+    - dailyTip: dica do dia baseada no padrao de estudo
+    - weakAlerts: alertas de pontos fracos (materia + topico + acao)
+    - weeklyTrend: tendencia da semana (melhorou/piorou/estavel)
+    - nextAction: proxima acao recomendada (estudar X, revisar Y, fazer simulado)
+    - streak Insight: insight sobre o streak
+    - studyDays: lista dos ultimos 14 dias com minutos estudados (para heatmap)
+    """
+    dash = dashboard_stats()
+    total = dash.get("totalAnswered", 0)
+    accuracy = dash.get("accuracy", 0)
+    streak = dash.get("streakDays", 0)
+    weak = dash.get("weakSubject")
+    strong = dash.get("strongSubject")
+    critical = dash.get("criticalTopics", [])
+    hot = dash.get("errorHotTopics", [])
+    study_today = dash.get("studyToday")
+    due_cards = dash.get("flashcardsDueCount", 0)
+    study_min_today = dash.get("studyMinutesToday", 0)
+    study_min_week = dash.get("studyMinutesWeek", 0)
+    exam_countdown = dash.get("examCountdown", {})
+    days_left = exam_countdown.get("daysLeft") if isinstance(exam_countdown, dict) else None
+
+    # --- Dica do dia ---
+    tips = []
+    if total == 0:
+        tips.append("Bem-vindo! Comece com uma sessao rapida — o sistema escolhe o topico pra voce.")
+    elif total < 10:
+        tips.append(f"Voce respondeu {total} questoes. Continue! As primeiras 50 ajudam a calibrar seu plano.")
+    elif accuracy < 0.5:
+        tips.append(f"Seu acerto esta em {int(accuracy*100)}%. Foque na teoria antes de novas questoes.")
+    elif accuracy < 0.7:
+        tips.append(f"Acerto de {int(accuracy*100)}% — bom! Revise os erros para passar de 70%.")
+    elif accuracy >= 0.8:
+        tips.append(f"Excelente: {int(accuracy*100)}% de acerto!Hora de simulados completos.")
+
+    if weak and total >= 5:
+        tips.append(f"Ponto fraco: {weak}. Priorize revisao desta materia esta semana.")
+
+    if due_cards > 0:
+        tips.append(f"Voce tem {due_cards} flashcards para revisar hoje. 5 minutos ja ajuda!")
+
+    if streak == 0 and total > 0:
+        tips.append("Seu streak zerou. Estude hoje para reiniciar a sequencia!")
+    elif streak >= 7:
+        tips.append(f"{streak} dias seguidos! Mantenha o ritmo — consistencia e tudo.")
+
+    if days_left and days_left <= 30:
+        tips.append(f"Faltam {days_left} dias para a prova. Hora de intensificar!")
+
+    daily_tip = tips[0] if tips else "Pronto para estudar? Aperte Estudar agora."
+
+    # --- Alertas de pontos fracos ---
+    weak_alerts = []
+    for c in critical[:3]:
+        key = c.get("key", "")
+        parts = key.split("::", 1)
+        if len(parts) == 2:
+            subj, topic = parts
+            acc = c.get("accuracy", 0)
+            n = c.get("n", 0)
+            weak_alerts.append({
+                "subject": subj,
+                "topic": topic,
+                "accuracy": round(acc * 100),
+                "attempts": n,
+                "message": f"Voce acertou {int(acc*100)}% de {n} questoes de {topic} em {subj}",
+                "action": "revisar",
+                "actionPath": f"/sessao?examBoard=UEMA_PAES&subject={subj}&topic={topic}",
+            })
+
+    for h in hot[:2]:
+        key = h.get("key", "")
+        parts = key.split("::", 1)
+        if len(parts) == 2:
+            subj, topic = parts
+            misses = h.get("misses", 0)
+            weak_alerts.append({
+                "subject": subj,
+                "topic": topic,
+                "accuracy": 0,
+                "attempts": misses,
+                "message": f"{misses} erro(s) recente(s) em {topic}",
+                "action": "revisar",
+                "actionPath": f"/sessao?examBoard=UEMA_PAES&subject={subj}&topic={topic}",
+            })
+
+    # --- Tendencia semanal ---
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT correct, answered_at FROM answers ORDER BY answered_at"
+        ).fetchall()
+
+    from datetime import datetime as _dt, timedelta as _td
+    today = time_today()
+    week_ago = today - _td(days=7)
+    two_weeks_ago = today - _td(days=14)
+
+    this_week = []
+    last_week = []
+    for r in rows:
+        try:
+            dt = _dt.fromisoformat(r["answered_at"]).date()
+        except (TypeError, ValueError):
+            continue
+        if dt >= week_ago:
+            this_week.append(bool(r["correct"]))
+        elif dt >= two_weeks_ago:
+            last_week.append(bool(r["correct"]))
+
+    this_acc = sum(1 for x in this_week if x) / len(this_week) if this_week else 0
+    last_acc = sum(1 for x in last_week if x) / len(last_week) if last_week else 0
+
+    if last_acc > 0:
+        delta = this_acc - last_acc
+        if delta > 0.05:
+            trend = "melhorou"
+            trend_msg = f"Voce melhorou {int(delta*100)}% esta semana vs semana anterior!"
+        elif delta < -0.05:
+            trend = "piorou"
+            trend_msg = f"Atencao: seu acerto caiu {int(abs(delta)*100)}% esta semana. Revise os erros."
+        else:
+            trend = "estavel"
+            trend_msg = "Seu desempenho esta estavel. Para evoluir, aumente o volume de questoes."
+    elif this_week:
+        trend = "novo"
+        trend_msg = f"Voce respondeu {len(this_week)} questoes esta semana. Continue!"
+    else:
+        trend = "sem_dados"
+        trend_msg = "Estude esta semana para ver sua evolucao aqui."
+
+    # --- Proxima acao recomendada ---
+    next_action = None
+    if due_cards > 5:
+        next_action = {
+            "title": "Revisar flashcards",
+            "subtitle": f"{due_cards} cards esperando revisao",
+            "path": "/flashcards",
+            "icon": "style",
+            "priority": 1,
+        }
+    elif weak_alerts:
+        wa = weak_alerts[0]
+        next_action = {
+            "title": f"Revisar {wa['topic']}",
+            "subtitle": wa["message"],
+            "path": wa["actionPath"],
+            "icon": "school",
+            "priority": 2,
+        }
+    elif study_today:
+        next_action = {
+            "title": f"Estudar {study_today.get('subject', '')}",
+            "subtitle": f"Topico do dia: {study_today.get('topic', '')}",
+            "path": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+            "icon": "play_arrow",
+            "priority": 3,
+        }
+    elif days_left and days_left <= 30:
+        next_action = {
+            "title": "Fazer simulado",
+            "subtitle": f"Faltam {days_left} dias - hora de treinar!",
+            "path": "/simulados",
+            "icon": "bolt",
+            "priority": 4,
+        }
+    else:
+        next_action = {
+            "title": "Estudar agora",
+            "subtitle": "O sistema escolhe tudo pra voce",
+            "path": "/sessao?examBoard=UEMA_PAES&preferNatureza=1",
+            "icon": "play_arrow",
+            "priority": 5,
+        }
+
+    # --- Heatmap: ultimos 14 dias ---
+    study_days = []
+    for i in range(13, -1, -1):
+        day = today - _td(days=i)
+        minutes = 0
+        for r in rows:
+            try:
+                dt = _dt.fromisoformat(r["answered_at"]).date()
+            except (TypeError, ValueError):
+                continue
+            if dt == day:
+                minutes += (r["correct"] is not None) * 5  # ~5min por questao
+        study_days.append({
+            "date": day.isoformat(),
+            "dayLabel": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"][day.weekday()],
+            "minutes": minutes,
+            "studied": minutes > 0,
+        })
+
+    return {
+        "ok": True,
+        "dailyTip": daily_tip,
+        "allTips": tips,
+        "weakAlerts": weak_alerts,
+        "weeklyTrend": {
+            "trend": trend,
+            "message": trend_msg,
+            "thisWeekAccuracy": round(this_acc, 3),
+            "lastWeekAccuracy": round(last_acc, 3),
+            "thisWeekCount": len(this_week),
+            "lastWeekCount": len(last_week),
+        },
+        "nextAction": next_action,
+        "streakInsight": {
+            "streak": streak,
+            "message": (
+                f"{streak} dias seguidos!" if streak >= 3 else
+                "Estude hoje para iniciar seu streak!" if streak == 0 else
+                f"Streak de {streak} dia(s) — mantenha!"
+            ),
+        },
+        "studyDays": study_days,
+        "strongSubject": strong,
+        "weakSubject": weak,
+        "totalAnswered": total,
+        "accuracy": round(accuracy, 3),
+    }
+
+
 def build_daily_routine(
     *,
     study_today: dict[str, Any] | None,
