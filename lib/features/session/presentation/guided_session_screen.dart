@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -524,139 +523,83 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
 
   Widget _sessionEndPanel(BuildContext context) {
     final gaps = _sessionGaps;
-    final first = gaps.isNotEmpty ? gaps.first : null;
-    final officialInPack = plan?['officialInPack'];
-    final toppedOff = plan?['toppedOff'] == true;
-    final yearWidened = plan?['yearWidened'] == true;
     final total = answeredIds.length;
     final wrong = (total - correctCount).clamp(0, total);
     final cs = Theme.of(context).colorScheme;
     final study = plan?['studyToday'] as Map? ?? {};
     final subj = study['subject']?.toString() ?? '';
     final top = study['topic']?.toString() ?? '';
+    final pct = total > 0 ? (correctCount / total * 100).round() : 0;
     return SurfacePanel(
       margin: const EdgeInsets.only(bottom: 16),
       color: cs.primaryContainer.withOpacity(0.4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Bloco encerrado',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: cs.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            gaps.isEmpty
-                ? 'Boa volta. O próximo passo natural é a Fila do dia.'
-                : 'Houve erro neste bloco — a Fila e o treino do tópico fraco resolvem bem.',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              height: 1.5,
-              color: cs.onPrimaryContainer.withOpacity(0.85),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
             children: [
-              Chip(
-                avatar: Icon(Icons.check_circle_rounded, size: 18, color: cs.primary),
-                label: Text('$correctCount acerto${correctCount == 1 ? '' : 's'}'),
-                visualDensity: VisualDensity.compact,
-              ),
-              Chip(
-                avatar: Icon(Icons.radio_button_unchecked, size: 18, color: cs.tertiary),
-                label: Text('$wrong erro${wrong == 1 ? '' : 's'}'),
-                visualDensity: VisualDensity.compact,
-              ),
-              Chip(
-                avatar: const Icon(Icons.quiz_outlined, size: 18),
-                label: Text('$total respondida${total == 1 ? '' : 's'}'),
-                visualDensity: VisualDensity.compact,
-              ),
-              if (flashcardsCreated > 0)
-                Chip(
-                  avatar: Icon(Icons.style_outlined, size: 18, color: cs.primary),
-                  label: Text('$flashcardsCreated cartão${flashcardsCreated == 1 ? '' : 'ões'}'),
-                  visualDensity: VisualDensity.compact,
+              Expanded(
+                child: Text(
+                  pct >= 70 ? 'Bom trabalho!' : 'Bloco encerrado',
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
-              if (cardsDone > 0)
-                Chip(
-                  avatar: const Icon(Icons.replay_rounded, size: 18),
-                  label: Text('$cardsDone revisão${cardsDone == 1 ? '' : 'ões'}'),
-                  visualDensity: VisualDensity.compact,
+              ),
+              if (total > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$pct%',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onPrimary,
+                    ),
+                  ),
                 ),
             ],
           ),
-          if (officialInPack != null || toppedOff || yearWidened)
-            Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: EdgeInsets.zero,
-                title: Text(
-                  'Detalhe do bloco',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
-                  ),
-                ),
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SelectableText(
-                      [
-                        if (officialInPack != null) 'Oficiais nesta seleção: $officialInPack',
-                        if (toppedOff) 'Completamos com oficiais do acervo',
-                        if (yearWidened) 'Janela de anos ampliada para achar itens',
-                      ].join(' · '),
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        height: 1.5,
-                        color: cs.onSurface.withOpacity(0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          const SizedBox(height: 4),
+          Text(
+            total > 0
+                ? '$correctCount acerto${correctCount == 1 ? '' : 's'} · $wrong erro${wrong == 1 ? '' : 's'} · $total questão${total == 1 ? '' : 'ês'}'
+                : 'Sessão encerrada.',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: cs.onPrimaryContainer.withOpacity(0.8),
             ),
-          const SizedBox(height: 8),
-          if (scheduleGapsError != null) ...[
-            QuietEmpty(
-              message: scheduleGapsError!,
-              action: TextButton(
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  context.go('/fila');
-                },
-                child: const Text('Abrir fila'),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          if (gaps.isEmpty)
-            const Text('Nenhum erro neste bloco — veja o que vem a seguir na Fila.')
-          else ...[
+          ),
+          const SizedBox(height: 14),
+          _SessionInsightBanner(
+            correctCount: correctCount,
+            wrongCount: wrong,
+            total: total,
+            subject: subj,
+            topic: top,
+          ),
+          if (gaps.isNotEmpty) ...[
+            const SizedBox(height: 14),
             Text(
-              'Tópicos fracos',
+              'Revisar agora',
               style: GoogleFonts.inter(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                for (final g in gaps.take(6))
+                for (final g in gaps.take(3))
                   ActionChip(
                     label: Text('${g['subject']} · ${g['topic']}'),
                     onPressed: () {
@@ -668,59 +611,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ],
             ),
           ],
-          const SizedBox(height: 16),
-          // Insight inteligente pos-sessao
-          _SessionInsightBanner(
-            correctCount: correctCount,
-            wrongCount: wrong,
-            total: total,
-            subject: subj,
-            topic: top,
-          ),
-          const SizedBox(height: 16),
-          Divider(color: cs.outlineVariant.withOpacity(0.5)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           TapScale(
             child: FilledButton.icon(
               onPressed: () => context.go('/fila'),
               icon: const Icon(Icons.playlist_play_rounded),
-              label: const Text('Continuar na Fila'),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              label: const Text('Continuar na Fila', style: TextStyle(fontSize: 15)),
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (first != null)
-                OutlinedButton(
-                  onPressed: () {
-                    final s = Uri.encodeComponent(first['subject'] ?? '');
-                    final t = Uri.encodeComponent(first['topic'] ?? '');
-                    context.go('/adaptativo?subject=$s&topic=$t');
-                  },
-                  child: const Text('Treinar tópico fraco'),
-                ),
-              if (subj.isNotEmpty && top.isNotEmpty)
-                TextButton(
-                  onPressed: () => openTheoryReadSheet(
-                    context,
-                    subject: subj,
-                    topic: top,
-                  ),
-                  child: const Text('Ler teoria'),
-                ),
-              TextButton(
-                onPressed: () => context.go('/flashcards?due=1'),
-                child: const Text('Cartões'),
-              ),
-              TextButton(
-                onPressed: () => context.go('/progresso'),
-                child: const Text('Relevo'),
-              ),
               TextButton(
                 onPressed: _closeStudyDay,
                 child: const Text('Encerrar dia'),
+              ),
+              const SizedBox(width: 16),
+              TextButton(
+                onPressed: () => context.go('/inicio'),
+                child: const Text('Voltar ao Início'),
               ),
             ],
           ),
@@ -1174,17 +1085,17 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   )
                 : null,
           ),
-          _SessionStepper(
-            currentStep: sessionComplete
-                ? 3
-                : isTheory
-                    ? 0
-                    : isQuestions
-                        ? 1
-                        : isRevisions
-                            ? 2
-                            : 0,
-          ),
+          if (started)
+            LinearProgressIndicator(
+              value: (qIndex + (answeredIds.isNotEmpty ? 1 : 0)) /
+                  (sessionQuestions.isEmpty ? 1 : sessionQuestions.length),
+              minHeight: 4,
+              backgroundColor: cs.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation(cs.primary),
+              borderRadius: BorderRadius.circular(2),
+            )
+          else
+            const SizedBox.shrink(),
           const SizedBox(height: 16),
           if (sessionComplete) ...[
             _sessionEndPanel(context),
@@ -1275,96 +1186,37 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             areaKey: 'sessao',
           ),
           const SizedBox(height: 8),
-          PhaseProgressBar(
-            phases: [
-              for (final ph in phases)
-                ((ph as Map)['title']?.toString() ?? 'Fase').split(' ').take(2).join(' '),
-            ],
-            currentIndex: phaseIndex.clamp(0, phases.length - 1),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 12),
-            child: Text(
-              started
-                  ? (paused ? 'Pausado · ${current['title']}' : '${current['title']} · ${current['minutes'] ?? '?'} min')
-                  : 'O sistema escolhe tudo automaticamente',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                height: 1.5,
-                color: cs.onSurface.f72,
-              ),
-            ),
-          ),
-          if (!started) ...[
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                TapScale(
-                  child: FilledButton.icon(
-                    onPressed: _start,
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Estudar agora'),
+          if (started)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Text(
+                    paused ? 'Pausado' : '${current['title']}',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface.withOpacity(0.7),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: Text(
-                'Personalizar sessao',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface.withOpacity(0.6),
-                ),
+                  const Spacer(),
+                  Text(
+                    '${(qIndex + cardsDone)}/${(sessionQuestions.length + sessionCards.length)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
               ),
-              subtitle: Text(
-                'Escolher materia, topico ou ano',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: cs.onSurface.withOpacity(0.4),
-                ),
-              ),
-              children: [
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ActionChip(
-                      label: const Text('Questoes'),
-                      avatar: const Icon(Icons.quiz_outlined, size: 18),
-                      onPressed: () => context.go('/questoes'),
-                    ),
-                    ActionChip(
-                      label: const Text('Flashcards'),
-                      avatar: const Icon(Icons.style_outlined, size: 18),
-                      onPressed: () => context.go('/flashcards'),
-                    ),
-                    ActionChip(
-                      label: const Text('Tutor IA'),
-                      avatar: const Icon(Icons.auto_awesome_outlined, size: 18),
-                      onPressed: () => context.go('/tutor'),
-                    ),
-                    ActionChip(
-                      label: const Text('Simulado'),
-                      avatar: const Icon(Icons.bolt_outlined, size: 18),
-                      onPressed: () => context.go('/simulados'),
-                    ),
-                    ActionChip(
-                      label: const Text('Redacao'),
-                      avatar: const Icon(Icons.edit_note_outlined, size: 18),
-                      onPressed: () => context.go('/redacao'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+            )
+          else
+            _SessionStartCard(
+              plan: plan,
+              onStart: _start,
             ),
-          ]
-          else ...[
+          if (started) ...[
             Wrap(
               spacing: 8,
               children: [
@@ -1881,110 +1733,6 @@ class _BreathingClockState extends State<_BreathingClock>
   }
 }
 
-class _SessionStepper extends StatelessWidget {
-  const _SessionStepper({required this.currentStep, this.totalSteps = 4});
-
-  final int currentStep;
-  final int totalSteps;
-
-  static const _labels = ['Teoria', 'Questões', 'Revisão', 'Concluído'];
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: Row(
-        children: [
-          for (int i = 0; i < totalSteps; i++) ...[
-            if (i > 0)
-              Expanded(
-                child: Container(
-                  height: 2,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  color: i <= currentStep ? cs.primary : cs.surfaceContainerHigh,
-                ),
-              ),
-            _StepNode(
-              index: i,
-              isCurrent: i == currentStep,
-              isCompleted: i < currentStep,
-              label: _labels[i],
-              cs: cs,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StepNode extends StatelessWidget {
-  const _StepNode({
-    required this.index,
-    required this.isCurrent,
-    required this.isCompleted,
-    required this.label,
-    required this.cs,
-  });
-
-  final int index;
-  final bool isCurrent;
-  final bool isCompleted;
-  final String label;
-  final ColorScheme cs;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg;
-    final Color fg;
-    final double size;
-    if (isCompleted || isCurrent) {
-      bg = cs.primary;
-      fg = Colors.white;
-      size = isCurrent ? 32 : 28;
-    } else {
-      bg = cs.surfaceContainerHigh;
-      fg = cs.onSurfaceVariant;
-      size = 28;
-    }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: bg,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: isCompleted
-              ? Icon(Icons.check, size: 16, color: fg)
-              : Text(
-                  '${index + 1}',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: fg,
-                  ),
-                ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            color: isCurrent ? cs.onSurface : cs.onSurfaceVariant,
-            fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-
 class _SessionInsightBanner extends StatelessWidget {
   const _SessionInsightBanner({
     required this.correctCount,
@@ -2022,7 +1770,7 @@ class _SessionInsightBanner extends StatelessWidget {
       icon = Icons.trending_up_rounded;
       color = cs.primary;
     } else if (acc >= 0.4) {
-      message = 'Voce acertou ${correctCount} de $total em $topic. '
+      message = 'Voce acertou $correctCount de $total em $topic. '
           'Leia a teoria antes de tentar de novo - vai fazer diferenca.';
       icon = Icons.menu_book_rounded;
       color = const Color(0xFFE8A04B);
@@ -2058,6 +1806,223 @@ class _SessionInsightBanner extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+
+/// Cartao de inicio da sessao: resumo, 1 botao, personalizacao escondida.
+class _SessionStartCard extends StatelessWidget {
+  const _SessionStartCard({required this.plan, required this.onStart});
+  final Map<String, dynamic>? plan;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final study = plan?['studyToday'] as Map? ?? {};
+    final subj = study['subject']?.toString() ?? 'do seu plano';
+    final top = study['topic']?.toString() ?? 'Tema do dia';
+    final phases = (plan?['sessionPlan'] as List? ?? [
+      {'phase': 'questions', 'minutes': 40, 'title': 'Estudar'},
+      {'phase': 'revisions', 'minutes': 10, 'title': 'Debrief'},
+    ]);
+    final totalMin = phases.fold<int>(0, (s, p) => s + ((p as Map)['minutes'] as num? ?? 0).toInt());
+    final questionCount = (plan?['questionCount'] as int?) ?? (phases.firstWhere(
+          (p) => (p as Map)['phase'] == 'questions',
+      orElse: () => {'count': 8},
+    ) as Map)['count'] ?? 8;
+
+    return SurfacePanel(
+      color: cs.primaryContainer.withOpacity(0.25),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Pronto para estudar',
+                    style: GoogleFonts.poppins(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '$subj · $top',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _Metric(icon: Icons.quiz_outlined, value: '$questionCount', label: 'questões'),
+                      const SizedBox(width: 24),
+                      _Metric(icon: Icons.timer_outlined, value: '$totalMin', label: 'minutos'),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  TapScale(
+                    child: FilledButton.icon(
+                      onPressed: onStart,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded, size: 24),
+                      label: Text(
+                        'Começar agora',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () => _showCustomizeSheet(context),
+                child: Text(
+                  'Personalizar sessão',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomizeSheet(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Outras formas de estudar',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Escolha uma opção ou volte e aperte Começar.',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: cs.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _ShortcutChip(label: 'Questões', icon: Icons.quiz_outlined, path: '/questoes'),
+                _ShortcutChip(label: 'Flashcards', icon: Icons.style_outlined, path: '/flashcards'),
+                _ShortcutChip(label: 'Tutor IA', icon: Icons.auto_awesome_outlined, path: '/tutor'),
+                _ShortcutChip(label: 'Simulado', icon: Icons.bolt_outlined, path: '/simulados'),
+                _ShortcutChip(label: 'Redação', icon: Icons.edit_note_outlined, path: '/redacao'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.icon, required this.value, required this.label});
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Icon(icon, color: cs.primary, size: 22),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: cs.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: cs.onSurface.withOpacity(0.5),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class _ShortcutChip extends StatelessWidget {
+  const _ShortcutChip({required this.label, required this.icon, required this.path});
+  final String label;
+  final IconData icon;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18),
+      label: Text(label),
+      onPressed: () {
+        HapticFeedback.selectionClick();
+        context.go(path);
+      },
     );
   }
 }
