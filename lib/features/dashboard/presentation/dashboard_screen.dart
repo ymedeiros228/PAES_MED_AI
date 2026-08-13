@@ -13,6 +13,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
 
@@ -49,6 +50,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final exam = ref.read(examDateProvider).date;
       if (exam.isNotEmpty) {
         unawaited(ref.read(examDateProvider.notifier).retrySync());
+      }
+      if (mounted) {
+        TourOverlay.maybeShow(
+          context,
+          key: 'tour_dashboard_v1',
+          title: 'Bem-vindo ao Inicio',
+          body: 'Aqui voce ve tudo: seu nivel de XP, streak de estudo, '
+              'topico do dia, flashcards para revisar e atalhos rapidos. '
+              'Aperte "Estudar" para comecar.',
+          icon: Icons.home_rounded,
+        );
       }
     });
   }
@@ -497,6 +509,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           const SizedBox(height: 16),
                           // Atalhos rapidos
                           _QuickActionsGrid(),
+                          const SizedBox(height: 16),
+                          // Topico do dia + flashcards due
+                          _TodayTopicAndCardsRow(
+                            dueCardsFuture: _dueCardsFuture,
+                            todayTopic: data['studyToday'] is Map
+                                ? Map<String, dynamic>.from(data['studyToday'] as Map)
+                                : null,
+                          ),
                           const SizedBox(height: 16),
                           // StaggeredFadeIn: entrada escalonada do checklist (anel → itens)
                           StaggeredFadeIn(
@@ -1356,50 +1376,223 @@ class _QuickActionsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final actions = [
-      ('Sessao', Icons.timer_rounded, '/sessao?examBoard=UEMA_PAES&preferNatureza=1', cs.primary),
+      ('Estudar', Icons.school_rounded, '/sessao?examBoard=UEMA_PAES&preferNatureza=1', cs.primary),
       ('Flashcards', Icons.style_rounded, '/flashcards', cs.secondary),
+      ('Tutor IA', Icons.auto_awesome_rounded, '/tutor', const Color(0xFF8B5CF6)),
       ('Redacao', Icons.edit_note_rounded, '/redacao', const Color(0xFFE8A04B)),
       ('Simulado', Icons.bolt_rounded, '/simulados', const Color(0xFFD3544A)),
+      ('Aulas', Icons.video_library_rounded, '/aulas', cs.tertiary),
     ];
 
-    return Row(
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      childAspectRatio: 1.1,
       children: [
-        for (int i = 0; i < actions.length; i++) ...[
-          if (i > 0) const SizedBox(width: 10),
-          Expanded(
-            child: TapScale(
-              child: Material(
-                color: cs.surfaceContainer,
+        for (final a in actions)
+          TapScale(
+            child: Material(
+              color: cs.surfaceContainer,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
                 borderRadius: BorderRadius.circular(14),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    context.go(actions[i].$3);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-                    child: Column(
-                      children: [
-                        Icon(actions[i].$2, color: actions[i].$4, size: 26),
-                        const SizedBox(height: 6),
-                        Text(
-                          actions[i].$1,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: cs.onSurface.withOpacity(0.8),
-                          ),
-                        ),
-                      ],
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  context.go(a.$3);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(a.$2, color: a.$4, size: 28),
+                    const SizedBox(height: 6),
+                    Text(
+                      a.$1,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface.withOpacity(0.8),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
       ],
+    );
+  }
+}
+
+
+class _TodayTopicAndCardsRow extends StatelessWidget {
+  const _TodayTopicAndCardsRow({required this.dueCardsFuture, this.todayTopic});
+  final Future<dynamic> dueCardsFuture;
+  final Map<String, dynamic>? todayTopic;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _TopicCard(topic: todayTopic)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: FutureBuilder(
+            future: dueCardsFuture,
+            builder: (context, snap) {
+              final list = snap.data is List ? snap.data as List : const [];
+              final n = list.length;
+              return _DueCardsCard(dueCount: n);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class _TopicCard extends StatelessWidget {
+  const _TopicCard({this.topic});
+  final Map<String, dynamic>? topic;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final subj = topic?['subject']?.toString() ?? '';
+    final top = topic?['topic']?.toString() ?? '';
+    final hasTopic = subj.isNotEmpty && top.isNotEmpty;
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.today_rounded, size: 18, color: cs.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'Topico do dia',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (hasTopic) ...[
+              Text(
+                subj,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: cs.primary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                top,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: cs.onSurface.withOpacity(0.8),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+              TapScale(
+                child: FilledButton.tonal(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    final nat = const {'Biologia', 'Quimica', 'Fisica'}.contains(subj);
+                    context.go('/sessao?examBoard=UEMA_PAES'
+                        '&subject=${Uri.encodeComponent(subj)}'
+                        '&topic=${Uri.encodeComponent(top)}'
+                        '&preferNatureza=${nat ? '1' : '0'}');
+                  },
+                  child: const Text('Estudar'),
+                ),
+              ),
+            ] else
+              Text(
+                'Nenhum topico planejado',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: cs.onSurface.withOpacity(0.5),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _DueCardsCard extends StatelessWidget {
+  const _DueCardsCard({required this.dueCount});
+  final int dueCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.style_rounded, size: 18, color: cs.secondary),
+                const SizedBox(width: 6),
+                Text(
+                  'Flashcards',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '$dueCount',
+              style: GoogleFonts.poppins(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: dueCount > 0 ? cs.secondary : cs.onSurface.withOpacity(0.3),
+              ),
+            ),
+            Text(
+              dueCount > 0 ? 'para revisar hoje' : 'tudo em dia!',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: cs.onSurface.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (dueCount > 0)
+              TapScale(
+                child: FilledButton.tonal(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    context.go('/flashcards');
+                  },
+                  child: const Text('Revisar'),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

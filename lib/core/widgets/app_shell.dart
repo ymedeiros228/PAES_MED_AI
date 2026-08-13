@@ -49,6 +49,11 @@ class AppShell extends ConsumerWidget {
       '/redacao',
       '/progresso',
       '/conquistas',
+      '/cronograma',
+      '/aulas',
+      '/medicina',
+      '/banca',
+      '/aprovacao',
       '/onboarding',
     ];
     return allowed.any((p) => path == p || path.startsWith('$p/'));
@@ -56,22 +61,11 @@ class AppShell extends ConsumerWidget {
 
   List<_NavGroup> _groups({required int officialCount}) {
     return [
-      const _NavGroup('Estudar', [
-        _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
-        _NavItem('/sessao', 'Sessão', Icons.timer_rounded),
-        _NavItem('/questoes', 'Questões', Icons.quiz_rounded),
-        _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
-        _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
-      ]),
-      const _NavGroup('Conteúdo', [
+      const _NavGroup('Principal', [
+        _NavItem('/dashboard', 'Inicio', Icons.home_rounded),
+        _NavItem('/sessao', 'Estudar', Icons.school_rounded),
+        _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
         _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
-        _NavItem('/simulados', 'Simulados', Icons.bolt_rounded),
-        _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),
-        _NavItem('/aulas', 'Aulas', Icons.video_library_rounded),
-        _NavItem('/progresso', 'Progresso', Icons.terrain_rounded),
-        _NavItem('/conquistas', 'Conquistas', Icons.emoji_events_rounded),
-      ]),
-      const _NavGroup('Conta', [
         _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
       ]),
     ];

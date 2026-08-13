@@ -14,6 +14,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
@@ -88,6 +89,19 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   void initState() {
     super.initState();
     _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        TourOverlay.maybeShow(
+          context,
+          key: 'tour_estudar_v1',
+          title: 'Estudar',
+          body: 'Aperte "Estudar agora" e o sistema escolhe tudo pra voce: '
+              'topico, questoes e revisao. Quer escolher? Toque em '
+              '"Personalizar sessao" abaixo.',
+          icon: Icons.school_rounded,
+        );
+      }
+    });
   }
 
   String get _planPath {
@@ -1106,9 +1120,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     }
 
     final phases = (plan!['sessionPlan'] as List? ?? [
-      {'phase': 'theory', 'minutes': 20, 'title': 'Teoria do dia'},
-      {'phase': 'questions', 'minutes': 30, 'title': 'Questões'},
-      {'phase': 'revisions', 'minutes': 10, 'title': 'Revisão'},
+      {'phase': 'questions', 'minutes': 40, 'title': 'Estudar'},
+      {'phase': 'revisions', 'minutes': 10, 'title': 'Debrief'},
     ]);
     final study = plan!['studyToday'] as Map<String, dynamic>?;
     final current = Map<String, dynamic>.from(phases[phaseIndex.clamp(0, phases.length - 1)] as Map);
@@ -1265,7 +1278,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             child: Text(
               started
                   ? (paused ? 'Pausado · ${current['title']}' : '${current['title']} · ${current['minutes'] ?? '?'} min')
-                  : '20 teoria → 30 questões → 10 revisão',
+                  : 'O sistema escolhe tudo automaticamente',
               style: GoogleFonts.inter(
                 fontSize: 14,
                 height: 1.5,
@@ -1273,7 +1286,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ),
             ),
           ),
-          if (!started)
+          if (!started) ...[
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1282,11 +1295,66 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   child: FilledButton.icon(
                     onPressed: _start,
                     icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Iniciar sessão'),
+                    label: const Text('Estudar agora'),
                   ),
                 ),
               ],
-            )
+            ),
+            const SizedBox(height: 16),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(
+                'Personalizar sessao',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface.withOpacity(0.6),
+                ),
+              ),
+              subtitle: Text(
+                'Escolher materia, topico ou ano',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: cs.onSurface.withOpacity(0.4),
+                ),
+              ),
+              children: [
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ActionChip(
+                      label: const Text('Questoes'),
+                      avatar: const Icon(Icons.quiz_outlined, size: 18),
+                      onPressed: () => context.go('/questoes'),
+                    ),
+                    ActionChip(
+                      label: const Text('Flashcards'),
+                      avatar: const Icon(Icons.style_outlined, size: 18),
+                      onPressed: () => context.go('/flashcards'),
+                    ),
+                    ActionChip(
+                      label: const Text('Tutor IA'),
+                      avatar: const Icon(Icons.auto_awesome_outlined, size: 18),
+                      onPressed: () => context.go('/tutor'),
+                    ),
+                    ActionChip(
+                      label: const Text('Simulado'),
+                      avatar: const Icon(Icons.bolt_outlined, size: 18),
+                      onPressed: () => context.go('/simulados'),
+                    ),
+                    ActionChip(
+                      label: const Text('Redacao'),
+                      avatar: const Icon(Icons.edit_note_outlined, size: 18),
+                      onPressed: () => context.go('/redacao'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ]
           else ...[
             Wrap(
               spacing: 8,

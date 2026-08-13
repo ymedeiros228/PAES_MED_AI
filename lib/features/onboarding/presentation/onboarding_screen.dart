@@ -547,48 +547,6 @@ class _MainCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 24),
-
-          // Meta diária
-          Text(
-            'Meta diária de estudo',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: cs.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Quantos minutos por dia você quer estudar?',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: cs.onSurface.withOpacity(0.55),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Seletor de meta
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final goal in [30, 60, 90, 120, 180])
-                ChoiceChip(
-                  label: Text(
-                    goal < 60 ? '${goal}min' : '${goal ~/ 60}h${goal % 60 > 0 ? '${goal % 60}min' : ''}',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  selected: dailyGoal == goal,
-                  selectedColor: AppTheme.teal,
-                  onSelected: saving ? null : (_) => onGoalChanged(goal),
-                ),
-            ],
-          ),
-
           const SizedBox(height: 28),
 
           // CTA

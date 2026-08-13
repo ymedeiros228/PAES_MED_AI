@@ -335,7 +335,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Personalize sua experiência de estudo',
               ),
 
-              SectionLabel('Sobre'),
+              SectionLabel('Perfil'),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
                 color: Theme.of(context).colorScheme.surfaceContainerHighest.f35,
@@ -548,7 +548,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
 
               const SizedBox(height: 16),
-              SectionLabel('Seus dados'),
+              SectionLabel('Backup e dados'),
               SurfacePanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -704,7 +704,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
 
               const SizedBox(height: 8),
-              SectionLabel('Tutor IA', hint: 'Configure sua chave de IA'),
+              SectionLabel('IA', hint: 'Cole sua chave e teste'),
               SurfacePanel(
                 child: Builder(
                   builder: (context) {

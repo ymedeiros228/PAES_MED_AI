@@ -187,6 +187,31 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   title: 'Progresso',
                   subtitle: 'Seu desempenho: pontos fortes e pontos a melhorar — prática, não % de aprovação',
                 ),
+                // Atalhos para sub-telas do Progresso
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ActionChip(
+                        label: const Text('Conquistas'),
+                        avatar: const Icon(Icons.emoji_events_outlined, size: 18),
+                        onPressed: () => context.go('/conquistas'),
+                      ),
+                      ActionChip(
+                        label: const Text('Cronograma'),
+                        avatar: const Icon(Icons.calendar_today_outlined, size: 18),
+                        onPressed: () => context.go('/cronograma'),
+                      ),
+                      ActionChip(
+                        label: const Text('Diagnostico'),
+                        avatar: const Icon(Icons.medical_services_outlined, size: 18),
+                        onPressed: () => context.go('/medicina'),
+                      ),
+                    ],
+                  ),
+                ),
                 if (loading) ...[
                   // Skeleton placeholders em vez de spinner
                   const SkeletonCard(lines: 2),
