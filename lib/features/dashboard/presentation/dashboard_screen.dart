@@ -33,6 +33,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   late final Future<dynamic> _essayProgressFuture;
   late final Future<dynamic> _backupLastFuture;
   late final Future<dynamic> _dueCardsFuture;
+  late final Future<dynamic> _gamificationFuture;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _essayProgressFuture = apiClient.get('/api/essays/progress');
     _backupLastFuture = apiClient.get('/api/backup/last');
     _dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
+    _gamificationFuture = apiClient.get('/api/gamification');
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -483,6 +485,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
+                          // Card de gamificacao + atalhos rapidos
+                          FutureBuilder(
+                            future: _gamificationFuture,
+                            builder: (context, snap) {
+                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                              final g = Map<String, dynamic>.from(snap.data as Map);
+                              return _DashboardGamificationCard(data: g);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Atalhos rapidos
+                          _QuickActionsGrid(),
+                          const SizedBox(height: 16),
                           // StaggeredFadeIn: entrada escalonada do checklist (anel → itens)
                           StaggeredFadeIn(
                             children: [
@@ -1201,6 +1216,190 @@ class _DayProgressRingState extends State<_DayProgressRing>
           ),
         ],
       ),
+    );
+  }
+}
+
+
+class _DashboardGamificationCard extends StatelessWidget {
+  const _DashboardGamificationCard({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final level = data['level'] ?? 1;
+    final levelTitle = data['levelTitle'] ?? 'Iniciante';
+    final xp = data['xp'] ?? 0;
+    final progress = (data['levelProgress'] ?? 0.0) as double;
+    final unlocked = data['unlockedCount'] ?? 0;
+    final total = data['totalAchievements'] ?? 0;
+    final streak = data['stats'] is Map ? (data['stats']['streakDays'] ?? 0) : 0;
+    final next = data['nextAchievement'] as Map?;
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [cs.primary, cs.primaryContainer],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$level',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nivel $level - $levelTitle',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '$xp XP - $unlocked/$total medalhas',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: cs.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Streak visual
+                if (streak is int && streak > 0) ...[
+                  Icon(
+                    Icons.local_fire_department_rounded,
+                    color: const Color(0xFFE8A04B),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$streak',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFE8A04B),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 8,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(cs.primary),
+              ),
+            ),
+            if (next != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.emoji_events_outlined, size: 14, color: cs.onSurface.withOpacity(0.5)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Proxima: ${next['title']} (${((next['progress'] ?? 0) * 100).round()}%)',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: cs.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                  TapScale(
+                    child: TextButton(
+                      onPressed: () => context.go('/conquistas'),
+                      child: const Text('Ver todas'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _QuickActionsGrid extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final actions = [
+      ('Sessao', Icons.timer_rounded, '/sessao?examBoard=UEMA_PAES&preferNatureza=1', cs.primary),
+      ('Flashcards', Icons.style_rounded, '/flashcards', cs.secondary),
+      ('Redacao', Icons.edit_note_rounded, '/redacao', const Color(0xFFE8A04B)),
+      ('Simulado', Icons.bolt_rounded, '/simulados', const Color(0xFFD3544A)),
+    ];
+
+    return Row(
+      children: [
+        for (int i = 0; i < actions.length; i++) ...[
+          if (i > 0) const SizedBox(width: 10),
+          Expanded(
+            child: TapScale(
+              child: Material(
+                color: cs.surfaceContainer,
+                borderRadius: BorderRadius.circular(14),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    context.go(actions[i].$3);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                    child: Column(
+                      children: [
+                        Icon(actions[i].$2, color: actions[i].$4, size: 26),
+                        const SizedBox(height: 6),
+                        Text(
+                          actions[i].$1,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurface.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

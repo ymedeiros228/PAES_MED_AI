@@ -2030,6 +2030,129 @@ def get_study_plan(days: int) -> list[dict[str, Any]]:
         ]
 
 
+def build_smart_study_plan(exam_date: str | None = None) -> dict[str, Any]:
+    """Cronograma inteligente: countdown + metas diarias + balanceamento por materia.
+
+    Distribui topicos pelos dias restantes ate a prova, balanceando por materia
+    (max 2 topicos da mesma materia por dia) e reservando os ultimos 7 dias
+    para revisao geral + simulado.
+    """
+    from datetime import date as date_cls, timedelta as td
+
+    # Determinar dias restantes
+    today = time_today()
+    if exam_date:
+        try:
+            exam = date_cls.fromisoformat(exam_date[:10])
+            days_left = (exam - today).days
+            days_left = max(7, min(days_left, 180))
+        except (ValueError, TypeError):
+            days_left = 60
+    else:
+        days_left = 60
+        exam = today + td(days=60)
+
+    # Usar o plano existente como base
+    base_plan = build_study_plan(days_left, exam_date)
+
+    # Agrupar por dia com balanceamento
+    # Ultimos 7 dias: revisao geral + simulado
+    study_days = max(1, days_left - 7)
+    review_days = min(7, days_left - 1)
+
+    # Distribuir topicos pelos dias de estudo (max 2 topicos/dia)
+    topics_per_day: list[list[dict[str, Any]]] = []
+    current_day_topics: list[dict[str, Any]] = []
+    current_day_subjects: list[str] = []
+
+    for item in base_plan[:study_days * 2]:  # max 2 topicos por dia
+        subj = item.get("subject", "")
+        if len(current_day_topics) >= 2 or (subj in current_day_subjects and len(current_day_topics) >= 1):
+            topics_per_day.append(current_day_topics)
+            current_day_topics = []
+            current_day_subjects = []
+        current_day_topics.append(item)
+        current_day_subjects.append(subj)
+
+    if current_day_topics:
+        topics_per_day.append(current_day_topics)
+
+    # Montar cronograma
+    schedule: list[dict[str, Any]] = []
+    for day_idx in range(1, days_left + 1):
+        day_date = today + td(days=day_idx - 1)
+        is_review = day_idx > study_days
+
+        if is_review:
+            # Dias de revisao
+            review_type = "Revisao Geral"
+            if day_idx == days_left - 1:
+                review_type = "Simulado Completo"
+            elif day_idx == days_left:
+                review_type = "Simulado Completo"
+            schedule.append({
+                "day": day_idx,
+                "date": day_date.isoformat(),
+                "isReview": True,
+                "reviewType": review_type,
+                "topics": [],
+                "dailyGoals": {
+                    "questions": 30 if "Simulado" in review_type else 15,
+                    "flashcards": 20 if "Simulado" in review_type else 10,
+                    "essay": "Simulado" in review_type,
+                    "simulation": "Simulado" in review_type,
+                },
+                "label": review_type,
+            })
+        else:
+            # Dia de estudo normal
+            topics = topics_per_day[day_idx - 1] if day_idx - 1 < len(topics_per_day) else []
+            schedule.append({
+                "day": day_idx,
+                "date": day_date.isoformat(),
+                "isReview": False,
+                "topics": [
+                    {
+                        "subject": t.get("subject"),
+                        "topic": t.get("topic"),
+                        "reason": t.get("reason"),
+                        "stars": t.get("stars"),
+                        "fromErrors": t.get("fromErrors", False),
+                    }
+                    for t in topics
+                ],
+                "dailyGoals": {
+                    "questions": 15,
+                    "flashcards": 10,
+                    "essay": day_idx % 3 == 0,  # redacao a cada 3 dias
+                    "simulation": False,
+                },
+                "label": f"Estudo: {', '.join(t.get('subject', '?') for t in topics[:2])}",
+            })
+
+    # Resumo
+    total_study_days = sum(1 for d in schedule if not d["isReview"])
+    total_review_days = sum(1 for d in schedule if d["isReview"])
+    total_topics = sum(len(d["topics"]) for d in schedule)
+
+    return {
+        "ok": True,
+        "examDate": exam.isoformat(),
+        "countdownDays": days_left,
+        "todayDate": today.isoformat(),
+        "totalStudyDays": total_study_days,
+        "totalReviewDays": total_review_days,
+        "totalTopics": total_topics,
+        "schedule": schedule,
+        "defaultGoals": {
+            "questions": 15,
+            "flashcards": 10,
+            "essay": "a cada 3 dias",
+        },
+        "disclaimer": "Cronograma local baseado na base de questoes · nao oficial.",
+    }
+
+
 def dashboard_stats() -> dict[str, Any]:
     with db() as conn:
         answers = [dict(r) for r in conn.execute("SELECT * FROM answers ORDER BY answered_at").fetchall()]

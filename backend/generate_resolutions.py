@@ -201,6 +201,108 @@ def resolution_stats() -> dict[str, Any]:
     }
 
 
+_RESOLUTION_PROMPT_NO_GAB = """Você é professor especialista do PAES/UEMA. Crie uma resolução didática para a questão abaixo.
+
+Disciplina: {subject}
+Tópico: {topic}
+Enunciado: {statement}
+Alternativas:
+{options_list}
+Gabarito provável: {correct_letter}) {correct_text}
+
+NOTA: Esta questão foi importada sem gabarito oficial. O gabarito acima é uma estimativa automática e pode estar incorreto. Analise o enunciado e as alternativas, identifique a resposta correta com base no conteúdo, e explique o raciocínio.
+
+Formate sua resposta EXATAMENTE assim (4 blocos numerados):
+1) Comando: [em 1-2 linhas, o que a banca pede ao candidato]
+2) Conceito: [em 2-3 linhas, a teoria necessária para resolver]
+3) Gabarito: [qual alternativa correta e por quê, em 2-3 linhas. Se o gabarito provável estiver errado, indique o correto.]
+4) Distrator: [como eliminar as alternativas erradas, em 2-3 linhas]
+
+Seja direto e didático. Use português brasileiro."""
+
+
+def generate_resolutions_for_new_questions(
+    *,
+    limit: int = 250,
+    delay_seconds: float = 3.0,
+) -> dict[str, Any]:
+    """Gera resoluções IA para as 232 questões importadas sem gabarito oficial."""
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, year, subject, topic, statement, options_json, correct_index "
+            "FROM questions WHERE source LIKE '%pdf_ingest_sem_gabarito%' "
+            "ORDER BY year, id"
+        ).fetchall()
+
+    questions = []
+    for r in rows:
+        opts = json.loads(r["options_json"]) if r["options_json"] else []
+        questions.append({
+            "id": r["id"],
+            "year": r["year"],
+            "subject": r["subject"],
+            "topic": r["topic"],
+            "statement": r["statement"],
+            "options": opts,
+            "correctIndex": int(r["correct_index"] or 0),
+        })
+
+    total = len(questions)
+    batch = questions[:limit]
+    generated = 0
+    failed = 0
+    errors: list[str] = []
+
+    for i, q in enumerate(batch):
+        try:
+            opts = q.get("options") or []
+            options_list = "\n".join(
+                f"{chr(65 + j)}) {o}" for j, o in enumerate(opts[:5])
+            )
+            ci = int(q.get("correctIndex") or 0)
+            correct_letter = chr(65 + ci) if 0 <= ci < len(opts) else "?"
+            correct_text = opts[ci] if 0 <= ci < len(opts) else ""
+            prompt = _RESOLUTION_PROMPT_NO_GAB.format(
+                subject=q.get("subject", "Geral"),
+                topic=q.get("topic", "Geral"),
+                statement=q.get("statement", ""),
+                options_list=options_list,
+                correct_letter=correct_letter,
+                correct_text=correct_text[:200],
+            )
+            instructions = "Você é professor do PAES/UEMA. Produza uma resolução didática estruturada em 4 eixos."
+            raw = _ask_ai(instructions, prompt)
+            resolution = _parse_resolution(raw)
+            with db() as conn:
+                conn.execute(
+                    "UPDATE questions SET resolution=? WHERE id=?",
+                    (resolution, q["id"]),
+                )
+                conn.commit()
+            generated += 1
+            if generated % 10 == 0:
+                print(f"Progresso: {generated}/{len(batch)} resoluções geradas")
+        except Exception as exc:
+            failed += 1
+            errors.append(f"{q['id']}: {exc}")
+        if i < len(batch) - 1:
+            time.sleep(delay_seconds)
+
+    return {
+        "ok": True,
+        "totalNewQuestions": total,
+        "processed": len(batch),
+        "generated": generated,
+        "failed": failed,
+        "errors": errors[:10],
+        "message": (
+            f"{generated} resoluções geradas com IA para questões sem gabarito"
+            + (f" · {failed} falharam" if failed else "")
+            + f" · {total - generated - failed} restantes"
+        ),
+    }
+
+
 if __name__ == "__main__":
-    result = generate_resolutions(limit=5, delay_seconds=2.0)
+    result = generate_resolutions_for_new_questions(limit=250, delay_seconds=3.0)
     print(json.dumps(result, indent=2, ensure_ascii=False))

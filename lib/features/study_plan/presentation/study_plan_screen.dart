@@ -24,6 +24,7 @@ class StudyPlanScreen extends ConsumerStatefulWidget {
 class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   int days = 30;
   List<dynamic> plan = [];
+  Map<String, dynamic>? smartPlan;
   String? error;
   bool loading = false;
   String? exportMsg;
@@ -104,14 +105,20 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       if (until != null && until > 0 && until < 180) {
         days = until;
       }
-      if (regenerate) {
-        plan = await apiClient.post('/api/plans/generate', {
-          'days': days,
-          'examDate': exam.isEmpty ? null : exam,
-        }) as List<dynamic>;
-      } else {
-        plan = await apiClient.get('/api/plans/$days') as List<dynamic>;
-      }
+      // Carregar cronograma inteligente em paralelo
+      final results = await Future.wait([
+        regenerate
+            ? apiClient.post('/api/plans/generate', {
+                'days': days,
+                'examDate': exam.isEmpty ? null : exam,
+              })
+            : apiClient.get('/api/plans/$days'),
+        apiClient.get('/api/plans/smart${exam.isEmpty ? '' : '?examDate=$exam'}'),
+      ]);
+      plan = results[0] as List<dynamic>;
+      smartPlan = results[1] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(results[1] as Map)
+          : null;
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
       error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
@@ -243,6 +250,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                   child: const Text('Regenerar'),
                 ),
               ),
+
+              // Card de cronograma inteligente
+              if (smartPlan != null) ...[
+                _SmartPlanCard(data: smartPlan!),
+                const SizedBox(height: 16),
+              ],
 
               if (examState.syncError != null) ...[
                 QuietEmpty(
@@ -562,6 +575,183 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
         ),
       ],
     ),
+    );
+  }
+}
+
+
+class _SmartPlanCard extends StatelessWidget {
+  const _SmartPlanCard({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final countdown = data['countdownDays'] ?? 60;
+    final studyDays = data['totalStudyDays'] ?? 0;
+    final reviewDays = data['totalReviewDays'] ?? 0;
+    final totalTopics = data['totalTopics'] ?? 0;
+    final schedule = (data['schedule'] as List?) ?? [];
+
+    // Primeiro dia de estudo
+    final todayItem = schedule.isNotEmpty ? schedule[0] as Map : null;
+    final todayGoals = todayItem?['dailyGoals'] as Map?;
+    final todayTopics = (todayItem?['topics'] as List?) ?? [];
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$countdown',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cronograma Inteligente',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$studyDays dias de estudo + $reviewDays de revisao - $totalTopics topicos',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: cs.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (todayTopics.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                'Hoje:',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  for (final t in todayTopics.take(2))
+                    Chip(
+                      label: Text(
+                        '${t['subject']} - ${t['topic']}',
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                ],
+              ),
+            ],
+            if (todayGoals != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  if (todayGoals['questions'] != null)
+                    _GoalChip(icon: Icons.quiz_outlined, label: '${todayGoals['questions']} questoes'),
+                  const SizedBox(width: 8),
+                  if (todayGoals['flashcards'] != null)
+                    _GoalChip(icon: Icons.style_outlined, label: '${todayGoals['flashcards']} cards'),
+                  if (todayGoals['essay'] == true) ...[
+                    const SizedBox(width: 8),
+                    _GoalChip(icon: Icons.edit_outlined, label: 'Redacao'),
+                  ],
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            TapScale(
+              child: FilledButton.icon(
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  if (todayTopics.isNotEmpty) {
+                    final t = todayTopics[0] as Map;
+                    final subj = t['subject']?.toString() ?? '';
+                    final topic = t['topic']?.toString() ?? '';
+                    final nat = const {'Biologia', 'Quimica', 'Fisica'}.contains(subj);
+                    context.go('/sessao?examBoard=UEMA_PAES'
+                        '&subject=${Uri.encodeComponent(subj)}'
+                        '&topic=${Uri.encodeComponent(topic)}'
+                        '&preferNatureza=${nat ? '1' : '0'}');
+                  } else {
+                    context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                  }
+                },
+                icon: const Icon(Icons.play_arrow_rounded),
+                label: const Text('Estudar agora'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _GoalChip extends StatelessWidget {
+  const _GoalChip({required this.icon, required this.label});
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: cs.onSurface.withOpacity(0.6)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

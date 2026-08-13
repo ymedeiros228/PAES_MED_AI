@@ -24,6 +24,7 @@ from services_advanced import (
 )
 from services_core import (
     build_exam_countdown,
+    build_smart_study_plan,
     build_study_calendar,
     build_study_plan,
     build_tutor_day_plan,
@@ -121,6 +122,12 @@ def api_plans_generate(payload: PlanRequest) -> list[dict[str, Any]]:
 @router.get("/api/plans/{days}")
 def api_plans_get(days: int) -> list[dict[str, Any]]:
     return get_study_plan(days)
+
+
+@router.get("/api/plans/smart")
+def api_plans_smart(examDate: str | None = None) -> dict[str, Any]:
+    """Cronograma inteligente com countdown, metas diarias e balanceamento."""
+    return build_smart_study_plan(exam_date=examDate)
 
 @router.post("/api/training/adaptive")
 def api_adaptive(payload: AdaptiveRequest) -> dict[str, Any]:
