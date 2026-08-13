@@ -202,7 +202,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: cs.onSurface,
+                                      color: cs.onPrimaryContainer,
                                     ),
                                   ),
                                   if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
@@ -212,7 +212,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                         'Tamanho médio do enunciado: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
-                                          color: cs.onSurface.f72,
+                                          color: cs.onPrimaryContainer.withOpacity(0.85),
                                         ),
                                       ),
                                     ),

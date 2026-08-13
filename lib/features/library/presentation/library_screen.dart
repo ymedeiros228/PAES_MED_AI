@@ -1290,12 +1290,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bem-vindo — Semana 1', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+                      Text('Bem-vindo — Semana 1', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
                       const SizedBox(height: 8),
                       Text(
                         'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
                         'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85)),
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
@@ -1454,14 +1454,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         children: [
                           Icon(Icons.waving_hand_rounded, color: cs.primary, size: 24),
                           const SizedBox(width: 8),
-                          Text('Bem-vindo!', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
+                          Text('Bem-vindo!', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Importe as provas oficiais da UEMA para começar a estudar. '
                         'Toque em "Importar todos" abaixo.',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
@@ -1575,7 +1575,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
-                                        color: cs.onSurface.withOpacity(0.85),
+                                        color: ready ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.85),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -1585,7 +1585,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                       ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
                                       style: GoogleFonts.inter(
                                         fontSize: 11,
-                                        color: cs.onSurface.withOpacity(0.6),
+                                        color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.withOpacity(0.6),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

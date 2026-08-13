@@ -560,7 +560,9 @@ class _MessageBubble extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 height: 1.5,
-                color: scheme.onSurface.withOpacity(0.85),
+                color: message.isUser
+                    ? scheme.onPrimaryContainer
+                    : scheme.onSurface.withOpacity(0.85),
               ),
             ),
             if (!message.isUser && onPrompt != null) ...[

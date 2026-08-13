@@ -638,7 +638,7 @@ class _RailControl extends StatelessWidget {
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: cs.onSurface,
+                                color: active ? cs.onPrimaryContainer : cs.onSurface,
                               ),
                             ),
                           ),

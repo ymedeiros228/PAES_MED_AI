@@ -259,7 +259,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     children: [
                       Text(
                         '${lastLesson!['subject']} · ${lastLesson!['topic']}',
-                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                       ),
                       if (lastLesson!['summary'] != null) ...[
                         const SizedBox(height: 8),
@@ -267,7 +267,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ],
                       if (lastLesson!['macetes'] != null) ...[
                         const SizedBox(height: 8),
-                        SelectableText('Macete: ${lastLesson!['macetes']}', style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85))),
+                        SelectableText('Macete: ${lastLesson!['macetes']}', style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
                       ],
                       const SizedBox(height: 12),
                       FilledButton.tonal(

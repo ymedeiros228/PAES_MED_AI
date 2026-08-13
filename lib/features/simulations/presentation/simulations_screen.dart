@@ -1510,10 +1510,10 @@ class _ModeCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                        Text(title, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? cs.onPrimaryContainer : cs.onSurface)),
                         Text(
                           subtitle,
-                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f72),
+                          style: GoogleFonts.inter(fontSize: 13, color: selected ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.f72),
                         ),
                       ],
                     ),

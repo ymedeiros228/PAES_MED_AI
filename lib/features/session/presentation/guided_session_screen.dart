@@ -545,7 +545,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: cs.onSurface,
+              color: cs.onPrimaryContainer,
             ),
           ),
           const SizedBox(height: 4),
@@ -556,7 +556,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             style: GoogleFonts.inter(
               fontSize: 14,
               height: 1.5,
-              color: cs.onSurface.f72,
+              color: cs.onPrimaryContainer.withOpacity(0.85),
             ),
           ),
           const SizedBox(height: 12),

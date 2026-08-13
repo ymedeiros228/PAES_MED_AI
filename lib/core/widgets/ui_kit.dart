@@ -2968,7 +2968,7 @@ class SessionResumeBanner extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
+                    color: cs.onPrimaryContainer,
                   ),
                 ),
               ),
@@ -2984,7 +2984,7 @@ class SessionResumeBanner extends StatelessWidget {
             subtitle,
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: cs.onSurface.f72,
+              color: cs.onPrimaryContainer.withOpacity(0.85),
               height: 1.5,
             ),
           ),

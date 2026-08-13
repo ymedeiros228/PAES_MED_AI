@@ -383,7 +383,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(q.resolution!, style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: cs.onSurface.withOpacity(0.85))),
+                          Text(q.resolution!, style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: cs.onSurface.withOpacity(0.9))),
                         ],
                       ),
                     ),

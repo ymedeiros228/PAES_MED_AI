@@ -427,11 +427,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Foco da semana', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                            Text('Foco da semana', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer)),
                             const SizedBox(height: 4),
                             Text(
                               '${revs.length} revisões · erros recentes abaixo',
-                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                              style: GoogleFonts.inter(fontSize: 13, color: cs.onPrimaryContainer.withOpacity(0.85)),
                             ),
                             for (final raw in hot)
                               PlaylistTile(

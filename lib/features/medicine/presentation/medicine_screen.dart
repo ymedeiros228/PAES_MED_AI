@@ -173,7 +173,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           Expanded(
                             child: Text(
                               'Provas UEMA na base',
-                              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                             ),
                           ),
                           FilledButton.tonal(

@@ -660,7 +660,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           curve: Curves.easeOut,
                           builder: (context, v, _) => Text(
                             'Nota ${v.toStringAsFixed(1)}',
-                            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w800, color: cs.onSurface),
+                            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w800, color: cs.onPrimaryContainer),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -756,7 +756,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
-                                            color: cs.onSurface.withOpacity(0.7),
+                                            color: cs.onPrimaryContainer.withOpacity(0.85),
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -765,7 +765,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                           style: GoogleFonts.inter(
                                             fontSize: 14,
                                             height: 1.5,
-                                            color: cs.onSurface,
+                                            color: cs.onPrimaryContainer,
                                             fontStyle: FontStyle.italic,
                                           ),
                                         ),

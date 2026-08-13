@@ -464,7 +464,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: cs.onSurface,
+                                      color: cs.onPrimaryContainer,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -477,7 +477,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       height: 1.5,
-                                      color: cs.onSurface.withOpacity(0.85),
+                                      color: cs.onPrimaryContainer.withOpacity(0.9),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -1676,7 +1676,7 @@ class _SmartCoachCard extends StatelessWidget {
                           fontSize: 14,
                           height: 1.5,
                           fontWeight: FontWeight.w600,
-                          color: cs.onSurface,
+                          color: cs.onPrimaryContainer,
                         ),
                       ),
                     ),
