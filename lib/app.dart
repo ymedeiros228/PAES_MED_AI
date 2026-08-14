@@ -20,6 +20,7 @@ import 'features/focus/presentation/focus_screen.dart';
 import 'features/gamification/presentation/gamification_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
+import 'features/materials/presentation/materials_screen.dart';
 import 'features/library/presentation/library_screen.dart';
 import 'features/medicine/presentation/medicine_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
@@ -120,6 +121,13 @@ final appRouter = GoRouter(
           },
         ),
         GoRoute(path: '/aulas', pageBuilder: (_, __) => _fadePage(const LessonsScreen())),
+        GoRoute(
+          path: '/materiais',
+          pageBuilder: (_, state) {
+            final subject = state.uri.queryParameters['subject'];
+            return _fadePage(MaterialsScreen(initialSubject: subject));
+          },
+        ),
         GoRoute(path: '/redacao', pageBuilder: (_, __) => _fadePage(const EssayScreen())),
         GoRoute(path: '/aprovacao', pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
         GoRoute(path: '/conquistas', pageBuilder: (_, __) => _fadePage(const GamificationScreen())),

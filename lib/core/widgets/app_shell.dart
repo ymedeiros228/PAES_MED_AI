@@ -51,6 +51,7 @@ class AppShell extends ConsumerWidget {
       '/conquistas',
       '/cronograma',
       '/aulas',
+      '/materiais',
       '/medicina',
       '/banca',
       '/aprovacao',

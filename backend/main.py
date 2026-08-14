@@ -20,6 +20,7 @@ from routers import (
     flashcards,
     ingest,
     library,
+    materials,
     media,
     meta,
     questions,
@@ -52,6 +53,7 @@ for module in (
     media,
     essays,
     flashcards,
+    materials,
     ai,
 ):
     app.include_router(module.router)

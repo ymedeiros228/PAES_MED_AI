@@ -1394,6 +1394,7 @@ class _QuickActionsGrid extends StatelessWidget {
       ('Redacao', Icons.edit_note_rounded, '/redacao', const Color(0xFFE8A04B)),
       ('Simulado', Icons.bolt_rounded, '/simulados', const Color(0xFFD3544A)),
       ('Aulas', Icons.video_library_rounded, '/aulas', cs.tertiary),
+      ('Materiais', Icons.picture_as_pdf_rounded, '/materiais', const Color(0xFF2196F3)),
     ];
 
     return GridView.count(

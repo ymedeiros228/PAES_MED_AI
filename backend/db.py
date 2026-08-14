@@ -177,6 +177,20 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS materials (
+                id TEXT PRIMARY KEY,
+                subject TEXT NOT NULL,
+                topic TEXT NOT NULL,
+                subtopic TEXT,
+                title TEXT NOT NULL,
+                content_json TEXT NOT NULL,
+                images_json TEXT DEFAULT '[]',
+                wiki_url TEXT,
+                generated_at TEXT NOT NULL,
+                approved INTEGER DEFAULT 0,
+                UNIQUE(subject, topic, subtopic)
+            );
+
             CREATE TABLE IF NOT EXISTS study_gaps (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 subject TEXT NOT NULL,
@@ -254,6 +268,8 @@ def init_db() -> None:
                 ON essays(created_at);
             CREATE INDEX IF NOT EXISTS idx_ingest_jobs_status
                 ON ingest_jobs(status);
+            CREATE INDEX IF NOT EXISTS idx_materials_subject_topic
+                ON materials(subject, topic);
             """
         )
         conn.commit()
