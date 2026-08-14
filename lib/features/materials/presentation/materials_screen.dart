@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -166,6 +167,11 @@ class _MaterialsScreenState extends ConsumerState<MaterialsScreen> {
       appBar: AppBar(
         title: Text('Materiais de Estudo', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfListScreen())),
+            tooltip: 'PDFs disponíveis',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.read(syllabusProvider.notifier).load(subject: _selectedSubject),
@@ -847,6 +853,158 @@ class _FullImageScreen extends StatelessWidget {
               : const Icon(Icons.broken_image, size: 64, color: Colors.white54),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tela: Lista de PDFs disponíveis
+// ---------------------------------------------------------------------------
+
+class PdfListScreen extends ConsumerStatefulWidget {
+  const PdfListScreen({super.key});
+
+  @override
+  ConsumerState<PdfListScreen> createState() => _PdfListScreenState();
+}
+
+class _PdfListScreenState extends ConsumerState<PdfListScreen> {
+  List<Map<String, dynamic>> _pdfs = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPdfs();
+  }
+
+  Future<void> _loadPdfs() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final res = await apiClient.get('/api/materials/pdfs/list');
+      final list = (res as List).cast<Map<String, dynamic>>();
+      setState(() {
+        _pdfs = list;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = humanApiError(e);
+        _loading = false;
+      });
+    }
+  }
+
+  String _buildUrl(String endpoint) {
+    final base = apiClient.baseUrl;
+    return '$base$endpoint';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PDFs Disponíveis', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadPdfs,
+            tooltip: 'Atualizar',
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.cloud_off, size: 48, color: cs.outline),
+                      const SizedBox(height: 12),
+                      Text('Erro: $_error'),
+                      const SizedBox(height: 12),
+                      FilledButton(onPressed: _loadPdfs, child: const Text('Tentar novamente')),
+                    ],
+                  ),
+                )
+              : _pdfs.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.picture_as_pdf, size: 64, color: cs.outline),
+                          const SizedBox(height: 16),
+                          Text('Nenhum PDF disponível ainda.', style: TextStyle(color: cs.outline)),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _pdfs.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, i) {
+                        final pdf = _pdfs[i];
+                        final title = pdf['title'] as String;
+                        final subject = pdf['subject'] as String;
+                        final sizeKb = pdf['size_kb'] as double;
+                        final urlPath = pdf['url'] as String;
+
+                        return Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: cs.primaryContainer,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.picture_as_pdf, color: cs.onPrimaryContainer),
+                            ),
+                            title: Text(
+                              title,
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Wrap(
+                                spacing: 8,
+                                children: [
+                                  Chip(
+                                    label: Text(subject, style: const TextStyle(fontSize: 11)),
+                                    padding: EdgeInsets.zero,
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  Text('${sizeKb.toStringAsFixed(0)} KB',
+                                      style: TextStyle(fontSize: 12, color: cs.outline)),
+                                ],
+                              ),
+                            ),
+                            trailing: const Icon(Icons.download),
+                            onTap: () async {
+                              final fullUrl = _buildUrl(urlPath);
+                              if (await canLaunchUrl(Uri.parse(fullUrl))) {
+                                await launchUrl(Uri.parse(fullUrl),
+                                    mode: LaunchMode.externalApplication);
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Não foi possível abrir: $fullUrl')),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 }
