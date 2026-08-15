@@ -20,7 +20,7 @@ from material_service import (
 router = APIRouter(prefix="/api/materials", tags=["materiais"])
 
 # Diretório de PDFs gerados
-_PDF_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais"
+_PDF_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "materiais"
 
 
 class GenerateRequest(BaseModel):
