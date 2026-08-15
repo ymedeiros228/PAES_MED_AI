@@ -143,7 +143,7 @@ GRANDEZAS_UNIDADES = {
     ],
 }
 
-IMG_GRANDEZAS = []
+IMG_GRANDEZAS = [{"file": "fi_grandezas.png", "caption": "Tabela das unidades fundamentais do Sistema Internacional", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.2 Cinematica
@@ -276,7 +276,7 @@ CINEMATICA = {
     ],
 }
 
-IMG_CINEMATICA = []
+IMG_CINEMATICA = [{"file": "fi_cinematica.png", "caption": "Grafico s x t de movimento uniforme: a inclinacao da reta e a velocidade", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.3 Dinamica
@@ -402,7 +402,7 @@ DINAMICA = {
     ],
 }
 
-IMG_DINAMICA = []
+IMG_DINAMICA = [{"file": "fi_dinamica.png", "caption": "Diagrama de forcas em um bloco sobre plano inclinado", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.4 Hidrostatica
@@ -531,7 +531,7 @@ HIDROSTATICA = {
     ],
 }
 
-IMG_HIDROSTATICA = []
+IMG_HIDROSTATICA = [{"file": "fi_hidrostatica.png", "caption": "Pressao hidrostatica aumenta com a profundidade", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # Gerar todos

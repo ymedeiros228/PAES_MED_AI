@@ -136,7 +136,7 @@ TERMOLOGIA = {
     ],
 }
 
-IMG_TERMOLOGIA = []
+IMG_TERMOLOGIA = [{"file": "fi_termologia.png", "caption": "Escalas termometricas: Celsius, Fahrenheit e Kelvin", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.6 Optica Geometrica
@@ -266,7 +266,7 @@ OPTICA = {
     ],
 }
 
-IMG_OPTICA = []
+IMG_OPTICA = [{"file": "fi_optica.png", "caption": "Refracao da luz ao passar do ar para a agua", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.7 Ondulatoria
@@ -405,7 +405,7 @@ ONDULATORIA = {
     ],
 }
 
-IMG_ONDULATORIA = []
+IMG_ONDULATORIA = [{"file": "fi_ondulatoria.png", "caption": "Onda: comprimento de onda (lambda) e amplitude", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.8 Eletrostatica
@@ -534,7 +534,7 @@ ELETROSTATICA = {
     ],
 }
 
-IMG_ELETROSTATICA = []
+IMG_ELETROSTATICA = [{"file": "fi_eletrostatica.png", "caption": "Cargas eletricas: opostos atraem e iguais repetem", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # Gerar todos

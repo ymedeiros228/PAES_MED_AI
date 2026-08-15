@@ -141,7 +141,7 @@ ELETRODINAMICA = {
     ],
 }
 
-IMG_ELETRODINAMICA = []
+IMG_ELETRODINAMICA = [{"file": "fi_eletrodinamica.png", "caption": "Circuito com resistores ligados em serie", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.10 Eletromagnetismo
@@ -275,7 +275,7 @@ ELETROMAGNETISMO = {
     ],
 }
 
-IMG_ELETROMAGNETISMO = []
+IMG_ELETROMAGNETISMO = [{"file": "fi_eletromagnetismo.png", "caption": "Campo magnetico ao redor de um fio percorrido por corrente", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # 3.11 Fisica Moderna
@@ -410,7 +410,7 @@ FISICA_MODERNA = {
     ],
 }
 
-IMG_FISICA_MODERNA = []
+IMG_FISICA_MODERNA = [{"file": "fi_fisica_moderna.png", "caption": "Radiacao nuclear: alfa, beta e gama", "source": "PAES MED AI", "source_url": ""}]
 
 # ============================================================
 # Gerar todos
