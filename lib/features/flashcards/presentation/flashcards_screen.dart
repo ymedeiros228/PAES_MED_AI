@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
@@ -403,110 +404,137 @@ class _CardDeckViewState extends State<_CardDeckView> {
     if (widget.items.isEmpty) return const SizedBox.shrink();
     final total = widget.items.length;
 
-    return Column(
+    // Dados da carta virada (para o overlay de zoom)
+    Map<String, dynamic>? flippedItem;
+    if (widget.showBack && widget.currentId != null) {
+      for (final r in widget.items) {
+        if (r is! Map) continue;
+        final id = r['id'] is int ? r['id'] : int.tryParse('${r['id']}');
+        if (id == widget.currentId) {
+          flippedItem = Map<String, dynamic>.from(r);
+          break;
+        }
+      }
+    }
+    final isFlippedValid = flippedItem != null && flippedItem.isNotEmpty;
+
+    return Stack(
       children: [
-        // Indicador de progresso "2 / 300"
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            '${_currentIndex + 1} / $total',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface.withOpacity(0.5),
+        // Conteúdo normal (carrossel)
+        Column(
+          children: [
+            // Indicador de progresso "2 / 300"
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '${_currentIndex + 1} / $total',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.5),
+                ),
+              ),
             ),
-          ),
-        ),
-        // Barra de progresso
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 4),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: total > 0 ? (_currentIndex + 1) / total : 0,
-              minHeight: 4,
-              backgroundColor: cs.surfaceContainerHighest,
-              color: cs.primary,
+            // Barra de progresso
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: total > 0 ? (_currentIndex + 1) / total : 0,
+                  minHeight: 4,
+                  backgroundColor: cs.surfaceContainerHighest,
+                  color: cs.primary,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Carrossel PageView estilo Netflix — card vertical retrato
-        SizedBox(
-          height: 540,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: total,
-            onPageChanged: (index) {
-              HapticFeedback.selectionClick();
-              setState(() => _currentIndex = index);
-            },
-            itemBuilder: (context, index) {
-              final raw = widget.items[index];
-              final item = Map<String, dynamic>.from(raw as Map);
-              final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
-              if (id == null) return const SizedBox.shrink();
-
-              final subj = item['subject']?.toString() ?? '';
-              final top = item['topic']?.toString() ?? '';
-              final src = item['source']?.toString() ?? '';
-              final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-              final accent = Color(subjectColorSeed(subj));
-              final flipped = widget.showBack && widget.currentId == id;
-
-              return AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, child) {
-                  double scale = 1.0;
-                  if (_pageController.position.haveDimensions) {
-                    final page = _pageController.page ?? _currentIndex.toDouble();
-                    final diff = (index - page).abs();
-                    // Cartas vizinhas ficam bem menores
-                    scale = (1 - diff * 0.12).clamp(0.78, 1.0);
-                  }
-                  return Transform.scale(scale: scale, child: child);
+            const SizedBox(height: 12),
+            // Carrossel PageView estilo Netflix — card vertical retrato
+            SizedBox(
+              height: 540,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: total,
+                onPageChanged: (index) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentIndex = index);
                 },
-                child: Center(
-                  child: SizedBox(
-                    width: 280,
-                    child: _GameCard(
-                      flipped: flipped,
-                      subject: subj,
-                      topic: top,
-                      fromAxes: fromAxes,
-                      frontText: item['front']?.toString() ?? '',
-                      backText: item['back']?.toString() ?? '',
-                      accent: accent,
-                      dueLabel: humanDueLabel(item['next_due']?.toString()),
-                      onTap: () => widget.onFlip(id),
-                      onRemember: () => widget.onRemember(id),
-                      onForgot: () => widget.onForgot(id),
-                      onDelete: () => widget.onDelete(id),
+                itemBuilder: (context, index) {
+                  final raw = widget.items[index];
+                  final item = Map<String, dynamic>.from(raw as Map);
+                  final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
+                  if (id == null) return const SizedBox.shrink();
+
+                  final subj = item['subject']?.toString() ?? '';
+                  final top = item['topic']?.toString() ?? '';
+                  final src = item['source']?.toString() ?? '';
+                  final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
+                  final accent = Color(subjectColorSeed(subj));
+                  final flipped = widget.showBack && widget.currentId == id;
+
+                  return AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, child) {
+                      double scale = 1.0;
+                      if (_pageController.position.haveDimensions) {
+                        final page = _pageController.page ?? _currentIndex.toDouble();
+                        final diff = (index - page).abs();
+                        scale = (1 - diff * 0.12).clamp(0.78, 1.0);
+                      }
+                      return Transform.scale(scale: scale, child: child);
+                    },
+                    child: Center(
+                      child: SizedBox(
+                        width: 280,
+                        child: _GameCard(
+                          flipped: flipped,
+                          subject: subj,
+                          topic: top,
+                          fromAxes: fromAxes,
+                          frontText: item['front']?.toString() ?? '',
+                          backText: item['back']?.toString() ?? '',
+                          accent: accent,
+                          dueLabel: humanDueLabel(item['next_due']?.toString()),
+                          onTap: () => widget.onFlip(id),
+                          onRemember: () => widget.onRemember(id),
+                          onForgot: () => widget.onForgot(id),
+                          onDelete: () => widget.onDelete(id),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Indicadores de ponto (estilo Netflix dots)
+            if (total <= 12)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(total, (i) {
+                  final active = i == _currentIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: active ? cs.primary : cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+          ],
         ),
-        const SizedBox(height: 8),
-        // Indicadores de ponto (estilo Netflix dots)
-        if (total <= 12)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(total, (i) {
-              final active = i == _currentIndex;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: active ? 24 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: active ? cs.primary : cs.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              );
-            }),
+        // === OVERLAY: zoom + blur quando a carta está virada ===
+        if (isFlippedValid)
+          _ZoomBlurOverlay(
+            item: flippedItem,
+            onTap: () => widget.onFlip(widget.currentId!),
+            onRemember: () => widget.onRemember(widget.currentId!),
+            onForgot: () => widget.onForgot(widget.currentId!),
+            onDelete: () => widget.onDelete(widget.currentId!),
           ),
       ],
     );
@@ -957,6 +985,422 @@ class _GameCardFace extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ============================================================
+// _ZoomBlurOverlay — overlay com blur + carta expandida
+// Mostra o verso da carta em tela cheia com desfoque no fundo
+// ============================================================
+
+class _ZoomBlurOverlay extends StatefulWidget {
+  const _ZoomBlurOverlay({
+    required this.item,
+    required this.onTap,
+    required this.onRemember,
+    required this.onForgot,
+    required this.onDelete,
+  });
+
+  final Map<String, dynamic> item;
+  final VoidCallback onTap;
+  final VoidCallback onRemember;
+  final VoidCallback onForgot;
+  final VoidCallback onDelete;
+
+  @override
+  State<_ZoomBlurOverlay> createState() => _ZoomBlurOverlayState();
+}
+
+class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scale;
+  late final Animation<double> _blur;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+    _blur = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final item = widget.item;
+    final subj = item['subject']?.toString() ?? '';
+    final top = item['topic']?.toString() ?? '';
+    final src = item['source']?.toString() ?? '';
+    final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
+    final accent = Color(subjectColorSeed(subj));
+    final gradColors = subjectGradient(subj);
+    final icon = subjectIcon(subj);
+    final emoji = subjectEmoji(subj);
+    final backText = item['back']?.toString() ?? '';
+    final dueLabel = humanDueLabel(item['next_due']?.toString());
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            // Fundo desfocado
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 8 * _blur.value,
+                  sigmaY: 8 * _blur.value,
+                ),
+                child: Container(
+                  color: Colors.black.withOpacity(0.5 * _opacity.value),
+                ),
+              ),
+            ),
+            // Carta expandida centralizada
+            Center(
+              child: Transform.scale(
+                scale: _scale.value,
+                child: Opacity(
+                  opacity: _opacity.value,
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: widget.onTap,
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            color: cs.surface,
+                            border: Border.all(color: accent, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: accent.withOpacity(0.4),
+                                blurRadius: 30,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(22),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // === HERÓI ===
+                                Stack(
+                                  children: [
+                                    Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: gradColors,
+                                        ),
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          Positioned(
+                                            right: -30,
+                                            top: -15,
+                                            child: Icon(
+                                              icon,
+                                              size: 200,
+                                              color: Colors.white.withOpacity(0.08),
+                                            ),
+                                          ),
+                                          Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(emoji, style: const TextStyle(fontSize: 60)),
+                                                const SizedBox(height: 6),
+                                                Icon(
+                                                  Icons.lightbulb_rounded,
+                                                  color: Colors.white.withOpacity(0.7),
+                                                  size: 28,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        height: 70,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(0.6),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 12,
+                                      left: 12,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.4),
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
+                                        ),
+                                        child: Text(
+                                          'VERSO',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white,
+                                            letterSpacing: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    if (fromAxes)
+                                      Positioned(
+                                        top: 12,
+                                        right: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.shade700.withOpacity(0.85),
+                                            borderRadius: BorderRadius.circular(14),
+                                            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.star_rounded, size: 14, color: Colors.white),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'EIXOS',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    Positioned(
+                                      bottom: 10,
+                                      left: 16,
+                                      right: 16,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            subj.isNotEmpty ? subj : 'Flashcard',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.white,
+                                              shadows: [
+                                                Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
+                                              ],
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (top.isNotEmpty)
+                                            Text(
+                                              top,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white.withOpacity(0.85),
+                                                shadows: [
+                                                  Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
+                                                ],
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // === BARRA DE RARIDADE ===
+                                Container(
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [accent, accent.withOpacity(0.3), accent],
+                                    ),
+                                  ),
+                                ),
+                                // === CORPO EXPANDIDO (sem scroll) ===
+                                Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SelectableText(
+                                          backText,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: cs.onSurface,
+                                            height: 1.55,
+                                          ),
+                                          contextMenuBuilder: (context, editableTextState) =>
+                                              AdaptiveTextSelectionToolbar.editableText(
+                                            editableTextState: editableTextState,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        if (dueLabel.isNotEmpty)
+                                          Row(
+                                            children: [
+                                              Icon(Icons.schedule_rounded, size: 13, color: cs.onSurface.withOpacity(0.3)),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                dueLabel,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  color: cs.onSurface.withOpacity(0.4),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        const SizedBox(height: 14),
+                                        // Botões de ação
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: FilledButton.icon(
+                                                onPressed: () {
+                                                  HapticFeedback.selectionClick();
+                                                  widget.onRemember();
+                                                },
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor: accent,
+                                                  foregroundColor: Colors.white,
+                                                  minimumSize: const Size.fromHeight(48),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                                ),
+                                                icon: const Icon(Icons.check_rounded, size: 22),
+                                                label: Text(
+                                                  'Lembrei',
+                                                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                onPressed: () {
+                                                  HapticFeedback.selectionClick();
+                                                  widget.onForgot();
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: accent,
+                                                  minimumSize: const Size.fromHeight(48),
+                                                  side: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                                ),
+                                                icon: const Icon(Icons.refresh_rounded, size: 22),
+                                                label: Text(
+                                                  'Esqueci',
+                                                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextButton.icon(
+                                              onPressed: () {
+                                                HapticFeedback.selectionClick();
+                                                widget.onDelete();
+                                              },
+                                              icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
+                                              label: Text(
+                                                'Apagar',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  color: cs.onSurface.withOpacity(0.35),
+                                                ),
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.5)),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  'Toque para fechar',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: accent.withOpacity(0.6),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
