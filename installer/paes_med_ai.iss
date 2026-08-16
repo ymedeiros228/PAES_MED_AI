@@ -65,6 +65,12 @@ Source: "{#MyAppBuildDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversi
 Source: "{#MyAppBuildDir}\flutter_windows.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyAppBuildDir}\url_launcher_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyAppBuildDir}\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Atualizador (PowerShell + Python fallback)
+Source: "..\tools\Atualizar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\tools\update.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
+Source: "..\tools\updater.py"; DestDir: "{app}\tools"; Flags: ignoreversion
+; Arquivo de versao para o app detectar
+Source: "..\VERSION"; DestDir: "{app}"; DestName: "VERSION.txt"; Flags: ignoreversion
 ; Banco de dados (nao sobrescreve se ja existe - preserva progresso do usuario)
 Source: "..\data\paes_med_ai.db"; DestDir: "{userappdata}\PAES_MED_AI"; Flags: onlyifdoesntexist uninsneveruninstall
 ; PDFs de materiais
@@ -75,6 +81,7 @@ Source: "..\backend\.env.example"; DestDir: "{userappdata}\PAES_MED_AI"; Flags: 
 [Icons]
 ; Menu Iniciar
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 ; Area de Trabalho
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
