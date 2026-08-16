@@ -25,6 +25,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from PIL import Image as PILImage
 
+from text_utils import _normalize_text, _deep_normalize
+
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "assets" / "branding" / "paes_med_ai_icon_source.png"
 IMG_DIR = ROOT / "data" / "materiais" / "imagens"
@@ -44,65 +46,6 @@ _FONTS = {
 }
 
 _registered = False
-
-# Mapeamento de caracteres Unicode que não são renderizados
-# corretamente pela fonte Arial em PDFs. Substituição por
-# equivalentes ASCII/HTML seguros.
-_UNICODE_SUBS = [
-    # Subscritos -> digitos normais
-    ("₀", "0"), ("₁", "1"), ("₂", "2"), ("₃", "3"), ("₄", "4"),
-    ("₅", "5"), ("₆", "6"), ("₇", "7"), ("₈", "8"), ("₉", "9"),
-    # Sobrescritos -> digitos e sinais normais
-    ("⁰", "0"), ("¹", "1"), ("²", "2"), ("³", "3"), ("⁴", "4"),
-    ("⁵", "5"), ("⁶", "6"), ("⁷", "7"), ("⁸", "8"), ("⁹", "9"),
-    ("⁻", "-"), ("⁺", "+"), ("⁼", "="), ("⁽", "("), ("⁾", ")"),
-    # Frações
-    ("½", "1/2"), ("¼", "1/4"), ("¾", "3/4"), ("⅓", "1/3"),
-    ("⅔", "2/3"), ("⅕", "1/5"), ("⅗", "3/5"),
-    # Setas
-    ("→", "->"), ("←", "<-"), ("↔", "<->"), ("⇌", "<=>"),
-    ("⇒", "=>"), ("⇐", "<="),
-    # Matemática
-    ("×", "x"), ("·", "."), ("⋅", "."),
-    ("≠", "!="), ("≤", "<="), ("≥", ">="),
-    ("≈", "~"), ("≅", "~"), ("∝", "proporcional a"),
-    ("±", "+/-"), ("∓", "-/+"), ("≡", "equivale a"),
-    # Letras gregas comuns
-    ("Δ", "Delta"), ("δ", "delta"), ("α", "alpha"), ("β", "beta"),
-    ("γ", "gama"), ("λ", "lambda"), ("π", "pi"), ("μ", "micro"),
-    ("Ω", "Ohm"), ("ω", "omega"), ("θ", "teta"), ("Σ", "Soma"),
-    # Graus e sinais
-    ("°", "o"), ("º", "o"), ("ª", "a"),
-    # Traços/aspas
-    ("—", "-"), ("–", "-"), ("−", "-"),
-    ("‘", "'"), ("’", "'"), ("‚", "'"),
-    ("“", '"'), ("”", '"'), ("„", '"'),
-    # Marcadores
-    ("•", "-"), ("·", "-"), ("◦", "-"), ("▪", "-"),
-    ("□", "[ ]"), ("■", "[*]"),
-    # Outros possiveis glifos problematicos
-    ("…", "..."), ("†", "+"), ("‡", "++"),
-]
-
-
-def _normalize_text(text: str) -> str:
-    """Remove caracteres Unicode problemáticos da fonte Arial."""
-    if not isinstance(text, str):
-        return text
-    for old, new in _UNICODE_SUBS:
-        text = text.replace(old, new)
-    return text
-
-
-def _deep_normalize(obj: Any) -> Any:
-    """Aplica _normalize_text em todas as strings de um dict/list."""
-    if isinstance(obj, str):
-        return _normalize_text(obj)
-    if isinstance(obj, list):
-        return [_deep_normalize(v) for v in obj]
-    if isinstance(obj, dict):
-        return {k: _deep_normalize(v) for k, v in obj.items()}
-    return obj
 
 
 def _register_fonts():
@@ -171,6 +114,26 @@ def generate_educational_pdf(
                 "source_url": img_data["source_url"],
             })
 
+    # Busca imagem de capa da Wikipedia pelo nome do PDF
+    cover_image = None
+    pdf_stem = Path(pdf_filename).stem
+    try:
+        from cover_images_all import COVER_IMAGES
+        from pdf_cover_map import PDF_TO_COVER
+        cover_prefix = PDF_TO_COVER.get(pdf_stem)
+        if cover_prefix and cover_prefix in COVER_IMAGES:
+            ci = COVER_IMAGES[cover_prefix]
+            cp = IMG_DIR / ci["file"]
+            if cp.exists() and cp.stat().st_size > 1000:
+                cover_image = {
+                    "path": str(cp),
+                    "caption": ci.get("caption", ""),
+                    "source": ci.get("source", "Wikipedia PT"),
+                    "source_url": ci.get("source_url", ""),
+                }
+    except Exception:
+        pass
+
     styles = getSampleStyleSheet()
     style_title = ParagraphStyle('T', parent=styles['Title'], fontName=_FB,
         fontSize=24, textColor=PRIMARY, spaceAfter=6, alignment=TA_CENTER)
@@ -213,17 +176,44 @@ def generate_educational_pdf(
             f"PAES MED AI — Material de Estudo  |  Página {doc.page}")
         canvas_obj.restoreState()
 
+    # Se nao ha capa da Wikipedia, usa a primeira imagem como capa
+    if cover_image is None and downloaded_images:
+        cover_image = downloaded_images[0]
+        section_images = downloaded_images[1:]
+    else:
+        section_images = downloaded_images
+
     story = []
-    story.append(Spacer(1, 3*cm))
+    story.append(Spacer(1, 2*cm))
     if LOGO_PATH.exists():
-        img = Image(str(LOGO_PATH), width=3*cm, height=3*cm)
+        img = Image(str(LOGO_PATH), width=2.5*cm, height=2.5*cm)
         img.hAlign = 'CENTER'
         story.append(img)
-    story.append(Spacer(1, 1*cm))
+    story.append(Spacer(1, 0.5*cm))
     story.append(Paragraph(content["titulo"], style_title))
     story.append(Paragraph(f'{content["disciplina"]} — {content["topico"]}', style_sub))
     story.append(HRFlowable(width="60%", thickness=2, color=PRIMARY, hAlign='CENTER'))
-    story.append(Spacer(1, 0.8*cm))
+    story.append(Spacer(1, 0.5*cm))
+
+    # Imagem de capa em destaque
+    if cover_image:
+        try:
+            pil_img = PILImage.open(cover_image["path"])
+            w, h = pil_img.size
+            ratio = min(16*cm / w, 9*cm / h)
+            img = Image(cover_image["path"], width=w*ratio, height=h*ratio)
+            img.hAlign = 'CENTER'
+            story.append(img)
+            story.append(Spacer(1, 0.2*cm))
+            story.append(Paragraph(
+                f'<i>{cover_image["caption"]}</i><br/>'
+                f'<font size="7" color="#999">Imagem: {cover_image["source"]}</font>',
+                style_cap))
+            story.append(Spacer(1, 0.3*cm))
+        except Exception as e:
+            print(f"  Erro imagem capa: {e}")
+
+    story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph(content["introducao"].replace('\n\n', '<br/><br/>'), style_body))
     story.append(PageBreak())
 
@@ -235,8 +225,8 @@ def generate_educational_pdf(
         if sec.get("exemplo"):
             story.append(Paragraph(
                 f'<b>Exemplo clínico/prático:</b><br/>{sec["exemplo"]}', style_ex))
-        if img_pos < len(downloaded_images):
-            img_data = downloaded_images[img_pos]
+        if img_pos < len(section_images):
+            img_data = section_images[img_pos]
             try:
                 pil_img = PILImage.open(img_data["path"])
                 w, h = pil_img.size
@@ -255,7 +245,7 @@ def generate_educational_pdf(
 
     # Imagens extras
     used = len(content["secoes"])
-    for img_data in downloaded_images[used:]:
+    for img_data in section_images[used:]:
         try:
             pil_img = PILImage.open(img_data["path"])
             w, h = pil_img.size

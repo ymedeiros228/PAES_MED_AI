@@ -1,36 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Regenera todos os PDFs antigos (Biologia + outros geradores custom)
-com o patch de normalizacao Unicode.
+"""Regera todos os 92 PDFs com as novas capas da Wikipedia."""
 
-Uso:
-    python backend/regenerate_all_pdfs.py
-"""
+import sys, io, runpy, traceback
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-import os
-import sys
-import runpy
-import time
-from pathlib import Path
-
-BACKEND_DIR = Path(__file__).resolve().parent
-ROOT = BACKEND_DIR.parent
-DATA_DIR = ROOT / "data" / "materiais"
-
-sys.path.insert(0, str(BACKEND_DIR))
-
-# Carrega o patch ANTES de qualquer gerador
-import patch_reportlab  # noqa: E402
-
-# Geradores que nao usam pdf_base.py (precisam do patch)
-SCRIPTS = [
+GENERATORS = [
+    # Biologia
     "generate_pdf_intro_biologia.py",
     "generate_pdf_citoplasma.py",
     "generate_pdf_organelas.py",
     "generate_pdf_nucleo.py",
-    "generate_pdf_ciclo.py",
+    "generate_pdf_membrana.py" if False else "generate_pdf_ciclo.py",
+    "generate_pdf_metabolismo.py",
     "generate_pdf_gametogenese.py",
     "generate_pdf_anomalias.py",
-    "generate_pdf_metabolismo.py",
     "generate_pdf_reproducao.py",
     "generate_pdf_histologia.py",
     "generate_pdf_ecologia.py",
@@ -41,46 +24,60 @@ SCRIPTS = [
     "generate_pdf_genetica.py",
     "generate_pdf_evolucao.py",
     "generate_pdf_saude_doencas.py",
-    "generate_pdf_material.py",
     "generate_pdf_principios_elementares.py",
+    # Quimica
+    "generate_quimica_batch1.py",
+    "generate_quimica_batch2.py",
+    "generate_quimica_batch3.py",
+    # Fisica
+    "generate_fisica_batch1.py",
+    "generate_fisica_batch2.py",
+    "generate_fisica_batch3.py",
+    # Matematica
+    "generate_matematica_batch1.py",
+    "generate_matematica_batch2.py",
+    # Portugues
+    "generate_portugues_batch1.py",
+    "generate_portugues_batch2.py",
+    # Ingles
+    "generate_ingles_batch.py",
+    # Espanhol
+    "generate_espanhol_batch.py",
+    # Historia
+    "generate_historia_batch1.py",
+    "generate_historia_batch2.py",
+    # Geografia
+    "generate_geografia_batch.py",
+    # Filosofia
+    "generate_filosofia_batch1.py",
+    "generate_filosofia_batch2.py",
+    # Sociologia
+    "generate_sociologia_batch1.py",
+    "generate_sociologia_batch2.py",
+    "generate_sociologia_batch3.py",
 ]
 
-
 def main():
-    os.chdir(BACKEND_DIR)
-    errors = []
-    for script in SCRIPTS:
-        path = BACKEND_DIR / script
-        if not path.exists():
-            print(f"IGNORANDO (nao existe): {script}")
-            continue
-        start = time.time()
-        print(f"\n[INICIANDO] {script}")
+    ok = 0
+    fail = 0
+    failed = []
+    for gen in GENERATORS:
+        print(f"\n{'='*60}", flush=True)
+        print(f"Executando: {gen}", flush=True)
+        print(f"{'='*60}", flush=True)
         try:
-            runpy.run_path(str(path), run_name="__main__")
-            elapsed = time.time() - start
-            print(f"[OK] {script} em {elapsed:.1f}s")
-        except Exception as e:
-            print(f"[ERRO] {script}: {e}")
-            errors.append((script, str(e)))
-
-    print("\n" + "=" * 60)
-    print(f"Regenerados: {len(SCRIPTS) - len(errors)}/{len(SCRIPTS)}")
-    if errors:
-        print("\nErros:")
-        for s, e in errors:
-            print(f"  - {s}: {e}")
-    else:
-        print("Nenhum erro!")
-
-    # Conta PDFs finais
-    pdfs = sorted(DATA_DIR.glob("*.pdf"))
-    bi = [p for p in pdfs if p.name.startswith("BI_")]
-    qu = [p for p in pdfs if p.name.startswith("QU_")]
-    print(f"\nPDFs no data/materiais: {len(pdfs)}")
-    print(f"  Biologia: {len(bi)}")
-    print(f"  Quimica:  {len(qu)}")
-
+            runpy.run_path(gen, run_name="__main__")
+            ok += 1
+        except SystemExit:
+            ok += 1
+        except Exception:
+            traceback.print_exc()
+            fail += 1
+            failed.append(gen)
+    print(f"\n{'='*60}", flush=True)
+    print(f"Concluido: {ok} OK, {fail} falhas", flush=True)
+    if failed:
+        print(f"Falharam: {failed}", flush=True)
 
 if __name__ == "__main__":
     main()
