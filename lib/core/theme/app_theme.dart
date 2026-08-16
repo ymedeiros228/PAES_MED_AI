@@ -243,17 +243,33 @@ class AppTheme {
         }),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: scheme.surface.withOpacity(0.96),
+        backgroundColor: dark ? scheme.surfaceContainerHighest : scheme.surface.withOpacity(0.96),
         indicatorColor: scheme.primaryContainer,
-        labelTextStyle: WidgetStatePropertyAll(
-          GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
-        ),
+        iconTheme: WidgetStateProperty.resolveWith((s) {
+          return IconThemeData(
+            color: s.contains(WidgetState.selected)
+                ? scheme.primary
+                : (dark ? scheme.onSurface.withOpacity(0.85) : scheme.onSurface.withOpacity(0.65)),
+            size: 24,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((s) {
+          return GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: s.contains(WidgetState.selected)
+                ? scheme.primary
+                : (dark ? scheme.onSurface.withOpacity(0.9) : scheme.onSurface.withOpacity(0.7)),
+          );
+        }),
         height: 68,
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: Colors.transparent,
         selectedIconTheme: IconThemeData(color: scheme.primary),
-        unselectedIconTheme: IconThemeData(color: scheme.onSurface.withOpacity(0.45)),
+        unselectedIconTheme: IconThemeData(
+          color: dark ? scheme.onSurface.withOpacity(0.85) : scheme.onSurface.withOpacity(0.5),
+        ),
         selectedLabelTextStyle: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -261,7 +277,7 @@ class AppTheme {
         ),
         unselectedLabelTextStyle: GoogleFonts.inter(
           fontSize: 12,
-          color: scheme.onSurface.withOpacity(0.5),
+          color: dark ? scheme.onSurface.withOpacity(0.9) : scheme.onSurface.withOpacity(0.6),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
