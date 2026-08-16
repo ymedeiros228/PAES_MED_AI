@@ -48,6 +48,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Timer? _searchDebounce;
   List<Map<String, dynamic>> _studyPdfs = [];
   bool _pdfsLoaded = false;
+  String? _expandedSubject;
 
   @override
   void didChangeDependencies() {
@@ -1827,195 +1828,123 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   // ==========================================================
-  // Estante de Materiais — design de biblioteca real
+  // Estante de Materiais — disciplinas como cards expandíveis
   // ==========================================================
 
   Widget _buildLibraryShelf(ColorScheme cs) {
-    // Agrupar por disciplina
     final bySubject = <String, List<Map<String, dynamic>>>{};
     for (final p in _studyPdfs) {
       final subj = p['subject']?.toString() ?? 'Outros';
       bySubject.putIfAbsent(subj, () => []).add(p);
     }
     final subjects = bySubject.keys.toList()..sort();
+    final totalPdfs = _studyPdfs.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Cabeçalho da estante
+        // Cabeçalho
         Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                cs.primaryContainer.withOpacity(0.6),
-                cs.surfaceContainerHighest.withOpacity(0.3),
+                cs.primaryContainer.withOpacity(0.5),
+                cs.surfaceContainerHighest.withOpacity(0.2),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: cs.primary.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.collections_bookmark_rounded, size: 28, color: cs.primary),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Estante de Materiais',
+                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
                     ),
-                    child: Icon(Icons.collections_bookmark_rounded, size: 26, color: cs.primary),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Estante de Materiais',
-                          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${_studyPdfs.length} PDFs · ${subjects.length} disciplinas · toque para ler',
-                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      '$totalPdfs PDFs em ${subjects.length} disciplinas',
+                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: cs.primary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_studyPdfs.length}',
-                      style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w900, color: cs.onPrimary),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cs.primary,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(
+                  '$totalPdfs',
+                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w900, color: cs.onPrimary),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        // Estantes por disciplina
-        ...subjects.map((subject) => _buildSubjectShelf(cs, subject, bySubject[subject]!)),
+        const SizedBox(height: 16),
+        // Grid de disciplinas (cards grandes, expandíveis)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 600;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: subjects.map((subject) {
+                final items = bySubject[subject]!;
+                final meta = _subjectMeta(subject);
+                final isExpanded = _expandedSubject == subject;
+                return SizedBox(
+                  width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
+                  child: _DisciplineCard(
+                    subject: subject,
+                    items: items,
+                    icon: meta.icon,
+                    color: meta.color,
+                    gradient: meta.gradient,
+                    isExpanded: isExpanded,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() {
+                        _expandedSubject = isExpanded ? null : subject;
+                      });
+                    },
+                    onOpenPdf: (pdf) {
+                      HapticFeedback.selectionClick();
+                      context.go(Uri(path: '/estudar', queryParameters: {
+                        'pdf': pdf['filename']?.toString() ?? '',
+                        'title': pdf['title']?.toString() ?? 'Material',
+                        'subject': subject,
+                      }).toString());
+                    },
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildSubjectShelf(ColorScheme cs, String subject, List<Map<String, dynamic>> items) {
-    final meta = _subjectMeta(subject);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cabeçalho da disciplina — estilo "prateleira"
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: meta.gradient,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(color: meta.color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3)),
-                    ],
-                  ),
-                  child: Icon(meta.icon, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        subject,
-                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w800, color: cs.onSurface),
-                      ),
-                      Text(
-                        '${items.length} ${items.length == 1 ? "material" : "materiais"}',
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: cs.onSurface.withOpacity(0.4)),
-                      ),
-                    ],
-                  ),
-                ),
-                // Linha decorativa da prateleira
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    height: 3,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [meta.color.withOpacity(0.4), Colors.transparent],
-                      ),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Grid de "livros" (cards de PDF)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const cardW = 160.0;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 14,
-                children: items.map((pdf) {
-                  final title = pdf['title']?.toString() ?? 'Material';
-                  final filename = pdf['filename']?.toString() ?? '';
-                  final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
-                  return SizedBox(
-                    width: cardW,
-                    child: _BookCard(
-                      title: title,
-                      filename: filename,
-                      subject: subject,
-                      sizeKb: sizeKb,
-                      icon: meta.icon,
-                      color: meta.color,
-                      gradient: meta.gradient,
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        context.go(Uri(path: '/estudar', queryParameters: {
-                          'pdf': filename,
-                          'title': title,
-                          'subject': subject,
-                        }).toString());
-                      },
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   _SubjectMeta _subjectMeta(String subject) {
-    const fallback = _SubjectMeta(
-      icon: Icons.book_rounded,
-      color: Color(0xFF607D8B),
-      gradient: [Color(0xFF455A64), Color(0xFF90A4AE)],
-    );
     switch (subject) {
       case 'Biologia':
         return const _SubjectMeta(icon: Icons.biotech_rounded, color: Color(0xFF2E7D32), gradient: [Color(0xFF1B5E20), Color(0xFF4CAF50)]);
@@ -2040,152 +1969,213 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       case 'Sociologia':
         return const _SubjectMeta(icon: Icons.groups_rounded, color: Color(0xFF5D4037), gradient: [Color(0xFF3E2723), Color(0xFF6D4C41)]);
     }
-    return fallback;
+    return const _SubjectMeta(icon: Icons.book_rounded, color: Color(0xFF607D8B), gradient: [Color(0xFF455A64), Color(0xFF90A4AE)]);
   }
 }
 
 // ============================================================
-// _BookCard — card estilo livro numa estante
+// _DisciplineCard — card de disciplina expandível
 // ============================================================
 
-class _BookCard extends StatelessWidget {
-  const _BookCard({
-    required this.title,
-    required this.filename,
+class _DisciplineCard extends StatelessWidget {
+  const _DisciplineCard({
     required this.subject,
-    required this.sizeKb,
+    required this.items,
     required this.icon,
     required this.color,
     required this.gradient,
+    required this.isExpanded,
     required this.onTap,
+    required this.onOpenPdf,
   });
 
-  final String title;
-  final String filename;
   final String subject;
-  final double sizeKb;
+  final List<Map<String, dynamic>> items;
   final IconData icon;
   final Color color;
   final List<Color> gradient;
+  final bool isExpanded;
+  final VoidCallback onTap;
+  final ValueChanged<Map<String, dynamic>> onOpenPdf;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: cs.surface,
+              border: Border.all(color: color.withOpacity(isExpanded ? 0.5 : 0.15), width: isExpanded ? 2 : 1),
+              boxShadow: isExpanded
+                  ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 16, offset: const Offset(0, 6))]
+                  : [BoxShadow(color: color.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2))],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Column(
+                children: [
+                  // Cabeçalho da disciplina
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                    decoration: BoxDecoration(
+                      gradient: isExpanded
+                          ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)
+                          : null,
+                      color: isExpanded ? null : color.withOpacity(0.04),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: gradient,
+                            ),
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: Icon(icon, color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subject,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: isExpanded ? Colors.white : cs.onSurface,
+                                ),
+                              ),
+                              Text(
+                                '${items.length} ${items.length == 1 ? "material" : "materiais"}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isExpanded ? Colors.white.withOpacity(0.8) : cs.onSurface.withOpacity(0.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AnimatedRotation(
+                          turns: isExpanded ? 0.5 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: isExpanded ? Colors.white : color,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Lista de PDFs (expandida)
+                  if (isExpanded) ...[
+                    Container(
+                      color: cs.surface,
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < items.length; i++) ...[
+                            _PdfListTile(
+                              pdf: items[i],
+                              color: color,
+                              index: i + 1,
+                              onTap: () => onOpenPdf(items[i]),
+                            ),
+                            if (i < items.length - 1)
+                              Divider(height: 1, indent: 56, color: cs.outlineVariant.withOpacity(0.15)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PdfListTile extends StatelessWidget {
+  const _PdfListTile({required this.pdf, required this.color, required this.index, required this.onTap});
+
+  final Map<String, dynamic> pdf;
+  final Color color;
+  final int index;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final sizeStr = sizeKb > 1024
-        ? '${(sizeKb / 1024).toStringAsFixed(1)} MB'
-        : '${sizeKb.round()} KB';
+    final title = pdf['title']?.toString() ?? 'Material';
+    final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
+    final sizeStr = sizeKb > 1024 ? '${(sizeKb / 1024).toStringAsFixed(1)} MB' : '${sizeKb.round()} KB';
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            color: cs.surface,
-            border: Border.all(color: color.withOpacity(0.2), width: 1),
-            boxShadow: [
-              BoxShadow(color: color.withOpacity(0.12), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // "Capa" do livro — gradiente + ícone
-                Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: gradient,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Ícone grande de fundo
-                      Positioned(
-                        right: -8,
-                        bottom: -8,
-                        child: Icon(icon, size: 60, color: Colors.white.withOpacity(0.12)),
-                      ),
-                      // Ícone do PDF no canto
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.picture_as_pdf, size: 10, color: Colors.white),
-                              const SizedBox(width: 3),
-                              Text(
-                                'PDF',
-                                style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Ícone central
-                      Center(
-                        child: Icon(icon, color: Colors.white.withOpacity(0.9), size: 32),
-                      ),
-                    ],
-                  ),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 28,
+              child: Text(
+                '$index',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: color.withOpacity(0.4),
                 ),
-                // "Lombada" — barra colorida
-                Container(height: 4, color: color),
-                // Conteúdo — título + tamanho
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                          height: 1.3,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(Icons.storage_rounded, size: 11, color: cs.onSurface.withOpacity(0.3)),
-                          const SizedBox(width: 4),
-                          Text(
-                            sizeStr,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: cs.onSurface.withOpacity(0.4),
-                            ),
-                          ),
-                          const Spacer(),
-                          Icon(Icons.arrow_forward_rounded, size: 14, color: color),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.picture_as_pdf_rounded, size: 18, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                  height: 1.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              sizeStr,
+              style: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.withOpacity(0.35)),
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right_rounded, size: 20, color: color.withOpacity(0.5)),
+          ],
         ),
       ),
     );
