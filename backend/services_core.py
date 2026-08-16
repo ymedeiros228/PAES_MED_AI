@@ -2891,6 +2891,16 @@ def build_study_recommendations() -> dict[str, Any]:
     material_suggestions: list[dict[str, Any]] = []
     seen_keys: set[tuple[str, str]] = set()
 
+    def _estudar_path(mat: dict[str, Any], subj: str, topic: str) -> str:
+        pdf = mat.get("pdf_filename") or ""
+        title = mat.get("material_title") or f"{topic} — {subj}"
+        return (
+            f"/estudar?pdf={quote(pdf)}"
+            f"&title={quote(title)}"
+            f"&subject={quote(subj)}"
+            f"&topic={quote(topic)}"
+        )
+
     # 1) topicos criticos (baixo acerto) com material disponivel
     for c in critical[:5]:
         key_str = c.get("key", "")
@@ -2911,7 +2921,7 @@ def build_study_recommendations() -> dict[str, Any]:
                 "title": mat.get("material_title") or f"{topic} — {subj}",
                 "reason": f"Acerto de {int(c.get('accuracy', 0) * 100)}% em {c.get('n', 0)} questoes",
                 "priority": 1,
-                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+                "actionPath": _estudar_path(mat, subj, topic),
             })
 
     # 2) topicos com erros recentes (hot) com material
@@ -2934,7 +2944,7 @@ def build_study_recommendations() -> dict[str, Any]:
                 "title": mat.get("material_title") or f"{topic} — {subj}",
                 "reason": f"{h.get('misses', 0)} erro(s) recente(s)",
                 "priority": 2,
-                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+                "actionPath": _estudar_path(mat, subj, topic),
             })
 
     # 3) topico do dia se tiver material
@@ -2952,7 +2962,7 @@ def build_study_recommendations() -> dict[str, Any]:
                     "title": mat.get("material_title") or f"{topic} — {subj}",
                     "reason": "Topico do dia no seu plano",
                     "priority": 3,
-                    "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+                    "actionPath": _estudar_path(mat, subj, topic),
                 })
 
     # 4) Fallback: se nao ha sugestoes, recomenda topicos de maior peso no syllabus
@@ -2971,7 +2981,7 @@ def build_study_recommendations() -> dict[str, Any]:
                 "title": s.get("material_title") or f"{topic} — {subj}",
                 "reason": "Topico de alta prioridade no edital PAES",
                 "priority": 4,
-                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+                "actionPath": _estudar_path(s, subj, topic),
             })
 
     # --- Provas historicas sugeridas ---

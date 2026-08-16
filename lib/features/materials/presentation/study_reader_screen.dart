@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../ai_tutor/application/ai_tutor_controller.dart';
@@ -191,11 +192,11 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
     );
   }
 
-  void _openExternal() {
-    // Fallback: abrir em nova aba se precisar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('URL: $_pdfUrl')),
-    );
+  void _openExternal() async {
+    final uri = Uri.parse(_pdfUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }
 
@@ -245,39 +246,70 @@ class _PdfFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.picture_as_pdf, size: 64, color: cs.primary),
-            const SizedBox(height: 16),
-            Text(
-              'Visualizador de PDF',
-              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Clique abaixo para abrir o material',
-              style: TextStyle(color: cs.outline),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _launchUrl(url),
-              icon: const Icon(Icons.open_in_new),
-              label: const Text('Abrir PDF'),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            cs.primaryContainer.withOpacity(0.15),
+            cs.surface,
           ],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(Icons.picture_as_pdf, size: 40, color: cs.primary),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Material de Estudo',
+                style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Clique abaixo para abrir o PDF\nno seu visualizador padrão',
+                style: TextStyle(color: cs.outline, fontSize: 14, height: 1.5),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              FilledButton.icon(
+                onPressed: () => _launchUrl(url),
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Abrir PDF'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _launchUrl(url),
+                icon: const Icon(Icons.download_rounded, size: 18),
+                label: const Text('Baixar'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _launchUrl(String url) {
-    // Usa url_launcher via import externo se necessario
-    // Por agora, apenas mostra o link
+  void _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }
 
@@ -482,7 +514,7 @@ class _TutorPanel extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pergunte sobre o que voce esta estudando.\nO tutor usa sua base de materiais PAES/UEMA.',
+              'Pergunte sobre o que você está estudando.\nO tutor usa sua base de materiais PAES/UEMA.',
               style: TextStyle(fontSize: 13, color: cs.outline),
               textAlign: TextAlign.center,
             ),
@@ -500,16 +532,16 @@ class _TutorPanel extends ConsumerWidget {
                   },
                 ),
                 _SuggestionChip(
-                  label: 'Faca um resumo',
+                  label: 'Faça um resumo',
                   onTap: () {
-                    controller.text = 'Faca um resumo de "$subject - $topic".';
+                    controller.text = 'Faça um resumo de "$subject - $topic".';
                     onSend();
                   },
                 ),
                 _SuggestionChip(
                   label: 'Quais pegadinhas?',
                   onTap: () {
-                    controller.text = 'Quais sao as principais pegadinhas de "$subject - $topic" na prova?';
+                    controller.text = 'Quais são as principais pegadinhas de "$subject - $topic" na prova?';
                     onSend();
                   },
                 ),
