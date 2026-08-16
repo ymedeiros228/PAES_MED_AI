@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import 'dashboard_update_banner.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -510,6 +511,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               return _DashboardGamificationCard(data: g);
                             },
                           ),
+                          const SizedBox(height: 16),
+                          // Notificacao de atualizacao disponivel
+                          const UpdateBanner(),
                           const SizedBox(height: 16),
                           // Coach inteligente: dica do dia + alertas + proxima acao
                           FutureBuilder(

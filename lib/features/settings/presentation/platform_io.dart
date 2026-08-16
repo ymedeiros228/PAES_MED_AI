@@ -45,8 +45,8 @@ Future<bool> launchUpdater() async {
   final path = updaterPath();
   if (path.isEmpty) return false;
   try {
-    final result = await Process.start('cmd.exe', ['/c', 'start', '', path]);
-    return result.exitCode == 0;
+    final process = await Process.start('cmd.exe', ['/c', 'start', '', path]);
+    return await process.exitCode == 0;
   } catch (_) {}
   return false;
 }

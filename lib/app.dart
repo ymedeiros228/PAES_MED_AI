@@ -31,6 +31,7 @@ import 'features/questions/presentation/questions_screen.dart';
 import 'features/revisions/presentation/revisions_screen.dart';
 import 'features/session/presentation/guided_session_screen.dart';
 import 'features/settings/presentation/settings_screen.dart';
+import 'features/settings/presentation/updates_screen.dart';
 import 'features/simulations/presentation/simulations_screen.dart';
 import 'features/study_plan/presentation/study_plan_screen.dart';
 import 'features/today/presentation/today_queue_screen.dart';
@@ -156,6 +157,7 @@ final appRouter = GoRouter(
           },
         ),
         GoRoute(path: '/configuracoes', pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
+        GoRoute(path: '/atualizacoes', pageBuilder: (_, __) => _fadePage(const UpdatesScreen())),
         GoRoute(
           path: '/foco',
           pageBuilder: (context, state) {
