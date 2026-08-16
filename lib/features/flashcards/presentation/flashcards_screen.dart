@@ -1065,25 +1065,15 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
       builder: (context, child) {
         return Stack(
           children: [
-            // Fundo desfocado com gradiente da matéria (não preto puro)
+            // Fundo desfocado (só blur, sem escurecimento)
             Positioned.fill(
               child: BackdropFilter(
                 filter: ImageFilter.blur(
-                  sigmaX: 12 * _blur.value,
-                  sigmaY: 12 * _blur.value,
+                  sigmaX: 16 * _blur.value,
+                  sigmaY: 16 * _blur.value,
                 ),
                 child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        accent.withOpacity(0.25 * _opacity.value),
-                        Colors.black.withOpacity(0.55 * _opacity.value),
-                        Colors.black.withOpacity(0.7 * _opacity.value),
-                      ],
-                    ),
-                  ),
+                  color: Colors.transparent,
                 ),
               ),
             ),
