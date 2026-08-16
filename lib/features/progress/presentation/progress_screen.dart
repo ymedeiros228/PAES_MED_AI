@@ -852,44 +852,51 @@ class _BarChartPainter extends CustomPainter {
     final entries = scores.entries.toList();
     if (entries.isEmpty) return;
 
-    const labelArea = 44.0;
-    const valueArea = 16.0;
+    const labelArea = 48.0;
+    const valueArea = 20.0;
     final chartTop = valueArea;
     final chartBottom = size.height - labelArea;
     final chartHeight = chartBottom - chartTop;
     final chartWidth = size.width;
     final barCount = entries.length;
     final slotWidth = chartWidth / barCount;
-    final barWidth = (slotWidth * 0.55).clamp(8.0, 48.0);
+    final barWidth = (slotWidth * 0.5).clamp(10.0, 52.0);
 
+    // Grid horizontal tracejado
     final gridPaint = Paint()
-      ..color = cs.onSurface.withOpacity(0.12)
-      ..strokeWidth = 1;
+      ..color = cs.onSurface.withOpacity(0.08)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
     for (var p = 25; p < 100; p += 25) {
       final y = chartBottom - (p / 100) * chartHeight;
-      canvas.drawLine(Offset(0, y), Offset(chartWidth, y), gridPaint);
+      final path = Path()
+        ..moveTo(0, y)
+        ..lineTo(chartWidth, y);
+      canvas.drawPath(path, gridPaint);
     }
 
     final axisPaint = Paint()
-      ..color = cs.onSurface.withOpacity(0.28)
-      ..strokeWidth = 1;
+      ..color = cs.onSurface.withOpacity(0.2)
+      ..strokeWidth = 1.5;
     canvas.drawLine(
         Offset(0, chartBottom), Offset(chartWidth, chartBottom), axisPaint);
 
     final valueStyle = GoogleFonts.inter(
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
+      fontSize: 11,
+      fontWeight: FontWeight.w800,
       color: cs.onSurface,
     );
     final labelStyle = GoogleFonts.inter(
       fontSize: 10,
-      color: cs.onSurface.withOpacity(0.78),
+      fontWeight: FontWeight.w600,
+      color: cs.onSurface.withOpacity(0.7),
     );
 
     for (var i = 0; i < barCount; i++) {
       final entry = entries[i];
       final value = entry.value.clamp(0.0, 100.0);
-      final barColor = value > 70
+      // Cor baseada no valor
+      final baseColor = value > 70
           ? cs.primary
           : value >= 50
               ? cs.tertiary
@@ -900,9 +907,42 @@ class _BarChartPainter extends CustomPainter {
       final top = chartBottom - barHeight;
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(left, top, barWidth, barHeight),
-        const Radius.circular(4),
+        const Radius.circular(8),
       );
-      canvas.drawRRect(rect, Paint()..color = barColor);
+
+      // Sombra suave
+      final shadowPaint = Paint()
+        ..color = baseColor.withOpacity(0.15)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(left + 1, top + 2, barWidth, barHeight),
+          const Radius.circular(8),
+        ),
+        shadowPaint,
+      );
+
+      // Barra com gradiente vertical
+      final gradientPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            baseColor,
+            baseColor.withOpacity(0.7),
+          ],
+        ).createShader(Rect.fromLTWH(left, top, barWidth, barHeight));
+      canvas.drawRRect(rect, gradientPaint);
+
+      // Brilho no topo
+      final highlightPaint = Paint()
+        ..color = Colors.white.withOpacity(0.25)
+        ..style = PaintingStyle.fill;
+      final highlightRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left + 2, top + 2, barWidth - 4, (barHeight * 0.3).clamp(4, 20)),
+        const Radius.circular(6),
+      );
+      canvas.drawRRect(highlightRect, highlightPaint);
 
       final tpValue = TextPainter(
         text: TextSpan(text: '${value.toStringAsFixed(0)}%', style: valueStyle),
@@ -910,11 +950,11 @@ class _BarChartPainter extends CustomPainter {
       )..layout();
       tpValue.paint(
         canvas,
-        Offset(cx - tpValue.width / 2, top - tpValue.height - 2),
+        Offset(cx - tpValue.width / 2, top - tpValue.height - 3),
       );
 
       canvas.save();
-      canvas.translate(cx, chartBottom + 6);
+      canvas.translate(cx, chartBottom + 8);
       canvas.rotate(-0.785);
       final tpLabel = TextPainter(
         text: TextSpan(text: entry.key, style: labelStyle),
@@ -967,8 +1007,9 @@ class _EvolutionLineChart extends StatelessWidget {
           drawVerticalLine: false,
           horizontalInterval: 25,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: cs.onSurface.withOpacity(0.1),
+            color: cs.onSurface.withOpacity(0.08),
             strokeWidth: 1,
+            dashArray: [4, 4],
           ),
         ),
         borderData: FlBorderData(show: false),
@@ -978,13 +1019,17 @@ class _EvolutionLineChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 28,
+              reservedSize: 30,
               interval: (maxX / 5).ceilToDouble().clamp(1, double.infinity),
               getTitlesWidget: (value, meta) => Padding(
-                padding: const EdgeInsets.only(top: 6),
+                padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   value.toInt().toString(),
-                  style: GoogleFonts.inter(fontSize: 10, color: cs.onSurface.withOpacity(0.6)),
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface.withOpacity(0.5),
+                  ),
                 ),
               ),
             ),
@@ -992,21 +1037,30 @@ class _EvolutionLineChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 32,
+              reservedSize: 36,
               interval: 25,
               getTitlesWidget: (value, meta) => Text(
                 '${value.toInt()}%',
-                style: GoogleFonts.inter(fontSize: 10, color: cs.onSurface.withOpacity(0.6)),
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface.withOpacity(0.5),
+                ),
               ),
             ),
           ),
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => cs.surfaceContainerHighest,
+            getTooltipColor: (_) => cs.primary,
+            tooltipRoundedRadius: 10,
             getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
               '${s.x.toInt()} questões\n${s.y.toStringAsFixed(1)}% acerto',
-              GoogleFonts.inter(fontSize: 11, color: cs.onSurface),
+              GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             )).toList(),
           ),
         ),
@@ -1014,13 +1068,29 @@ class _EvolutionLineChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            curveSmoothness: 0.3,
+            curveSmoothness: 0.35,
             color: lineColor,
-            barWidth: 3,
-            dotData: const FlDotData(show: false),
+            barWidth: 4,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                radius: 5,
+                color: lineColor,
+                strokeWidth: 2.5,
+                strokeColor: cs.surface,
+              ),
+            ),
             belowBarData: BarAreaData(
               show: true,
-              color: lineColor.withOpacity(0.12),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  lineColor.withOpacity(0.25),
+                  lineColor.withOpacity(0.02),
+                ],
+              ),
             ),
           ),
         ],
@@ -1063,15 +1133,32 @@ class _ErrorTypeDonut extends StatelessWidget {
       final e = entries[i];
       final value = (e.value as num).toDouble();
       final pct = (value / total * 100);
+      final baseColor = colors[i % colors.length];
       sections.add(PieChartSectionData(
         value: value,
-        color: colors[i % colors.length],
-        radius: 42,
+        color: baseColor,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            baseColor,
+            baseColor.withOpacity(0.7),
+          ],
+        ),
+        radius: 48,
         title: '${pct.toStringAsFixed(0)}%',
         titleStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
           color: Colors.white,
+          shadows: [
+            Shadow(color: Colors.black.withOpacity(0.3), blurRadius: 2),
+          ],
+        ),
+        titlePositionPercentageOffset: 0.55,
+        borderSide: BorderSide(
+          color: cs.surface,
+          width: 3,
         ),
       ));
     }
@@ -1080,7 +1167,7 @@ class _ErrorTypeDonut extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 160,
+          height: 180,
           child: Row(
             children: [
               Expanded(
@@ -1088,11 +1175,16 @@ class _ErrorTypeDonut extends StatelessWidget {
                 child: PieChart(
                   PieChartData(
                     sections: sections,
-                    centerSpaceRadius: 36,
-                    sectionsSpace: 2,
+                    centerSpaceRadius: 38,
+                    centerSpaceColor: cs.surface,
+                    sectionsSpace: 4,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {},
+                    ),
                   ),
                 ),
               ),
+              const SizedBox(width: 12),
               Expanded(
                 flex: 3,
                 child: Column(
@@ -1101,21 +1193,49 @@ class _ErrorTypeDonut extends StatelessWidget {
                   children: [
                     for (var i = 0; i < entries.length; i++) ...[
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Row(
                           children: [
                             Container(
-                              width: 12,
-                              height: 12,
+                              width: 14,
+                              height: 14,
                               decoration: BoxDecoration(
-                                color: colors[i % colors.length],
-                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    colors[i % colors.length],
+                                    colors[i % colors.length].withOpacity(0.7),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colors[i % colors.length].withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _labels[entries[i].key] ?? entries[i].key,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                            ),
                             Text(
-                              '${_labels[entries[i].key] ?? entries[i].key}: ${entries[i].value}',
-                              style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface),
+                              '${entries[i].value}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: colors[i % colors.length],
+                              ),
                             ),
                           ],
                         ),
@@ -1127,10 +1247,23 @@ class _ErrorTypeDonut extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Total de erros registrados: $total',
-          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Total: $total erros registrados',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: cs.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -1163,8 +1296,8 @@ class _WeakTopicsHeatmap extends StatelessWidget {
     if (display.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 10,
+      runSpacing: 10,
       children: display.map((t) {
         final key = t['key']?.toString() ?? '';
         final parts = key.split('::');
@@ -1173,43 +1306,78 @@ class _WeakTopicsHeatmap extends StatelessWidget {
         final acc = (t['accuracy'] as num?)?.toDouble() ?? 0;
         final n = (t['n'] as num?)?.toInt() ?? 0;
         final color = _colorFor(acc, cs);
+        final isWeak = acc < 0.5;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(10),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color,
+                color.withOpacity(0.75),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          constraints: const BoxConstraints(maxWidth: 180),
+          constraints: const BoxConstraints(maxWidth: 200),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                subj,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Icon(
+                    isWeak ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      subj,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 4),
               Text(
                 topic,
                 style: GoogleFonts.inter(
-                  fontSize: 10,
+                  fontSize: 11,
                   color: Colors.white.withOpacity(0.9),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${(acc * 100).toStringAsFixed(0)}% · $n resp.',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${(acc * 100).toStringAsFixed(0)}% · $n resp.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -1311,22 +1479,39 @@ class _HeatmapCell extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 18,
-          height: 18,
+          width: 22,
+          height: 22,
           decoration: BoxDecoration(
-            color: studied
-                ? cs.primary.withOpacity(intensity)
-                : cs.surfaceContainerHighest.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(4),
+            gradient: studied
+                ? LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      cs.primary.withOpacity(intensity),
+                      cs.primary.withOpacity(intensity * 0.7),
+                    ],
+                  )
+                : null,
+            color: studied ? null : cs.surfaceContainerHighest.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: studied
+                ? [
+                    BoxShadow(
+                      color: cs.primary.withOpacity(intensity * 0.4),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           dayLabel,
           style: GoogleFonts.inter(
-            fontSize: 9,
-            fontWeight: FontWeight.w600,
-            color: cs.onSurface.withOpacity(0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: studied ? cs.onSurface.withOpacity(0.7) : cs.onSurface.withOpacity(0.35),
           ),
         ),
       ],
