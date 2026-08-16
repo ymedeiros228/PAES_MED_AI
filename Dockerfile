@@ -26,6 +26,7 @@ COPY deploy/data/materiais /app/data/materiais
 
 # Define data dir e porta
 ENV PAES_DATA_DIR=/app/data
+ENV PAES_AUTO_BACKUP=0
 ENV PORT=8000
 EXPOSE $PORT
 

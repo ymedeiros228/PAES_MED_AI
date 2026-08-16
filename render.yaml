@@ -41,4 +41,6 @@ services:
       - key: PAES_ALLOWED_ORIGINS
         sync: false
       - key: PAES_BOOTSTRAP_PROD
-        value: "1"
+        value: "0"
+      - key: PAES_AUTO_BACKUP
+        value: "0"
