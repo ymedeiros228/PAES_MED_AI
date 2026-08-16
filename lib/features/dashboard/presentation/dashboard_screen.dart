@@ -845,6 +845,13 @@ class _SimpleQuickActions extends StatelessWidget {
         onTap: () => context.go('/biblioteca'),
       ),
       _ActionItem(
+        icon: Icons.picture_as_pdf,
+        label: 'Materiais',
+        subtitle: 'PDFs por matéria',
+        color: cs.tertiary,
+        onTap: () => context.go('/materiais'),
+      ),
+      _ActionItem(
         icon: Icons.play_circle_fill,
         label: 'Praticar',
         subtitle: 'Questões',
@@ -865,15 +872,22 @@ class _SimpleQuickActions extends StatelessWidget {
         color: cs.error,
         onTap: () => context.go('/simulados'),
       ),
+      _ActionItem(
+        icon: Icons.style_rounded,
+        label: 'Flashcards',
+        subtitle: 'Revisar',
+        color: cs.primary,
+        onTap: () => context.go('/flashcards?due=1'),
+      ),
     ];
 
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
+      crossAxisCount: 3,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 2.2,
+      childAspectRatio: 1.4,
       children: actions.map((a) => _buildCard(context, a)).toList(),
     );
   }
