@@ -22,6 +22,7 @@ COPY . /app/
 # Copia build web pre-compilado e banco pronto
 COPY deploy/web /app/backend/build/web
 COPY deploy/data/paes_med_ai.db /app/data/paes_med_ai.db
+COPY deploy/data/materiais /app/data/materiais
 
 # Define data dir e porta
 ENV PAES_DATA_DIR=/app/data
