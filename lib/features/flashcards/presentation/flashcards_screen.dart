@@ -364,7 +364,7 @@ class _CardDeckViewState extends State<_CardDeckView> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.78);
+    _pageController = PageController(viewportFraction: 0.52);
   }
 
   @override
@@ -431,9 +431,9 @@ class _CardDeckViewState extends State<_CardDeckView> {
           ),
         ),
         const SizedBox(height: 12),
-        // Carrossel PageView estilo Netflix
+        // Carrossel PageView estilo Netflix — card vertical retrato
         SizedBox(
-          height: 460,
+          height: 540,
           child: PageView.builder(
             controller: _pageController,
             itemCount: total,
@@ -461,23 +461,29 @@ class _CardDeckViewState extends State<_CardDeckView> {
                   if (_pageController.position.haveDimensions) {
                     final page = _pageController.page ?? _currentIndex.toDouble();
                     final diff = (index - page).abs();
-                    scale = (1 - diff * 0.08).clamp(0.85, 1.0);
+                    // Cartas vizinhas ficam bem menores
+                    scale = (1 - diff * 0.12).clamp(0.78, 1.0);
                   }
                   return Transform.scale(scale: scale, child: child);
                 },
-                child: _GameCard(
-                  flipped: flipped,
-                  subject: subj,
-                  topic: top,
-                  fromAxes: fromAxes,
-                  frontText: item['front']?.toString() ?? '',
-                  backText: item['back']?.toString() ?? '',
-                  accent: accent,
-                  dueLabel: humanDueLabel(item['next_due']?.toString()),
-                  onTap: () => widget.onFlip(id),
-                  onRemember: () => widget.onRemember(id),
-                  onForgot: () => widget.onForgot(id),
-                  onDelete: () => widget.onDelete(id),
+                child: Center(
+                  child: SizedBox(
+                    width: 280,
+                    child: _GameCard(
+                      flipped: flipped,
+                      subject: subj,
+                      topic: top,
+                      fromAxes: fromAxes,
+                      frontText: item['front']?.toString() ?? '',
+                      backText: item['back']?.toString() ?? '',
+                      accent: accent,
+                      dueLabel: humanDueLabel(item['next_due']?.toString()),
+                      onTap: () => widget.onFlip(id),
+                      onRemember: () => widget.onRemember(id),
+                      onForgot: () => widget.onForgot(id),
+                      onDelete: () => widget.onDelete(id),
+                    ),
+                  ),
                 ),
               );
             },
@@ -547,26 +553,26 @@ class _GameCard extends StatelessWidget {
         // Cartas empilhadas atrás (efeito deck)
         if (!flipped) ...[
           Positioned(
-            left: 10,
-            right: 10,
-            top: 8,
+            left: 12,
+            right: 12,
+            top: 10,
             child: Container(
-              height: 400,
+              height: 480,
               decoration: BoxDecoration(
                 color: accent.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ),
           Positioned(
-            left: 5,
-            right: 5,
-            top: 4,
+            left: 6,
+            right: 6,
+            top: 5,
             child: Container(
-              height: 400,
+              height: 480,
               decoration: BoxDecoration(
                 color: accent.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
           ),
@@ -660,7 +666,7 @@ class _GameCardFace extends StatelessWidget {
                 Stack(
                   children: [
                     Container(
-                      height: 160,
+                      height: 200,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -673,11 +679,11 @@ class _GameCardFace extends StatelessWidget {
                         children: [
                           // Ícone grande de fundo (decorativo)
                           Positioned(
-                            right: -20,
-                            top: -10,
+                            right: -30,
+                            top: -15,
                             child: Icon(
                               icon,
-                              size: 140,
+                              size: 180,
                               color: Colors.white.withOpacity(0.08),
                             ),
                           ),
@@ -688,13 +694,13 @@ class _GameCardFace extends StatelessWidget {
                               children: [
                                 Text(
                                   emoji,
-                                  style: const TextStyle(fontSize: 52),
+                                  style: const TextStyle(fontSize: 64),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Icon(
                                   isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
                                   color: Colors.white.withOpacity(0.7),
-                                  size: 24,
+                                  size: 28,
                                 ),
                               ],
                             ),
