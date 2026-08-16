@@ -1,13 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
+import '../../../core/widgets/flashcard_images.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -208,144 +208,50 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                                   final top = item['topic']?.toString() ?? '';
                                   final src = item['source']?.toString() ?? '';
                                   final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-                                  return SurfacePanel(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        if (subj.isNotEmpty || top.isNotEmpty)
-                                          Expanded(
-                                            child: Text(
-                                              [subj, top].where((e) => e.isNotEmpty).join(' · '),
-                                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
-                                            ),
-                                          )
-                                        else
-                                          const Spacer(),
-                                        if (fromAxes)
-                                          const Chip(
-                                            label: Text('eixos'),
-                                            visualDensity: VisualDensity.compact,
-                                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    InkWell(
-                                      onTap: () {
-                                        HapticFeedback.selectionClick();
-                                        setState(() {
-                                          if (currentId == id) {
-                                            showBack = !showBack;
-                                          } else {
-                                            currentId = id;
-                                            showBack = false;
-                                          }
-                                        });
-                                      },
-                                      borderRadius: BorderRadius.circular(kRadiusButton),
-                                      child: _FlipCard(
-                                        flipped: flipped,
-                                        front: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: cs.surfaceContainerHigh.f38,
-                                            borderRadius: BorderRadius.circular(kRadiusButton),
-                                            border: Border.all(
-                                              color: cs.outlineVariant.f38,
+                                  final accent = Color(subjectColorSeed(subj));
+                                  final imgPath = flashcardImageFor(subj, top);
+                                  return _DeckCard(
+                                    flipped: flipped,
+                                    subject: subj,
+                                    topic: top,
+                                    fromAxes: fromAxes,
+                                    frontText: item['front']?.toString() ?? '',
+                                    backText: item['back']?.toString() ?? '',
+                                    accent: accent,
+                                    imagePath: imgPath,
+                                    dueLabel: humanDueLabel(item['next_due']?.toString()),
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      setState(() {
+                                        if (currentId == id) {
+                                          showBack = !showBack;
+                                        } else {
+                                          currentId = id;
+                                          showBack = false;
+                                        }
+                                      });
+                                    },
+                                    onRemember: () { HapticFeedback.selectionClick(); _review(id, true); },
+                                    onForgot: () { HapticFeedback.selectionClick(); _review(id, false); },
+                                    onDelete: () async {
+                                      HapticFeedback.selectionClick();
+                                      try {
+                                        await apiClient.delete('/api/flashcards/$id');
+                                        ref.read(refreshTickProvider.notifier).state++;
+                                      } catch (e) {
+                                        if (!context.mounted) return;
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              humanApiError(e, fallback: 'Não deu para apagar o cartão.'),
                                             ),
                                           ),
-                                          width: double.infinity,
-                                          child: SelectableText(
-                                            item['front']?.toString() ?? '',
-                                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface, height: 1.5),
-                                            contextMenuBuilder: (context, editableTextState) =>
-                                                AdaptiveTextSelectionToolbar.editableText(
-                                              editableTextState: editableTextState,
-                                            ),
-                                          ),
-                                        ),
-                                        back: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: cs.primaryContainer.f38,
-                                            borderRadius: BorderRadius.circular(kRadiusButton),
-                                            border: Border.all(
-                                              color: cs.primary.f38,
-                                            ),
-                                          ),
-                                          width: double.infinity,
-                                          child: SelectableText(
-                                            item['back']?.toString() ?? '',
-                                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer, height: 1.5),
-                                            contextMenuBuilder: (context, editableTextState) =>
-                                                AdaptiveTextSelectionToolbar.editableText(
-                                              editableTextState: editableTextState,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    SelectableText(
-                                      flipped
-                                          ? 'Toque / Space · Lembrei · Esqueci · próxima: ${humanDueLabel(item['next_due']?.toString())}'
-                                          : 'Toque / Space para revelar · próxima: ${humanDueLabel(item['next_due']?.toString())}',
-                                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f55),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        if (flipped) ...[
-                                          FilledButton.tonalIcon(
-                                            onPressed: () { HapticFeedback.selectionClick(); _review(id, true); },
-                                            icon: const Icon(Icons.check_rounded, size: 18),
-                                            label: const Text('Lembrei'),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton.icon(
-                                            onPressed: () { HapticFeedback.selectionClick(); _review(id, false); },
-                                            icon: const Icon(Icons.refresh_rounded, size: 18),
-                                            label: const Text('Esqueci'),
-                                          ),
-                                          const Spacer(),
-                                        ],
-                                        IconButton(
-                                          tooltip: 'Apagar',
-                                          onPressed: () async {
-                                            HapticFeedback.selectionClick();
-                                            try {
-                                              await apiClient.delete('/api/flashcards/$id');
-                                              ref.read(refreshTickProvider.notifier).state++;
-                                            } catch (e) {
-                                              if (!context.mounted) return;
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    humanApiError(e, fallback: 'Não deu para apagar o cartão.'),
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                          icon: const Icon(Icons.delete_outline),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                                        );
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
                           ],
                         ),
                       ],
@@ -441,6 +347,411 @@ class _FlipCardState extends State<_FlipCard> with SingleTickerProviderStateMixi
                 ),
         );
       },
+    );
+  }
+}
+
+// ============================================================
+// DeckCard — card estilo baralho com imagem, gradiente e flip 3D
+// ============================================================
+
+class _DeckCard extends StatelessWidget {
+  const _DeckCard({
+    required this.flipped,
+    required this.subject,
+    required this.topic,
+    required this.fromAxes,
+    required this.frontText,
+    required this.backText,
+    required this.accent,
+    required this.imagePath,
+    required this.dueLabel,
+    required this.onTap,
+    required this.onRemember,
+    required this.onForgot,
+    required this.onDelete,
+  });
+
+  final bool flipped;
+  final String subject;
+  final String topic;
+  final bool fromAxes;
+  final String frontText;
+  final String backText;
+  final Color accent;
+  final String? imagePath;
+  final String dueLabel;
+  final VoidCallback onTap;
+  final VoidCallback onRemember;
+  final VoidCallback onForgot;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: Stack(
+        children: [
+          // Sombra do "deck" — cartas empilhadas atrás
+          if (!flipped) ...[
+            Positioned(
+              left: 4,
+              right: 4,
+              top: 3,
+              child: Container(
+                height: 12,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 2,
+              right: 2,
+              top: 1.5,
+              child: Container(
+                height: 12,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+          ],
+          // Card principal
+          _FlipCard(
+            flipped: flipped,
+            front: _CardFace(
+              text: frontText,
+              accent: accent,
+              imagePath: imagePath,
+              subject: subject,
+              topic: topic,
+              fromAxes: fromAxes,
+              isBack: false,
+              onTap: onTap,
+              dueLabel: dueLabel,
+              cs: cs,
+            ),
+            back: _CardFace(
+              text: backText,
+              accent: accent,
+              imagePath: imagePath,
+              subject: subject,
+              topic: topic,
+              fromAxes: fromAxes,
+              isBack: true,
+              onTap: onTap,
+              dueLabel: dueLabel,
+              cs: cs,
+              onRemember: onRemember,
+              onForgot: onForgot,
+              onDelete: onDelete,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardFace extends StatelessWidget {
+  const _CardFace({
+    required this.text,
+    required this.accent,
+    required this.imagePath,
+    required this.subject,
+    required this.topic,
+    required this.fromAxes,
+    required this.isBack,
+    required this.onTap,
+    required this.dueLabel,
+    required this.cs,
+    this.onRemember,
+    this.onForgot,
+    this.onDelete,
+  });
+
+  final String text;
+  final Color accent;
+  final String? imagePath;
+  final String subject;
+  final String topic;
+  final bool fromAxes;
+  final bool isBack;
+  final VoidCallback onTap;
+  final String dueLabel;
+  final ColorScheme cs;
+  final VoidCallback? onRemember;
+  final VoidCallback? onForgot;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: isBack ? accent.withOpacity(0.08) : cs.surface,
+            border: Border.all(
+              color: accent.withOpacity(isBack ? 0.5 : 0.25),
+              width: isBack ? 2 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Faixa colorida com assunto + imagem
+                Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        accent,
+                        accent.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Imagem de fundo (se houver)
+                      if (imagePath != null)
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.35,
+                            child: Image.asset(
+                              imagePath!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      // Overlay escuro para legibilidade
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.3),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Conteúdo da faixa
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    subject.isNotEmpty ? subject : 'Flashcard',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.4),
+                                          blurRadius: 3,
+                                        ),
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (fromAxes)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      'eixos',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            if (topic.isNotEmpty)
+                              Text(
+                                topic,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withOpacity(0.9),
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Corpo do card
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Badge frente/verso
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: isBack ? accent.withOpacity(0.15) : cs.surfaceContainerHighest.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isBack ? 'VERSO' : 'FRENTE',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: isBack ? accent : cs.onSurface.withOpacity(0.5),
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (dueLabel.isNotEmpty)
+                            Text(
+                              dueLabel,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: cs.onSurface.withOpacity(0.4),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Texto principal
+                      SelectableText(
+                        text,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface,
+                          height: 1.55,
+                        ),
+                        contextMenuBuilder: (context, editableTextState) =>
+                            AdaptiveTextSelectionToolbar.editableText(
+                          editableTextState: editableTextState,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Dica de interação
+                      if (!isBack)
+                        Row(
+                          children: [
+                            Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.6)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Toque para revelar o verso',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: accent.withOpacity(0.7),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      // Botões de revisão (só no verso)
+                      if (isBack && onRemember != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: onRemember,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: accent,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.check_rounded, size: 18),
+                                label: const Text('Lembrei'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: onForgot,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: accent,
+                                  side: BorderSide(color: accent.withOpacity(0.4)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.refresh_rounded, size: 18),
+                                label: const Text('Esqueci'),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Apagar',
+                              onPressed: onDelete,
+                              icon: Icon(Icons.delete_outline, color: cs.onSurface.withOpacity(0.4)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
