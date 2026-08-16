@@ -40,3 +40,5 @@ services:
         value: gpt-4.1-mini
       - key: PAES_ALLOWED_ORIGINS
         sync: false
+      - key: PAES_BOOTSTRAP_PROD
+        value: "1"
