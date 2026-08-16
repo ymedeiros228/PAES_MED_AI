@@ -85,15 +85,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     return pos >= 0 && pos < vis.length - 1;
   }
 
-  void _pickAnswer(int i) {
-    final opts = current['options'] as List? ?? [];
-    if (i < 0 || i >= opts.length) return;
-    setState(() {
-      current['correctIndex'] = i;
-      current['gabaritoApplied'] = true;
-    });
-  }
-
   Future<void> _maybeOfferBootstrapCommit() async {
     if (_bootstrapPromptShown || !mounted) return;
     final fromBootstrap = widget.args.meta['fromBootstrap'] == true;

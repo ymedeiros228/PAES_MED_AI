@@ -915,49 +915,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _openYearPdf(int year) async {
-    try {
-      final data = await apiClient.get('/api/library/year-pdf', {'year': '$year'});
-      final map = Map<String, dynamic>.from(data as Map);
-      if (map['exists'] != true || (map['path']?.toString() ?? '').isEmpty) {
-        if (mounted) {
-          showOpenPathSnackBar(
-            context,
-            message: map['note']?.toString() ?? 'Sem PDF deste ano no PC.',
-            isError: true,
-            actionLabel: 'Provas',
-            onAction: () => unawaited(_openFolder('provas')),
-          );
-        }
-        setState(() => msg = map['note']?.toString() ?? 'Sem PDF deste ano no PC.');
-        return;
-      }
-      final label = map['label']?.toString() ?? '$year';
-      final pdfPath = map['path']!.toString();
-      try {
-        await apiClient.openPath(pdfPath);
-        if (mounted) {
-          showOpenPathSnackBar(context, message: 'Abrindo PDF $label');
-        }
-        setState(() => msg = 'Abrindo PDF $label');
-      } catch (e) {
-        final err = humanOpenPathError(e, label: 'PDF $label');
-        if (mounted) {
-          showOpenPathSnackBar(
-            context,
-            message: err,
-            isError: true,
-            actionLabel: 'Provas',
-            onAction: () => unawaited(_openFolder('provas')),
-          );
-        }
-        setState(() => msg = err);
-      }
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
-    }
-  }
-
   Future<void> _openSearchHit(Map<String, dynamic> hit) async {
     final id = hit['id']?.toString();
     final path = hit['path']?.toString() ?? '';
@@ -1193,13 +1150,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final anosParciais = (checklist['anosParciaisCount'] as int?) ??
         (checklist['anosParciais'] as List?)?.length ??
         0;
-    final anosCompletos = (checklist['anosCompletosCount'] as int?) ??
-        (checklist['anosCompletos'] as List?)?.length ??
-        0;
     final cs = Theme.of(context).colorScheme;
-
-    final semana1Route = GoRouterState.of(context).uri.queryParameters['semana1'] == '1';
-    final highlightSemana1 = officialN == 0 && (showFirstRunCoach || semana1Route);
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),

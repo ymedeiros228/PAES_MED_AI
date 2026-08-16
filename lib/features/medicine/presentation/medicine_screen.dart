@@ -22,7 +22,6 @@ class MedicineScreen extends ConsumerStatefulWidget {
 class _MedicineScreenState extends ConsumerState<MedicineScreen> {
   int selected = 0;
   List<Map<String, dynamic>> _rankItems = const [];
-  int _officialN = 0;
 
   @override
   void initState() {
@@ -45,12 +44,6 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         '&preferNatureza=${nat ? '1' : '0'}'
         '${years.isNotEmpty ? '&year=${years.last}' : ''}'
         '${officialN >= 10 ? '&preferOfficial=1' : ''}';
-  }
-
-  void _openSelected(int officialN) {
-    if (_rankItems.isEmpty) return;
-    final idx = selected.clamp(0, _rankItems.length - 1);
-    context.go(_sessionPath(_rankItems[idx], officialN));
   }
 
   @override
@@ -91,7 +84,6 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         final basis = Map<String, dynamic>.from(payload['statsBasis'] as Map? ?? {});
         final curation = Map<String, dynamic>.from(payload['curation'] as Map? ?? {});
         final officialN = basis['officialCount'] as int? ?? 0;
-        _officialN = officialN;
         _rankItems = [
           for (final raw in items.take(24)) Map<String, dynamic>.from(raw as Map),
         ];

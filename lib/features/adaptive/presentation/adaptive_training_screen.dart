@@ -43,14 +43,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   String? answerSaveError;
   String? generatedPartialNote;
 
-  static const _errorTypes = [
-    'conceito',
-    'interpretacao',
-    'calculo',
-    'distracao',
-    'tempo',
-  ];
-
   static const _errorLabels = {
     'conceito': 'Conceito',
     'interpretacao': 'Interpretação',

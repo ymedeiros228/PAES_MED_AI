@@ -22,7 +22,6 @@ class BankProfileScreen extends ConsumerStatefulWidget {
 
 class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
   String? exportMsg;
-  List<String> _ctaPaths = const [];
 
   @override
   void initState() {
@@ -129,10 +128,6 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                   final co = (data['cooccurrence'] as List? ?? data['correlations'] as List? ?? []);
                   final total = data['totalQuestions'];
                   final ctas = data['studyCtas'] as List? ?? [];
-                  _ctaPaths = [
-                    for (final raw in ctas.take(6))
-                      (Map<String, dynamic>.from(raw as Map)['path']?.toString() ?? '/sessao'),
-                  ];
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

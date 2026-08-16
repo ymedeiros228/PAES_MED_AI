@@ -31,7 +31,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   /// Ciclo G/AK: default due-only; CTA Fila usa `/flashcards?due=1`.
   late bool dueOnly = widget.dueOnlyInitial;
   bool axesOnly = false;
-  List<int> _itemIds = const [];
 
   @override
   void initState() {
@@ -80,20 +79,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para registrar o cartão.'))),
       );
     }
-  }
-
-  void _flipTop() {
-    if (_itemIds.isEmpty) return;
-    final id = currentId ?? _itemIds.first;
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (currentId == id) {
-        showBack = !showBack;
-      } else {
-        currentId = id;
-        showBack = true;
-      }
-    });
   }
 
   @override
@@ -170,7 +155,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                       final id = idRaw is int ? idRaw : int.tryParse('$idRaw');
                       if (id != null) ids.add(id);
                     }
-                    _itemIds = ids;
                     if (items.isEmpty) {
                       return EmptyState(
                         icon: Icons.style_outlined,

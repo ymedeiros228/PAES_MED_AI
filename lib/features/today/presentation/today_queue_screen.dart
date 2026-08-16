@@ -30,7 +30,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   int selected = 0;
   int _readRefreshTick = 0;
   List<String> _navPaths = const [];
-  String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
   bool gapsOnlyNoMaterial = false;
   // Futures cached para evitar recriar a cada rebuild
   late final Future<dynamic> _checkpointFuture;
@@ -50,7 +49,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   }
 
   void _syncNavPaths(Map<String, dynamic> q, String sessionPath) {
-    _sessionPath = sessionPath;
     final paths = <String>[sessionPath];
     final openGaps = q['openGaps'] is Map ? q['openGaps'] as Map : null;
     for (final raw in (openGaps?['items'] as List? ?? const []).take(6)) {
@@ -95,11 +93,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     if (selected >= _navPaths.length && _navPaths.isNotEmpty) {
       selected = _navPaths.length - 1;
     }
-  }
-
-  void _openSelected() {
-    if (_navPaths.isEmpty) return;
-    context.go(_navPaths[selected.clamp(0, _navPaths.length - 1)]);
   }
 
   Future<void> _load() async {

@@ -82,25 +82,6 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     });
   }
 
-  void _openSelected() {
-    if (_pageItems.isEmpty) return;
-    final idx = selected.clamp(0, _pageItems.length - 1);
-    context.go('/questoes/${_pageItems[idx].id}');
-  }
-
-  void _scrollToSelected() {
-    if (!_scrollCtrl.hasClients || _pageItems.isEmpty) return;
-    const rowH = 76.0;
-    final target = (selected * rowH).clamp(0.0, _scrollCtrl.position.maxScrollExtent);
-    _scrollCtrl.animateTo(target, duration: const Duration(milliseconds: 120), curve: Curves.easeOut);
-  }
-
-  void _moveSelection(int delta) {
-    if (_pageItems.isEmpty) return;
-    setState(() => selected = (selected + delta).clamp(0, _pageItems.length - 1));
-    _scrollToSelected();
-  }
-
   void _prevPage() {
     if (page == 0) return;
     setState(() {

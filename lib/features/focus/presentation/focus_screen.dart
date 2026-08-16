@@ -1,13 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/ui_kit.dart';
 import '../application/focus_controller.dart';
 
 class FocusScreen extends ConsumerStatefulWidget {

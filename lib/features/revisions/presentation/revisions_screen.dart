@@ -42,11 +42,6 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
     );
   }
 
-  void _moveSelection(int delta) {
-    if (_items.isEmpty) return;
-    setState(() => selected = (selected + delta).clamp(0, _items.length - 1));
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(revisionsApiProvider);
