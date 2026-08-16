@@ -8,7 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Conditional import: dart:io so existe em desktop/mobile, nao na web
-import 'platform_io.dart' if (dart.library.html) 'platform_io_web.dart' show readVersionFile;
+import 'platform_io.dart' if (dart.library.html) 'platform_io_web.dart' show isWindows, launchUpdater, readVersionFile;
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
@@ -455,6 +455,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
+
+              if (isWindows && !kIsWeb) ...[
+                const SizedBox(height: 16),
+                SectionLabel('Atualização'),
+                SurfacePanel(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.system_update_rounded, color: Theme.of(context).colorScheme.primary),
+                        title: const Text('Atualizar PAES MED AI'),
+                        subtitle: const Text('Baixa a ultima versao do GitHub e instala automaticamente'),
+                        trailing: FilledButton.tonal(
+                          onPressed: () {
+                            launchUpdater();
+                          },
+                          child: const Text('Atualizar'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               SectionLabel('Aparência'),
               _ThemeModePicker(mode: ref.watch(themeModeProvider)),

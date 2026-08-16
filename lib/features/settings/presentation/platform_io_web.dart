@@ -2,3 +2,7 @@
 (String, bool) readVersionFile() {
   return ('', false);
 }
+
+bool get isWindows => false;
+String updaterPath() => '';
+Future<bool> launchUpdater() async => false;
