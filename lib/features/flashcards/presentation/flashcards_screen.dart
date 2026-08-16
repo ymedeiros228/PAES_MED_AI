@@ -176,85 +176,59 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                         ),
                       );
                     }
-                    return Column(
-                      children: [
-                        // Indicador de progresso: X cartões para revisar
-                        if (items.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              children: [
-                                Icon(Icons.style_outlined, size: 16, color: cs.primary),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${items.length} cartão${items.length > 1 ? "ões" : ""} para revisar',
-                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: cs.primary),
-                                ),
-                              ],
-                            ),
-                          ),
-                        StaggeredFadeIn(
-                          itemDelay: const Duration(milliseconds: 60),
-                          children: [
-                            for (final raw in items)
-                              Builder(
-                                builder: (_) {
-                                  final item = Map<String, dynamic>.from(raw as Map);
-                                  final idRaw = item['id'];
-                                  final id = idRaw is int ? idRaw : int.tryParse('$idRaw');
-                                  if (id == null) return const SizedBox.shrink();
-                                  final flipped = showBack && currentId == id;
-                                  final subj = item['subject']?.toString() ?? '';
-                                  final top = item['topic']?.toString() ?? '';
-                                  final src = item['source']?.toString() ?? '';
-                                  final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-                                  final accent = Color(subjectColorSeed(subj));
-                                  final imgPath = flashcardImageFor(subj, top);
-                                  return _DeckCard(
-                                    flipped: flipped,
-                                    subject: subj,
-                                    topic: top,
-                                    fromAxes: fromAxes,
-                                    frontText: item['front']?.toString() ?? '',
-                                    backText: item['back']?.toString() ?? '',
-                                    accent: accent,
-                                    imagePath: imgPath,
-                                    dueLabel: humanDueLabel(item['next_due']?.toString()),
-                                    onTap: () {
-                                      HapticFeedback.selectionClick();
-                                      setState(() {
-                                        if (currentId == id) {
-                                          showBack = !showBack;
-                                        } else {
-                                          currentId = id;
-                                          showBack = false;
-                                        }
-                                      });
-                                    },
-                                    onRemember: () { HapticFeedback.selectionClick(); _review(id, true); },
-                                    onForgot: () { HapticFeedback.selectionClick(); _review(id, false); },
-                                    onDelete: () async {
-                                      HapticFeedback.selectionClick();
-                                      try {
-                                        await apiClient.delete('/api/flashcards/$id');
-                                        ref.read(refreshTickProvider.notifier).state++;
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              humanApiError(e, fallback: 'Não deu para apagar o cartão.'),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
+                    return _CardDeckView(
+                      items: items,
+                      currentId: currentId,
+                      showBack: showBack,
+                      onFlip: (id) {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          if (currentId == id) {
+                            showBack = !showBack;
+                          } else {
+                            currentId = id;
+                            showBack = false;
+                          }
+                        });
+                      },
+                      onPrev: () {
+                        HapticFeedback.selectionClick();
+                        final idx = items.indexWhere((r) {
+                          final rid = r is Map ? (r['id'] is int ? r['id'] : int.tryParse('${r['id']}')) : null;
+                          return rid == currentId;
+                        });
+                        if (idx > 0) {
+                          final prevRaw = items[idx - 1];
+                          final prevId = prevRaw is Map ? (prevRaw['id'] is int ? prevRaw['id'] : int.tryParse('${prevRaw['id']}')) : null;
+                          setState(() { currentId = prevId; showBack = false; });
+                        }
+                      },
+                      onNext: () {
+                        HapticFeedback.selectionClick();
+                        final idx = items.indexWhere((r) {
+                          final rid = r is Map ? (r['id'] is int ? r['id'] : int.tryParse('${r['id']}')) : null;
+                          return rid == currentId;
+                        });
+                        if (idx >= 0 && idx < items.length - 1) {
+                          final nextRaw = items[idx + 1];
+                          final nextId = nextRaw is Map ? (nextRaw['id'] is int ? nextRaw['id'] : int.tryParse('${nextRaw['id']}')) : null;
+                          setState(() { currentId = nextId; showBack = false; });
+                        }
+                      },
+                      onRemember: (id) { HapticFeedback.selectionClick(); _review(id, true); },
+                      onForgot: (id) { HapticFeedback.selectionClick(); _review(id, false); },
+                      onDelete: (id) async {
+                        HapticFeedback.selectionClick();
+                        try {
+                          await apiClient.delete('/api/flashcards/$id');
+                          ref.read(refreshTickProvider.notifier).state++;
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para apagar o cartão.'))),
+                          );
+                        }
+                      },
                     );
                   },
                 ),
@@ -352,11 +326,168 @@ class _FlipCardState extends State<_FlipCard> with SingleTickerProviderStateMixi
 }
 
 // ============================================================
-// DeckCard — card estilo baralho com imagem, gradiente e flip 3D
+// _CardDeckView — carrossel de cartas estilo jogo de TCG
+// Mostra 1 carta centralizada com prev/next e contador
 // ============================================================
 
-class _DeckCard extends StatelessWidget {
-  const _DeckCard({
+class _CardDeckView extends StatefulWidget {
+  const _CardDeckView({
+    required this.items,
+    required this.currentId,
+    required this.showBack,
+    required this.onFlip,
+    required this.onPrev,
+    required this.onNext,
+    required this.onRemember,
+    required this.onForgot,
+    required this.onDelete,
+  });
+
+  final List<dynamic> items;
+  final int? currentId;
+  final bool showBack;
+  final ValueChanged<int> onFlip;
+  final VoidCallback onPrev;
+  final VoidCallback onNext;
+  final ValueChanged<int> onRemember;
+  final ValueChanged<int> onForgot;
+  final ValueChanged<int> onDelete;
+
+  @override
+  State<_CardDeckView> createState() => _CardDeckViewState();
+}
+
+class _CardDeckViewState extends State<_CardDeckView> {
+  int _currentIndex = 0;
+
+  @override
+  void didUpdateWidget(covariant _CardDeckView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sincronizar currentIndex com currentId
+    if (widget.currentId != null) {
+      final idx = widget.items.indexWhere((r) {
+        if (r is! Map) return false;
+        final id = r['id'] is int ? r['id'] : int.tryParse('${r['id']}');
+        return id == widget.currentId;
+      });
+      if (idx >= 0) _currentIndex = idx;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    if (widget.items.isEmpty) return const SizedBox.shrink();
+
+    // Garantir que currentIndex é válido
+    if (_currentIndex >= widget.items.length) _currentIndex = 0;
+    final raw = widget.items[_currentIndex];
+    final item = Map<String, dynamic>.from(raw as Map);
+    final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
+    if (id == null) return const SizedBox.shrink();
+
+    final subj = item['subject']?.toString() ?? '';
+    final top = item['topic']?.toString() ?? '';
+    final src = item['source']?.toString() ?? '';
+    final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
+    final accent = Color(subjectColorSeed(subj));
+    final imgPath = flashcardImageFor(subj, top);
+    final flipped = widget.showBack && widget.currentId == id;
+    final total = widget.items.length;
+    final pos = _currentIndex + 1;
+
+    return Column(
+      children: [
+        // Contador de cartas
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: accent.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.style_rounded, size: 16, color: accent),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$pos / $total',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Carta centralizada
+        Center(
+          child: SizedBox(
+            width: 340,
+            child: _GameCard(
+              flipped: flipped,
+              subject: subj,
+              topic: top,
+              fromAxes: fromAxes,
+              frontText: item['front']?.toString() ?? '',
+              backText: item['back']?.toString() ?? '',
+              accent: accent,
+              imagePath: imgPath,
+              dueLabel: humanDueLabel(item['next_due']?.toString()),
+              onTap: () => widget.onFlip(id),
+              onRemember: () => widget.onRemember(id),
+              onForgot: () => widget.onForgot(id),
+              onDelete: () => widget.onDelete(id),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Navegação prev/next
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton.filled(
+              onPressed: _currentIndex > 0 ? widget.onPrev : null,
+              icon: const Icon(Icons.navigate_before_rounded),
+              style: IconButton.styleFrom(backgroundColor: cs.surfaceContainerHighest),
+            ),
+            const SizedBox(width: 24),
+            Text(
+              _currentIndex > 0 ? 'Anterior' : 'Início',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: cs.onSurface.withOpacity(0.4),
+              ),
+            ),
+            const SizedBox(width: 24),
+            IconButton.filled(
+              onPressed: _currentIndex < total - 1 ? widget.onNext : null,
+              icon: const Icon(Icons.navigate_next_rounded),
+              style: IconButton.styleFrom(backgroundColor: cs.surfaceContainerHighest),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// _GameCard — carta estilo TCG (Clash Royale / Hearthstone)
+// ============================================================
+
+class _GameCard extends StatelessWidget {
+  const _GameCard({
     required this.flipped,
     required this.subject,
     required this.topic,
@@ -388,77 +519,71 @@ class _DeckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Stack(
-        children: [
-          // Sombra do "deck" — cartas empilhadas atrás
-          if (!flipped) ...[
-            Positioned(
-              left: 4,
-              right: 4,
-              top: 3,
-              child: Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(18),
-                ),
+    return Stack(
+      children: [
+        // Cartas empilhadas atrás (efeito deck)
+        if (!flipped) ...[
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 6,
+            child: Container(
+              height: 380,
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
-            Positioned(
-              left: 2,
-              right: 2,
-              top: 1.5,
-              child: Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(18),
-                ),
+          ),
+          Positioned(
+            left: 4,
+            right: 4,
+            top: 3,
+            child: Container(
+              height: 380,
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-          ],
-          // Card principal
-          _FlipCard(
-            flipped: flipped,
-            front: _CardFace(
-              text: frontText,
-              accent: accent,
-              imagePath: imagePath,
-              subject: subject,
-              topic: topic,
-              fromAxes: fromAxes,
-              isBack: false,
-              onTap: onTap,
-              dueLabel: dueLabel,
-              cs: cs,
-            ),
-            back: _CardFace(
-              text: backText,
-              accent: accent,
-              imagePath: imagePath,
-              subject: subject,
-              topic: topic,
-              fromAxes: fromAxes,
-              isBack: true,
-              onTap: onTap,
-              dueLabel: dueLabel,
-              cs: cs,
-              onRemember: onRemember,
-              onForgot: onForgot,
-              onDelete: onDelete,
             ),
           ),
         ],
-      ),
+        // Card principal
+        _FlipCard(
+          flipped: flipped,
+          front: _GameCardFace(
+            text: frontText,
+            accent: accent,
+            imagePath: imagePath,
+            subject: subject,
+            topic: topic,
+            fromAxes: fromAxes,
+            isBack: false,
+            onTap: onTap,
+            dueLabel: dueLabel,
+          ),
+          back: _GameCardFace(
+            text: backText,
+            accent: accent,
+            imagePath: imagePath,
+            subject: subject,
+            topic: topic,
+            fromAxes: fromAxes,
+            isBack: true,
+            onTap: onTap,
+            dueLabel: dueLabel,
+            onRemember: onRemember,
+            onForgot: onForgot,
+            onDelete: onDelete,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _CardFace extends StatelessWidget {
-  const _CardFace({
+class _GameCardFace extends StatelessWidget {
+  const _GameCardFace({
     required this.text,
     required this.accent,
     required this.imagePath,
@@ -468,7 +593,6 @@ class _CardFace extends StatelessWidget {
     required this.isBack,
     required this.onTap,
     required this.dueLabel,
-    required this.cs,
     this.onRemember,
     this.onForgot,
     this.onDelete,
@@ -483,69 +607,75 @@ class _CardFace extends StatelessWidget {
   final bool isBack;
   final VoidCallback onTap;
   final String dueLabel;
-  final ColorScheme cs;
   final VoidCallback? onRemember;
   final VoidCallback? onForgot;
   final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    // Cor "raridade" baseada na matéria
+    final rarityGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [accent, accent.withOpacity(0.6)],
+    );
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          width: double.infinity,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: isBack ? accent.withOpacity(0.08) : cs.surface,
-            border: Border.all(
-              color: accent.withOpacity(isBack ? 0.5 : 0.25),
-              width: isBack ? 2 : 1.5,
-            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: accent, width: 3),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: accent.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Faixa colorida com assunto + imagem
-                Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        accent,
-                        accent.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                  child: Stack(
+            child: Container(
+              color: cs.surface,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // === HEADER com imagem (estilo retrato de carta) ===
+                  Stack(
                     children: [
-                      // Imagem de fundo (se houver)
-                      if (imagePath != null)
-                        Positioned.fill(
-                          child: Opacity(
-                            opacity: 0.35,
-                            child: Image.asset(
-                              imagePath!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                            ),
-                          ),
+                      // Imagem de fundo
+                      Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: rarityGradient,
                         ),
-                      // Overlay escuro para legibilidade
+                        child: imagePath != null
+                            ? Image.asset(
+                                imagePath!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Icon(
+                                    isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
+                                    color: Colors.white.withOpacity(0.5),
+                                    size: 48,
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
+                                  color: Colors.white.withOpacity(0.5),
+                                  size: 48,
+                                ),
+                              ),
+                      ),
+                      // Overlay gradiente para legibilidade
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
@@ -553,76 +683,94 @@ class _CardFace extends StatelessWidget {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.3),
+                                Colors.black.withOpacity(0.1),
+                                Colors.black.withOpacity(0.5),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      // Conteúdo da faixa
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      // Badge de raridade (canto superior esquerdo)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                          ),
+                          child: Text(
+                            isBack ? 'VERSO' : 'FRENTE',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Badge "eixos" (canto superior direito)
+                      if (fromAxes)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'EIXOS',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      // Nome da matéria (canto inferior)
+                      Positioned(
+                        bottom: 6,
+                        left: 10,
+                        right: 10,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    subject.isNotEmpty ? subject : 'Flashcard',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black.withOpacity(0.4),
-                                          blurRadius: 3,
-                                        ),
-                                      ],
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (fromAxes)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.25),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      'eixos',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                            Text(
+                              subject.isNotEmpty ? subject : 'Flashcard',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             if (topic.isNotEmpty)
                               Text(
                                 topic,
                                 style: GoogleFonts.inter(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withOpacity(0.85),
                                   shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 2,
-                                    ),
+                                    Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
                                   ],
                                 ),
                                 maxLines: 1,
@@ -633,121 +781,128 @@ class _CardFace extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-                // Corpo do card
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Badge frente/verso
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: isBack ? accent.withOpacity(0.15) : cs.surfaceContainerHighest.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              isBack ? 'VERSO' : 'FRENTE',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: isBack ? accent : cs.onSurface.withOpacity(0.5),
-                                letterSpacing: 1.2,
+                  // === BARRA DE RARIDADE ===
+                  Container(
+                    height: 4,
+                    decoration: BoxDecoration(gradient: rarityGradient),
+                  ),
+                  // === CORPO DA CARTA ===
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Texto principal
+                        SelectableText(
+                          text,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: cs.onSurface,
+                            height: 1.5,
+                          ),
+                          contextMenuBuilder: (context, editableTextState) =>
+                              AdaptiveTextSelectionToolbar.editableText(
+                            editableTextState: editableTextState,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Dica / próxima revisão
+                        if (dueLabel.isNotEmpty)
+                          Row(
+                            children: [
+                              Icon(Icons.schedule_rounded, size: 12, color: cs.onSurface.withOpacity(0.3)),
+                              const SizedBox(width: 4),
+                              Text(
+                                dueLabel,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: cs.onSurface.withOpacity(0.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                        // Botões de ação (só no verso)
+                        if (isBack && onRemember != null) ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: onRemember,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: accent,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size.fromHeight(42),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  icon: const Icon(Icons.check_rounded, size: 20),
+                                  label: Text(
+                                    'Lembrei',
+                                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: onForgot,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: accent,
+                                    minimumSize: const Size.fromHeight(42),
+                                    side: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  icon: const Icon(Icons.refresh_rounded, size: 20),
+                                  label: Text(
+                                    'Esqueci',
+                                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: onDelete,
+                              icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
+                              label: Text(
+                                'Apagar cartão',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: cs.onSurface.withOpacity(0.35),
+                                ),
                               ),
                             ),
                           ),
-                          const Spacer(),
-                          if (dueLabel.isNotEmpty)
-                            Text(
-                              dueLabel,
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: cs.onSurface.withOpacity(0.4),
-                              ),
-                            ),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      // Texto principal
-                      SelectableText(
-                        text,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: cs.onSurface,
-                          height: 1.55,
-                        ),
-                        contextMenuBuilder: (context, editableTextState) =>
-                            AdaptiveTextSelectionToolbar.editableText(
-                          editableTextState: editableTextState,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Dica de interação
-                      if (!isBack)
-                        Row(
-                          children: [
-                            Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.6)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Toque para revelar o verso',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: accent.withOpacity(0.7),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      // Botões de revisão (só no verso)
-                      if (isBack && onRemember != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: FilledButton.icon(
-                                onPressed: onRemember,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: accent,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                        // Dica de flip (só na frente)
+                        if (!isBack) ...[
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.5)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Toque para virar a carta',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: accent.withOpacity(0.6),
                                   ),
                                 ),
-                                icon: const Icon(Icons.check_rounded, size: 18),
-                                label: const Text('Lembrei'),
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: onForgot,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: accent,
-                                  side: BorderSide(color: accent.withOpacity(0.4)),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                icon: const Icon(Icons.refresh_rounded, size: 18),
-                                label: const Text('Esqueci'),
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: 'Apagar',
-                              onPressed: onDelete,
-                              icon: Icon(Icons.delete_outline, color: cs.onSurface.withOpacity(0.4)),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -755,3 +910,4 @@ class _CardFace extends StatelessWidget {
     );
   }
 }
+
