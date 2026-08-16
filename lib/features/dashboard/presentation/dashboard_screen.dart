@@ -36,6 +36,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   late final Future<dynamic> _dueCardsFuture;
   late final Future<dynamic> _gamificationFuture;
   late final Future<dynamic> _insightsFuture;
+  late final Future<dynamic> _recommendationsFuture;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
     _gamificationFuture = apiClient.get('/api/gamification');
     _insightsFuture = apiClient.get('/api/coach/insights');
+    _recommendationsFuture = apiClient.get('/api/coach/recommendations');
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -516,6 +518,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
                               final insights = Map<String, dynamic>.from(snap.data as Map);
                               return _SmartCoachCard(insights: insights);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Recomendacoes proativas: materiais + provas + topicos
+                          FutureBuilder(
+                            future: _recommendationsFuture,
+                            builder: (context, snap) {
+                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                              final recs = Map<String, dynamic>.from(snap.data as Map);
+                              return _RecommendationsCard(recommendations: recs);
                             },
                           ),
                           const SizedBox(height: 16),
@@ -1868,6 +1880,273 @@ class _WeakAlertChip extends StatelessWidget {
                     ),
                   ),
                   Icon(Icons.arrow_forward_rounded, size: 16, color: cs.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _RecommendationsCard extends StatelessWidget {
+  const _RecommendationsCard({required this.recommendations});
+  final Map<String, dynamic> recommendations;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final summary = recommendations['summary']?.toString() ?? '';
+    final materials = (recommendations['materialSuggestions'] as List?) ?? [];
+    final exams = (recommendations['examSuggestions'] as List?) ?? [];
+    final hasMaterials = materials.isNotEmpty;
+    final hasExams = exams.isNotEmpty;
+
+    if (!hasMaterials && !hasExams && summary.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [cs.tertiary, cs.primary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Recomendacoes de Estudo',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (summary.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cs.tertiaryContainer.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.tips_and_updates_rounded, color: cs.tertiary, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        summary,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          height: 1.5,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface.withOpacity(0.85),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (hasMaterials) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Materiais sugeridos',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final m in materials.take(3))
+                _MaterialSuggestionTile(material: m as Map),
+            ],
+            if (hasExams) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Provas historicas para treinar',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final e in exams.take(3))
+                _ExamSuggestionTile(exam: e as Map),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _MaterialSuggestionTile extends StatelessWidget {
+  const _MaterialSuggestionTile({required this.material});
+  final Map material;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final title = material['title']?.toString() ?? '';
+    final reason = material['reason']?.toString() ?? '';
+    final subject = material['subject']?.toString() ?? '';
+    final actionPath = material['actionPath']?.toString() ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TapScale(
+        child: Material(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              context.go(actionPath);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.menu_book_rounded, color: cs.primary, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$subject · $reason',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: cs.onSurface.withOpacity(0.6),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _ExamSuggestionTile extends StatelessWidget {
+  const _ExamSuggestionTile({required this.exam});
+  final Map exam;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final year = exam['year']?.toString() ?? '';
+    final official = exam['officialQuestions']?.toString() ?? '0';
+    final reason = exam['reason']?.toString() ?? '';
+    final actionPath = exam['actionPath']?.toString() ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TapScale(
+        child: Material(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              context.go(actionPath);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: cs.secondaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.assignment_rounded, color: cs.secondary, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'PAES $year',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$official questoes oficiais · $reason',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: cs.onSurface.withOpacity(0.6),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
                 ],
               ),
             ),

@@ -28,6 +28,7 @@ from services_core import (
     build_smart_study_plan,
     build_study_calendar,
     build_study_plan,
+    build_study_recommendations,
     build_tutor_day_plan,
     close_study_day,
     close_study_week,
@@ -162,6 +163,12 @@ def api_study_export_week() -> dict[str, Any]:
 def api_coach_insights() -> dict[str, Any]:
     """Coach inteligente: insights personalizados baseados no desempenho."""
     return build_smart_insights()
+
+
+@router.get("/api/coach/recommendations")
+def api_coach_recommendations() -> dict[str, Any]:
+    """Recomendacoes proativas: materiais + provas + topicos fracos."""
+    return build_study_recommendations()
 
 
 @router.get("/api/today")

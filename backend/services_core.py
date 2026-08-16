@@ -2856,3 +2856,190 @@ def build_tutor_day_plan() -> dict[str, Any]:
         "ctaTutor": "/tutor",
         "ctaQuestionsUema": "/questoes?examBoard=UEMA_PAES",
     }
+
+
+def build_study_recommendations() -> dict[str, Any]:
+    """Recomendacoes proativas integradas: materiais + provas + topicos fracos.
+
+    Combina:
+    - Pontos fracos do aluno (materia + topico com baixo acerto)
+    - Materiais PDF disponiveis para esses topicos (leitor integrado)
+    - Provas historicas sugeridas para treinar
+    - Proxima acao recomendada com link direto
+    """
+    dash = dashboard_stats()
+    critical = dash.get("criticalTopics", []) or []
+    hot = dash.get("errorHotTopics", []) or []
+    study_today = dash.get("studyToday") or {}
+    total = dash.get("totalAnswered", 0)
+    streak = dash.get("streakDays", 0)
+    accuracy = dash.get("accuracy", 0)
+    weak_subject = dash.get("weakSubject")
+    strong_subject = dash.get("strongSubject")
+    official_unlocked = dash.get("officialUnlocked", False)
+
+    # --- Materiais sugeridos (PDFs) para topicos fracos ---
+    from material_service import list_syllabus_with_status
+
+    syllabus = list_syllabus_with_status()
+    syllabus_by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    for s in syllabus:
+        key = (s.get("subject", ""), s.get("topic", ""))
+        if s.get("has_material") and s.get("pdf_filename"):
+            syllabus_by_key[key] = s
+
+    material_suggestions: list[dict[str, Any]] = []
+    seen_keys: set[tuple[str, str]] = set()
+
+    # 1) topicos criticos (baixo acerto) com material disponivel
+    for c in critical[:5]:
+        key_str = c.get("key", "")
+        parts = key_str.split("::", 1)
+        if len(parts) != 2:
+            continue
+        subj, topic = parts
+        key = (subj, topic)
+        if key in seen_keys:
+            continue
+        mat = syllabus_by_key.get(key)
+        if mat:
+            seen_keys.add(key)
+            material_suggestions.append({
+                "subject": subj,
+                "topic": topic,
+                "pdfFilename": mat.get("pdf_filename"),
+                "title": mat.get("material_title") or f"{topic} — {subj}",
+                "reason": f"Acerto de {int(c.get('accuracy', 0) * 100)}% em {c.get('n', 0)} questoes",
+                "priority": 1,
+                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+            })
+
+    # 2) topicos com erros recentes (hot) com material
+    for h in hot[:3]:
+        key_str = h.get("key", "")
+        parts = key_str.split("::", 1)
+        if len(parts) != 2:
+            continue
+        subj, topic = parts
+        key = (subj, topic)
+        if key in seen_keys:
+            continue
+        mat = syllabus_by_key.get(key)
+        if mat:
+            seen_keys.add(key)
+            material_suggestions.append({
+                "subject": subj,
+                "topic": topic,
+                "pdfFilename": mat.get("pdf_filename"),
+                "title": mat.get("material_title") or f"{topic} — {subj}",
+                "reason": f"{h.get('misses', 0)} erro(s) recente(s)",
+                "priority": 2,
+                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+            })
+
+    # 3) topico do dia se tiver material
+    if study_today:
+        subj = study_today.get("subject", "")
+        topic = study_today.get("topic", "")
+        key = (subj, topic)
+        if key not in seen_keys:
+            mat = syllabus_by_key.get(key)
+            if mat:
+                material_suggestions.append({
+                    "subject": subj,
+                    "topic": topic,
+                    "pdfFilename": mat.get("pdf_filename"),
+                    "title": mat.get("material_title") or f"{topic} — {subj}",
+                    "reason": "Topico do dia no seu plano",
+                    "priority": 3,
+                    "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+                })
+
+    # 4) Fallback: se nao ha sugestoes, recomenda topicos de maior peso no syllabus
+    if not material_suggestions:
+        weighted = sorted(
+            [s for s in syllabus if s.get("has_material") and s.get("pdf_filename")],
+            key=lambda s: -(s.get("weight") or 1.0),
+        )
+        for s in weighted[:3]:
+            subj = s.get("subject", "")
+            topic = s.get("topic", "")
+            material_suggestions.append({
+                "subject": subj,
+                "topic": topic,
+                "pdfFilename": s.get("pdf_filename"),
+                "title": s.get("material_title") or f"{topic} — {subj}",
+                "reason": "Topico de alta prioridade no edital PAES",
+                "priority": 4,
+                "actionPath": f"/materiais/estudo?subject={quote(subj)}&topic={quote(topic)}",
+            })
+
+    # --- Provas historicas sugeridas ---
+    with db() as conn:
+        year_counts = conn.execute(
+            """SELECT year, COUNT(*) as n,
+               SUM(CASE WHEN source LIKE 'oficial%' OR source LIKE 'pdf_ingest%' THEN 1 ELSE 0 END) as official
+               FROM questions WHERE year IS NOT NULL GROUP BY year ORDER BY year DESC"""
+        ).fetchall()
+
+        # Anos que o aluno ja respondeu (para nao sugerir prova repetida)
+        answered_years = set()
+        if total > 0:
+            rows = conn.execute(
+                "SELECT DISTINCT q.year FROM answers a JOIN questions q ON a.question_id = q.id WHERE q.year IS NOT NULL"
+            ).fetchall()
+            answered_years = {r["year"] for r in rows}
+
+    exam_suggestions: list[dict[str, Any]] = []
+    for yr in year_counts:
+        y = yr["year"]
+        n = yr["n"]
+        official = yr["official"] or 0
+        if y in answered_years:
+            continue
+        if official < 10:
+            continue
+        exam_suggestions.append({
+            "year": y,
+            "totalQuestions": n,
+            "officialQuestions": official,
+            "reason": f"{official} questoes oficiais disponiveis — voce ainda nao treinou",
+            "actionPath": f"/sessao?examBoard=UEMA_PAES&year={y}",
+        })
+        if len(exam_suggestions) >= 3:
+            break
+
+    # --- Resumo proativo ---
+    if total == 0:
+        summary = "Bem-vindo! Comece estudando o topico do dia ou abrindo um material."
+    elif accuracy < 0.5:
+        summary = f"Acerto de {int(accuracy * 100)}%. Priorize teoria: leia os materiais sugeridos antes de novas questoes."
+    elif accuracy < 0.7:
+        summary = f"Acerto de {int(accuracy * 100)}%. Revise os pontos fracos e faca uma prova historica."
+    elif accuracy >= 0.8:
+        summary = f"Excelente: {int(accuracy * 100)}% de acerto! Hora de simulados completos e provas historicas."
+    else:
+        summary = "Continue estudando para evoluir seu plano."
+
+    if weak_subject and total >= 5:
+        summary += f" Ponto fraco: {weak_subject}."
+
+    if streak == 0 and total > 0:
+        summary += " Seu streak zerou — estude hoje para reiniciar!"
+    elif streak >= 7:
+        summary += f" {streak} dias seguidos! Mantenha o ritmo."
+
+    return {
+        "ok": True,
+        "summary": summary,
+        "materialSuggestions": material_suggestions[:5],
+        "examSuggestions": exam_suggestions,
+        "weakSubject": weak_subject,
+        "strongSubject": strong_subject,
+        "streakDays": streak,
+        "totalAnswered": total,
+        "accuracy": round(accuracy, 3),
+        "officialUnlocked": official_unlocked,
+        "hasMaterials": len(material_suggestions) > 0,
+        "hasExams": len(exam_suggestions) > 0,
+    }
