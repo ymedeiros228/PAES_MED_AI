@@ -22,6 +22,7 @@ class SyllabusEntry {
     required this.weight,
     required this.hasMaterial,
     this.materialTitle,
+    this.pdfFilename,
   });
 
   final String id;
@@ -31,6 +32,7 @@ class SyllabusEntry {
   final double weight;
   final bool hasMaterial;
   final String? materialTitle;
+  final String? pdfFilename;
 
   factory SyllabusEntry.fromJson(Map<String, dynamic> j) => SyllabusEntry(
         id: j['id'] ?? '',
@@ -40,6 +42,7 @@ class SyllabusEntry {
         weight: (j['weight'] ?? 1.0).toDouble(),
         hasMaterial: (j['has_material'] ?? 0) == 1,
         materialTitle: j['material_title'],
+        pdfFilename: j['pdf_filename'],
       );
 }
 
@@ -417,17 +420,37 @@ class _SyllabusTileState extends ConsumerState<_SyllabusTile> {
       ),
       trailing: _generating
           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-          : e.hasMaterial
-              ? TextButton.icon(
-                  onPressed: _openMaterial,
-                  icon: const Icon(Icons.read_more, size: 18),
-                  label: const Text('Abrir'),
-                )
-              : TextButton.icon(
-                  onPressed: _generate,
-                  icon: const Icon(Icons.auto_awesome, size: 18),
-                  label: const Text('Gerar'),
-                ),
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (e.hasMaterial && e.pdfFilename != null && e.pdfFilename!.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.menu_book, size: 18),
+                    color: cs.primary,
+                    tooltip: 'Estudar com Tutor IA',
+                    onPressed: () {
+                      context.go(Uri(path: '/estudar', queryParameters: {
+                        'pdf': e.pdfFilename!,
+                        'title': e.materialTitle ?? e.topic,
+                        'subject': e.subject,
+                        'topic': e.topic,
+                      }).toString());
+                    },
+                  ),
+                if (e.hasMaterial)
+                  TextButton.icon(
+                    onPressed: _openMaterial,
+                    icon: const Icon(Icons.read_more, size: 18),
+                    label: const Text('Abrir'),
+                  )
+                else
+                  TextButton.icon(
+                    onPressed: _generate,
+                    icon: const Icon(Icons.auto_awesome, size: 18),
+                    label: const Text('Gerar'),
+                  ),
+              ],
+            ),
       subtitle: _error != null
           ? Text(_error!, style: TextStyle(fontSize: 11, color: cs.error))
           : e.hasMaterial

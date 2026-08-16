@@ -232,7 +232,8 @@ def list_syllabus_with_status(subject: str | None = None) -> list[dict[str, Any]
                 """
                 SELECT s.id, s.subject, s.topic, s.subtopic, s.weight,
                        CASE WHEN m.id IS NOT NULL THEN 1 ELSE 0 END as has_material,
-                       m.title as material_title
+                       m.title as material_title,
+                       m.pdf_filename as pdf_filename
                 FROM syllabus s
                 LEFT JOIN materials m ON s.subject = m.subject AND s.topic = m.topic
                     AND COALESCE(s.subtopic,'') = COALESCE(m.subtopic,'')
@@ -246,7 +247,8 @@ def list_syllabus_with_status(subject: str | None = None) -> list[dict[str, Any]
                 """
                 SELECT s.id, s.subject, s.topic, s.subtopic, s.weight,
                        CASE WHEN m.id IS NOT NULL THEN 1 ELSE 0 END as has_material,
-                       m.title as material_title
+                       m.title as material_title,
+                       m.pdf_filename as pdf_filename
                 FROM syllabus s
                 LEFT JOIN materials m ON s.subject = m.subject AND s.topic = m.topic
                     AND COALESCE(s.subtopic,'') = COALESCE(m.subtopic,'')
