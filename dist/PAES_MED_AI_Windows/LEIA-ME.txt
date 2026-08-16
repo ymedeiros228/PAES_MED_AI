@@ -1,0 +1,79 @@
+# PAES MED AI - Instalação Windows
+
+## Requisitos
+
+- Windows 10 ou 11 (64-bit)
+- Python 3.11+ instalado (https://python.org)
+  - Durante a instalação, marque **"Add Python to PATH"**
+
+## Instalação
+
+1. Extraia a pasta `PAES_MED_AI_Windows` para o local desejado (ex: `C:\PAES_MED_AI`)
+2. Execute `Instalar_PAES_MED_AI.bat` (duplo-clique)
+3. O instalador cria atalhos na **Área de Trabalho** e no **Menu Iniciar**
+
+## Como usar
+
+1. Duplo-clique no atalho **"PAES MED AI"** da Área de Trabalho
+2. O backend inicia automaticamente
+3. O app abre automaticamente quando o backend estiver pronto
+
+## Atualização automática
+
+Quando houver uma nova versão:
+
+1. Abra o PAES MED AI
+2. Vá em **Ajustes → Atualizações**
+3. Clique em **"Atualizar agora"**
+4. O app baixa a última versão do GitHub e instala sozinho
+5. Seu **progresso é preservado** automaticamente
+
+Ou execute `Atualizar_PAES_MED_AI.bat` na pasta do app.
+
+## Backup automático
+
+Seu progresso é protegido automaticamente:
+
+- **Backup automático** é feito toda vez que o app inicia (se passou 1 dia do último)
+- Os backups ficam em `data\backups\`
+- Na atualização, um backup adicional é feito antes de qualquer alteração
+
+Você também pode fazer backup manual em **Ajustes → Backup**.
+
+## O que está incluído
+
+- App Flutter Windows (desktop)
+- Backend FastAPI (Python)
+- Banco SQLite com 657 questões
+- Provas PAES oficiais 2014-2026 (PDFs)
+- Gabaritos oficiais
+- 92 materiais de estudo (PDFs)
+- Tutor IA integrado
+- Sistema de atualização automática
+- Backup automático de progresso
+
+## Solução de problemas
+
+### App não abre
+- Verifique se Python está instalado: `python --version` no terminal
+- Se não estiver, instale de https://python.org (marque "Add Python to PATH")
+
+### Backend não inicia
+- Abra `data\logs\backend.log` e veja o erro
+- Tente reinstalar dependências: `pip install -r backend\requirements.txt`
+
+### PDFs não abrem
+- Verifique se a pasta `data\provas` tem os PDFs
+- Se faltar algum, copie da pasta original do projeto
+
+### Atualização falha
+- Verifique a conexão com a internet
+- Veja o log em `%TEMP%\PAES_MED_AI_update.log`
+- Execute `Atualizar_PAES_MED_AI.bat` como administrador
+
+## Versão
+
+Veja `VERSION.txt` para versão, branch e commit do pacote.
+
+---
+PAES MED AI — Plataforma de estudos para PAES/UEMA Medicina

@@ -81,6 +81,30 @@ def on_startup() -> None:
         except Exception:
             pass
 
+    # Backup automático do progresso do usuário (apenas desktop, nao no Render)
+    if os.getenv("PAES_AUTO_BACKUP", "1").strip().lower() in ("1", "true", "yes"):
+        try:
+            from services_extra import create_backup, last_backup_status
+            from timeutil import now_iso
+
+            bk = last_backup_status()
+            needs_backup = True
+            if bk.get("ok"):
+                at = bk.get("at") or bk.get("createdAt") or bk.get("timestamp")
+                if at:
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(str(at).replace("Z", ""))
+                        days = (datetime.now() - dt).days
+                        needs_backup = days >= 1
+                    except Exception:
+                        needs_backup = True
+            if needs_backup:
+                result = create_backup()
+                print(f"Backup automático: {result.get('path')} | ok={result.get('ok')}")
+        except Exception as exc:
+            print(f"Backup automático falhou (não fatal): {exc}")
+
 
 # --- Servir front web (deploy unificado) ---
 # Se a pasta build/web existir, serve o app Flutter compilado.
