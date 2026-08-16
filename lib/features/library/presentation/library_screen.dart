@@ -1814,41 +1814,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
               ],
 
-              // === SEÇÃO: PDFs de estudo ===
+              // === SEÇÃO: Estante de Materiais de Estudo ===
               if (_pdfsLoaded && _studyPdfs.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.picture_as_pdf_rounded, size: 22, color: cs.error),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Materiais de Estudo',
-                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface),
-                            ),
-                          ),
-                          Text(
-                            '${_studyPdfs.length} PDFs',
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.5)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Toque em qualquer material para abrir o leitor integrado',
-                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
-                      ),
-                      const SizedBox(height: 14),
-                      // Agrupar por disciplina
-                      ..._buildPdfGroups(cs),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 32),
+                _buildLibraryShelf(cs),
               ],
             ],
           ),
@@ -1857,82 +1826,375 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  List<Widget> _buildPdfGroups(ColorScheme cs) {
+  // ==========================================================
+  // Estante de Materiais — design de biblioteca real
+  // ==========================================================
+
+  Widget _buildLibraryShelf(ColorScheme cs) {
+    // Agrupar por disciplina
     final bySubject = <String, List<Map<String, dynamic>>>{};
     for (final p in _studyPdfs) {
       final subj = p['subject']?.toString() ?? 'Outros';
       bySubject.putIfAbsent(subj, () => []).add(p);
     }
     final subjects = bySubject.keys.toList()..sort();
-    final subjectIcons = {
-      'Biologia': Icons.biotech_rounded,
-      'Química': Icons.science_rounded,
-      'Física': Icons.bolt_rounded,
-      'Matemática': Icons.calculate_rounded,
-      'Geografia': Icons.public_rounded,
-      'História': Icons.account_balance_rounded,
-      'Português': Icons.menu_book_rounded,
-      'Inglês': Icons.translate_rounded,
-      'Espanhol': Icons.language_rounded,
-      'Filosofia': Icons.psychology_rounded,
-      'Sociologia': Icons.groups_rounded,
-    };
-    final subjectColors = {
-      'Biologia': Colors.green,
-      'Química': Colors.deepOrange,
-      'Física': Colors.blue,
-      'Matemática': Colors.purple,
-      'Geografia': Colors.teal,
-      'História': Colors.brown,
-      'Português': Colors.red,
-      'Inglês': Colors.lightBlue,
-      'Espanhol': Colors.amber,
-      'Filosofia': Colors.blueGrey,
-      'Sociologia': Colors.deepPurple,
-    };
 
-    return subjects.map((subject) {
-      final items = bySubject[subject]!;
-      final icon = subjectIcons[subject] ?? Icons.book_rounded;
-      final color = subjectColors[subject] ?? cs.primary;
-      return Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Cabeçalho da estante
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cs.primaryContainer.withOpacity(0.6),
+                cs.surfaceContainerHighest.withOpacity(0.3),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: cs.primary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.collections_bookmark_rounded, size: 26, color: cs.primary),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Estante de Materiais',
+                          style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${_studyPdfs.length} PDFs · ${subjects.length} disciplinas · toque para ler',
+                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: cs.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${_studyPdfs.length}',
+                      style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w900, color: cs.onPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        // Estantes por disciplina
+        ...subjects.map((subject) => _buildSubjectShelf(cs, subject, bySubject[subject]!)),
+      ],
+    );
+  }
+
+  Widget _buildSubjectShelf(ColorScheme cs, String subject, List<Map<String, dynamic>> items) {
+    final meta = _subjectMeta(subject);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
+          // Cabeçalho da disciplina — estilo "prateleira"
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Icon(icon, size: 18, color: color),
-                const SizedBox(width: 8),
-                Text(
-                  '$subject (${items.length})',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: color),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: meta.gradient,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(color: meta.color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                    ],
+                  ),
+                  child: Icon(meta.icon, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        subject,
+                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w800, color: cs.onSurface),
+                      ),
+                      Text(
+                        '${items.length} ${items.length == 1 ? "material" : "materiais"}',
+                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: cs.onSurface.withOpacity(0.4)),
+                      ),
+                    ],
+                  ),
+                ),
+                // Linha decorativa da prateleira
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [meta.color.withOpacity(0.4), Colors.transparent],
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: items.map((pdf) {
-              final title = pdf['title']?.toString() ?? 'Material';
-              final filename = pdf['filename']?.toString() ?? '';
-              return ActionChip(
-                avatar: Icon(Icons.picture_as_pdf, size: 16, color: color),
-                label: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  context.go(Uri(path: '/estudar', queryParameters: {
-                    'pdf': filename,
-                    'title': title,
-                    'subject': subject,
-                  }).toString());
-                },
+          // Grid de "livros" (cards de PDF)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const cardW = 160.0;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 14,
+                children: items.map((pdf) {
+                  final title = pdf['title']?.toString() ?? 'Material';
+                  final filename = pdf['filename']?.toString() ?? '';
+                  final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
+                  return SizedBox(
+                    width: cardW,
+                    child: _BookCard(
+                      title: title,
+                      filename: filename,
+                      subject: subject,
+                      sizeKb: sizeKb,
+                      icon: meta.icon,
+                      color: meta.color,
+                      gradient: meta.gradient,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        context.go(Uri(path: '/estudar', queryParameters: {
+                          'pdf': filename,
+                          'title': title,
+                          'subject': subject,
+                        }).toString());
+                      },
+                    ),
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
           ),
         ],
-      );
-    }).toList();
+      ),
+    );
   }
+
+  _SubjectMeta _subjectMeta(String subject) {
+    const fallback = _SubjectMeta(
+      icon: Icons.book_rounded,
+      color: Color(0xFF607D8B),
+      gradient: [Color(0xFF455A64), Color(0xFF90A4AE)],
+    );
+    switch (subject) {
+      case 'Biologia':
+        return const _SubjectMeta(icon: Icons.biotech_rounded, color: Color(0xFF2E7D32), gradient: [Color(0xFF1B5E20), Color(0xFF4CAF50)]);
+      case 'Química':
+        return const _SubjectMeta(icon: Icons.science_rounded, color: Color(0xFFE65100), gradient: [Color(0xFFBF360C), Color(0xFFFF7043)]);
+      case 'Física':
+        return const _SubjectMeta(icon: Icons.bolt_rounded, color: Color(0xFF1565C0), gradient: [Color(0xFF0D47A1), Color(0xFF42A5F5)]);
+      case 'Matemática':
+        return const _SubjectMeta(icon: Icons.calculate_rounded, color: Color(0xFF6A1B9A), gradient: [Color(0xFF4A148C), Color(0xFFAB47BC)]);
+      case 'Geografia':
+        return const _SubjectMeta(icon: Icons.public_rounded, color: Color(0xFF00897B), gradient: [Color(0xFF004D40), Color(0xFF26A69A)]);
+      case 'História':
+        return const _SubjectMeta(icon: Icons.account_balance_rounded, color: Color(0xFF6D4C41), gradient: [Color(0xFF3E2723), Color(0xFF8D6E63)]);
+      case 'Português':
+        return const _SubjectMeta(icon: Icons.menu_book_rounded, color: Color(0xFFC62828), gradient: [Color(0xFFB71C1C), Color(0xFFEF5350)]);
+      case 'Inglês':
+        return const _SubjectMeta(icon: Icons.translate_rounded, color: Color(0xFF0277BD), gradient: [Color(0xFF01579B), Color(0xFF29B6F6)]);
+      case 'Espanhol':
+        return const _SubjectMeta(icon: Icons.language_rounded, color: Color(0xFFF57F17), gradient: [Color(0xFFF57F17), Color(0xFFFFCA28)]);
+      case 'Filosofia':
+        return const _SubjectMeta(icon: Icons.psychology_rounded, color: Color(0xFF455A64), gradient: [Color(0xFF263238), Color(0xFF607D8B)]);
+      case 'Sociologia':
+        return const _SubjectMeta(icon: Icons.groups_rounded, color: Color(0xFF5D4037), gradient: [Color(0xFF3E2723), Color(0xFF6D4C41)]);
+    }
+    return fallback;
+  }
+}
+
+// ============================================================
+// _BookCard — card estilo livro numa estante
+// ============================================================
+
+class _BookCard extends StatelessWidget {
+  const _BookCard({
+    required this.title,
+    required this.filename,
+    required this.subject,
+    required this.sizeKb,
+    required this.icon,
+    required this.color,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  final String title;
+  final String filename;
+  final String subject;
+  final double sizeKb;
+  final IconData icon;
+  final Color color;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final sizeStr = sizeKb > 1024
+        ? '${(sizeKb / 1024).toStringAsFixed(1)} MB'
+        : '${sizeKb.round()} KB';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: cs.surface,
+            border: Border.all(color: color.withOpacity(0.2), width: 1),
+            boxShadow: [
+              BoxShadow(color: color.withOpacity(0.12), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // "Capa" do livro — gradiente + ícone
+                Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradient,
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Ícone grande de fundo
+                      Positioned(
+                        right: -8,
+                        bottom: -8,
+                        child: Icon(icon, size: 60, color: Colors.white.withOpacity(0.12)),
+                      ),
+                      // Ícone do PDF no canto
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.picture_as_pdf, size: 10, color: Colors.white),
+                              const SizedBox(width: 3),
+                              Text(
+                                'PDF',
+                                style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Ícone central
+                      Center(
+                        child: Icon(icon, color: Colors.white.withOpacity(0.9), size: 32),
+                      ),
+                    ],
+                  ),
+                ),
+                // "Lombada" — barra colorida
+                Container(height: 4, color: color),
+                // Conteúdo — título + tamanho
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                          height: 1.3,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.storage_rounded, size: 11, color: cs.onSurface.withOpacity(0.3)),
+                          const SizedBox(width: 4),
+                          Text(
+                            sizeStr,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: cs.onSurface.withOpacity(0.4),
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.arrow_forward_rounded, size: 14, color: color),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SubjectMeta {
+  const _SubjectMeta({required this.icon, required this.color, required this.gradient});
+  final IconData icon;
+  final Color color;
+  final List<Color> gradient;
 }
