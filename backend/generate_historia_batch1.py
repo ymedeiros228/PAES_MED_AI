@@ -2,6 +2,7 @@
 """Gera PDFs de Historia — batch 1 (topicos 8.1 a 8.3)."""
 
 from pdf_base import generate_educational_pdf
+from historia_real_images import REAL_IMAGES
 
 # ============================================================
 # 8.1 Mundo Antigo
@@ -131,7 +132,7 @@ MUNDO_ANTIGO = {
 
 IMG_MUNDO_ANTIGO = [
     {"file": "hist_mundo_antigo.png", "caption": "Principais civilizacoes da Antiguidade", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_mundo_antigo", [])
 
 # ============================================================
 # 8.2 Mundo Medieval
@@ -267,7 +268,7 @@ MEDIEVAL = {
 
 IMG_MEDIEVAL = [
     {"file": "hist_medieval.png", "caption": "Piramide da sociedade feudal", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_medieval", [])
 
 # ============================================================
 # 8.3 Idade Moderna
@@ -399,7 +400,7 @@ MODERNA = {
 
 IMG_MODERNA = [
     {"file": "hist_moderna.png", "caption": "Grandes navegacoes: Europa chega a America", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_moderna", [])
 
 # ============================================================
 # Gerar todos

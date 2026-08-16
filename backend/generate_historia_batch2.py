@@ -2,6 +2,7 @@
 """Gera PDFs de Historia — batch 2 (topicos 8.4 a 8.6)."""
 
 from pdf_base import generate_educational_pdf
+from historia_real_images import REAL_IMAGES
 
 # ============================================================
 # 8.4 Idade Contemporanea
@@ -140,7 +141,7 @@ CONTEMPORANEA = {
 
 IMG_CONTEMPORANEA = [
     {"file": "hist_contemporanea.png", "caption": "Linha do tempo da Idade Contemporanea: revolucoes e guerras", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_contemporanea", [])
 
 # ============================================================
 # 8.5 Brasil Contemporaneo
@@ -282,7 +283,7 @@ BRASIL_CONTEMPORANEO = {
 
 IMG_BRASIL_CONTEMPORANEO = [
     {"file": "hist_brasil_contemporaneo.png", "caption": "Linha do tempo do Brasil Contemporaneo: de Vargas a redemocratizacao", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_brasil_contemporaneo", [])
 
 # ============================================================
 # 8.6 Historia do Maranhao
@@ -427,7 +428,7 @@ MARANHAO = {
 
 IMG_MARANHAO = [
     {"file": "hist_maranhao.png", "caption": "Historia do Maranhao: colonial, imperial e contemporaneo", "source": "PAES MED AI", "source_url": ""}
-]
+] + REAL_IMAGES.get("hist_maranhao", [])
 
 # ============================================================
 # Gerar todos
