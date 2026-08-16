@@ -55,9 +55,9 @@ async def list_pdfs() -> list[dict[str, Any]]:
         subject_code = parts[0] if parts else ""
         title = parts[1].replace("_", " ") if len(parts) > 1 else name
         subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
-                       "MA": "Matemática", "PO": "Português", "HI": "História",
-                       "GE": "Geografia", "FILO": "Filosofia", "SOC": "Sociologia",
-                       "IN": "Inglês", "ES": "Espanhol"}
+                       "MT": "Matemática", "PT": "Português", "HIS": "História",
+                       "GEO": "Geografia", "FIL": "Filosofia", "SOC": "Sociologia",
+                       "ING": "Inglês", "ESP": "Espanhol"}
         subject = subject_map.get(subject_code, subject_code)
         pdfs.append({
             "filename": f.name,
