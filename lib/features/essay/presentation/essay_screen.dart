@@ -356,27 +356,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     final count = progress?['count'] as int? ?? 0;
     final streak = progress?['streakDays'] as int? ?? 0;
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          if (!busy && textCtrl.text.trim().length >= 50) {
-            unawaited(_grade());
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-          if (!busy && textCtrl.text.trim().length >= 50) {
-            unawaited(_grade());
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true): () {
-          if (!busy && textCtrl.text.trim().length >= 50) {
-            unawaited(_grade());
-          }
-        },
-      },
-      child: Focus(
-        autofocus: false,
-        child: ListView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -897,8 +877,6 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           ),
         ),
       ],
-        ),
-      ),
     );
   }
 }

@@ -29,7 +29,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   String? error;
   int selected = 0;
   int _readRefreshTick = 0;
-  final _focusNode = FocusNode();
   List<String> _navPaths = const [];
   String _sessionPath = '/sessao?examBoard=UEMA_PAES&preferNatureza=1';
   bool gapsOnlyNoMaterial = false;
@@ -42,15 +41,11 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
     super.initState();
     _checkpointFuture = apiClient.get('/api/session/checkpoint');
     _essayProgressFuture = apiClient.get('/api/essays/progress');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
     _load();
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -105,33 +100,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   void _openSelected() {
     if (_navPaths.isEmpty) return;
     context.go(_navPaths[selected.clamp(0, _navPaths.length - 1)]);
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go(_sessionPath);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      unawaited(_load());
-      return KeyEventResult.handled;
-    }
-    if (_navPaths.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      setState(() => selected = (selected + 1).clamp(0, _navPaths.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      setState(() => selected = (selected - 1).clamp(0, _navPaths.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      _openSelected();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   Future<void> _load() async {
@@ -268,10 +236,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
 
     int navIndexFor(String path) => _navPaths.indexOf(path);
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: RefreshIndicator(
+    return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -812,7 +777,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
           ),
         ],
       ),
-    ),
     );
   }
 }

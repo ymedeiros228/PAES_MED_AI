@@ -19,20 +19,15 @@ class RevisionsScreen extends ConsumerStatefulWidget {
 
 class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
   int selected = 0;
-  final _focusNode = FocusNode();
   List<Map<String, dynamic>> _items = const [];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -52,40 +47,10 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
     setState(() => selected = (selected + delta).clamp(0, _items.length - 1));
   }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      return KeyEventResult.handled;
-    }
-    if (_items.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      _moveSelection(1);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      _moveSelection(-1);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      _openItem(selected);
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(revisionsApiProvider);
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: async.when(
+    return async.when(
         loading: () => const SkeletonList(count: 5, lines: 2),
         error: (e, _) => EmptyState(
           title: 'Revisões indisponíveis',
@@ -252,7 +217,6 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
             ],
           );
         },
-      ),
     );
   }
 }

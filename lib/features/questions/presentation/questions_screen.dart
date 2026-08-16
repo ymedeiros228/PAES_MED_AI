@@ -41,7 +41,6 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
   int selected = 0;
   static const pageSize = 40;
 
-  final _focusNode = FocusNode();
   final _scrollCtrl = ScrollController();
   List<Question> _pageItems = const [];
 
@@ -51,14 +50,10 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     subject = widget.initialSubject;
     topic = widget.initialTopic;
     examBoard = widget.initialExamBoard;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     _scrollCtrl.dispose();
     super.dispose();
   }
@@ -122,49 +117,12 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
     });
   }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      _moveSelection(1);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      _moveSelection(-1);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      _openSelected();
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.bracketRight || key == LogicalKeyboardKey.keyN) {
-      _nextPage();
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.bracketLeft || key == LogicalKeyboardKey.keyP) {
-      _prevPage();
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(questionsProvider(filtersKey(filters)));
     final cs = Theme.of(context).colorScheme;
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: Column(
+    return Column(
         children: [
           PageBody(
             padding: const EdgeInsets.fromLTRB(28, 20, 28, 8),
@@ -507,7 +465,6 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
             ),
           ),
         ],
-      ),
     );
   }
 

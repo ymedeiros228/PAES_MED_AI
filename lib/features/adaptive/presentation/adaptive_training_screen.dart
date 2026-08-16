@@ -27,7 +27,6 @@ class AdaptiveTrainingScreen extends ConsumerStatefulWidget {
 class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen> {
   late String subject;
   late final TextEditingController topicCtrl;
-  final focusNode = FocusNode();
   List<Map<String, dynamic>> queue = [];
   int index = 0;
   int? selected;
@@ -86,7 +85,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   @override
   void dispose() {
     topicCtrl.dispose();
-    focusNode.dispose();
     super.dispose();
   }
 
@@ -146,9 +144,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
           error =
               'Nenhuma questão para este tópico — importe na Biblioteca ou escolha outro assunto.';
         }
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) focusNode.requestFocus();
       });
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para montar o treino. Tente de novo.'));
@@ -229,75 +224,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       pendingErrorPick = false;
       errorType = 'conceito';
     });
-    focusNode.requestFocus();
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final primary = FocusManager.instance.primaryFocus;
-    final inField = primary != null && primary.context?.widget is EditableText;
-    if ((event.logicalKey == LogicalKeyboardKey.keyR ||
-            event.logicalKey == LogicalKeyboardKey.f5) &&
-        !inField &&
-        !loading) {
-      unawaited(_start());
-      return KeyEventResult.handled;
-    }
-    if (queue.isEmpty || finished) return KeyEventResult.ignored;
-
-    final digitMap = {
-      LogicalKeyboardKey.digit1: 0,
-      LogicalKeyboardKey.digit2: 1,
-      LogicalKeyboardKey.digit3: 2,
-      LogicalKeyboardKey.digit4: 3,
-      LogicalKeyboardKey.digit5: 4,
-      LogicalKeyboardKey.numpad1: 0,
-      LogicalKeyboardKey.numpad2: 1,
-      LogicalKeyboardKey.numpad3: 2,
-      LogicalKeyboardKey.numpad4: 3,
-      LogicalKeyboardKey.numpad5: 4,
-    };
-
-    // Após miss: 1–5 tipo de erro; Enter confirma e grava; N avança depois
-    if (pendingErrorPick) {
-      final ei = digitMap[event.logicalKey];
-      if (ei != null && ei < _errorTypes.length) {
-        setState(() => errorType = _errorTypes[ei]);
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        unawaited(_confirmErrorAndSave());
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN ||
-          event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        _next();
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    final opt = digitMap[event.logicalKey];
-    if (opt != null) {
-      final opts = (queue[index]['options'] as List? ?? []);
-      if (opt < opts.length) {
-        setState(() => selected = opt);
-        return KeyEventResult.handled;
-      }
-    }
-    if ((event.logicalKey == LogicalKeyboardKey.enter ||
-            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
-        selected != null) {
-      unawaited(_submit());
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   @override
@@ -308,11 +234,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     final cs = Theme.of(context).colorScheme;
     final inQueue = queue.isNotEmpty && !finished;
 
-    return Focus(
-      focusNode: focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
         children: [
           PageBody(
             child: Column(
@@ -676,7 +599,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
             ),
           ),
         ],
-      ),
     );
   }
 }

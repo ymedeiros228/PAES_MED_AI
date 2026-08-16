@@ -93,22 +93,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
       }
     });
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          if (!state.isLoading) unawaited(_send());
-        },
-        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-          if (!state.isLoading) unawaited(_send());
-        },
-        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true):
-            () {
-          if (!state.isLoading) unawaited(_send());
-        },
-      },
-      child: Focus(
-        autofocus: false,
-        child: SafeArea(
+    return SafeArea(
           child: Column(
             children: [
               Padding(
@@ -404,8 +389,6 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 

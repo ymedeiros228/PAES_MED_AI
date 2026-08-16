@@ -26,7 +26,6 @@ class FlashcardsScreen extends ConsumerStatefulWidget {
 class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   final frontCtrl = TextEditingController();
   final backCtrl = TextEditingController();
-  final focusNode = FocusNode();
   bool showBack = false;
   int? currentId;
   /// Ciclo G/AK: default due-only; CTA Fila usa `/flashcards?due=1`.
@@ -37,26 +36,13 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) focusNode.requestFocus();
-    });
   }
 
   @override
   void dispose() {
     frontCtrl.dispose();
     backCtrl.dispose();
-    focusNode.dispose();
     super.dispose();
-  }
-
-  void _ensureCardsFocus() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final primary = FocusManager.instance.primaryFocus;
-      if (primary != null && primary.context?.widget is EditableText) return;
-      focusNode.requestFocus();
-    });
   }
 
   Future<void> _create() async {
@@ -69,7 +55,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
       frontCtrl.clear();
       backCtrl.clear();
       ref.read(refreshTickProvider.notifier).state++;
-      _ensureCardsFocus();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +73,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         currentId = null;
       });
       ref.read(refreshTickProvider.notifier).state++;
-      _ensureCardsFocus();
     } catch (e) {
       if (!mounted) return;
       HapticFeedback.heavyImpact();
@@ -110,43 +94,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
         showBack = true;
       }
     });
-    _ensureCardsFocus();
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final primary = FocusManager.instance.primaryFocus;
-    if (primary != null && primary.context?.widget is EditableText) {
-      return KeyEventResult.ignored;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.keyR ||
-        event.logicalKey == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.keyS) {
-      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.space) {
-      _flipTop();
-      return KeyEventResult.handled;
-    }
-    final top = currentId ?? (_itemIds.isNotEmpty ? _itemIds.first : null);
-    if (top == null) return KeyEventResult.ignored;
-    if (event.logicalKey == LogicalKeyboardKey.keyL ||
-        event.logicalKey == LogicalKeyboardKey.digit1 ||
-        event.logicalKey == LogicalKeyboardKey.numpad1) {
-      _review(top, true);
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.keyE ||
-        event.logicalKey == LogicalKeyboardKey.digit2 ||
-        event.logicalKey == LogicalKeyboardKey.numpad2) {
-      _review(top, false);
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   @override
@@ -158,11 +105,8 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
             : ref.watch(flashcardsAllProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return Focus(
-      focusNode: focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
         children: [
           PageBody(
             child: Column(
@@ -443,7 +387,6 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
             ),
           ),
         ],
-      ),
     );
   }
 }

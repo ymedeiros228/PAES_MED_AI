@@ -43,7 +43,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
   String? msg;
   bool filterSuspects = false;
   bool _bootstrapPromptShown = false;
-  final _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -51,13 +50,11 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     questions = widget.args.questions.map((e) => Map<String, dynamic>.from(e)).toList();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeOfferBootstrapCommit();
-      if (mounted) _focusNode.requestFocus();
     });
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -95,58 +92,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
       current['correctIndex'] = i;
       current['gabaritoApplied'] = true;
     });
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.keyJ) {
-      _prevQuestion();
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowRight || key == LogicalKeyboardKey.keyK) {
-      _nextQuestion();
-      return KeyEventResult.handled;
-    }
-    const digitKeys = [
-      LogicalKeyboardKey.digit1,
-      LogicalKeyboardKey.digit2,
-      LogicalKeyboardKey.digit3,
-      LogicalKeyboardKey.digit4,
-      LogicalKeyboardKey.digit5,
-    ];
-    const numpadKeys = [
-      LogicalKeyboardKey.numpad1,
-      LogicalKeyboardKey.numpad2,
-      LogicalKeyboardKey.numpad3,
-      LogicalKeyboardKey.numpad4,
-      LogicalKeyboardKey.numpad5,
-    ];
-    for (var i = 0; i < 5; i++) {
-      if (key == digitKeys[i] || key == numpadKeys[i]) {
-        _pickAnswer(i);
-        return KeyEventResult.handled;
-      }
-    }
-    if (key == LogicalKeyboardKey.keyH && !busy && questions.isNotEmpty) {
-      unawaited(_commit(highConfidenceOnly: true));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyE) {
-      unawaited(_editMeta());
-      return KeyEventResult.handled;
-    }
-    final primary = FocusManager.instance.primaryFocus;
-    if (primary != null && primary.context?.widget is EditableText) {
-      return KeyEventResult.ignored;
-    }
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go(
-        '/sessao?examBoard=UEMA_PAES&year=${widget.args.year}&preferNatureza=1',
-      );
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   Future<void> _maybeOfferBootstrapCommit() async {
@@ -343,10 +288,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
     final hasGab = _gabaritoPct;
     final highN = questions.where(_isHighConfidence).length;
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text('Revisão PAES ${widget.args.year}'),
         leading: IconButton(
@@ -579,7 +521,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                 ),
               ],
             ),
-    ),
     );
   }
 }

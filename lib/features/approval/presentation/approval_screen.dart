@@ -25,57 +25,16 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
   String? error;
   bool loading = true;
   int selected = 0;
-  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
     _load();
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.f5) {
-      unawaited(_load());
-      return KeyEventResult.handled;
-    }
-    if (items.isEmpty || error != null) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      setState(() => selected = (selected + 1).clamp(0, items.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      setState(() => selected = (selected - 1).clamp(0, items.length - 1));
-      return KeyEventResult.handled;
-    }
-    final q = items[selected.clamp(0, items.length - 1)];
-    final id = q['id']?.toString() ?? '';
-    if (id.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.keyA) {
-      _decide(id, true);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyR) {
-      _decide(id, false);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.numpadEnter ||
-        key == LogicalKeyboardKey.keyO) {
-      context.go('/questoes/$id');
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   Future<void> _load() async {
@@ -112,10 +71,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -267,7 +223,6 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
           ),
         ),
       ],
-    ),
     );
   }
 }
