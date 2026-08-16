@@ -42,6 +42,50 @@ async def list_all_materials(subject: str | None = Query(None)) -> list[dict[str
     return list_materials(subject)
 
 
+@router.get("/pdf-list")
+async def list_pdfs() -> list[dict[str, Any]]:
+    """Lista todos os PDFs disponíveis na pasta de materiais."""
+    if not _PDF_DIR.exists():
+        return []
+    pdfs = []
+    for f in sorted(_PDF_DIR.glob("*.pdf")):
+        # Decodificar nome: BI_CITOLOGIA_MEMBRANA_PLASMATICA.pdf
+        name = f.stem
+        parts = name.split("_", 1)
+        subject_code = parts[0] if parts else ""
+        title = parts[1].replace("_", " ") if len(parts) > 1 else name
+        subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
+                       "MA": "Matemática", "PO": "Português", "HI": "História",
+                       "GE": "Geografia", "FILO": "Filosofia", "SOC": "Sociologia",
+                       "IN": "Inglês", "ES": "Espanhol"}
+        subject = subject_map.get(subject_code, subject_code)
+        pdfs.append({
+            "filename": f.name,
+            "title": title,
+            "subject": subject,
+            "size_kb": round(f.stat().st_size / 1024, 1),
+            "url": f"/api/materials/pdf/{f.name}",
+        })
+    return pdfs
+
+
+@router.get("/pdf/{filename}")
+async def download_pdf(filename: str):
+    """Serve um PDF gerado pelo sistema."""
+    # Sanitizar nome do arquivo (sem path traversal)
+    safe = Path(filename).name
+    if not safe.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
+    pdf_path = _PDF_DIR / safe
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail="PDF não encontrado.")
+    return FileResponse(
+        str(pdf_path),
+        media_type="application/pdf",
+        filename=safe,
+    )
+
+
 @router.get("/{subject}/{topic}")
 async def get_material_route(
     subject: str,
@@ -79,46 +123,3 @@ async def delete_material_route(material_id: str) -> dict[str, Any]:
     if not deleted:
         raise HTTPException(status_code=404, detail="Material não encontrado.")
     return {"ok": True, "deleted": material_id}
-
-
-@router.get("/pdf/{filename}")
-async def download_pdf(filename: str):
-    """Serve um PDF gerado pelo sistema."""
-    # Sanitizar nome do arquivo (sem path traversal)
-    safe = Path(filename).name
-    if not safe.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
-    pdf_path = _PDF_DIR / safe
-    if not pdf_path.exists():
-        raise HTTPException(status_code=404, detail="PDF não encontrado.")
-    return FileResponse(
-        str(pdf_path),
-        media_type="application/pdf",
-        filename=safe,
-    )
-
-
-@router.get("/pdfs/list")
-async def list_pdfs() -> list[dict[str, Any]]:
-    """Lista todos os PDFs disponíveis na pasta de materiais."""
-    if not _PDF_DIR.exists():
-        return []
-    pdfs = []
-    for f in sorted(_PDF_DIR.glob("*.pdf")):
-        # Decodificar nome: BI_CITOLOGIA_MEMBRANA_PLASMATICA.pdf
-        name = f.stem
-        parts = name.split("_", 1)
-        subject_code = parts[0] if parts else ""
-        title = parts[1].replace("_", " ") if len(parts) > 1 else name
-        subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
-                       "MA": "Matemática", "PO": "Português", "HI": "História",
-                       "GE": "Geografia", "FILO": "Filosofia", "SOC": "Sociologia"}
-        subject = subject_map.get(subject_code, subject_code)
-        pdfs.append({
-            "filename": f.name,
-            "title": title,
-            "subject": subject,
-            "size_kb": round(f.stat().st_size / 1024, 1),
-            "url": f"/api/materials/pdf/{f.name}",
-        })
-    return pdfs
