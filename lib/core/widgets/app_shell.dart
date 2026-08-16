@@ -109,22 +109,7 @@ class AppShell extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final bright = Theme.of(context).brightness;
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyF): () {
-          ref.read(focusModeProvider.notifier).setFocus(!focus);
-        },
-        const SingleActivator(LogicalKeyboardKey.keyT, control: true): () {
-          ref.read(themeModeProvider.notifier).cycle();
-        },
-        // Ctrl+K: busca global (vai para Biblioteca com foco na busca)
-        const SingleActivator(LogicalKeyboardKey.keyK, control: true): () {
-          context.go('/biblioteca');
-        },
-      },
-      child: Focus(
-        autofocus: true,
-        child: LayoutBuilder(
+    return LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= 1000;
             final expanded = constraints.maxWidth >= 1180;
@@ -357,9 +342,7 @@ class AppShell extends ConsumerWidget {
               ),
             );
           },
-        ),
-      ),
-    );
+        );
   }
 }
 

@@ -30,7 +30,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Map<String, dynamic>? checkpoint;
   String? checkpointLoadError;
   bool showFirstRunCoach = false;
-  final _focusNode = FocusNode();
   // Futures cached para evitar recriar a cada rebuild (performance)
   late final Future<dynamic> _recommendationsFuture;
 
@@ -41,7 +40,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _loadCheckpoint();
     _loadFirstRunCoach();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
       final exam = ref.read(examDateProvider).date;
       if (exam.isNotEmpty) {
         unawaited(ref.read(examDateProvider.notifier).retrySync());
@@ -62,29 +60,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event, String sessionPath, String closePath) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyS ||
-        key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.numpadEnter) {
-      context.go(sessionPath);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyL) {
-      context.go(closePath);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      _loadCheckpoint();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   Future<void> _loadFirstRunCoach() async {
@@ -291,10 +267,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
 
-        return Focus(
-          focusNode: _focusNode,
-          onKeyEvent: (node, event) => _onKey(node, event, sessionPath, closePath),
-          child: CustomScrollView(
+        return CustomScrollView(
           slivers: [
             // Hero compacto: gradient + countdown + CTA principal
             SliverToBoxAdapter(
@@ -522,7 +495,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
           ],
-        ),
         );
       },
     );
