@@ -1,15 +1,6 @@
 ; =====================================================================
 ; PAES MED AI - Instalador Windows profissional (Inno Setup 6)
 ; Gera: installer/Output/PAESMedAI_Setup_<versao>.exe
-; Recursos:
-;   - Instala em Program Files (per-user ou admin)
-;   - Atalho na Area de Trabalho
-;   - Atalho no Menu Iniciar
-;   - Entrada em Adicionar/Remover Programas com versao e suporte
-;   - Verificacao de versao (update) via arquivo VERSION remoto
-;   - Desinstalador limpo (remove arquivos e atalhos)
-;   - Icone proprio do app
-;   - Licenca + tela de boas-vindas
 ; =====================================================================
 
 #define MyAppName          "PAES MED AI"
@@ -17,8 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.18"
-#define MyAppBuildDir      "..\build\windows\x64\runner\Release"
+#define MyAppVersion       "1.0.0.19"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -45,11 +35,8 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 DisableProgramGroupPage=yes
-UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayIcon={app}\app\{#MyAppExeName}
 UninstallDisplayName={#MyAppFullName}
-; Assinatura digital (preencher se tiver certificado)
-; SignTool=signtool
-; SignedUninstaller=yes
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -57,60 +44,44 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
-Name: "startupicon"; Description: "Iniciar com o Windows"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Aplicativo Flutter + DLLs + dados
-Source: "{#MyAppBuildDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyAppBuildDir}\flutter_windows.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyAppBuildDir}\url_launcher_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MyAppBuildDir}\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Atualizador (PowerShell + Python fallback)
-Source: "..\tools\Atualizar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\tools\update.ps1"; DestDir: "{app}\tools"; Flags: ignoreversion
-Source: "..\tools\updater.py"; DestDir: "{app}\tools"; Flags: ignoreversion
-; Arquivo de versao para o app detectar
-Source: "..\VERSION"; DestDir: "{app}"; DestName: "VERSION.txt"; Flags: ignoreversion
-; Banco de dados (nao sobrescreve se ja existe - preserva progresso do usuario)
-Source: "..\data\paes_med_ai.db"; DestDir: "{userappdata}\PAES_MED_AI"; Flags: onlyifdoesntexist uninsneveruninstall
-; PDFs de materiais
-Source: "..\data\materiais\*.pdf"; DestDir: "{userappdata}\PAES_MED_AI\materiais"; Flags: onlyifdoesntexist uninsneveruninstall recursesubdirs createallsubdirs
-; Configuracao base (nao sobrescreve)
-Source: "..\backend\.env.example"; DestDir: "{userappdata}\PAES_MED_AI"; Flags: onlyifdoesntexist uninsneveruninstall
+; Aplicativo Flutter
+Source: "staging\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Backend FastAPI
+Source: "staging\backend\*"; DestDir: "{app}\backend"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Dados
+Source: "staging\data\paes_med_ai.db"; DestDir: "{app}\data"; Flags: onlyifdoesntexist uninsneveruninstall
+Source: "staging\data\materiais\*"; DestDir: "{app}\data\materiais"; Flags: onlyifdoesntexist uninsneveruninstall recursesubdirs createallsubdirs
+; Tools
+Source: "staging\tools\*"; DestDir: "{app}\tools"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Launcher
+Source: "staging\Iniciar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
+; Versao
+Source: "staging\VERSION.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Menu Iniciar
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
-Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
+Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\tools\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 ; Area de Trabalho
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-; Iniciar com Windows
-Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: startupicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 ; Abrir app apos instalar
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
-
-[UninstallRun]
-; Limpar cache do usuario (opcional - comentado para preservar dados)
-; Filename: "{cmd}"; Parameters: "/c rmdir /s /q ""{userappdata}\PAES_MED_AI"""; Flags: runhidden
+Filename: "{app}\Iniciar_PAES_MED_AI.bat"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; Remove arquivos temporarios do app
-Type: filesandordirs; Name: "{localappdata}\PAES_MED_AI"
+; Remove venv local criado pelo launcher
+Type: filesandordirs; Name: "{app}\.venv"
 
 [Code]
-// =====================================================================
-// Verificacao de versao antes de instalar (update automatico)
-// =====================================================================
 function InitializeSetup(): Boolean;
 var
   InstalledVersion: String;
 begin
   Result := True;
-
-  // Verifica se ja existe uma versao instalada
   if RegQueryStringValue(HKCU, 'Software\PAES_MED_AI', 'Version', InstalledVersion) then
   begin
     if InstalledVersion <> '{#MyAppVersion}' then
@@ -130,13 +101,8 @@ begin
   end;
 end;
 
-// =====================================================================
-// Apos instalar: verificar atualizacoes online (opcional)
-// =====================================================================
 procedure DeinitializeSetup();
 begin
-  // Registra versao instalada para futuras verificacoes
   RegWriteStringValue(HKCU, 'Software\PAES_MED_AI', 'Version', '{#MyAppVersion}');
   RegWriteStringValue(HKCU, 'Software\PAES_MED_AI', 'InstallPath', ExpandConstant('{app}'));
 end;
-

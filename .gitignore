@@ -50,8 +50,9 @@ data/exports/*
 dist/
 *.lnk
 
-# Instalador Inno Setup (103MB - nao commitar o .exe gerado)
+# Instalador Inno Setup (nao commitar artefatos grandes)
 installer/Output/
+installer/staging/
 innosetup.exe
 
 # Caches OS / build nativo
