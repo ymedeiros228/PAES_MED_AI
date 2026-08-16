@@ -46,6 +46,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool _wantSemana1Scroll = false;
   bool _didSemana1Scroll = false;
   Timer? _searchDebounce;
+  List<Map<String, dynamic>> _studyPdfs = [];
+  bool _pdfsLoaded = false;
 
   @override
   void didChangeDependencies() {
@@ -132,6 +134,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       _scheduleSemana1Scroll();
       unawaited(_loadResolutionStats());
       unawaited(_loadLessonStats());
+      unawaited(_loadStudyPdfs());
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
@@ -1109,6 +1112,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     } catch (_) {}
   }
 
+  Future<void> _loadStudyPdfs() async {
+    try {
+      final res = await apiClient.get('/api/materials/pdf-list');
+      final list = (res as List).cast<Map<String, dynamic>>();
+      setState(() {
+        _studyPdfs = list;
+        _pdfsLoaded = true;
+      });
+    } catch (_) {
+      setState(() => _pdfsLoaded = true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (busy && library == null) {
@@ -1797,10 +1813,126 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     style: GoogleFonts.inter(fontSize: 13, color: cs.primary),
                   ),
               ],
+
+              // === SEÇÃO: PDFs de estudo ===
+              if (_pdfsLoaded && _studyPdfs.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.picture_as_pdf_rounded, size: 22, color: cs.error),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Materiais de Estudo',
+                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface),
+                            ),
+                          ),
+                          Text(
+                            '${_studyPdfs.length} PDFs',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.5)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Toque em qualquer material para abrir o leitor integrado',
+                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+                      ),
+                      const SizedBox(height: 14),
+                      // Agrupar por disciplina
+                      ..._buildPdfGroups(cs),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ],
     );
+  }
+
+  List<Widget> _buildPdfGroups(ColorScheme cs) {
+    final bySubject = <String, List<Map<String, dynamic>>>{};
+    for (final p in _studyPdfs) {
+      final subj = p['subject']?.toString() ?? 'Outros';
+      bySubject.putIfAbsent(subj, () => []).add(p);
+    }
+    final subjects = bySubject.keys.toList()..sort();
+    final subjectIcons = {
+      'Biologia': Icons.biotech_rounded,
+      'Química': Icons.science_rounded,
+      'Física': Icons.bolt_rounded,
+      'Matemática': Icons.calculate_rounded,
+      'Geografia': Icons.public_rounded,
+      'História': Icons.account_balance_rounded,
+      'Português': Icons.menu_book_rounded,
+      'Inglês': Icons.translate_rounded,
+      'Espanhol': Icons.language_rounded,
+      'Filosofia': Icons.psychology_rounded,
+      'Sociologia': Icons.groups_rounded,
+    };
+    final subjectColors = {
+      'Biologia': Colors.green,
+      'Química': Colors.deepOrange,
+      'Física': Colors.blue,
+      'Matemática': Colors.purple,
+      'Geografia': Colors.teal,
+      'História': Colors.brown,
+      'Português': Colors.red,
+      'Inglês': Colors.lightBlue,
+      'Espanhol': Colors.amber,
+      'Filosofia': Colors.blueGrey,
+      'Sociologia': Colors.deepPurple,
+    };
+
+    return subjects.map((subject) {
+      final items = bySubject[subject]!;
+      final icon = subjectIcons[subject] ?? Icons.book_rounded;
+      final color = subjectColors[subject] ?? cs.primary;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Row(
+              children: [
+                Icon(icon, size: 18, color: color),
+                const SizedBox(width: 8),
+                Text(
+                  '$subject (${items.length})',
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: color),
+                ),
+              ],
+            ),
+          ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: items.map((pdf) {
+              final title = pdf['title']?.toString() ?? 'Material';
+              final filename = pdf['filename']?.toString() ?? '';
+              return ActionChip(
+                avatar: Icon(Icons.picture_as_pdf, size: 16, color: color),
+                label: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  context.go(Uri(path: '/estudar', queryParameters: {
+                    'pdf': filename,
+                    'title': title,
+                    'subject': subject,
+                  }).toString());
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }).toList();
   }
 }
