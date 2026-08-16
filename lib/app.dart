@@ -21,6 +21,7 @@ import 'features/gamification/presentation/gamification_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
 import 'features/materials/presentation/materials_screen.dart';
+import 'features/materials/presentation/study_reader_screen.dart';
 import 'features/library/presentation/library_screen.dart';
 import 'features/medicine/presentation/medicine_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
@@ -126,6 +127,18 @@ final appRouter = GoRouter(
           pageBuilder: (_, state) {
             final subject = state.uri.queryParameters['subject'];
             return _fadePage(MaterialsScreen(initialSubject: subject));
+          },
+        ),
+        GoRoute(
+          path: '/estudar',
+          pageBuilder: (_, state) {
+            final q = state.uri.queryParameters;
+            return _fadePage(StudyReaderScreen(
+              pdfFilename: q['pdf'] ?? '',
+              title: q['title'] ?? 'Material',
+              subject: q['subject'] ?? '',
+              topic: q['topic'] ?? '',
+            ));
           },
         ),
         GoRoute(path: '/redacao', pageBuilder: (_, __) => _fadePage(const EssayScreen())),

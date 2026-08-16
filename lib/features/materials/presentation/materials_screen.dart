@@ -624,6 +624,17 @@ class MaterialReaderScreen extends StatelessWidget {
                   label: const Text('Praticar questões'),
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.go(Uri(path: '/tutor', queryParameters: {
+                    'subject': material.subject,
+                    'topic': material.topic,
+                  }).toString()),
+                  icon: const Icon(Icons.smart_toy),
+                  label: const Text('Tutor IA'),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -987,20 +998,40 @@ class _PdfListScreenState extends ConsumerState<PdfListScreen> {
                                 ],
                               ),
                             ),
-                            trailing: const Icon(Icons.download),
-                            onTap: () async {
-                              final fullUrl = _buildUrl(urlPath);
-                              if (await canLaunchUrl(Uri.parse(fullUrl))) {
-                                await launchUrl(Uri.parse(fullUrl),
-                                    mode: LaunchMode.externalApplication);
-                              } else {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Não foi possível abrir: $fullUrl')),
-                                  );
-                                }
-                              }
-                            },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.menu_book, size: 20),
+                                  tooltip: 'Estudar com Tutor IA',
+                                  color: cs.primary,
+                                  onPressed: () {
+                                    context.go(Uri(path: '/estudar', queryParameters: {
+                                      'pdf': pdf['filename'] ?? '',
+                                      'title': title,
+                                      'subject': subject,
+                                    }).toString());
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.download, size: 20),
+                                  tooltip: 'Baixar PDF',
+                                  onPressed: () async {
+                                    final fullUrl = _buildUrl(urlPath);
+                                    if (await canLaunchUrl(Uri.parse(fullUrl))) {
+                                      await launchUrl(Uri.parse(fullUrl),
+                                          mode: LaunchMode.externalApplication);
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Não foi possível abrir: $fullUrl')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
