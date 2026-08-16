@@ -87,11 +87,16 @@ if ($comparison -le 0) {
     }
 }
 
-$res = Show-Dialog "Nova versao disponivel" "Versao local: $localVersion`nNova versao: $remoteVersion`nPublicada em: $publishedAt`n`nO atualizador fara backup automatico do seu progresso antes de atualizar.`n`nDeseja atualizar agora?" "YesNo"
+$res = Show-Dialog "Nova versao disponivel" "Versao local: $localVersion`nNova versao: $remoteVersion`nPublicada em: $publishedAt`n`nO atualizador fara backup automatico do seu progresso, fechara o PAES MED AI, atualizara e reiniciara tudo sozinho.`n`nDeseja atualizar agora?" "YesNo"
 if ($res -ne [System.Windows.Forms.DialogResult]::Yes) {
     Log "Usuario cancelou atualizacao."
     exit 0
 }
+
+# Fecha o app PAES MED AI para liberar os arquivos
+Log "Fechando PAES MED AI para atualizar..."
+Get-Process | Where-Object { $_.ProcessName -like '*paes_med_ai*' } | Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
 
 # Backup dos dados do usuario ANTES de atualizar
 $backupDir = Join-Path $env:TEMP "PAES_MED_AI_backup_$(Get-Date -Format yyyyMMdd_HHmmss)"
@@ -171,10 +176,17 @@ Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
 
 Log "Atualizacao concluida para $remoteVersion."
 $logLocation = "Log salvo em: $LogFile"
-Show-Dialog "Atualizacao concluida" "PAES MED AI foi atualizado para $remoteVersion.`n`nSeu progresso foi preservado automaticamente.`n`n$logLocation`n`nClique OK para reiniciar o aplicativo." "OK" | Out-Null
+Show-Dialog "Atualizacao concluida" "PAES MED AI foi atualizado para $remoteVersion.`n`nSeu progresso foi preservado automaticamente.`n`nO aplicativo sera reiniciado sozinho.`n`n$logLocation" "OK" | Out-Null
 
-# Reinicia o app se estava rodando
+# Limpa temp
+Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+
+# Reinicia o app automaticamente
 $launcher = Join-Path $InstallDir "Iniciar_PAES_MED_AI.bat"
 if (Test-Path $launcher) {
+    Log "Reiniciando PAES MED AI..."
     Start-Process "cmd.exe" -ArgumentList "/c `"$launcher`"" -WindowStyle Minimized
+    exit 0
 }
+
+Log "Launcher nao encontrado em $launcher"
