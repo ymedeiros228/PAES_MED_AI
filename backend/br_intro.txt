@@ -1,0 +1,30 @@
+=== https://brasilescola.uol.com.br/biologia/introducao-a-biologia.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/introducao-a-biologia.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/introducao-a-biologia/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/caracteristicas-dos-seres-vivos/ ===
+  https://static.todamateria.com.br/upload/cl/as/classificacao-dos-seres-vivos-og.jpg?width=440
+  https://static.todamateria.com.br/upload/se/re/seres-vivos-e-seres-nao-vivos-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-as-caracteristicas-dos-seres-vivos-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ce/lu/celula-og.jpg?width=440
+  https://static.todamateria.com.br/upload/re/pr/reproducao-sexuada-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/caracteristicas-dos-seres-vivos.htm ===
+  https://s4.static.brasilescola.uol.com.br/be/2026/05/tipos-celulas.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2026/05/mapa-mental-caracteristicas-seres-vivos.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/entre-as-caracteristicas-um-ser-vivo-podemos-citar-sua-capacidade-reproducao-58ac5af3a03af.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/64df42cfcab20cd904584c0c070b7826.jpg
+
+=== https://www.todamateria.com.br/teoria-da-geracao-espontanea/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/teoria-da-biogenese/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/endossimbiose/ ===
+  https://static.todamateria.com.br/upload/pr/oc/procariontes-e-eucariontes-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-endossimbiose-questoes-resolvidas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ne/ur/neuronios-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ad/en/adenosina-trifosfato-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/eh/pre-historia-resumo-og.jpg?width=440
+

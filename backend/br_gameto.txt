@@ -1,0 +1,55 @@
+=== https://brasilescola.uol.com.br/biologia/gametogenese.htm ===
+  https://s3.static.brasilescola.uol.com.br/img/2018/12/gametogenese_be.jpeg
+  https://s3.static.brasilescola.uol.com.br/img/2018/11/espermatogenese-ovogenese.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2018/11/gametogenese.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/os-gametas-masculinos-femininos-sao-formados-partir-processo-denominado-gametogenese-5bfd1bf9c40a5.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/eeba03a27061d9df08d2e0882cc2618d.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/gametogenese.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/espermatogenese(1).jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/ovogenese(1).jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/fecundacao.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/345ccf3590ff37f8841e670f9d9adb47.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/gametogenese/ ===
+  https://static.todamateria.com.br/upload/fa/se/fasesovogenese-0-cke.jpg
+  https://static.todamateria.com.br/upload/fa/se/fasesespermatogenese-0-cke.jpg
+  https://static.todamateria.com.br/upload/oq/ue/o-que-e-embriologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-gametogenese-e-espermatogenese-questoes-resolvidas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-reprodutor-masculino-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-e-meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/de/se/desenvolvimento-embrionario-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/es/pe/espermatogenese-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/io/meiose-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/espermatogenese.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/estrutura-de-um-espermatozoide.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/215c086f22df3cc3bbd5be5cbfce0b61.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/eeba03a27061d9df08d2e0882cc2618d.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/espermatogenese.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/espermatogenese.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/8c80a6397fbe47fe39090b1bd751b6c1.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/espermatogenese/ ===
+  https://static.todamateria.com.br/upload/te/st/testiculos-0.jpg
+  https://static.todamateria.com.br/upload/fa/se/fasesespermatogenese.jpg
+  https://static.todamateria.com.br/upload/es/pe/espermiogenese.jpg
+  https://static.todamateria.com.br/upload/si/st/sistema-reprodutor-masculino-og.jpg?width=440
+  https://static.todamateria.com.br/upload/es/pe/espermatozoide-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-reprodutor-feminino-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-gametogenese-e-espermatogenese-questoes-resolvidas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ha/pl/haploide-e-diploide-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/ovogenese.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/ovogenese.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/ovogenese.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/047d8baf164e4243fece3d6d70d02c6c.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/ovogenese/ -> HTTP 404 ===
+

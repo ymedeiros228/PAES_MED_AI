@@ -1,4 +1,4 @@
-"""Baixa imagens da Wikipedia PT para o tópico de Membrana Plasmática e salva localmente."""
+"""Baixa imagens da Wikipédia (Português do Brasil) para o tópico de Membrana Plasmática e salva localmente."""
 
 import asyncio
 import os
@@ -34,7 +34,7 @@ async def download_image(url: str, filename: str) -> str | None:
 
 
 async def main():
-    print("Buscando imagens na Wikipedia PT para 'Membrana plasmática'...")
+    print("Buscando imagens na Wikipédia (Português do Brasil) para 'Membrana plasmática'...")
     data = await fetch_images_for_topic("Membrana plasmática", "Biologia", max_images=8)
     
     print(f"\nArtigo: {data.get('article_title')}")

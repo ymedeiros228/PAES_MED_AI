@@ -1,0 +1,75 @@
+=== https://brasilescola.uol.com.br/biologia/ciclo-celular.htm ===
+  https://s4.static.brasilescola.uol.com.br/be/2020/03/ciclo-celular.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2020/03/mitose.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/03/sistema-de-controle.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/03/ciclo-celular.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/ciclo-celular.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/ciclo-celular/ ===
+  https://static.todamateria.com.br/upload/in/te/interfaseemitose.jpg
+  https://static.todamateria.com.br/upload/in/te/interfase-og.jpg?width=440
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-e-meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-ciclo-celular-com-gabarito-explicado-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/io/meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/nu/cl/nucleo-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/or/ga/organelas-celulares-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/mitose.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2019/07/ciclo-celular.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2019/07/fases-da-mitose.jpg
+  https://s2.static.brasilescola.uol.com.br/img/2018/09/mitose_be(2).jpeg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/divisao-celular.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5be0865a7c389.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad623a805e7a.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/mitose.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/03/fases-mitose.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/03/citocinese-celula-animal-vegetal.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/03/1-representacao-da-divisao-de-celulas-que-ocorre-na-mitose.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/marilia-lazarin.webp
+
+=== https://www.todamateria.com.br/mitose/ ===
+  https://static.todamateria.com.br/upload/53/7f/537fba79a22e7mitose-cke.jpg
+  https://static.todamateria.com.br/upload/53/7f/537fbb052c885mitose-cke.jpg
+  https://static.todamateria.com.br/upload/53/7f/537fbb6d01b3emitose-cke.jpg
+  https://static.todamateria.com.br/upload/53/7f/537fbbd1101a7mitose-cke.jpg
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/io/meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/te/interfase-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-e-meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-mitose-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/meiose.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/2020/03/duplicacao-do-cromossomo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/03/permutacao.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/03/meiose.jpg
+  https://s4.static.brasilescola.uol.com.br/img/2018/09/meiose-be(1).jpeg
+  https://s1.static.brasilescola.uol.com.br/be/2020/03/duplicacao-do-cromossomo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/eeba03a27061d9df08d2e0882cc2618d.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad6238f9f2c8.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/meiose.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/08/etapas-da-meiose.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/08/crossing-over.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/08/fecundacao.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/08/meiose.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/meiose/ ===
+  https://static.todamateria.com.br/upload/53/83/5383669625690-meiose.jpg
+  https://static.todamateria.com.br/upload/53/83/53836702c80f3-meiose.jpg
+  https://static.todamateria.com.br/upload/53/83/5383676ea8e12-meiose.jpg
+  https://static.todamateria.com.br/upload/mi/to/mitose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-e-meiose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/te/interfase-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ha/pl/haploide-e-diploide-og.jpg?width=440
+
+=== https://www.infoescola.com/citologia/divisao-celular/ ===
+  https://www.infoescola.com/wp-content/uploads/2016/03/divisao-celular.jpg
+  https://www.infoescola.com/wp-content/uploads/2016/03/divisao-celular.jpg
+  https://www.infoescola.com/wp-content/uploads/2018/02/Clipboard01-600x227.jpg
+

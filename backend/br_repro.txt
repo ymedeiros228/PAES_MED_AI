@@ -1,0 +1,88 @@
+=== https://brasilescola.uol.com.br/biologia/reproducao-assexuada.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/reproducao-sexuada.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/reproducao-assexuada.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/08/divisao-binaria.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/08/brotamento-1.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/08/propagacao-vegetativa.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/08/fragmentacao.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://mundoeducacao.uol.com.br/biologia/reproducao-sexuada.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/11/fecundacao.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/11/conjugacao.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/11/angiospermas.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/reproducao-dos-seres-vivos/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/sistema-reprodutor-masculino.htm ===
+  https://s3.static.brasilescola.uol.com.br/be/2025/04/sistema-reprodutor-masculino-anatomia.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2025/04/ilustracao-em-3d-de-uma-radiografia-dos-orgaos-do-sistema-reprodutor-masculino.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/sistema-reprodutor-masculino.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/sistema-reprodutor-feminino.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/e/sistemareprodutor.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/b0730ac08d18c34e7add49f094147fb2.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad4fcfe6234a.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/sistema-genital-feminino.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/sistema-reprodutor-feminino.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/metodos-contraceptivos.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/metodos-contraceptivos.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/11/metodos-contraceptivos.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/11/camisinha-feminina.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/11/diu-2.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/11/metodos-cirurgicos.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/metodos-contraceptivos/ ===
+  https://static.todamateria.com.br/upload/me/to/metodoseficazeseineficazes-cke.jpg
+  https://static.todamateria.com.br/upload/ca/mi/camisinhamasculina-cke.jpg
+  https://static.todamateria.com.br/upload/ca/mi/camisinhafeminina-cke.jpg
+  https://static.todamateria.com.br/upload/di/ud/diudecobre.jpg
+  https://static.todamateria.com.br/upload/di/uh/diuhormonal-cke.jpg
+  https://static.todamateria.com.br/upload/di/af/diafragma-cke.jpg
+  https://static.todamateria.com.br/upload/me/to/metodocontraceptivoanelvaginal-cke.jpg
+  https://static.todamateria.com.br/upload/es/pe/espermicida-0-cke.jpg
+  https://static.todamateria.com.br/upload/la/qu/laqueadura-cke.jpg
+  https://static.todamateria.com.br/upload/va/se/vasectomia-0-cke.jpg
+  https://static.todamateria.com.br/upload/pi/lu/piluladodiaseguinte-cke.jpg
+  https://static.todamateria.com.br/upload/ta/be/tabelinha.jpg
+  https://static.todamateria.com.br/upload/co/it/coitointerrompido-cke.jpg
+  https://static.todamateria.com.br/upload/si/st/sistema-reprodutor-feminino-og.jpg?width=440
+  https://static.todamateria.com.br/upload/gr/av/gravidez-na-adolescencia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/mo/como-ocorre-a-fecundacao-humana-og.jpg?width=440
+  https://static.todamateria.com.br/upload/cl/it/clitoris-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-reprodutor-masculino-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pu/be/puberdade-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/embriologia.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/embriologia.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/embriologia/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/anexos-embrionarios.htm ===
+  https://s2.static.brasilescola.uol.com.br/be/2021/06/ovo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2021/06/placenta.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2021/06/ovo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2021/03/anexos-embrionarios.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/anexos-embrionarios.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/427e028d23bc830bf539a30f2613ae04.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/anexos-embrionarios/ ===
+  https://static.todamateria.com.br/upload/58/35/583588d4842a7-anexos-embrionarios.jpg
+  https://static.todamateria.com.br/upload/oq/ue/o-que-e-embriologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/fo/lh/folhetos-embrionarios-og.jpg?width=440
+  https://static.todamateria.com.br/upload/de/se/desenvolvimento-embrionario-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitose-og.jpg?width=440
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ce/lu/celula-og.jpg?width=440
+

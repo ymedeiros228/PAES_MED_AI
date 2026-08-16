@@ -1,8 +1,8 @@
-"""Serviço de geração de material de estudo com IA + imagens da Wikipedia PT.
+"""Serviço de geração de material de estudo com IA + imagens da Wikipédia (Português do Brasil).
 
 Para cada tópico do edital:
 1. Gera teoria estruturada via IA (Gemini/Groq/OpenRouter)
-2. Busca imagens reais na Wikipedia PT
+2. Busca imagens reais na Wikipédia (Português do Brasil)
 3. Armazena no banco (tabela materials)
 4. Retorna conteúdo rico para o frontend renderizar
 """
@@ -135,7 +135,7 @@ async def generate_material(
     subtopic: str | None = None,
     force: bool = False,
 ) -> dict[str, Any]:
-    """Gera material de estudo completo: teoria via IA + imagens da Wikipedia PT.
+    """Gera material de estudo completo: teoria via IA + imagens da Wikipédia (Português do Brasil).
 
     Args:
         subject: Disciplina (ex: "Biologia")
@@ -163,7 +163,7 @@ async def generate_material(
     ai_response = _ask_ai(prompt, f"Gere o material para: {topic}{subtopic_text}")
     content = _parse_ai_json(ai_response)
 
-    # 2. Busca imagens reais na Wikipedia PT
+    # 2. Busca imagens reais na Wikipédia (Português do Brasil)
     search_topic = subtopic or topic
     wiki_data = await fetch_images_for_topic(search_topic, subject, max_images=5)
     images = wiki_data.get("images", [])

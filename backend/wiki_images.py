@@ -20,6 +20,11 @@ WIKI_PT_REST = "https://pt.wikipedia.org/api/rest_v1/page/summary/"
 WIKI_PT_MEDIA = "https://pt.wikipedia.org/api/rest_v1/page/media-list/"
 WIKI_PT_THUMB = "https://pt.wikipedia.org/w/api.php"
 
+# Wikipedia exige User-Agent identificável
+_HEADERS = {
+    "User-Agent": "PAESMedAI/1.0 (educational project; https://paesmedai.com)"
+}
+
 # Tipos de arquivo de imagem aceitos
 _IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".svg", ".gif", ".webp")
 # Padrões a evitar (imagens genéricas de template, ícones, etc.)
@@ -84,7 +89,7 @@ def _is_useful_image(filename: str, title: str | None = None) -> bool:
 
 
 def _normalize_query(topic: str, subject: str | None = None) -> str:
-    """Constrói termo de busca otimizado para Wikipedia PT."""
+    """Constrói termo de busca otimizado para Wikipédia (Português do Brasil)."""
     # Remove números de tópicos (ex: "Citologia 1" → "Citologia")
     parts = topic.strip().split()
     cleaned = [p for p in parts if not p.isdigit()]
@@ -105,7 +110,7 @@ def _normalize_query(topic: str, subject: str | None = None) -> str:
 
 
 async def search_wikipedia_article(query: str) -> str | None:
-    """Busca o título do artigo mais relevante na Wikipedia PT."""
+    """Busca o título do artigo mais relevante na Wikipédia (Português do Brasil)."""
     params = {
         "action": "query",
         "list": "search",
@@ -115,7 +120,7 @@ async def search_wikipedia_article(query: str) -> str | None:
         "format": "json",
     }
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
+        async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
             resp = await client.get(WIKI_PT_SEARCH, params=params)
             resp.raise_for_status()
             data = resp.json()
@@ -132,7 +137,7 @@ async def get_article_summary(title: str) -> dict[str, Any] | None:
     encoded = urllib.parse.quote(title, safe="")
     url = WIKI_PT_REST + encoded
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
+        async with httpx.AsyncClient(timeout=10, headers=_HEADERS) as client:
             resp = await client.get(url)
             if resp.status_code != 200:
                 return None
@@ -151,7 +156,7 @@ async def get_article_summary(title: str) -> dict[str, Any] | None:
 
 
 async def get_article_images(title: str, max_images: int = 5) -> list[dict[str, str]]:
-    """Extrai imagens relevantes do artigo da Wikipedia PT.
+    """Extrai imagens relevantes do artigo da Wikipédia (Português do Brasil).
 
     Retorna lista de dicts com:
     - url: URL da imagem (original)
@@ -163,7 +168,7 @@ async def get_article_images(title: str, max_images: int = 5) -> list[dict[str, 
     url = WIKI_PT_MEDIA + encoded
     images: list[dict[str, str]] = []
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
+        async with httpx.AsyncClient(timeout=15, headers=_HEADERS) as client:
             resp = await client.get(url)
             if resp.status_code != 200:
                 return images
@@ -217,7 +222,7 @@ async def fetch_images_for_topic(
     subject: str | None = None,
     max_images: int = 5,
 ) -> dict[str, Any]:
-    """Busca imagens reais da Wikipedia PT para um tópico de estudo.
+    """Busca imagens reais da Wikipédia (Português do Brasil) para um tópico de estudo.
 
     Retorna:
     - article_title: título do artigo encontrado

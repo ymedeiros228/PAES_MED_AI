@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Baixa imagens de capa relevantes da Wikipedia PT para todos os topicos.
+"""Baixa imagens de capa relevantes da Wikipédia (Português do Brasil) para todos os topicos.
 
 Busca imagens educacionais reais (diagramas, ilustracoes cientificas,
 fotos de laboratorio, microscopias) para usar como capa na primeira
@@ -145,7 +145,7 @@ async def fetch_cover(client, query, prefix, max_attempts=5):
             clean = re.sub(r'\.(jpg|jpeg|png|gif|webp|svg)$', '', clean, flags=re.I)
             clean = clean.replace('_', ' ')[:100]
             return {"file": out, "caption": clean,
-                    "source": "Wikipedia PT", "source_url": info["url"]}
+                    "source": "Wikipédia (Português do Brasil)", "source_url": info["url"]}
     print(f"    Nenhuma imagem adequada")
     return None
 
@@ -266,7 +266,7 @@ async def main():
     meta_path = Path(__file__).resolve().parent / "cover_images.py"
     with open(meta_path, "w", encoding="utf-8") as f:
         f.write("# -*- coding: utf-8 -*-\n")
-        f.write("\"\"\"Imagens de capa da Wikipedia PT para todos os PDFs.\"\"\"\n\n")
+        f.write("\"\"\"Imagens de capa da Wikipédia (Português do Brasil) para todos os PDFs.\"\"\"\n\n")
         f.write("COVER_IMAGES = {\n")
         for key, img in results.items():
             cap = img["caption"].replace('"', "'")

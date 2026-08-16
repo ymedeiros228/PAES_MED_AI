@@ -1,0 +1,43 @@
+=== https://brasilescola.uol.com.br/biologia/cariotipo.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/e/cariotipo.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2016/10/cariotipo.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/cariotipo.htm ===
+  /upload/conteudo/idiograma.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/d47f7c4180bb03f536a011af4337fba6.jpg
+
+=== https://www.todamateria.com.br/cariotipo/ -> HTTP 404 ===
+
+=== https://www.infoescola.com/genetica/cariotipo/ ===
+  https://www.infoescola.com/wp-content/uploads/2009/11/sindrome-de-turner.jpg
+  https://www.infoescola.com/wp-content/uploads/2009/11/sindrome-de-turner.jpg
+
+=== https://brasilescola.uol.com.br/biologia/aneuploidia.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2017/04/cariotipo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/a-sindrome-down-ocasionada-pela-presenca-um-cromossomo-21-extra-58dfb3e71edea.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad0d1139923d.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2017/05/cariotipo.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/aneuploidia.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/alteracoes-cromossomicas/ ===
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1457874581-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1715382283convertido-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock2184552019convertido-cke.jpg
+  https://static.todamateria.com.br/upload/mu/ta/mutacao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/mb/membrana-plasmatica-og.jpg?width=440
+
+=== https://www.todamateria.com.br/sindrome-de-edwards/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/sindrome-de-patau/ ===
+  https://static.todamateria.com.br/upload/54/5b/545b4df42c6e6sindromedepatau.jpg
+  https://static.todamateria.com.br/upload/al/te/alteracoes-cromossomicas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mu/ta/mutacao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ra/terapia-genica-og.jpg?width=440
+
+=== https://mundoeducacao.uol.com.br/biologia/sindrome-de-edwards.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/sindrome-de-patau.htm -> HTTP 404 ===
+

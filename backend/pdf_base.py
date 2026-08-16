@@ -128,7 +128,7 @@ def generate_educational_pdf(
                 cover_image = {
                     "path": str(cp),
                     "caption": ci.get("caption", ""),
-                    "source": ci.get("source", "Wikipedia PT"),
+                    "source": ci.get("source", "Wikipédia (Português do Brasil)"),
                     "source_url": ci.get("source_url", ""),
                 }
     except Exception:

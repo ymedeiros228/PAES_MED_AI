@@ -1,0 +1,64 @@
+=== https://www.infoescola.com/zoologia/reino-animalia/ -> HTTP 404 ===
+
+=== https://www.infoescola.com/zoologia/invertebrados/ -> HTTP 404 ===
+
+=== https://www.infoescola.com/zoologia/vertebrados/ ===
+  https://www.infoescola.com/wp-content/uploads/2007/09/vertebrados.jpg
+  https://www.infoescola.com/wp-content/uploads/2007/09/vertebrados.jpg
+  https://www.infoescola.com/wp-content/uploads/2010/05/exec20bio.jpg
+
+=== https://www.sobiologia.com.br/conteudos/zoologia/animais/filos1.php -> HTTP 404 ===
+
+=== https://www.sobiologia.com.br/conteudos/zoologia/animais/animais1.php -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/reino-animalia.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/reino-animalia.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/esponja-mar.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/agua-viva.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/platelminto.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/lombriga.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/minhoca.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/molusco.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/artropodes.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/estrela-mar-equinodermos.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/focas.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/08/mapa-mental-reino-animalia.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/06/questao-2.png
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/marilia-lazarin.webp
+
+=== https://www.todamateria.com.br/reino-animalia/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/filos-do-reino-animal/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/reino-animalia.htm ===
+  https://s4.static.brasilescola.uol.com.br/be/2025/03/onca-jacare-reino-animalia.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2025/03/esponja-do-mar.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2025/03/hidra-cnidario.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/03/tenia.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2025/03/lombriga.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/03/polvo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2025/03/minhoca.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2025/03/libelula.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2025/03/estrela-do-mar.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/03/jiboia.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2025/03/grupo-de-varios-tipos-de-animais-em-referencia-a-diversidade-do-reino-animalia.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2021/06/mamiferos.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2022/05/reino-animal.jpg
+
+=== https://brasilescola.uol.com.br/biologia/reino-plantae.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2019/04/reino-plantae_be.jpeg
+  https://s3.static.brasilescola.uol.com.br/be/2025/02/fotossintese.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2025/02/pinheiro-fanerogama.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2025/02/estrutura-plantas.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/02/grupos-plantas.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2025/02/musgos.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2025/02/samambaia.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/02/sequoia.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2025/02/angiospermas.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2025/02/ciclo-vida-briofitas.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2025/02/vista-de-conjunto-de-plantas-principalmente-arvores-integrantes-do-reino-plantae.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2021/03/morfologia-vegetal-adaptacoes-da-folha.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2020/07/reino-protista.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad61ecc60a06.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad61ecc60a06.jpg
+

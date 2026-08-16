@@ -1,0 +1,59 @@
+=== https://brasilescola.uol.com.br/biologia/evolucao.htm ===
+  https://s5.static.brasilescola.uol.com.br/be/2023/06/especies-humanas.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2023/06/esquema-ilustrativo-da-evolucao-do-homem-por-meio-de-uma-visao-de-progressao.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/64df42cfcab20cd904584c0c070b7826.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad628d5d4ea9.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/evolucao.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/evolucao/ ===
+  https://static.todamateria.com.br/img/categories/other.png
+
+=== https://www.todamateria.com.br/teoria-da-evolucao/ ===
+  https://static.todamateria.com.br/upload/la/ma/lamarckanddarwinb5f9696175465.jpg
+  https://static.todamateria.com.br/upload/ev/ol/evolucao-humana-og.jpg?width=440
+  https://static.todamateria.com.br/upload/or/ig/origem-da-vida-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-evolucao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/da/rw/darwinismo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-origem-da-vida-og.jpg?width=440
+
+=== https://www.todamateria.com.br/selecao-natural/ ===
+  https://static.todamateria.com.br/upload/se/le/selecaonatural.jpg
+  https://static.todamateria.com.br/upload/te/or/teoria-da-evolucao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/da/rw/darwinismo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ch/ar/charles-darwin-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-a-selecao-natural-com-respostas-explicadas-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/selecao-natural.htm ===
+  https://s3.static.brasilescola.uol.com.br/be/2020/10/tentilhoes.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2020/10/darwin.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/selecao-natural.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/57ea83035f43b873ace43ec8a57e2b11.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/darwinismo/ ===
+  https://static.todamateria.com.br/upload/pa/ss/passaros01-cke.jpg
+  https://static.todamateria.com.br/upload/pa/ss/passaros02-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock2022624131convertido-cke.jpg
+  https://static.todamateria.com.br/upload/pa/ss/passaros-cke.jpg
+  https://static.todamateria.com.br/upload/an/dr/andregillcaricatureofcharlesdarwin18091882andemilelittre1meisterdrucke264184-cke.jpg
+  https://static.todamateria.com.br/upload/te/or/teoria-da-evolucao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ch/ar/charles-darwin-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-neodarwinismo-com-gabarito-explicado-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ev/ol/evolucao-humana-og.jpg?width=440
+  https://static.todamateria.com.br/upload/or/ig/origem-da-vida-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/ especiacao.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/especiacao/ ===
+  https://static.todamateria.com.br/upload/te/or/teoria-da-evolucao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/da/rw/darwinismo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ho/mo/homologia-e-analogia-na-biologia-entenda-o-que-e-com-exemplos-og.jpg?width=440
+
+=== https://mundoeducacao.uol.com.br/biologia/evidencias-evolucao.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/d67fde0e129b6b07a60f9221292c28f2.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://brasilescola.uol.com.br/biologia/evidencias-evolucao.htm -> HTTP 404 ===
+

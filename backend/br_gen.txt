@@ -1,0 +1,50 @@
+=== https://brasilescola.uol.com.br/biologia/genética.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/2023/06/gene-celular.jpg
+  https://s4.static.brasilescola.uol.com.br/img/2019/02/conceitos-genetica_be(1).jpeg
+  https://s1.static.brasilescola.uol.com.br/be/2023/06/mendel-genetica.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2023/06/avo-e-neta-ambas-com-olhos-verdes-com-rostos-lado-a-lado-em-referencia-a-ideia-de-hereditariedade-estudada-na-genetica.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/03/linkage-ou-ligacao-genica.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad62f92e65cb.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad62f92e65cb.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad4fe82ead02.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/genetica.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/10/hipocrates.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/10/gregor-mendel.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/10/cromossomos-nucleo-celular.jpg
+
+=== https://www.todamateria.com.br/genetica/ ===
+  https://static.todamateria.com.br/img/categories/other.png
+
+=== https://www.todamateria.com.br/leis-de-mendel/ ===
+  https://static.todamateria.com.br/upload/pr/im/primeiralei1b.jpg
+  https://static.todamateria.com.br/upload/er/vi/ervilha1.jpg
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/he/re/hereditariedade-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/im/primeira-lei-de-mendel-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/im/primeira-lei-de-mendel-exercicios-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-de-genetica-og.jpg?width=440
+
+=== https://www.todamateria.com.br/heranca-autossomica/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/heranca-sexo/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/dominancia/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/interacao-alelica/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/heranca-poligenica/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/mutacoes/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/engenharia-genetica/ ===
+  https://static.todamateria.com.br/upload/ov/el/ovelhaengenhariagenetica-cke.jpg
+  https://static.todamateria.com.br/upload/pr/od/producaodetecidosengenhariagenetica-cke.jpg
+  https://static.todamateria.com.br/upload/bi/ot/biotecnologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ra/terapia-genica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-biotecnologia-com-gabarito-explicado-og.jpg?width=440
+  https://static.todamateria.com.br/upload/al/im/alimentos-transgenicos-og.jpg?width=440
+  https://static.todamateria.com.br/upload/dn/ar/dna-recombinante-og.jpg?width=440
+  https://static.todamateria.com.br/upload/cl/on/clonagem-og.jpg?width=440
+

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Baixa imagens reais da Wikipedia PT para Filosofia e Sociologia."""
+"""Baixa imagens reais da Wikipédia (Português do Brasil) para Filosofia e Sociologia."""
 
 from __future__ import annotations
 
@@ -130,7 +130,7 @@ async def fetch_topic(client, query, prefix, max_imgs=2):
             clean = re.sub(r'\.(jpg|jpeg|png|gif|webp|svg)$', '', clean, flags=re.I)
             clean = clean.replace('_', ' ')[:100]
             result.append({"file": out, "caption": clean,
-                          "source": "Wikipedia PT", "source_url": info["url"]})
+                          "source": "Wikipédia (Português do Brasil)", "source_url": info["url"]})
     return result
 
 # Filosofia: 7 topicos
@@ -177,7 +177,7 @@ async def main():
     # Salva Filosofia
     mp = Path(__file__).resolve().parent / "filosofia_real_images.py"
     with open(mp, "w", encoding="utf-8") as f:
-        f.write("# -*- coding: utf-8 -*-\n\"\"\"Imagens reais da Wikipedia PT para Filosofia.\"\"\"\n\nREAL_IMAGES = {\n")
+        f.write("# -*- coding: utf-8 -*-\n\"\"\"Imagens reais da Wikipédia (Português do Brasil) para Filosofia.\"\"\"\n\nREAL_IMAGES = {\n")
         for key, imgs in filo_results.items():
             f.write(f'    "{key}": [\n')
             for img in imgs:
@@ -191,7 +191,7 @@ async def main():
     # Salva Sociologia
     mp = Path(__file__).resolve().parent / "sociologia_real_images.py"
     with open(mp, "w", encoding="utf-8") as f:
-        f.write("# -*- coding: utf-8 -*-\n\"\"\"Imagens reais da Wikipedia PT para Sociologia.\"\"\"\n\nREAL_IMAGES = {\n")
+        f.write("# -*- coding: utf-8 -*-\n\"\"\"Imagens reais da Wikipédia (Português do Brasil) para Sociologia.\"\"\"\n\nREAL_IMAGES = {\n")
         for key, imgs in socio_results.items():
             f.write(f'    "{key}": [\n')
             for img in imgs:

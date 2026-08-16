@@ -1,0 +1,16 @@
+=== https://www.infoescola.com/biologia/fermentacao/ ===
+
+=== https://www.sobiologia.com.br/conteudos/Metabolismo/fermentacao.php -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/fermentacao-latica.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/fermentacao-alcoolica.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/fermentacao-latica.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/fermentacao-alcoolica.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/fermentacao-latica/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/fermentacao-alcoolica/ -> HTTP 404 ===
+

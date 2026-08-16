@@ -1,0 +1,95 @@
+=== https://brasilescola.uol.com.br/biologia/tecidos-animais.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/tecidos-animais.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/tecidos-animais/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/tecido-epitelial.htm ===
+  https://s1.static.brasilescola.uol.com.br/img/2019/01/pele.jpg
+  https://s1.static.brasilescola.uol.com.br/img/2019/01/classificacao-tecido-epitelial.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2019/01/classificacao-epitelio-formato.jpg
+  https://s5.static.brasilescola.uol.com.br/img/2019/01/tipos-de-glandulas.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/tecido-epitelial-5c4ae01996371.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad61f314cd74.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/tecido-epitelial.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/tipos-de-epitelio.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/pancreas.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/81d1754bbc31640e52a9766f8b1b72d9.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/tecido-epitelial/ ===
+  https://static.todamateria.com.br/upload/te/ci/tecidoepitelialtipos-cke.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecidoepitelialformacao-cke.jpg
+  https://static.todamateria.com.br/upload/hi/st/histologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-tecido-epitelial-com-respostas-comentadas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/rp/corpo-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-conjuntivo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-nervoso-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/tecido-conjuntivo.htm ===
+  https://s4.static.brasilescola.uol.com.br/be/2022/11/tecido-conjuntivo-denso.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2022/11/tipos-tecido-conjuntivo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2022/11/tecido-conjuntivo.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2020/01/tecido-conjuntivo.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/tecido-conjuntivo.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/tecido-conjuntivo/ ===
+  https://static.todamateria.com.br/upload/te/ci/tecidoconjuntivo-cke.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecidoconjuntivoc-cke.jpg
+  https://static.todamateria.com.br/upload/ca/rt/cartilagemelastica-0.jpg
+  https://static.todamateria.com.br/upload/co/nj/conjuntivoosseo.jpg
+  https://static.todamateria.com.br/upload/co/nj/conjuntivosanguineo.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecido-epitelial-og.jpg?width=440
+  https://static.todamateria.com.br/upload/hi/st/histologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-nervoso-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-tecido-conjuntivo-com-respostas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/rp/corpo-humano-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/tecido-muscular.htm ===
+  https://s3.static.brasilescola.uol.com.br/be/2020/02/tipos-de-tecido-muscular.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/02/sarcomero.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/02/ginastica.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/02/tecido-muscular.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5c477ca18a600.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/tecido-muscular.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/1-tipos-de-tecido-muscular.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/sarcomero.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/musculos.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/tecido-muscular/ ===
+  https://static.todamateria.com.br/upload/es/tr/estriado_esquela_tico.jpg
+  https://static.todamateria.com.br/upload/sa/rc/sarcomero.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecido_carda_aco_1.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecido_muscular_liso.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecido-conjuntivo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-epitelial-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-nervoso-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-muscular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/rp/corpo-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/nt/contracao-muscular-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/tecido-nervoso.htm ===
+  https://s2.static.brasilescola.uol.com.br/be/2020/12/cerebro.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2020/12/cerebro.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/tecido-nervoso.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/neuronio(1).jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/82a82b59c15b6b4e7697be6bc954461a.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/tecido-nervoso/ ===
+  https://static.todamateria.com.br/upload/ne/ur/neuronios_e_glias.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1730107117convertido-cke.jpg
+  https://static.todamateria.com.br/upload/ce/re/cerebelo.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1041989587convertido-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock2025470315convertido1-cke.jpg
+  https://static.todamateria.com.br/upload/te/ci/tecido-conjuntivo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ci/tecido-epitelial-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-nervoso-og.jpg?width=440
+  https://static.todamateria.com.br/upload/co/rp/corpo-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-muscular-og.jpg?width=440
+

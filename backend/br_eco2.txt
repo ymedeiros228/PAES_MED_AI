@@ -1,0 +1,61 @@
+=== https://www.todamateria.com.br/biomas-brasileiros/ ===
+  https://static.todamateria.com.br/upload/bi/om/biomasbrasileiros-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomacerrado-0-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomacaatinga-0-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomacapa-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomapantanal-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomapampa-cke.jpg
+  https://static.todamateria.com.br/upload/bi/om/biomasbrasileirosmapamental-cke.jpg
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-biomas-brasileiros-og.jpg?width=440
+  https://static.todamateria.com.br/upload/bi/om/bioma-og.jpg?width=440
+  https://static.todamateria.com.br/upload/an/im/animais-do-cerrado-og.jpg?width=440
+  https://static.todamateria.com.br/upload/bi/om/biomas-do-mundo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/an/im/animais-da-caatinga-og.jpg?width=440
+
+=== https://www.todamateria.com.br/piramide-ecologica/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/cadeia-alimentar/ ===
+  https://static.todamateria.com.br/upload/co/mp/componentesdacadeiaalimentar.jpg
+  https://static.todamateria.com.br/upload/ca/de/cadeiaalimentarterrestre.jpg
+  https://static.todamateria.com.br/upload/ca/de/cadeiaeteiaalimentar5e6116380-0.jpg
+  https://static.todamateria.com.br/upload/ex/em/exemplodeteiaalimentar.jpg
+  https://static.todamateria.com.br/upload/53/60/536001b4262b5cadeiaalimentar.jpg
+  https://static.todamateria.com.br/upload/oq/ue/o-que-e-ecologia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/re/la/relacoes-ecologicas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/te/ia/teia-alimentar-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pi/ra/piramides-ecologicas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-cadeia-e-teia-alimentar-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-cadeia-alimentar-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ca/de/cadeia-e-teia-alimentar-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/piramide-ecologica.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/piramide-ecologica.htm -> HTTP 404 ===
+
+=== https://www.infoescola.com/ecologia/piramide-ecologica/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/teia-alimentar.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2015/09/teia-alimentar.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/na-natureza-um-ser-vivo-sempre-serve-alimento-para-outro-55e0980723c17.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2022/07/piramides-ecologicas.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/teia-alimentar.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/11/cadeia-alimentar.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/11/exemplo-teia-alimentar.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/11/cadeia-teia-alimentares.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2022/11/representacao-de-uma-teia-alimentar-o-conjunto-de-cadeias-alimentares-interligadas.jpg
+
+=== https://www.infoescola.com/ecologia/teia-alimentar/ -> HTTP 404 ===
+
+=== https://www.infoescola.com/ecologia/cadeia-alimentar/ ===
+  https://www.infoescola.com/wp-content/uploads/2010/05/exec29bio.jpg
+
+=== https://brasilescola.uol.com.br/biologia/niveis-troficos.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/e/cadeiaalimentar.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/a-hierarquizacao-dos-niveis-alimentares-55520e8d96aec.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/niveis-troficos.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/cadeia-alimentar(1).jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/7835e9e0e4786d9284cf77f811b8cede.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+

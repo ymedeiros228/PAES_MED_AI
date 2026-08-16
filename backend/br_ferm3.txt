@@ -1,0 +1,15 @@
+=== https://mundoeducacao.uol.com.br/biologia/fermentacao.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo/fermentacao(1).jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/2e942c3307fdde304df2c51d32ffab7f.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.infoescola.com/biologia/fermentacao-latica/ -> HTTP 404 ===
+
+=== https://www.infoescola.com/biologia/fermentacao-alcoolica/ -> HTTP 404 ===
+
+=== https://www.sobiologia.com.br/conteudos/Bioquimica/fermentacao.php -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/respiracao-anaerobia.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/respiracao-anaerobica.htm -> HTTP 404 ===
+

@@ -1,0 +1,78 @@
+=== https://brasilescola.uol.com.br/quimica/materia.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/quimica/estados-fisicos-materia.htm ===
+  https://s2.static.brasilescola.uol.com.br/be/2020/06/pepita-ouro.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/agua.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2020/06/gas-helio.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/1-estados-materia.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/06/exercicio.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/1-estados-materia.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5acf40ca919a6.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5acf3db332242.jpg
+
+=== https://brasilescola.uol.com.br/quimica/substancias-puras.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/quimica/misturas.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/quimica/alotropia.htm ===
+  https://s2.static.brasilescola.uol.com.br/be/2026/02/1-esquema-ilustrativo-traz-o-conceito-de-alotropia-e-os-alotropos-do-carbono-oxigenio-e-enxofre.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2026/02/alotropia-oxigenio.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2026/02/1-alotropos-carbono.jpg
+  https://s2.static.brasilescola.uol.com.br/be/2026/02/anel-carbono.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5acf412e1b20d.jpg
+
+=== https://www.todamateria.com.br/materia/ ===
+  https://static.todamateria.com.br/upload/pr/op/propriedades-da-materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/tr/an/transformacoes-fisicas-e-quimicas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/op/propriedades-gerais-materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/su/bs/substancias-simples-compostas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/st/misturas-homogeneas-e-heterogeneas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/at/om/atomo-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-propriedades-materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/su/bs/substancias-puras-e-misturas-og.jpg?width=440
+
+=== https://www.todamateria.com.br/estados-fisicos-da-materia/ ===
+  https://static.todamateria.com.br/upload/li/qu/liquefacaocondensacao-0.jpg
+  https://static.todamateria.com.br/upload/in/fo/infograficoestadosfisicosdamateria.jpg
+  https://static.todamateria.com.br/upload/ma/te/materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mu/da/mudancas-estado-fisico-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/op/propriedades-da-materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/st/misturas-homogeneas-e-heterogeneas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-estados-fisicos-da-materia-com-gabarito-explicado-og.jpg?width=440
+  https://static.todamateria.com.br/upload/su/bs/substancias-puras-e-misturas-og.jpg?width=440
+
+=== https://www.todamateria.com.br/substancias-puras-e-misturas/ ===
+  https://static.todamateria.com.br/upload/ex/em/exemplosdesubstanciaspurassimples-0-cke.jpg
+  https://static.todamateria.com.br/upload/ex/em/exemplosdesubstanciaspurascompostas-0-cke.jpg
+  https://static.todamateria.com.br/upload/ex/em/exemplosdemisturashomogeneas-cke.jpg
+  https://static.todamateria.com.br/upload/ex/em/exemplosmisturasheterogeneas-cke.jpg
+  https://static.todamateria.com.br/upload/mi/st/misturas-homogeneas-e-heterogeneas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/su/bs/substancias-simples-compostas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/se/pa/separacao-de-misturas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-substancias-e-misturas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ma/te/materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pr/op/propriedades-da-materia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/es/ta/estados-fisicos-da-materia-og.jpg?width=440
+
+=== https://www.todamateria.com.br/separacao-de-misturas/ ===
+  https://static.todamateria.com.br/upload/se/pa/separacaodemisturashomogeneas-cke.jpg
+  https://static.todamateria.com.br/upload/se/pa/separacaodemisturasheterogeneas-cke.jpg
+  https://static.todamateria.com.br/upload/mi/st/misturas-homogeneas-e-heterogeneas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/su/bs/substancias-puras-e-misturas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-separacao-misturas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ta/be/tabela-periodica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/qu/im/quimica-no-enem-og.jpg?width=440
+  https://static.todamateria.com.br/upload/de/st/destilacao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/de/st/destilacao-simples-e-fracionada-og.jpg?width=440
+
+=== https://mundoeducacao.uol.com.br/quimica/materia.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/10/baloes.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/10/1-estados-fisicos-da-materia.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/10/acido-cloridrico-e-cloreto-de-sodio.jpg
+
+=== https://mundoeducacao.uol.com.br/quimica/estados-fisicos-materia.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2023/11/estados-fisicos-materia-2.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2023/11/mudancas-estados-fisicos-materia.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2023/11/ilustracao-dos-tres-estados-fisicos-da-materia.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/stefano-araujo-novais.webp
+

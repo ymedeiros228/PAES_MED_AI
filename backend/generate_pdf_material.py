@@ -167,7 +167,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
         """Decide se a imagem e aceitavel.
         
         - SVG: so aceitar se for PT (textos traduzidos)
-        - JPG/PNG: so aceitar se vier da Wikipedia PT (relevantes ao topico)
+        - JPG/PNG: so aceitar se vier da Wikipédia (Português do Brasil) (relevantes ao topico)
         """
         t = title.lower()
         
@@ -187,7 +187,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
             return False  # SVG sem indicador PT = provavelmente em ingles
         
         # 3. Se e JPG/PNG (foto/micrografia):
-        #    So aceitar se vier da Wikipedia PT (Strategy 2)
+        #    So aceitar se vier da Wikipédia (Português do Brasil) (Strategy 2)
         #    Fotos do Commons search (Strategy 1) sao rejeitadas (irrelevantes)
         if "png" in mime or "jpeg" in mime or "jpg" in mime:
             if from_wikipedia_pt:
@@ -281,9 +281,9 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
         except Exception as e:
             print(f"  Erro buscando Commons PT: {e}")
     
-    # Estrategia 2: Wikipedia PT - artigos relacionados
+    # Estrategia 2: Wikipédia (Português do Brasil) - artigos relacionados
     if len(results) < limit:
-        print(f"  Apenas {len(results)} imagens no Commons. Buscando artigos Wikipedia PT...")
+        print(f"  Apenas {len(results)} imagens no Commons. Buscando artigos Wikipédia (Português do Brasil)...")
         
         artigos_pt = [
             "Membrana plasmatica", "Celula", "Transporte passivo",
@@ -378,7 +378,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                             "title": title,
                             "caption": caption or title,
                             "mime": mime,
-                            "source": "Wikipedia PT",
+                            "source": "Wikipédia (Português do Brasil)",
                             "source_url": info.get("descriptionurl", ""),
                             "is_pt": _is_pt_diagram(title, mime),
                         })

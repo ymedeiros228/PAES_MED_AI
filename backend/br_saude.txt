@@ -1,0 +1,47 @@
+=== https://brasilescola.uol.com.br/biologia/imunidade.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/fagocitose.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/vacina.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/06/fagocitose.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2021/05/sistema-imunologico.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/imunidade.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/anticorpo.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/fagocitose.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/imunidade/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/sistema-imunologico.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/doencas-infecciosas/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/vacinas.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/vacinas/ -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/vacinas.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/vacina.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2020/03/crianca-vacinando.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/sistema-imunologico/ ===
+  https://static.todamateria.com.br/upload/ti/po/tiposdeimunidadesfinal-cke.jpg
+  https://static.todamateria.com.br/upload/re/sp/respostaimunologicaprimaria-cke.jpg
+  https://static.todamateria.com.br/upload/re/sp/respostaimunologicaprimariaesecundariatabelacomparativa-cke.jpg
+  https://static.todamateria.com.br/upload/si/st/sistemaimunologico-cke.jpg
+  https://static.todamateria.com.br/upload/ta/be/tabelasistemaimunologico-cke.jpg
+  https://static.todamateria.com.br/upload/si/st/sistemaimunologicosmall.jpg
+  https://static.todamateria.com.br/upload/rg/ao/rgaossistemalinfatico2-cke.jpg
+  https://static.todamateria.com.br/upload/si/st/sistemas-do-corpo-humano-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-cardiovascular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-excretor-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-muscular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-nervoso-og.jpg?width=440
+  https://static.todamateria.com.br/upload/si/st/sistema-esqueletico-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/transmissao-doencas.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/epidemiologia/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/vectores-de-doencas.htm -> HTTP 404 ===
+

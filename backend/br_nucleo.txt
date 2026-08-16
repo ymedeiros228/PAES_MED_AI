@@ -1,0 +1,48 @@
+=== https://brasilescola.uol.com.br/biologia/nucleo-celular.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/nucleo-celular.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/nucleo-celular/ ===
+  https://static.todamateria.com.br/upload/56/3c/563cffc81389c-nucleo-celular.jpg
+  https://static.todamateria.com.br/upload/56/3d/563d3f0deff6e-nucleo-celular.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1767400856convertido-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock1640805628convertido1-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock713237677-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock2127418733convertidomitose-cke.jpg
+  https://static.todamateria.com.br/upload/sh/ut/shutterstock2127418733convertidomeiose-cke.jpg
+  https://static.todamateria.com.br/upload/ce/lu/celula-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/mb/membrana-plasmatica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ci/to/citoplasma-og.jpg?width=440
+  https://static.todamateria.com.br/upload/or/ga/organelas-celulares-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ex/er/exercicios-sobre-nucleo-celular-com-questoes-respondidas-og.jpg?width=440
+
+=== https://www.infoescola.com/citologia/nucleo/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/cromossomos.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/cromossomos.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/c0f343f10f12be23ce8db0febd5a16f6.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/cromossomos/ ===
+  https://static.todamateria.com.br/upload/cr/om/cromos_estrut1.jpg
+  https://static.todamateria.com.br/upload/54/b6/54b69c1b4f6bf-cromossomos.jpg
+  https://static.todamateria.com.br/upload/ty/pe/types_cromo1.jpg
+  https://static.todamateria.com.br/upload/ca/ri/cariotipo_humano.jpg
+  https://static.todamateria.com.br/upload/57/bb/57bb4e6f87fee-cromossomos.jpg
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/nu/cl/nucleo-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ha/pl/haploide-e-diploide-og.jpg?width=440
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+  https://static.todamateria.com.br/upload/dn/ae/dna-e-rna-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/cariotipo.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/e/cariotipo.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2016/10/cariotipo.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/cariotipo.htm ===
+  /upload/conteudo/idiograma.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/d47f7c4180bb03f536a011af4337fba6.jpg
+
+=== https://www.todamateria.com.br/cariotipo/ -> HTTP 404 ===
+

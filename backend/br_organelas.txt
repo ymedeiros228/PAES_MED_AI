@@ -1,0 +1,39 @@
+=== https://brasilescola.uol.com.br/biologia/organelas-citoplasmaticas.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/organelas-citoplasmaticas.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/organelas-celulares/ ===
+  https://static.todamateria.com.br/upload/55/f6/55f696239af18-organelas-celulares.jpg
+  https://static.todamateria.com.br/upload/55/f6/55f6ea48e1889-organelas-celulares.jpg
+  https://static.todamateria.com.br/upload/ce/lu/celula-og.jpg?width=440
+  https://static.todamateria.com.br/upload/mi/to/mitocondrias-estrutura-funcao-e-importancia-og.jpg?width=440
+  https://static.todamateria.com.br/upload/re/ti/reticulo-endoplasmatico-liso-e-rugoso-og.jpg?width=440
+  https://static.todamateria.com.br/upload/me/mb/membrana-plasmatica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ce/lu/celula-animal-e-vegetal-og.jpg?width=440
+
+=== https://www.infoescola.com/citologia/organelas-celulares/ ===
+
+=== https://mundoeducacao.uol.com.br/biologia/mitocondria.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/mitocondrias.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2019/09/estrutura-da-mitocondria.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2019/09/origem-das-mitocondrias.jpg
+  https://s5.static.brasilescola.uol.com.br/img/2019/09/mitocondria.jpg
+  https://s3.static.brasilescola.uol.com.br/be/2020/02/respiracao-celular-cadeia-respiratoria.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/reticulo-endoplasmatico.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/c3e9ab9656568a673fbabfb23c155285.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://mundoeducacao.uol.com.br/biologia/complexo-golgi.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/10/complexo-golgiense.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/10/faces-do-complexo-golgiense.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2019/10/secrecao-celular.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://mundoeducacao.uol.com.br/biologia/lisossomos.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/ribossomos.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2019/11/ribossomo-funcional.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2019/11/ribossomo.jpg
+

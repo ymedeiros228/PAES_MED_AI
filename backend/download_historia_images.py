@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Baixa imagens reais da Wikipedia PT usando a API prop=images."""
+"""Baixa imagens reais da Wikipédia (Português do Brasil) usando a API prop=images."""
 
 from __future__ import annotations
 
@@ -187,7 +187,7 @@ async def fetch_topic(
             result.append({
                 "file": out_name,
                 "caption": caption,
-                "source": "Wikipedia PT",
+                "source": "Wikipédia (Português do Brasil)",
                 "source_url": info["url"],
             })
         else:
@@ -218,7 +218,7 @@ async def main():
     meta_path = Path(__file__).resolve().parent / "historia_real_images.py"
     with open(meta_path, "w", encoding="utf-8") as f:
         f.write("# -*- coding: utf-8 -*-\n")
-        f.write("\"\"\"Imagens reais da Wikipedia PT para Historia.\"\"\"\n\n")
+        f.write("\"\"\"Imagens reais da Wikipédia (Português do Brasil) para Historia.\"\"\"\n\n")
         f.write("REAL_IMAGES = {\n")
         for key, imgs in all_results.items():
             f.write(f'    "{key}": [\n')

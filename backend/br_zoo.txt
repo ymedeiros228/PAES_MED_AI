@@ -1,0 +1,56 @@
+=== https://brasilescola.uol.com.br/biologia/invertebrados.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/vertebrados.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/invertebrados.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/vertebrados.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/invertebrados/ -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/vertebrados/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/cordados.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/cordados.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/cordados/ ===
+  https://static.todamateria.com.br/upload/sa/lp/salpas_2.jpg
+  https://static.todamateria.com.br/upload/as/ci/ascidias_c_2.jpg
+  https://static.todamateria.com.br/upload/an/fi/anfioxo_branchiostoma_lanceolatum_3.jpg
+  https://static.todamateria.com.br/upload/an/im/animais-classificacao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/ar/tr/artropodes-og.jpg?width=440
+  https://static.todamateria.com.br/upload/an/im/animais-vertebrados-og.jpg?width=440
+  https://static.todamateria.com.br/upload/re/in/reino-animal-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/artropodes.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/artropodes.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/artropodes/ ===
+  https://static.todamateria.com.br/upload/ar/tr/artropodes-cke.jpg
+  https://static.todamateria.com.br/upload/ar/tr/artropodes-0-cke.jpg
+  https://static.todamateria.com.br/upload/55/e7/55e7a093bd8a2-artropodes-large.jpg
+  https://static.todamateria.com.br/upload/55/e7/55e7a08856b8c-artropodes-large.jpg
+  https://static.todamateria.com.br/upload/re/in/reino-animal-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/mamiferos.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/2020/12/morcego.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/12/amamentacao.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2020/12/baleia.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2020/12/ornitorrinco.jpg
+  https://s1.static.brasilescola.uol.com.br/be/2020/12/canguru.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2020/12/baleia.jpg
+  https://s5.static.brasilescola.uol.com.br/be/2021/06/mamiferos.jpg
+
+=== https://www.todamateria.com.br/mamiferos/ ===
+  https://static.todamateria.com.br/upload/ma/mi/mamiferos-0-cke.jpg
+  https://static.todamateria.com.br/upload/ma/mi/mamiferospelo-cke.jpg
+  https://static.todamateria.com.br/upload/am/am/amamentacaomamiferos-cke.jpg
+  https://static.todamateria.com.br/upload/ov/oo/ovoorinitorrinco-0.jpg
+  https://static.todamateria.com.br/upload/av/es/aves-og.jpg?width=440
+  https://static.todamateria.com.br/upload/re/in/reino-animal-og.jpg?width=440
+  https://static.todamateria.com.br/upload/pe/ix/peixes-og.jpg?width=440
+  https://static.todamateria.com.br/upload/an/im/animais-vertebrados-og.jpg?width=440
+  https://static.todamateria.com.br/upload/an/im/animais-classificacao-og.jpg?width=440
+

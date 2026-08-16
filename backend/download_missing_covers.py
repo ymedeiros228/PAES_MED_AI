@@ -99,7 +99,7 @@ def fetch_cover(query, prefix):
             print(f"    OK: {out} ({sz:.0f} KB)", flush=True)
             clean = fn.replace("Ficheiro:","").replace("File:","")
             clean = re.sub(r'\.(jpg|jpeg|png|gif|webp|svg)$','',clean,flags=re.I).replace('_',' ')[:100]
-            return {"file":out,"caption":clean,"source":"Wikipedia PT","source_url":info["url"]}
+            return {"file":out,"caption":clean,"source":"Wikipédia (Português do Brasil)","source_url":info["url"]}
     print(f"    Nenhuma adequada", flush=True)
     return None
 

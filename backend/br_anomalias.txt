@@ -1,0 +1,36 @@
+=== https://brasilescola.uol.com.br/biologia/aneuploidia.htm ===
+  https://s5.static.brasilescola.uol.com.br/img/2017/04/cariotipo.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/a-sindrome-down-ocasionada-pela-presenca-um-cromossomo-21-extra-58dfb3e71edea.jpg
+  https://s1.static.brasilescola.uol.com.br/be/conteudo/images/-5ad0d1139923d.jpg
+  https://s3.static.brasilescola.uol.com.br/img/2017/05/cariotipo.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/aneuploidia.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/aneuploidia/ -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/sindrome-de-down.htm -> HTTP 404 ===
+
+=== https://mundoeducacao.uol.com.br/biologia/sindrome-de-down.htm -> HTTP 404 ===
+
+=== https://www.todamateria.com.br/sindrome-de-down/ ===
+  https://static.todamateria.com.br/upload/54/7d/547db2d3cd1f4-sindrome-de-down-large.jpg
+  https://static.todamateria.com.br/upload/mu/ta/mutacao-og.jpg?width=440
+  https://static.todamateria.com.br/upload/in/tr/introducao-a-genetica-og.jpg?width=440
+  https://static.todamateria.com.br/upload/al/te/alteracoes-cromossomicas-og.jpg?width=440
+  https://static.todamateria.com.br/upload/di/vi/divisao-celular-og.jpg?width=440
+
+=== https://brasilescola.uol.com.br/biologia/sindrome-de-turner.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/2022/01/cariotipo-da-sindrome-de-turner.jpg
+  https://s4.static.brasilescola.uol.com.br/be/2022/01/ilustracao-de-sindrome-de-turner.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/sindrome-de-turner.htm -> HTTP 404 ===
+
+=== https://brasilescola.uol.com.br/biologia/sindrome-de-klinefelter.htm ===
+  https://s1.static.brasilescola.uol.com.br/be/e/sindrome-klinefelter1.jpg
+
+=== https://mundoeducacao.uol.com.br/biologia/sindrome-klinefelter.htm ===
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/conteudo_legenda/dae738ef97a46e7701ec24bd0c7ee30a.jpg
+  https://static.mundoeducacao.uol.com.br/mundoeducacao/2025/09/vanessa-sardinha-dos-santos.webp
+
+=== https://www.todamateria.com.br/sindrome-de-klinefelter/ -> HTTP 404 ===
+
