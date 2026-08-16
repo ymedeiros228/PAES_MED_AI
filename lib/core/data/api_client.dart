@@ -32,10 +32,10 @@ class ApiClient {
   /// GET 15s: leituras devem ser rápidas (SQLite local + índices).
   /// POST 60s: IA pode demorar, mas 60s é o limite razoável para feedback.
   /// Upload 180s: PDFs grandes podem demorar para parsear.
-  static const _getTimeout = Duration(seconds: 15);
-  static const _postTimeout = Duration(seconds: 60);
-  static const _deleteTimeout = Duration(seconds: 15);
-  static const _uploadTimeout = Duration(seconds: 180);
+  static const _getTimeout = Duration(seconds: 30);
+  static const _postTimeout = Duration(seconds: 120);
+  static const _deleteTimeout = Duration(seconds: 30);
+  static const _uploadTimeout = Duration(seconds: 300);
 
   String get baseUrl {
     if (_configuredBaseUrl.trim().isNotEmpty) {
