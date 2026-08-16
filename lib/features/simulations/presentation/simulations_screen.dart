@@ -55,8 +55,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   String? checkpointSaveError;
   /// Erros ao carregar explicação pós-sim por questão.
   final Map<String, String> debriefErrors = {};
-  /// Ciclo BS: teclado 1–5 / Enter na sessão em andamento.
-  final FocusNode sessionFocus = FocusNode();
   int keyboardQi = 0;
 
   static const _modes = <(String, String, String, IconData)>[
@@ -81,148 +79,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   void initState() {
     super.initState();
     _loadSimCheckpoint();
-    _requestSessionFocus();
   }
 
   @override
   void dispose() {
     ticker?.cancel();
-    sessionFocus.dispose();
     super.dispose();
-  }
-
-  void _requestSessionFocus() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) sessionFocus.requestFocus();
-    });
-  }
-
-  KeyEventResult _onSessionKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-
-    final isEnter = event.logicalKey == LogicalKeyboardKey.enter ||
-        event.logicalKey == LogicalKeyboardKey.numpadEnter;
-
-    // Relatório: atalhos pós-grade (Ciclo DB)
-    if (report != null) {
-      if (isEnter) {
-        context.go('/dashboard');
-        return KeyEventResult.handled;
-      }
-      final gaps = (report!['gaps'] as List? ?? []);
-      if (event.logicalKey == LogicalKeyboardKey.digit1 ||
-          event.logicalKey == LogicalKeyboardKey.numpad1) {
-        context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.digit2 ||
-          event.logicalKey == LogicalKeyboardKey.numpad2) {
-        if (gaps.isNotEmpty) {
-          unawaited(_remediateGaps());
-        } else {
-          context.go('/fila');
-        }
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.digit3 ||
-          event.logicalKey == LogicalKeyboardKey.numpad3) {
-        context.go('/redacao');
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.keyE) {
-        unawaited(_exportReport());
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.keyN) {
-        unawaited(_resetSim());
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    // Preflight: Enter inicia (mesmo do botão Começar / Iniciar)
-    if (!running) {
-      if (isEnter) {
-        final canStart = !(mode == 'disciplina' && (subject == null || subject!.isEmpty));
-        if (canStart) unawaited(_start());
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    if (questions.isEmpty) return KeyEventResult.ignored;
-
-    final qi = keyboardQi.clamp(0, questions.length - 1);
-    final q = Map<String, dynamic>.from(questions[qi] as Map);
-    final id = q['id']?.toString() ?? '';
-    final opts = (q['options'] as List? ?? []);
-    final answered = id.isNotEmpty && answers.containsKey(id);
-
-    // ← / Backspace: item anterior
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
-        event.logicalKey == LogicalKeyboardKey.backspace) {
-      if (keyboardQi > 0) {
-        setState(() => keyboardQi = keyboardQi - 1);
-      }
-      return KeyEventResult.handled;
-    }
-
-    // → / Space: próximo item (sem revelar gabarito)
-    if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
-        event.logicalKey == LogicalKeyboardKey.space) {
-      if (keyboardQi < questions.length - 1) {
-        setState(() => keyboardQi = keyboardQi + 1);
-      }
-      return KeyEventResult.handled;
-    }
-
-    final keys = <LogicalKeyboardKey, int>{
-      LogicalKeyboardKey.digit1: 0,
-      LogicalKeyboardKey.digit2: 1,
-      LogicalKeyboardKey.digit3: 2,
-      LogicalKeyboardKey.digit4: 3,
-      LogicalKeyboardKey.digit5: 4,
-      LogicalKeyboardKey.numpad1: 0,
-      LogicalKeyboardKey.numpad2: 1,
-      LogicalKeyboardKey.numpad3: 2,
-      LogicalKeyboardKey.numpad4: 3,
-      LogicalKeyboardKey.numpad5: 4,
-    };
-    final opt = keys[event.logicalKey];
-    if (opt != null && id.isNotEmpty) {
-      // Sem resposta: 1–5 marca opção. Com resposta e !examLocked: 1–5 tipo de erro.
-      if (!answered) {
-        if (opt >= opts.length) return KeyEventResult.handled;
-        setState(() {
-          answers[id] = opt;
-          if (!examLocked) errorTypes.putIfAbsent(id, () => defaultErrorType);
-        });
-        unawaited(_saveSimCheckpoint());
-        return KeyEventResult.handled;
-      }
-      if (!examLocked) {
-        const errKeys = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
-        if (opt < errKeys.length) {
-          setState(() => errorTypes[id] = errKeys[opt]);
-          unawaited(_saveSimCheckpoint());
-        }
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.handled;
-    }
-
-    if (isEnter) {
-      if (id.isNotEmpty && answers.containsKey(id)) {
-        if (qi < questions.length - 1) {
-          setState(() => keyboardQi = qi + 1);
-        } else if (answers.length >= questions.length) {
-          unawaited(_grade());
-        }
-      }
-      return KeyEventResult.handled;
-    }
-
-    return KeyEventResult.ignored;
   }
 
   Future<void> _loadSimCheckpoint() async {
@@ -447,7 +309,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         ..start();
     });
     _armDiaProvaTicker();
-    _requestSessionFocus();
   }
 
   Future<bool> _preflightDiaProva() async {
@@ -560,7 +421,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       });
       _armDiaProvaTicker();
       unawaited(_saveSimCheckpoint());
-      _requestSessionFocus();
     } catch (e) {
       HapticFeedback.heavyImpact();
       setState(() {
@@ -1459,12 +1319,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       ],
     );
 
-    return Focus(
-      focusNode: sessionFocus,
-      autofocus: true,
-      onKeyEvent: _onSessionKey,
-      child: body,
-    );
+    return body;
   }
 }
 

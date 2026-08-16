@@ -21,21 +21,16 @@ class MedicineScreen extends ConsumerStatefulWidget {
 
 class _MedicineScreenState extends ConsumerState<MedicineScreen> {
   int selected = 0;
-  final _focusNode = FocusNode();
   List<Map<String, dynamic>> _rankItems = const [];
   int _officialN = 0;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -58,41 +53,11 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
     context.go(_sessionPath(_rankItems[idx], officialN));
   }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event, int officialN) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyS && _rankItems.isNotEmpty) {
-      _openSelected(officialN);
-      return KeyEventResult.handled;
-    }
-    if (_rankItems.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      setState(() => selected = (selected + 1).clamp(0, _rankItems.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      setState(() => selected = (selected - 1).clamp(0, _rankItems.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      _openSelected(officialN);
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(medicineProvider);
     final tick = ref.watch(refreshTickProvider);
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: (node, event) => _onKey(node, event, _officialN),
-      child: async.when(
+    return async.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(16),
         child: SkeletonList(count: 3, lines: 2),
@@ -540,7 +505,6 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
           ],
         );
       },
-    ),
     );
   }
 }

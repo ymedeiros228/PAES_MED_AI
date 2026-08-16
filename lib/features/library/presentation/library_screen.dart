@@ -41,46 +41,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String searchSourceKind = 'todos'; // todos | oficial | estudo
   List<Map<String, dynamic>> searchHistory = [];
   int _hitSelected = 0;
-  final _focusNode = FocusNode();
   final _semana1PanelKey = GlobalKey();
   bool showFirstRunCoach = false;
   bool _wantSemana1Scroll = false;
   bool _didSemana1Scroll = false;
   Timer? _searchDebounce;
-
-  bool _textFieldFocused() {
-    final primary = FocusManager.instance.primaryFocus;
-    return primary != null && primary.context?.widget is EditableText;
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event, int officialN) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      if (!busy) unawaited(_load());
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyS && officialN >= 0) {
-      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-      return KeyEventResult.handled;
-    }
-    if (_textFieldFocused()) return KeyEventResult.ignored;
-    final hits = searchHits.take(12).toList();
-    if (hits.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      setState(() => _hitSelected = (_hitSelected + 1).clamp(0, hits.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      setState(() => _hitSelected = (_hitSelected - 1).clamp(0, hits.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      unawaited(_openSearchHit(hits[_hitSelected.clamp(0, hits.length - 1)]));
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
 
   @override
   void didChangeDependencies() {
@@ -111,9 +76,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
     _load();
     _loadSearchHistory();
     _loadFirstRunCoach();
@@ -134,7 +96,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
-    _focusNode.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -1240,10 +1201,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final semana1Route = GoRouterState.of(context).uri.queryParameters['semana1'] == '1';
     final highlightSemana1 = officialN == 0 && (showFirstRunCoach || semana1Route);
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: (node, event) => _onKey(node, event, officialN),
-      child: ListView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -1892,7 +1850,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
       ],
-    ),
     );
   }
 }

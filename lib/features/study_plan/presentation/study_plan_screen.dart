@@ -31,7 +31,6 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   bool weekOnly = true;
   int selected = 0;
   String _todaySessionPath = '/sessao';
-  final _focusNode = FocusNode();
 
   String _sessionPathFor(Map<String, dynamic> item) {
     final subject = item['subject']?.toString() ?? '';
@@ -55,43 +54,6 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       return;
     }
     if (selected >= items.length) selected = items.length - 1;
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    final items = _visibleItems();
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go(_todaySessionPath);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      unawaited(_load());
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyE && plan.isNotEmpty) {
-      unawaited(_exportWeek());
-      return KeyEventResult.handled;
-    }
-    if (items.isEmpty) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.keyJ) {
-      setState(() => selected = (selected + 1).clamp(0, items.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.keyK) {
-      setState(() => selected = (selected - 1).clamp(0, items.length - 1));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
-      context.go(_sessionPathFor(items[selected.clamp(0, items.length - 1)]));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.space) {
-      final item = items[selected.clamp(0, items.length - 1)];
-      unawaited(_toggleDone(item, item['done'] != true));
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   Future<void> _load({bool regenerate = false}) async {
@@ -206,15 +168,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
     _load();
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -229,11 +187,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     final doneN = plan.where((e) => (e as Map)['done'] == true).length;
     final progress = plan.isEmpty ? 0.0 : doneN / plan.length;
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
           child: Column(
@@ -574,7 +529,6 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
           ),
         ),
       ],
-    ),
     );
   }
 }

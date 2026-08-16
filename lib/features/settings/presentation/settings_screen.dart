@@ -38,32 +38,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String kind = 'prova';
   late final TextEditingController examCtrl;
   List<dynamic> backups = [];
-  final _focusNode = FocusNode();
   late final TextEditingController geminiKeyCtrl;
   late final TextEditingController groqKeyCtrl;
   late final TextEditingController openRouterKeyCtrl;
   late final TextEditingController openAiKeyCtrl;
   bool aiConfigLoading = true;
   bool aiBusy = false;
-
-  bool _textFieldFocused() {
-    final primary = FocusManager.instance.primaryFocus;
-    return primary != null && primary.context?.widget is EditableText;
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent || _textFieldFocused()) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      _health();
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyB) {
-      _backup();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
 
   @override
   void initState() {
@@ -73,9 +53,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     groqKeyCtrl = TextEditingController();
     openRouterKeyCtrl = TextEditingController();
     openAiKeyCtrl = TextEditingController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
     _health();
     _loadAiConfig();
     _backups();
@@ -84,7 +61,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
     examCtrl.dispose();
     geminiKeyCtrl.dispose();
     groqKeyCtrl.dispose();
@@ -319,10 +295,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final aiOnline = health?['openai_configured'] == true ||
         health?['gemini_configured'] == true;
 
-    return Focus(
-      focusNode: _focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -1105,7 +1078,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       ],
-    ),
     );
   }
 }

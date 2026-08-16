@@ -63,7 +63,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   final missTopics = <Map<String, String>>[];
   int flashcardsCreated = 0;
   int correctCount = 0;
-  final focusNode = FocusNode();
   Map<String, dynamic>? lastRemediation;
 
   // Revision phase: flashcards
@@ -138,7 +137,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       _saveCheckpoint();
     }
     ticker?.cancel();
-    focusNode.dispose();
     super.dispose();
   }
 
@@ -339,7 +337,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     qSw
       ..reset()
       ..start();
-    WidgetsBinding.instance.addPostFrameCallback((_) => focusNode.requestFocus());
   }
 
   void _start() {
@@ -729,7 +726,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     qSw
       ..reset()
       ..start();
-    focusNode.requestFocus();
   }
 
   Future<void> _reviewCard({required bool remembered}) async {
@@ -758,112 +754,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     });
     // Ciclo G: último card avança sozinho para a próxima fase
     if (last) await _nextPhase();
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent || !started) return KeyEventResult.ignored;
-    final phases = plan?['sessionPlan'] as List? ?? [];
-    final phase = Map<String, dynamic>.from(phases[phaseIndex.clamp(0, phases.length - 1)] as Map);
-    final phaseName = phase['phase']?.toString() ?? '';
-
-    // Fase theory: Enter avança (Ciclo CF)
-    if (phaseName == 'theory') {
-      if (event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        unawaited(_nextPhase());
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    // Fase cards (revisão prática) — Space/L/E só em cards reais (Ciclo CA)
-    final isRevPhase =
-        phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
-    if (isRevPhase && !revisionUsingQuestions) {
-      if (sessionCards.isEmpty) return KeyEventResult.ignored;
-      if (event.logicalKey == LogicalKeyboardKey.space) {
-        setState(() => cardFlipped = !cardFlipped);
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.keyL ||
-          event.logicalKey == LogicalKeyboardKey.digit1 ||
-          event.logicalKey == LogicalKeyboardKey.numpad1) {
-        unawaited(_reviewCard(remembered: true));
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.keyE ||
-          event.logicalKey == LogicalKeyboardKey.digit2 ||
-          event.logicalKey == LogicalKeyboardKey.numpad2) {
-        unawaited(_reviewCard(remembered: false));
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    // Ciclo CI: revisão com questões reusa teclado da fase questions
-    final questionsKeyboard = phaseName == 'questions' ||
-        (isRevPhase && revisionUsingQuestions && sessionQuestions.isNotEmpty);
-    if (!questionsKeyboard) return KeyEventResult.ignored;
-
-    // Tipo de erro após miss: 1–5 + Enter (Ciclo CA)
-    if (pendingErrorPick) {
-      final errKeys = <LogicalKeyboardKey, String>{
-        LogicalKeyboardKey.digit1: _errorTypes[0],
-        LogicalKeyboardKey.digit2: _errorTypes[1],
-        LogicalKeyboardKey.digit3: _errorTypes[2],
-        LogicalKeyboardKey.digit4: _errorTypes[3],
-        LogicalKeyboardKey.digit5: _errorTypes[4],
-        LogicalKeyboardKey.numpad1: _errorTypes[0],
-        LogicalKeyboardKey.numpad2: _errorTypes[1],
-        LogicalKeyboardKey.numpad3: _errorTypes[2],
-        LogicalKeyboardKey.numpad4: _errorTypes[3],
-        LogicalKeyboardKey.numpad5: _errorTypes[4],
-      };
-      final pick = errKeys[event.logicalKey];
-      if (pick != null) {
-        setState(() => errorType = pick);
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        unawaited(_confirmErrorAndSave());
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-
-    if (revealed) {
-      if (event.logicalKey == LogicalKeyboardKey.keyN ||
-          event.logicalKey == LogicalKeyboardKey.enter ||
-          event.logicalKey == LogicalKeyboardKey.numpadEnter) {
-        _nextQuestion();
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
-    final keys = {
-      LogicalKeyboardKey.digit1: 0,
-      LogicalKeyboardKey.digit2: 1,
-      LogicalKeyboardKey.digit3: 2,
-      LogicalKeyboardKey.digit4: 3,
-      LogicalKeyboardKey.digit5: 4,
-      LogicalKeyboardKey.numpad1: 0,
-      LogicalKeyboardKey.numpad2: 1,
-      LogicalKeyboardKey.numpad3: 2,
-      LogicalKeyboardKey.numpad4: 3,
-      LogicalKeyboardKey.numpad5: 4,
-    };
-    if (keys.containsKey(event.logicalKey)) {
-      setState(() => selected = keys[event.logicalKey]);
-      return KeyEventResult.handled;
-    }
-    if ((event.logicalKey == LogicalKeyboardKey.enter ||
-            event.logicalKey == LogicalKeyboardKey.numpadEnter) &&
-        selected != null) {
-      _submitAnswer();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
   }
 
   String _keyboardHintForPhase(String phaseName) {
@@ -1063,11 +953,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final remainingSec = phaseMinutes * 60 - clockElapsed.inSeconds;
     final lastMinute = started && !paused && phaseMinutes > 0 && remainingSec > 0 && remainingSec <= 60;
 
-    return Focus(
-      focusNode: focusNode,
-      onKeyEvent: _onKey,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
         children: [
           PageHeader(
             eyebrow: 'Sessão',
@@ -1600,7 +1487,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
           ],
         ],
-      ),
     );
   }
 }

@@ -26,36 +26,13 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   final transcriptCtrl = TextEditingController();
   final linkCtrl = TextEditingController();
   final transcriptFocus = FocusNode();
-  final _focusNode = FocusNode();
   String? status;
   bool busy = false;
   Map<String, dynamic>? lastLesson;
 
-  bool _textFieldFocused() {
-    final primary = FocusManager.instance.primaryFocus;
-    return primary != null && primary.context?.widget is EditableText;
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent || _textFieldFocused()) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.keyR || key == LogicalKeyboardKey.f5) {
-      ref.read(refreshTickProvider.notifier).state++;
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.keyS) {
-      context.go('/sessao');
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
   }
 
   @override
@@ -64,7 +41,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     transcriptCtrl.dispose();
     linkCtrl.dispose();
     transcriptFocus.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -140,28 +116,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     final lessons = ref.watch(lessonsProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          if (!busy && transcriptCtrl.text.trim().length >= 80) {
-            unawaited(_submitText());
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-          if (!busy && transcriptCtrl.text.trim().length >= 80) {
-            unawaited(_submitText());
-          }
-        },
-        const SingleActivator(LogicalKeyboardKey.numpadEnter, control: true): () {
-          if (!busy && transcriptCtrl.text.trim().length >= 80) {
-            unawaited(_submitText());
-          }
-        },
-      },
-      child: Focus(
-        focusNode: _focusNode,
-        onKeyEvent: _onKey,
-        child: ListView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
