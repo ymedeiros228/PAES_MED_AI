@@ -31,6 +31,9 @@ backend/.env
 !backend/.env.example
 
 # Banco e dados de estudo do usuário (exceto deploy/data/ para Render)
+# Build web pre-compilado para deploy rapido no Render
+deploy/web/
+!deploy/web/.gitkeep
 data/paes_med_ai.db
 data/paes_med_ai.db-*
 data/**/*.db

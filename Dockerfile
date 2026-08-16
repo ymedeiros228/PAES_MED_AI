@@ -1,24 +1,8 @@
-# Dockerfile — PAES MED AI (deploy unificado: API + front Flutter web)
-# Multi-stage: Stage 1 compila Flutter web, Stage 2 roda o backend Python.
-# Resolve problema do git clone do Flutter no Render.
+# Dockerfile — PAES MED AI (deploy unificado: API + front Flutter web pre-compilado)
+# O build Flutter web e feito no Windows e commitado em deploy/web/
+# O banco SQLite e commitado em deploy/data/paes_med_ai.db
+# Isso evita compilar Flutter no Render (memoria/tempo do plano Free).
 
-# ------------------------------------------------------------------------
-# STAGE 1: Build do Flutter web
-# ------------------------------------------------------------------------
-FROM ghcr.io/cirruslabs/flutter:3.24.5 AS flutter-build
-
-WORKDIR /app
-COPY . /app/
-
-# Build do front web (HTML renderer = 5.5MB vs 25MB com CanvasKit)
-RUN flutter build web --release --base-href=/ --web-renderer html
-
-# Remove CanvasKit nao usado (renderer HTML) para reduzir tamanho da imagem
-RUN rm -rf /app/build/web/canvaskit
-
-# ------------------------------------------------------------------------
-# STAGE 2: Runtime Python
-# ------------------------------------------------------------------------
 FROM python:3.13-slim
 
 # Dependencias do sistema
@@ -35,10 +19,8 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # Copia o projeto
 COPY . /app/
 
-# Copia o build web do stage 1
-COPY --from=flutter-build /app/build/web /app/backend/build/web
-
-# Banco pronto para deploy
+# Copia build web pre-compilado e banco pronto
+COPY deploy/web /app/backend/build/web
 COPY deploy/data/paes_med_ai.db /app/data/paes_med_ai.db
 
 # Define data dir e porta
