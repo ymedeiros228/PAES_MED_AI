@@ -16,7 +16,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/ui_kit.dart';
-import '../../../core/widgets/week_close_panel.dart';
 
 /// Hoje: hero com coach do dia + checklist + prontidão/semana (Ciclo C/F).
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -180,23 +179,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  Future<void> _closeWeek() async {
-    try {
-      final data = await apiClient.post('/api/study/week-close', {});
-      final map = Map<String, dynamic>.from(data as Map);
-      if (!mounted) return;
-      ref.read(refreshTickProvider.notifier).state++;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(map['message']?.toString() ?? 'Semana encerrada.')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(humanApiError(e, fallback: 'Não foi possível fechar a semana.'))),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(dashboardProvider);
@@ -245,7 +227,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ? '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
                 : '/sessao');
         final coachLine = routine['line']?.toString() ?? 'Pronto para estudar?';
-        final closePath = routine['closePath']?.toString() ?? '/fila';
         final dayClosed = routine['dayClosed'] == true || checklist['dayClosed'] == true;
         final countdown = Map<String, dynamic>.from(
           (data['examCountdown'] as Map?) ?? (routine['countdown'] as Map?) ?? const {},
@@ -459,6 +440,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           _SimpleQuickActions(cs: cs, sessionPath: sessionPath),
                           const SizedBox(height: 20),
 
+                          // XP + Streak + Tópico do dia + Flashcards due (linha integrada)
+                          _DashboardStatsRow(
+                            cs: cs,
+                            streakDays: data['streakDays'] as int? ?? 0,
+                            studyToday: data['studyToday'] as Map?,
+                            flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                            sessionPath: sessionPath,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Mini-gráfico de evolução da semana (7 barras)
+                          _WeekMiniChart(
+                            cs: cs,
+                            weekProgress: data['weekProgress'] as Map?,
+                            studyCalendar: data['studyCalendar'] as List?,
+                          ),
+                          const SizedBox(height: 20),
+
                           // Recomendacao do dia - um card simples
                           FutureBuilder(
                             future: _recommendationsFuture,
@@ -501,172 +500,236 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-/// Anel de progresso circular do dia — mostra visualmente quantos itens
-/// do checklist foram concluídos (sessão, cartões, revisões, encerrar dia).
-class _DayProgressRing extends StatefulWidget {
-  const _DayProgressRing({
-    required this.sessionDone,
-    required this.cardsDone,
-    required this.revisionsDone,
-    required this.dayClosed,
+// ===========================================================================
+// NOVOS WIDGETS: XP/Streak + Tópico do dia + Flashcards due + Mini-gráfico
+// ===========================================================================
+
+/// Linha com XP/streak + tópico do dia + flashcards due (3 cards integrados)
+class _DashboardStatsRow extends StatelessWidget {
+  const _DashboardStatsRow({
+    required this.cs,
+    required this.streakDays,
+    required this.studyToday,
+    required this.flashcardsDue,
+    required this.sessionPath,
   });
-
-  final bool sessionDone;
-  final bool cardsDone;
-  final bool revisionsDone;
-  final bool dayClosed;
-
-  @override
-  State<_DayProgressRing> createState() => _DayProgressRingState();
-}
-
-class _DayProgressRingState extends State<_DayProgressRing>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _controller.forward();
-  }
-
-  @override
-  void didUpdateWidget(_DayProgressRing oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.sessionDone != widget.sessionDone ||
-        oldWidget.cardsDone != widget.cardsDone ||
-        oldWidget.revisionsDone != widget.revisionsDone ||
-        oldWidget.dayClosed != widget.dayClosed) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final ColorScheme cs;
+  final int streakDays;
+  final Map? studyToday;
+  final int flashcardsDue;
+  final String sessionPath;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    // 4 itens no checklist
-    final doneCount = [
-      widget.sessionDone,
-      widget.cardsDone,
-      widget.revisionsDone,
-      widget.dayClosed,
-    ].where((d) => d).length;
-    final total = 4;
-    final targetProgress = doneCount / total;
+    final study = studyToday != null ? Map<String, dynamic>.from(studyToday!) : null;
+    final subj = study?['subject']?.toString() ?? '';
+    final topic = study?['topic']?.toString() ?? '';
+    final hasTopic = subj.isNotEmpty && topic.isNotEmpty;
 
-    // Mensagem motivacional baseada no progresso
-    final message = switch (doneCount) {
-      0 => 'Bom começo! Que tal uma sessão?',
-      1 => 'Já começou — siga assim.',
-      2 => 'Metade do caminho. Continue.',
-      3 => 'Quase lá — só falta encerrar.',
-      _ => 'Dia completo. Descanse.',
-    };
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          // Anel circular animado
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: targetProgress),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return SizedBox(
-                width: 56,
-                height: 56,
-                child: Stack(
-                  fit: StackFit.expand,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Linha 1: Streak + Flashcards due
+        Row(
+          children: [
+            Expanded(
+              child: _StatCard(
+                cs: cs,
+                icon: Icons.local_fire_department_rounded,
+                value: '$streakDays',
+                label: 'dias seguidos',
+                color: cs.error,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                cs: cs,
+                icon: Icons.style_rounded,
+                value: '$flashcardsDue',
+                label: 'flashcards hoje',
+                color: cs.tertiary,
+                onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
+              ),
+            ),
+          ],
+        ),
+        if (hasTopic) ...[
+          const SizedBox(height: 12),
+          // Tópico do dia
+          Material(
+            color: cs.primaryContainer.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.go(sessionPath),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    // Trilha de fundo
-                    CircularProgressIndicator(
-                      value: 1.0,
-                      strokeWidth: 5,
-                      color: cs.surfaceContainerHighest,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: cs.primary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.today_rounded, color: Colors.white, size: 22),
                     ),
-                    // Progresso
-                    CircularProgressIndicator(
-                      value: value,
-                      strokeWidth: 5,
-                      color: doneCount == total ? cs.primary : cs.tertiary,
-                      strokeCap: StrokeCap.round,
-                    ),
-                    // Texto central
-                    Center(
-                      child: Text(
-                        '$doneCount/$total',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: cs.onSurface,
-                        ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tópico do dia',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                          Text(
+                            '$subj · $topic',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
+                    Icon(Icons.play_arrow_rounded, color: cs.primary),
                   ],
                 ),
-              );
-            },
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  message,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
-                ),
-                if (doneCount == total)
-                  Text(
-                    'Dia encerrado — volte amanhã',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: cs.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Card de estatística individual (streak, flashcards, etc)
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.cs,
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+  final ColorScheme cs;
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: cs.surfaceContainerHighest.withOpacity(0.3),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onSurface,
+                        height: 1.0,
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: cs.onSurface.withOpacity(0.5),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-
-class _DashboardGamificationCard extends StatelessWidget {
-  const _DashboardGamificationCard({required this.data});
-  final Map<String, dynamic> data;
+/// Mini-gráfico de evolução da semana (7 barras)
+class _WeekMiniChart extends StatelessWidget {
+  const _WeekMiniChart({
+    required this.cs,
+    required this.weekProgress,
+    required this.studyCalendar,
+  });
+  final ColorScheme cs;
+  final Map? weekProgress;
+  final List? studyCalendar;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final level = data['level'] ?? 1;
-    final levelTitle = data['levelTitle'] ?? 'Iniciante';
-    final xp = data['xp'] ?? 0;
-    final progress = (data['levelProgress'] ?? 0.0) as double;
-    final unlocked = data['unlockedCount'] ?? 0;
-    final total = data['totalAchievements'] ?? 0;
-    final streak = data['stats'] is Map ? (data['stats']['streakDays'] ?? 0) : 0;
-    final next = data['nextAchievement'] as Map?;
+    // studyCalendar tem 28 dias; pegamos os últimos 7
+    final calendar = studyCalendar ?? [];
+    final last7 = calendar.length >= 7
+        ? calendar.sublist(calendar.length - 7)
+        : calendar;
+    // Cada item tem {date, minutes} ou similar
+    final bars = <double>[];
+    for (final item in last7) {
+      if (item is Map) {
+        final m = (item['minutes'] as num?)?.toDouble() ??
+            (item['studyMinutes'] as num?)?.toDouble() ?? 0;
+        bars.add(m);
+      } else {
+        bars.add(0);
+      }
+    }
+    // Se não há dados, usar weekProgress
+    if (bars.isEmpty) {
+      final wp = weekProgress;
+      if (wp != null) {
+        final mins = (wp['minutes'] as num?)?.toDouble() ?? 0;
+        bars.add(mins);
+      }
+    }
+    final maxVal = bars.isEmpty ? 1.0 : bars.reduce((a, b) => a > b ? a : b);
+    final safeMax = maxVal <= 0 ? 1.0 : maxVal;
+    final weekLabel = weekProgress?['label']?.toString() ?? 'Esta semana';
+    final days = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
     return SurfacePanel(
+      color: cs.surfaceContainerHighest.withOpacity(0.2),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -674,868 +737,83 @@ class _DashboardGamificationCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [cs.primary, cs.primaryContainer],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$level',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: cs.onPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Nivel $level - $levelTitle',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      Text(
-                        '$xp XP - $unlocked/$total medalhas',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: cs.onSurface.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Streak visual
-                if (streak is int && streak > 0) ...[
-                  Icon(
-                    Icons.local_fire_department_rounded,
-                    color: const Color(0xFFE8A04B),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$streak',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFE8A04B),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: progress.clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor: cs.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation(cs.primary),
-              ),
-            ),
-            if (next != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.emoji_events_outlined, size: 14, color: cs.onSurface.withOpacity(0.5)),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Proxima: ${next['title']} (${((next['progress'] ?? 0) * 100).round()}%)',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: cs.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                  TapScale(
-                    child: TextButton(
-                      onPressed: () => context.go('/conquistas'),
-                      child: const Text('Ver todas'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class _QuickActionsGrid extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final actions = [
-      ('Estudar', Icons.school_rounded, '/sessao?examBoard=UEMA_PAES&preferNatureza=1', cs.primary),
-      ('Flashcards', Icons.style_rounded, '/flashcards', cs.secondary),
-      ('Tutor IA', Icons.auto_awesome_rounded, '/tutor', const Color(0xFF8B5CF6)),
-      ('Redacao', Icons.edit_note_rounded, '/redacao', const Color(0xFFE8A04B)),
-      ('Simulado', Icons.bolt_rounded, '/simulados', const Color(0xFFD3544A)),
-      ('Aulas', Icons.video_library_rounded, '/aulas', cs.tertiary),
-      ('Materiais', Icons.picture_as_pdf_rounded, '/materiais', const Color(0xFF2196F3)),
-    ];
-
-    return GridView.count(
-      crossAxisCount: 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1.1,
-      children: [
-        for (final a in actions)
-          TapScale(
-            child: Material(
-              color: cs.surfaceContainer,
-              borderRadius: BorderRadius.circular(14),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  context.go(a.$3);
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(a.$2, color: a.$4, size: 28),
-                    const SizedBox(height: 6),
-                    Text(
-                      a.$1,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: cs.onSurface.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-
-class _TodayTopicAndCardsRow extends StatelessWidget {
-  const _TodayTopicAndCardsRow({required this.dueCardsFuture, this.todayTopic});
-  final Future<dynamic> dueCardsFuture;
-  final Map<String, dynamic>? todayTopic;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: _TopicCard(topic: todayTopic)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: FutureBuilder(
-            future: dueCardsFuture,
-            builder: (context, snap) {
-              final list = snap.data is List ? snap.data as List : const [];
-              final n = list.length;
-              return _DueCardsCard(dueCount: n);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-
-class _TopicCard extends StatelessWidget {
-  const _TopicCard({this.topic});
-  final Map<String, dynamic>? topic;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final subj = topic?['subject']?.toString() ?? '';
-    final top = topic?['topic']?.toString() ?? '';
-    final hasTopic = subj.isNotEmpty && top.isNotEmpty;
-
-    return SurfacePanel(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.today_rounded, size: 18, color: cs.primary),
-                const SizedBox(width: 6),
+                Icon(Icons.bar_chart_rounded, color: cs.primary, size: 20),
+                const SizedBox(width: 8),
                 Text(
-                  'Topico do dia',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
+                  'Evolução da semana',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: cs.onSurface.withOpacity(0.6),
+                    color: cs.onSurface,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (hasTopic) ...[
-              Text(
-                subj,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: cs.primary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                top,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: cs.onSurface.withOpacity(0.8),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 10),
-              TapScale(
-                child: FilledButton.tonal(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    final nat = const {'Biologia', 'Quimica', 'Fisica'}.contains(subj);
-                    context.go('/sessao?examBoard=UEMA_PAES'
-                        '&subject=${Uri.encodeComponent(subj)}'
-                        '&topic=${Uri.encodeComponent(top)}'
-                        '&preferNatureza=${nat ? '1' : '0'}');
-                  },
-                  child: const Text('Estudar'),
-                ),
-              ),
-            ] else
-              Text(
-                'Nenhum topico planejado',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: cs.onSurface.withOpacity(0.5),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class _DueCardsCard extends StatelessWidget {
-  const _DueCardsCard({required this.dueCount});
-  final int dueCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return SurfacePanel(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.style_rounded, size: 18, color: cs.secondary),
-                const SizedBox(width: 6),
+                const Spacer(),
                 Text(
-                  'Flashcards',
+                  weekLabel,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface.withOpacity(0.6),
+                    fontSize: 11,
+                    color: cs.onSurface.withOpacity(0.5),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              '$dueCount',
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: dueCount > 0 ? cs.secondary : cs.onSurface.withOpacity(0.3),
-              ),
-            ),
-            Text(
-              dueCount > 0 ? 'para revisar hoje' : 'tudo em dia!',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: cs.onSurface.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (dueCount > 0)
-              TapScale(
-                child: FilledButton.tonal(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    context.go('/flashcards');
-                  },
-                  child: const Text('Revisar'),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class _SmartCoachCard extends StatelessWidget {
-  const _SmartCoachCard({required this.insights});
-  final Map<String, dynamic> insights;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final dailyTip = insights['dailyTip']?.toString() ?? '';
-    final weakAlerts = (insights['weakAlerts'] as List?) ?? [];
-    final trend = Map<String, dynamic>.from(insights['weeklyTrend'] as Map? ?? {});
-    final nextAction = insights['nextAction'] as Map?;
-
-    return SurfacePanel(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [cs.primary, cs.tertiary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
+            const SizedBox(height: 16),
+            if (bars.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Text(
-                    'Coach IA',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
+                    'Sem dados ainda',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: cs.onSurface.withOpacity(0.4),
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            if (dailyTip.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              )
+            else
+              SizedBox(
+                height: 80,
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Icon(Icons.lightbulb_rounded, color: cs.primary, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        dailyTip,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          height: 1.5,
-                          fontWeight: FontWeight.w600,
-                          color: cs.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (trend.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _TrendChip(trend: trend),
-            ],
-            if (nextAction != null) ...[
-              const SizedBox(height: 12),
-              TapScale(
-                child: Material(
-                  color: cs.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      context.go(nextAction['path']?.toString() ?? '/sessao');
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          Icon(_iconFor(nextAction['icon']?.toString() ?? 'play_arrow'),
-                              color: cs.primary, size: 24),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  nextAction['title']?.toString() ?? 'Estudar agora',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: cs.onSurface,
-                                  ),
+                    for (var i = 0; i < bars.length; i++) ...[
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Flexible(
+                              child: Container(
+                                width: double.infinity,
+                                height: (bars[i] / safeMax) * 60,
+                                constraints: const BoxConstraints(minHeight: 4),
+                                decoration: BoxDecoration(
+                                  color: bars[i] > 0
+                                      ? cs.primary.withOpacity(0.8)
+                                      : cs.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-                                if (nextAction['subtitle'] != null)
-                                  Text(
-                                    nextAction['subtitle'].toString(),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: cs.onSurface.withOpacity(0.6),
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
+                              ),
                             ),
-                          ),
-                          Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            if (weakAlerts.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              Text(
-                'Pontos de atencao',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.6),
-                ),
-              ),
-              const SizedBox(height: 8),
-              for (final wa in weakAlerts.take(3))
-                _WeakAlertChip(alert: wa as Map),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _iconFor(String name) => switch (name) {
-    'style' => Icons.style_rounded,
-    'school' => Icons.school_rounded,
-    'bolt' => Icons.bolt_rounded,
-    'edit' => Icons.edit_rounded,
-    _ => Icons.play_arrow_rounded,
-  };
-}
-
-
-class _TrendChip extends StatelessWidget {
-  const _TrendChip({required this.trend});
-  final Map<String, dynamic> trend;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final t = trend['trend']?.toString() ?? 'sem_dados';
-    final msg = trend['message']?.toString() ?? '';
-
-    final (icon, color) = switch (t) {
-      'melhorou' => (Icons.trending_up_rounded, const Color(0xFF4CAF50)),
-      'piorou' => (Icons.trending_down_rounded, cs.error),
-      'estavel' => (Icons.trending_flat_rounded, cs.onSurface.withOpacity(0.5)),
-      'novo' => (Icons.auto_awesome_rounded, cs.primary),
-      _ => (Icons.info_outline_rounded, cs.onSurface.withOpacity(0.4)),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              msg,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface.withOpacity(0.8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-class _WeakAlertChip extends StatelessWidget {
-  const _WeakAlertChip({required this.alert});
-  final Map alert;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final subj = alert['subject']?.toString() ?? '';
-    final topic = alert['topic']?.toString() ?? '';
-    final msg = alert['message']?.toString() ?? '';
-    final path = alert['actionPath']?.toString() ?? '/sessao';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TapScale(
-        child: Material(
-          color: cs.errorContainer.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () {
-              HapticFeedback.selectionClick();
-              context.go(path);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded, color: cs.error, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$subj - $topic',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
-                          ),
-                        ),
-                        Text(
-                          msg,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: cs.onSurface.withOpacity(0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.arrow_forward_rounded, size: 16, color: cs.onSurface.withOpacity(0.4)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-class _RecommendationsCard extends StatelessWidget {
-  const _RecommendationsCard({required this.recommendations});
-  final Map<String, dynamic> recommendations;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final summary = recommendations['summary']?.toString() ?? '';
-    final materials = (recommendations['materialSuggestions'] as List?) ?? [];
-    final exams = (recommendations['examSuggestions'] as List?) ?? [];
-    final hasMaterials = materials.isNotEmpty;
-    final hasExams = exams.isNotEmpty;
-
-    if (!hasMaterials && !hasExams && summary.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return SurfacePanel(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [cs.tertiary, cs.primary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Recomendacoes de Estudo',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (summary.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: cs.tertiaryContainer.withOpacity(0.25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.tips_and_updates_rounded, color: cs.tertiary, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        summary,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          height: 1.5,
-                          fontWeight: FontWeight.w600,
-                          color: cs.onSurface.withOpacity(0.85),
+                            const SizedBox(height: 4),
+                            Text(
+                              i < days.length ? days[i] : '',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: cs.onSurface.withOpacity(0.4),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      if (i < bars.length - 1) const SizedBox(width: 6),
+                    ],
                   ],
                 ),
               ),
-            ],
-            if (hasMaterials) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Materiais sugeridos',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.6),
-                ),
-              ),
-              const SizedBox(height: 8),
-              for (final m in materials.take(3))
-                _MaterialSuggestionTile(material: m as Map),
-            ],
-            if (hasExams) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Provas historicas para treinar',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.6),
-                ),
-              ),
-              const SizedBox(height: 8),
-              for (final e in exams.take(3))
-                _ExamSuggestionTile(exam: e as Map),
-            ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class _MaterialSuggestionTile extends StatelessWidget {
-  const _MaterialSuggestionTile({required this.material});
-  final Map material;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final title = material['title']?.toString() ?? '';
-    final reason = material['reason']?.toString() ?? '';
-    final subject = material['subject']?.toString() ?? '';
-    final actionPath = material['actionPath']?.toString() ?? '';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TapScale(
-        child: Material(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              HapticFeedback.selectionClick();
-              context.go(actionPath);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: cs.primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.menu_book_rounded, color: cs.primary, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$subject · $reason',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: cs.onSurface.withOpacity(0.6),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-class _ExamSuggestionTile extends StatelessWidget {
-  const _ExamSuggestionTile({required this.exam});
-  final Map exam;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final year = exam['year']?.toString() ?? '';
-    final official = exam['officialQuestions']?.toString() ?? '0';
-    final reason = exam['reason']?.toString() ?? '';
-    final actionPath = exam['actionPath']?.toString() ?? '';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TapScale(
-        child: Material(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              HapticFeedback.selectionClick();
-              context.go(actionPath);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: cs.secondaryContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.assignment_rounded, color: cs.secondary, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'PAES $year',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$official questoes oficiais · $reason',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: cs.onSurface.withOpacity(0.6),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.arrow_forward_rounded, color: cs.onSurface.withOpacity(0.4)),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

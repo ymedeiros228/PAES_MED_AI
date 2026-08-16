@@ -1781,7 +1781,7 @@ class _SessionStartCard extends StatelessWidget {
                       ),
                       icon: const Icon(Icons.play_arrow_rounded, size: 24),
                       label: Text(
-                        'Começar agora',
+                        'Estudar agora',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -1793,63 +1793,43 @@ class _SessionStartCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Center(
-              child: TextButton(
-                onPressed: () => _showCustomizeSheet(context),
-                child: Text(
-                  'Personalizar sessão',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface.withOpacity(0.6),
-                  ),
+            ExpansionTile(
+              tilePadding: const EdgeInsets.symmetric(horizontal: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              collapsedBackgroundColor: cs.surfaceContainerHighest.withOpacity(0.2),
+              backgroundColor: cs.surfaceContainerHighest.withOpacity(0.2),
+              title: Text(
+                'Personalizar sessão',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface.withOpacity(0.7),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCustomizeSheet(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Outras formas de estudar',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+              subtitle: Text(
+                'Escolha outro modo de estudo',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: cs.onSurface.withOpacity(0.4),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Escolha uma opção ou volte e aperte Começar.',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: cs.onSurface.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
               children: [
-                _ShortcutChip(label: 'Questões', icon: Icons.quiz_outlined, path: '/questoes'),
-                _ShortcutChip(label: 'Flashcards', icon: Icons.style_outlined, path: '/flashcards'),
-                _ShortcutChip(label: 'Tutor IA', icon: Icons.auto_awesome_outlined, path: '/tutor'),
-                _ShortcutChip(label: 'Simulado', icon: Icons.bolt_outlined, path: '/simulados'),
-                _ShortcutChip(label: 'Redação', icon: Icons.edit_note_outlined, path: '/redacao'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _ShortcutChip(label: 'Questões', icon: Icons.quiz_outlined, path: '/questoes'),
+                      _ShortcutChip(label: 'Flashcards', icon: Icons.style_outlined, path: '/flashcards'),
+                      _ShortcutChip(label: 'Tutor IA', icon: Icons.auto_awesome_outlined, path: '/tutor'),
+                      _ShortcutChip(label: 'Simulado', icon: Icons.bolt_outlined, path: '/simulados'),
+                      _ShortcutChip(label: 'Redação', icon: Icons.edit_note_outlined, path: '/redacao'),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],

@@ -187,7 +187,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   title: 'Progresso',
                   subtitle: 'Seu desempenho: pontos fortes e pontos a melhorar — prática, não % de aprovação',
                 ),
-                // Atalhos para sub-telas do Progresso
+                // Abas do Progresso: Desempenho, Conquistas, Cronograma, Diagnóstico
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Wrap(
@@ -205,7 +205,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         onPressed: () => context.go('/cronograma'),
                       ),
                       ActionChip(
-                        label: const Text('Diagnostico'),
+                        label: const Text('Diagnóstico'),
                         avatar: const Icon(Icons.medical_services_outlined, size: 18),
                         onPressed: () => context.go('/medicina'),
                       ),

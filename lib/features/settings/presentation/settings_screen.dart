@@ -292,8 +292,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       examCtrl.text = exam;
     }
     final online = health?['status'] == 'ok';
-    final aiOnline = health?['openai_configured'] == true ||
-        health?['gemini_configured'] == true;
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
@@ -425,47 +423,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         );
                       },
                     ),
-                  ],
-                ),
-              ),
-
-              if (isWindows && !kIsWeb) ...[
-                const SizedBox(height: 16),
-                SectionLabel('Atualização'),
-                SurfacePanel(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.system_update_rounded, color: Theme.of(context).colorScheme.primary),
-                        title: const Text('Atualizar PAES MED AI'),
-                        subtitle: const Text('Baixa a ultima versao do GitHub e instala automaticamente'),
-                        trailing: FilledButton.tonal(
-                          onPressed: () {
-                            launchUpdater();
-                          },
-                          child: const Text('Atualizar'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              SectionLabel('Aparência'),
-              _ThemeModePicker(mode: ref.watch(themeModeProvider)),
-
-              const SizedBox(height: 16),
-              SectionLabel('Estudo'),
-              SurfacePanel(
-                child: Column(
-                  children: [
+                    const Divider(height: 20),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       secondary: Icon(Icons.center_focus_strong_rounded, color: Theme.of(context).colorScheme.primary),
                       title: const Text('Modo foco'),
-                      subtitle: const Text('Esconde telas extras. Atalho F'),
+                      subtitle: const Text('Esconde telas extras'),
                       value: focus,
                       onChanged: (v) {
                         HapticFeedback.lightImpact();
@@ -494,9 +457,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: Text(
                           () {
                             final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
-                            if (d < 0) return 'Prova: $d dias atrás';
+                            if (d < 0) return 'Prova: \$d dias atrás';
                             if (d == 0) return 'Prova: é hoje!';
-                            return 'Prova em $d dia(s)';
+                            return 'Prova em \$d dia(s)';
                           }(),
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -506,201 +469,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                     ],
-                    if (exam.isNotEmpty &&
-                        RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(exam) &&
-                        ref.watch(examDateProvider.notifier).daysUntilExam == null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Data inválida — use AAAA-MM-DD válido.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          height: 1.5,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ],
-                    if (examState.hydrateNote != null && exam.isEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        examState.hydrateNote!,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          height: 1.5,
-                          color: Theme.of(context).colorScheme.tertiary,
-                        ),
-                      ),
-                    ],
-                    if (examState.syncError != null) ...[
-                      const SizedBox(height: 8),
-                      QuietEmpty(
-                        message: examState.syncError!,
-                        action: TextButton(
-                          onPressed: () => unawaited(ref.read(examDateProvider.notifier).retrySync()),
-                          child: const Text('Sincronizar'),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
+
+              SectionLabel('Aparência'),
+              _ThemeModePicker(mode: ref.watch(themeModeProvider)),
 
               const SizedBox(height: 16),
-              SectionLabel('Backup e dados'),
-              SurfacePanel(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: online ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error),
-                      title: Text(online ? 'Tudo certo' : 'Sem conexão'),
-                      subtitle: Text(
-                        online
-                            ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
-                            : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
-                      ),
-                      trailing: IconButton(
-                        tooltip: 'Verificar conexão',
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          _health();
-                        },
-                        icon: const Icon(Icons.refresh_rounded),
-                      ),
-                    ),
-                    if (online && health?['curation'] is Map)
-                      Builder(
-                        builder: (_) {
-                          final c = Map<String, dynamic>.from(health!['curation'] as Map);
-                          final floorOk = c['naturezaFloorOk'] == true;
-                          final msg = c['message']?.toString() ?? '';
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(
-                              floorOk ? Icons.biotech_outlined : Icons.warning_amber_rounded,
-                              color: floorOk ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.tertiary,
-                            ),
-                            title: Text(
-                              floorOk
-                                  ? 'Questões de Natureza em dia'
-                                  : 'Questões de Natureza insuficientes',
-                            ),
-                            subtitle: Text(
-                              msg.isEmpty
-                                  ? 'Com gabarito: ${c['realCount'] ?? '—'} · Interdisciplinares: ${c['crossDomainCount'] ?? '—'}'
-                                  : msg,
-                              style: GoogleFonts.inter(fontSize: 13, height: 1.5),
-                            ),
-                            trailing: focus
-                                ? Tooltip(
-                                    message: 'Desligue o modo foco para ver as áreas',
-                                    child: TextButton(
-                                      onPressed: null,
-                                      child: const Text('Áreas'),
-                                    ),
-                                  )
-                                : TextButton(
-                                    onPressed: () => context.go('/medicina'),
-                                    child: const Text('Áreas'),
-                                  ),
-                          );
-                        },
-                      ),
-                    const Divider(height: 20),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(Icons.menu_book_rounded, color: Theme.of(context).colorScheme.primary),
-                      title: const Text('Biblioteca de provas'),
-                      subtitle: const Text('Onde ficam os PDFs oficiais'),
-                      trailing: TextButton(onPressed: () => context.go('/biblioteca'), child: const Text('Abrir')),
-                    ),
-                    const SizedBox(height: 8),
-                    FilledButton.tonalIcon(
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        _backup();
-                      },
-                      icon: const Icon(Icons.backup_rounded, size: 18),
-                      label: const Text('Salvar cópia de segurança'),
-                    ),
-                    if (backupListError != null) ...[
-                      const SizedBox(height: 8),
-                      QuietEmpty(
-                        message: backupListError!,
-                        action: TextButton(
-                          onPressed: () {
-                            _backups();
-                            _lastBackup();
-                          },
-                          child: const Text('Tentar'),
-                        ),
-                      ),
-                    ],
-                    if (lastBackup != null) ...[
-                      const SizedBox(height: 8),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        leading: Icon(
-                          lastBackup!['ok'] == true ? Icons.verified_outlined : Icons.warning_amber_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          lastBackup!['ok'] == true
-                              ? 'Última cópia de segurança verificada'
-                              : 'Nenhuma cópia de segurança verificada',
-                        ),
-                        subtitle: Text(
-                          () {
-                            if (lastBackup!['ok'] != true) {
-                              return lastBackup!['message']?.toString() ?? 'Salve uma cópia acima.';
-                            }
-                            final at = lastBackup!['at']?.toString() ?? '—';
-                            return at;
-                          }(),
-                          style: GoogleFonts.inter(fontSize: 13, height: 1.5),
-                        ),
-                      ),
-                    ],
-                    if (backups.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text('Restaurar', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
-                      for (final b in backups.take(5))
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text((b as Map)['name']?.toString() ?? ''),
-                          trailing: TextButton(
-                            onPressed: () async {
-                              final name = b['name']?.toString() ?? '';
-                              final verify = b['verify'] is Map ? Map<String, dynamic>.from(b['verify'] as Map) : null;
-                              final sha = verify?['sha256Prefix']?.toString() ?? '';
-                              final ok = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Restaurar cópia de segurança?'),
-                                  content: Text(
-                                    'Substitui o progresso atual por:\n\n$name'
-                                    '${sha.isNotEmpty ? '\n\nCódigo de verificação (avançado): $sha' : ''}'
-                                    '\n\nSó confirme se tiver certeza.',
-                                  ),
-                                  actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                                    FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
-                                  ],
-                                ),
-                              );
-                              if (ok == true) await _restore(name);
-                            },
-                            child: const Text('Restaurar'),
-                          ),
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 8),
               SectionLabel('IA', hint: 'Cole sua chave e teste'),
               SurfacePanel(
                 child: Builder(
@@ -848,160 +624,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Opções avançadas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Mídia, ferramentas e índices'),
+                title: Text('Avançado', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600)),
+                subtitle: const Text('Backup, atualização, ferramentas e pastas'),
                 children: [
-                  SectionLabel('Mídia', hint: 'Sugestões de vídeos e artigos'),
-                  SwitchListTile(
+                  SectionLabel('Backup e dados'),
+                  SectionLabel('Backup e dados'),
+                  ListTile(
                     contentPadding: EdgeInsets.zero,
-                    secondary: Icon(Icons.smart_toy_rounded, color: Theme.of(context).colorScheme.primary),
-                    title: const Text('Tutor com IA conectada'),
+                    leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: online ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error),
+                    title: Text(online ? 'Tudo certo' : 'Sem conexão'),
                     subtitle: Text(
-                      aiOnline
-                          ? 'Chave configurada'
-                          : 'Sem chave — tutor usa apenas seu material',
+                      online
+                          ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
+                          : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
                     ),
-                    value: aiOnline && ref.watch(tutorOnlinePrefProvider),
-                    onChanged: aiOnline
-                        ? (v) {
-                            HapticFeedback.lightImpact();
-                            ref.read(tutorOnlinePrefProvider.notifier).setEnabled(v);
-                          }
-                        : null,
+                    trailing: IconButton(
+                      tooltip: 'Verificar conexão',
+                      onPressed: () { HapticFeedback.selectionClick(); _health(); },
+                      icon: const Icon(Icons.refresh_rounded),
+                    ),
                   ),
-                  FutureBuilder(
-                    future: apiClient.get('/api/media/prefs'),
-                    builder: (context, snap) {
-                      final prefs = snap.hasData && snap.data is Map
-                          ? Map<String, dynamic>.from(snap.data as Map)
-                          : <String, dynamic>{};
-                      final suggest = prefs['suggestVideos'] != false;
-                      final suggestArt = prefs['suggestArticles'] != false;
-                      final yt = prefs['youtubeConfigured'] == true ||
-                          health?['youtube_configured'] == true;
-                      final serper = prefs['serperConfigured'] == true ||
-                          health?['serper_configured'] == true;
-                      return Column(
-                        children: [
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Sugerir vídeos'),
-                            subtitle: Text(
-                              yt
-                                  ? 'YouTube configurado + catálogo local'
-                                  : 'Catálogo local · YouTube opcional',
-                            ),
-                            value: suggest,
-                            onChanged: (v) async {
-                              try {
-                                await apiClient.post('/api/media/prefs', {'suggestVideos': v});
-                                setState(() {});
-                              } catch (e) {
-                                setState(
-                                  () => msg = humanApiError(e, fallback: 'Não deu para salvar preferência.'),
-                                );
-                              }
-                            },
-                          ),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Sugerir artigos'),
-                            subtitle: Text(
-                              serper
-                                  ? 'Serper configurado + catálogo local'
-                                  : 'Catálogo local · Serper opcional',
-                            ),
-                            value: suggestArt,
-                            onChanged: (v) async {
-                              try {
-                                await apiClient.post('/api/media/prefs', {'suggestArticles': v});
-                                setState(() {});
-                              } catch (e) {
-                                setState(
-                                  () => msg = humanApiError(e, fallback: 'Não deu para salvar preferência.'),
-                                );
-                              }
-                            },
-                          ),
-                          FutureBuilder(
-                            future: apiClient.get('/api/media/opens', {'limit': '8'}),
-                            builder: (context, openSnap) {
-                              if (openSnap.connectionState == ConnectionState.waiting) {
-                                return const CompactStatus(
-                                  message: 'Carregando histórico de mídia…',
-                                  icon: Icons.hourglass_empty_rounded,
-                                );
-                              }
-                              if (openSnap.hasError || openSnap.data is! Map) {
-                                return const CompactStatus(
-                                  message: 'Histórico de mídia indisponível no momento.',
-                                  icon: Icons.sync_problem_outlined,
-                                );
-                              }
-                              final om = Map<String, dynamic>.from(openSnap.data as Map);
-                              final items =
-                                  (om['items'] as List? ?? []).whereType<Map>().toList();
-                              if (items.isEmpty) {
-                                return const CompactStatus(
-                                  message: 'Nenhuma abertura de mídia registrada.',
-                                  icon: Icons.history_outlined,
-                                );
-                              }
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    title: Text('Materiais abertos recentemente'),
-                                    subtitle: Text('Histórico local'),
-                                  ),
-                                  for (final raw in items.take(6))
-                                    ListTile(
-                                      dense: true,
-                                      contentPadding: EdgeInsets.zero,
-                                      title: Text(
-                                        raw['title']?.toString() ??
-                                            raw['url']?.toString() ??
-                                            'item',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      subtitle: Text(
-                                        [
-                                          raw['kind']?.toString() ?? '',
-                                          raw['at']?.toString() ?? '',
-                                        ].where((s) => s.isNotEmpty).join(' · '),
-                                      ),
-                                      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
-                                      onTap: () async {
-                                        final u = raw['url']?.toString() ?? '';
-                                        if (u.isEmpty) return;
-                                        try {
-                                          await apiClient.post('/api/media/open', {
-                                            'url': u,
-                                            'kind': raw['kind']?.toString(),
-                                            'title': raw['title']?.toString(),
-                                            'subject': raw['subject']?.toString(),
-                                            'topic': raw['topic']?.toString(),
-                                          });
-                                        } catch (e) {
-                                          setState(
-                                            () => msg = humanApiError(
-                                              e,
-                                              fallback: 'Não deu para abrir o material.',
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                  const Divider(height: 20),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.backup_rounded, color: Theme.of(context).colorScheme.primary),
+                    title: const Text('Backup automático'),
+                    subtitle: Text(lastBackup?['name']?.toString() ?? lastBackup?['date']?.toString() ?? 'Nenhum backup ainda'),
+                    trailing: FilledButton.tonal(onPressed: _backup, child: const Text('Fazer agora')),
                   ),
+                  if (backups.isNotEmpty)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.restore_rounded, color: Theme.of(context).colorScheme.tertiary),
+                      title: const Text('Restaurar cópia'),
+                      subtitle: Text('${backups.length} cópia(s) disponível(is)'),
+                      trailing: DropdownButton<String>(
+                        value: null,
+                        hint: const Text('Escolher'),
+                        items: backups.map((b) => DropdownMenuItem<String>(value: b.toString(), child: Text(b.toString()))).toList(),
+                        onChanged: (name) async {
+                          if (name == null) return;
+                          final ok = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Restaurar cópia de segurança?'),
+                              content: Text('Isto substitui seus dados atuais pelos de $name.'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
+                              ],
+                            ),
+                          );
+                          if (ok == true) await _restore(name);
+                        },
+                      ),
+                    ),
+                  if (isWindows && !kIsWeb) ...[
+                    const Divider(height: 20),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.system_update_rounded, color: Theme.of(context).colorScheme.primary),
+                      title: const Text('Atualizar PAES MED AI'),
+                      subtitle: const Text('Baixa a última versão do GitHub'),
+                      trailing: FilledButton.tonal(onPressed: launchUpdater, child: const Text('Atualizar')),
+                    ),
+                  ],
                   SectionLabel('Ferramentas', hint: 'PDF, questões e índices'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
