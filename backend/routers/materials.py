@@ -86,6 +86,30 @@ async def download_pdf(filename: str):
     )
 
 
+@router.post("/open-pdf")
+async def open_pdf(filename: str = Query(...)) -> dict[str, Any]:
+    """Abre um PDF no visualizador padrao do sistema (desktop)."""
+    import os
+    safe = Path(filename).name
+    if not safe.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
+    pdf_path = _PDF_DIR / safe
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail="PDF não encontrado.")
+    try:
+        if os.name == "nt":
+            os.startfile(str(pdf_path))  # type: ignore[attr-defined]
+        elif os.name == "darwin":
+            import subprocess
+            subprocess.Popen(["open", str(pdf_path)])
+        else:
+            import subprocess
+            subprocess.Popen(["xdg-open", str(pdf_path)])
+        return {"ok": True, "path": str(pdf_path)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
 @router.get("/{subject}/{topic}")
 async def get_material_route(
     subject: str,

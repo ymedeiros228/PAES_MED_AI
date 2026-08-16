@@ -132,7 +132,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
         // Leitor PDF
         Expanded(
           flex: _tutorOpen ? 3 : 5,
-          child: _PdfViewer(url: _pdfUrl),
+          child: _PdfViewer(url: _pdfUrl, filename: widget.pdfFilename),
         ),
         if (_tutorOpen) ...[
           Container(width: 1, color: cs.outlineVariant.withOpacity(0.3)),
@@ -156,7 +156,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
   Widget _buildNarrowLayout(ColorScheme cs) {
     return Stack(
       children: [
-        _PdfViewer(url: _pdfUrl),
+        _PdfViewer(url: _pdfUrl, filename: widget.pdfFilename),
         if (_tutorOpen)
           Positioned(
             bottom: 0,
@@ -193,10 +193,19 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
   }
 
   void _openExternal() async {
-    final uri = Uri.parse(_pdfUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    // No desktop, usa o backend para abrir o PDF no visualizador do sistema
+    if (!kIsWeb) {
+      try {
+        await apiClient.post('/api/materials/open-pdf?filename=${Uri.encodeComponent(widget.pdfFilename)}', {});
+        return;
+      } catch (_) {
+        // Fallback: tenta url_launcher
+      }
     }
+    final uri = Uri.parse(_pdfUrl);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
   }
 }
 
@@ -205,8 +214,9 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
 // ---------------------------------------------------------------------------
 
 class _PdfViewer extends StatefulWidget {
-  const _PdfViewer({required this.url});
+  const _PdfViewer({required this.url, this.filename});
   final String url;
+  final String? filename;
 
   @override
   State<_PdfViewer> createState() => _PdfViewerState();
@@ -234,14 +244,48 @@ class _PdfViewerState extends State<_PdfViewer> {
       return HtmlElementView(viewType: _viewId!);
     }
     // Fallback para desktop/mobile: link para abrir
-    return _PdfFallback(url: widget.url);
+    return _PdfFallback(url: widget.url, filename: widget.filename);
   }
 }
 
 // Fallback para plataformas que nao suportam iframe
-class _PdfFallback extends StatelessWidget {
-  const _PdfFallback({required this.url});
+class _PdfFallback extends StatefulWidget {
+  const _PdfFallback({required this.url, this.filename});
   final String url;
+  final String? filename;
+
+  @override
+  State<_PdfFallback> createState() => _PdfFallbackState();
+}
+
+class _PdfFallbackState extends State<_PdfFallback> {
+  bool _opening = false;
+  bool _opened = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Abre automaticamente no desktop
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openPdf());
+    }
+  }
+
+  void _openPdf() async {
+    if (_opening || _opened) return;
+    setState(() => _opening = true);
+    try {
+      if (!kIsWeb && widget.filename != null) {
+        await apiClient.post('/api/materials/open-pdf?filename=${Uri.encodeComponent(widget.filename!)}', {});
+      } else {
+        final uri = Uri.parse(widget.url);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+      if (mounted) setState(() { _opening = false; _opened = true; });
+    } catch (_) {
+      if (mounted) setState(() => _opening = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,46 +314,40 @@ class _PdfFallback extends StatelessWidget {
                   color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(Icons.picture_as_pdf, size: 40, color: cs.primary),
+                child: _opening
+                    ? const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(strokeWidth: 3),
+                      )
+                    : Icon(Icons.picture_as_pdf, size: 40, color: cs.primary),
               ),
               const SizedBox(height: 20),
               Text(
-                'Material de Estudo',
-                style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700),
+                _opened ? 'PDF aberto no visualizador' : 'Abrindo PDF...',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Text(
-                'Clique abaixo para abrir o PDF\nno seu visualizador padrão',
-                style: TextStyle(color: cs.outline, fontSize: 14, height: 1.5),
+                _opened
+                    ? 'Se não abriu, clique no botão abaixo'
+                    : 'O PDF será aberto no seu visualizador padrão',
+                style: TextStyle(color: cs.outline, fontSize: 13, height: 1.5),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: () => _launchUrl(url),
+                onPressed: _opening ? null : _openPdf,
                 icon: const Icon(Icons.open_in_new),
-                label: const Text('Abrir PDF'),
+                label: Text(_opened ? 'Abrir novamente' : 'Abrir PDF'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: () => _launchUrl(url),
-                icon: const Icon(Icons.download_rounded, size: 18),
-                label: const Text('Baixar'),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  void _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 }
 

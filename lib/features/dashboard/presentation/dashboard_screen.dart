@@ -32,21 +32,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool showFirstRunCoach = false;
   final _focusNode = FocusNode();
   // Futures cached para evitar recriar a cada rebuild (performance)
-  late final Future<dynamic> _essayProgressFuture;
-  late final Future<dynamic> _backupLastFuture;
-  late final Future<dynamic> _dueCardsFuture;
-  late final Future<dynamic> _gamificationFuture;
-  late final Future<dynamic> _insightsFuture;
   late final Future<dynamic> _recommendationsFuture;
 
   @override
   void initState() {
     super.initState();
-    _essayProgressFuture = apiClient.get('/api/essays/progress');
-    _backupLastFuture = apiClient.get('/api/backup/last');
-    _dueCardsFuture = apiClient.get('/api/flashcards?dueOnly=true');
-    _gamificationFuture = apiClient.get('/api/gamification');
-    _insightsFuture = apiClient.get('/api/coach/insights');
     _recommendationsFuture = apiClient.get('/api/coach/recommendations');
     _loadCheckpoint();
     _loadFirstRunCoach();
@@ -235,8 +225,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(dashboardProvider);
     final examDaysLocal = ref.watch(examDateProvider.notifier).daysUntilExam;
-    final exam = ref.watch(examDateProvider).date;
-    final focus = ref.watch(focusModeProvider);
 
     return async.when(
       loading: () => PageBody(
@@ -282,15 +270,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 : '/sessao');
         final coachLine = routine['line']?.toString() ?? 'Pronto para estudar?';
         final closePath = routine['closePath']?.toString() ?? '/fila';
-        final closeLabel = routine['closeLabel']?.toString() ?? 'Ver fila';
-        final progress = routine['progressLabel']?.toString() ?? '';
-        final backupReminder = routine['backupReminder']?.toString();
         final dayClosed = routine['dayClosed'] == true || checklist['dayClosed'] == true;
-        final week = Map<String, dynamic>.from(
-          (data['weekProgress'] as Map?) ?? (routine['week'] as Map?) ?? const {},
-        );
-        final readiness = Map<String, dynamic>.from(data['readiness'] as Map? ?? const {});
-        final calendar = Map<String, dynamic>.from(data['studyCalendar'] as Map? ?? const {});
         final countdown = Map<String, dynamic>.from(
           (data['examCountdown'] as Map?) ?? (routine['countdown'] as Map?) ?? const {},
         );
@@ -310,10 +290,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final openGaps = data['openGaps'] as Map?;
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
-        final hot = (data['errorHotTopics'] as List? ?? []).take(2).toList();
-        final dueCardsFuture = _dueCardsFuture;
-        final readyScore = (readiness['score'] as num?)?.toDouble();
-        final calItems = calendar['items'] as List? ?? const [];
 
         return Focus(
           focusNode: _focusNode,
@@ -502,609 +478,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
-                          // Card de gamificacao + atalhos rapidos
-                          FutureBuilder(
-                            future: _gamificationFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                              final g = Map<String, dynamic>.from(snap.data as Map);
-                              return _DashboardGamificationCard(data: g);
-                            },
-                          ),
-                          const SizedBox(height: 16),
                           // Notificacao de atualizacao disponivel
                           const UpdateBanner(),
-                          const SizedBox(height: 16),
-                          // Coach inteligente: dica do dia + alertas + proxima acao
-                          FutureBuilder(
-                            future: _insightsFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                              final insights = Map<String, dynamic>.from(snap.data as Map);
-                              return _SmartCoachCard(insights: insights);
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Recomendacoes proativas: materiais + provas + topicos
+                          const SizedBox(height: 20),
+
+                          // Atalhos rapidos - 4 cards grandes e limpos
+                          _SimpleQuickActions(cs: cs, sessionPath: sessionPath),
+                          const SizedBox(height: 20),
+
+                          // Recomendacao do dia - um card simples
                           FutureBuilder(
                             future: _recommendationsFuture,
                             builder: (context, snap) {
                               if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
                               final recs = Map<String, dynamic>.from(snap.data as Map);
-                              return _RecommendationsCard(recommendations: recs);
+                              return _SimpleRecommendationCard(recommendations: recs, cs: cs);
                             },
                           ),
-                          const SizedBox(height: 16),
-                          // Atalhos rapidos
-                          _QuickActionsGrid(),
-                          const SizedBox(height: 16),
-                          // Topico do dia + flashcards due
-                          _TodayTopicAndCardsRow(
-                            dueCardsFuture: _dueCardsFuture,
-                            todayTopic: data['studyToday'] is Map
-                                ? Map<String, dynamic>.from(data['studyToday'] as Map)
-                                : null,
-                          ),
-                          const SizedBox(height: 16),
-                          // StaggeredFadeIn: entrada escalonada do checklist (anel → itens)
-                          StaggeredFadeIn(
-                            children: [
-                              SectionLabel('Checklist do dia', hint: progress.isEmpty ? null : progress),
-                              // Anel de progresso do dia — RepaintBoundary isola a animação
-                              RepaintBoundary(
-                                child: _DayProgressRing(
-                                  sessionDone: checklist['session'] == true,
-                                  cardsDone: checklist['cards'] == true,
-                                  revisionsDone: checklist['revisions'] == true,
-                                  dayClosed: dayClosed,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              // Meta diária
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.flag_outlined, size: 16, color: cs.primary),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Meta: ${ref.watch(dailyGoalProvider)}min/dia',
-                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.6)),
-                                    ),
-                                    const Spacer(),
-                                    if (examDaysLocal != null && examDaysLocal > 0)
-                                      Text(
-                                        '$examDaysLocal dias até a prova',
-                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: cs.primary),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              StudyCheckRow(
-                                done: checklist['session'] == true,
-                                label: 'Sessão de estudo',
-                                actionLabel: 'Estudar',
-                                onAction: () => context.go(sessionPath),
-                              ),
-                              FutureBuilder(
-                                future: dueCardsFuture,
-                                builder: (context, snap) {
-                                  if (!snap.hasData) {
-                                    return const StudyCheckRow(
-                                      done: false,
-                                      label: 'Flashcards do dia…',
-                                    );
-                                  }
-                                  final list = snap.data is List ? snap.data as List : const [];
-                                  final n = list.length;
-                                  final done = n == 0 || checklist['cards'] == true;
-                                  return StudyCheckRow(
-                                    done: done,
-                                    label: n == 0 ? 'Flashcards em dia' : '$n flashcard(s) para revisar',
-                                    actionLabel: n == 0 ? null : 'Revisar',
-                                    onAction: n == 0 ? null : () => context.go('/flashcards?due=1'),
-                                  );
-                                },
-                              ),
-                              StudyCheckRow(
-                                done: checklist['revisions'] == true,
-                                label: gapN > 0
-                                    ? '$gapN tópico(s) para revisar'
-                                    : 'Revisões em dia',
-                                actionLabel: gapN > 0 || checklist['revisions'] != true ? 'Ver fila' : null,
-                                onAction: () => context.go('/fila'),
-                              ),
-                              StudyCheckRow(
-                                done: dayClosed,
-                                label: dayClosed ? 'Dia encerrado' : 'Encerrar o dia',
-                                actionLabel: dayClosed ? null : 'Fechar',
-                                onAction: dayClosed ? null : _closeDay,
-                              ),
-                            ],
+                          const SizedBox(height: 20),
+
+                          // Checklist simples do dia
+                          _SimpleChecklist(
+                            cs: cs,
+                            sessionDone: checklist['session'] == true,
+                            cardsDone: checklist['cards'] == true,
+                            revisionsDone: checklist['revisions'] == true,
+                            dayClosed: dayClosed,
+                            gapN: gapN,
+                            onSession: () => context.go(sessionPath),
+                            onCards: () => context.go('/flashcards?due=1'),
+                            onRevisions: () => context.go('/fila'),
+                            onCloseDay: dayClosed ? null : _closeDay,
+                            examDays: examDaysLocal,
+                            dailyGoal: ref.watch(dailyGoalProvider),
                           ),
 
-                          // StaggeredFadeIn: entrada suave da missão de redação
-                          StaggeredFadeIn(
-                            children: [
-                              MissionQuestCard(
-                                title: 'Treino de redação',
-                                why: 'Pratique a redação com temas baseados no que você precisa melhorar.',
-                                ctaLabel: 'Praticar',
-                                status: MissionQuestStatus.open,
-                                onCta: () => context.go('/redacao'),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 8),
-                          SectionLabel('Próximo passo', hint: 'baseado na sua fila'),
-                          if (gapN > 0)
-                            for (final raw in gapItems.take(1))
-                              Builder(
-                                builder: (_) {
-                                  final g = Map<String, dynamic>.from(raw as Map);
-                                  final s = g['subject']?.toString() ?? '';
-                                  final t = g['topic']?.toString() ?? '';
-                                  return PlaylistTile(
-                                    title: 'Revisar · $s',
-                                    subtitle: t,
-                                    badge: 'revisar',
-                                    leadingIcon: Icons.flag_rounded,
-                                    onPlay: () => context.go(
-                                      '/adaptativo?subject=${Uri.encodeComponent(s)}'
-                                      '&topic=${Uri.encodeComponent(t)}',
-                                    ),
-                                  );
-                                },
-                              )
-                          else if (hot.isNotEmpty)
-                            Builder(
-                              builder: (_) {
-                                final item = Map<String, dynamic>.from(hot.first as Map);
-                                final key = item['key']?.toString() ?? '';
-                                final parts = key.split('::');
-                                final s = parts.isNotEmpty ? parts[0] : '';
-                                final t = parts.length > 1 ? parts[1] : '';
-                                return PlaylistTile(
-                                  title: s.isEmpty ? key : s,
-                                  subtitle: t.isEmpty ? 'Reforçar' : t,
-                                  badge: 'reforçar',
-                                  leadingIcon: Icons.replay_rounded,
-                                  onPlay: s.isEmpty
-                                      ? null
-                                      : () => context.go(
-                                            '/adaptativo?subject=${Uri.encodeComponent(s)}'
-                                            '&topic=${Uri.encodeComponent(t)}',
-                                          ),
-                                );
-                              },
-                            )
-                          else
-                            QuietEmpty(
-                              message: routine['hint']?.toString() ?? 'Pode partir para a sessão.',
-                              action: TextButton(
-                                onPressed: () => context.go(sessionPath),
-                                child: const Text('Sessão'),
-                              ),
-                            ),
-
-                          FutureBuilder(
-                            future: _essayProgressFuture,
-                            builder: (context, snap) {
-                              if (snap.connectionState == ConnectionState.waiting) {
-                                return const CompactStatus(
-                                  message: 'Carregando treino de redação…',
-                                  icon: Icons.hourglass_empty_rounded,
-                                );
-                              }
-                              if (snap.hasError || snap.data is! Map) {
-                                return const CompactStatus(
-                                  message: 'Treino de redação indisponível agora.',
-                                  icon: Icons.sync_problem_outlined,
-                                );
-                              }
-                              final prog = Map<String, dynamic>.from(snap.data as Map);
-                              final c = prog['count'] as int? ?? 0;
-                              final mission = prog['nextMission'];
-                              if (c < 1 || mission is! Map) {
-                                return const CompactStatus(
-                                  message: 'Nenhum treino de redação disponível.',
-                                  icon: Icons.edit_note_outlined,
-                                );
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: PlaylistTile(
-                                  title: 'Redação · ${mission['label'] ?? 'tema'}',
-                                  subtitle: 'prática de redação',
-                                  badge: 'redação',
-                                  leadingIcon: Icons.edit_note_rounded,
-                                  onPlay: () => context.go('/redacao'),
-                                ),
-                              );
-                            },
-                          ),
-
-                          ExpansionTile(
-                            tilePadding: EdgeInsets.zero,
-                            initiallyExpanded: true,
-                            title: Text(
-                              'Mais do dia',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: cs.onSurface,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'semana, progresso e ritmo',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: cs.onSurface.f72,
-                              ),
-                            ),
-                            children: [
-                              PlaylistTile(
-                                title: 'Ver meu relevo',
-                                subtitle: 'Picos firmes e vales a treinar · progresso local',
-                                badge: 'mapa',
-                                leadingIcon: Icons.terrain_rounded,
-                                onPlay: () => context.go('/progresso'),
-                              ),
-                              if (week.isNotEmpty) ...[
-                                SectionLabel('Semana', hint: week['hint']?.toString()),
-                                SurfacePanel(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        week['label']?.toString() ?? 'Semana',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: cs.onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      LinearProgressIndicator(
-                                        value: ((week['minutesPercent'] as num?) ?? 0) / 100.0,
-                                        minHeight: 6,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        '${week['minutes'] ?? 0}/${week['goalMinutes'] ?? 300} min · '
-                                        '${week['daysActive'] ?? 0}/${week['goalDays'] ?? 5} dias · '
-                                        'streak ${week['streakDays'] ?? data['streakDays'] ?? 0}',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: cs.onSurface.f72,
-                                          fontFeatures: const [FontFeature.tabularFigures()],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              Builder(
-                                builder: (_) {
-                                  final wc = Map<String, dynamic>.from(data['weekClose'] as Map? ?? const {});
-                                  if (wc.isEmpty) return const SizedBox.shrink();
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: RepaintBoundary(
-                                      child: WeekClosePanel(
-                                        weekClose: wc,
-                                        onCloseWeek: _closeWeek,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              FutureBuilder(
-                                future: _backupLastFuture,
-                                builder: (context, snap) {
-                                  if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                                  final last = Map<String, dynamic>.from(snap.data as Map);
-                                  final hasOk = last['ok'] == true;
-                                  String? staleMsg;
-                                  if (!hasOk) {
-                                    staleMsg = 'Nenhum backup verificado — salve em Ajustes.';
-                                  } else {
-                                    final at = last['at']?.toString() ?? '';
-                                    if (at.isNotEmpty) {
-                                      try {
-                                        final when = DateTime.parse(at);
-                                        if (DateTime.now().difference(when).inDays > 7) {
-                                          staleMsg = 'Último backup há mais de 7 dias ($at).';
-                                        }
-                                      } catch (_) {
-                                        staleMsg = 'Data do último backup inválida — refaça em Ajustes.';
-                                      }
-                                    }
-                                  }
-                                  if (staleMsg == null) return const SizedBox.shrink();
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: QuietEmpty(
-                                      message: staleMsg,
-                                      action: TextButton(
-                                        onPressed: () => context.go('/configuracoes'),
-                                        child: const Text('Fazer backup'),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              if (readyScore != null) ...[
-                                const SizedBox(height: 12),
-                                SectionLabel('Pulso local', hint: 'Não é probabilidade de aprovação UEMA'),
-                                SurfacePanel(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        readiness['label']?.toString() ?? 'Pulso',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: cs.onSurface,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Indicador ${readyScore.toStringAsFixed(0)}/100',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: cs.onSurface.f55,
-                                          fontFeatures: const [FontFeature.tabularFigures()],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      LinearProgressIndicator(
-                                        value: (readyScore / 100).clamp(0.0, 1.0),
-                                        minHeight: 6,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      if (readiness['tip'] != null) ...[
-                                        const SizedBox(height: 10),
-                                        SelectableText(
-                                          readiness['tip'].toString(),
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: cs.onSurface.f72,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              if (calItems.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                SectionLabel('28 dias', hint: calendar['hint']?.toString()),
-                                SurfacePanel(
-                                  child: Wrap(
-                                    spacing: 4,
-                                    runSpacing: 4,
-                                    children: [
-                                      for (final raw in calItems)
-                                        Builder(
-                                          builder: (cellCtx) {
-                                            final it = Map<String, dynamic>.from(raw as Map);
-                                            final active = it['active'] == true;
-                                            final closed = it['closed'] == true;
-                                            final isToday = it['isToday'] == true;
-                                            final date = it['date']?.toString() ?? '';
-                                            final cs = Theme.of(context).colorScheme;
-                                            Color bg;
-                                            if (closed) {
-                                              bg = cs.primary.f85;
-                                            } else if (active) {
-                                              bg = cs.primary.f35;
-                                            } else {
-                                              bg = cs.onSurface.withOpacity(0.08);
-                                            }
-                                            String statusLine;
-                                            if (closed && active) {
-                                              statusLine = 'estudou e encerrou o dia';
-                                            } else if (closed) {
-                                              statusLine = 'encerrou o dia (sem resposta registrada)';
-                                            } else if (active) {
-                                              statusLine = 'estudou (resposta registrada)';
-                                            } else {
-                                              statusLine = 'sem estudo registrado';
-                                            }
-                                            final tip = date.isEmpty
-                                                ? statusLine
-                                                : '$date · $statusLine';
-                                            return Tooltip(
-                                              message: tip,
-                                              child: Semantics(
-                                                label: tip,
-                                                button: true,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    HapticFeedback.selectionClick();
-                                                    showModalBottomSheet<void>(
-                                                      context: cellCtx,
-                                                      showDragHandle: true,
-                                                      builder: (sheetCtx) {
-                                                        return Padding(
-                                                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                                                          child: Column(
-                                                            mainAxisSize: MainAxisSize.min,
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                date.isEmpty ? 'Dia' : date,
-                                                                style: Theme.of(sheetCtx)
-                                                                    .textTheme
-                                                                    .titleMedium
-                                                                    ?.copyWith(fontWeight: FontWeight.w800),
-                                                              ),
-                                                              const SizedBox(height: 8),
-                                                              Text(statusLine),
-                                                              const SizedBox(height: 6),
-                                                              Text(
-                                                                'Só histórico local — dia sem estudo não inventa atividade.',
-                                                                style: Theme.of(sheetCtx)
-                                                                    .textTheme
-                                                                    .bodySmall
-                                                                    ?.copyWith(
-                                                                      color: Theme.of(sheetCtx)
-                                                                          .colorScheme
-                                                                          .onSurface
-                                                                          .withOpacity(0.6),
-                                                                    ),
-                                                              ),
-                                                              if (isToday) ...[
-                                                                const SizedBox(height: 12),
-                                                                Text(
-                                                                  'Hoje',
-                                                                  style: TextStyle(
-                                                                    color: Theme.of(sheetCtx).colorScheme.primary,
-                                                                    fontWeight: FontWeight.w700,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(height: 8),
-                                                                Wrap(
-                                                                  spacing: 8,
-                                                                  runSpacing: 8,
-                                                                  children: [
-                                                                    TapScale(
-                                                                      child: FilledButton(
-                                                                        onPressed: () {
-                                                                          Navigator.pop(sheetCtx);
-                                                                          context.go(sessionPath);
-                                                                        },
-                                                                        child: const Text('Sessão'),
-                                                                      ),
-                                                                    ),
-                                                                    if (!closed && !dayClosed)
-                                                                      OutlinedButton(
-                                                                        onPressed: () {
-                                                                          Navigator.pop(sheetCtx);
-                                                                          unawaited(_closeDay());
-                                                                        },
-                                                                        child: const Text('Encerrar dia'),
-                                                                      ),
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ],
-                                                          ),
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  child: SizedBox(
-                                                    width: 32,
-                                                    height: 32,
-                                                    child: Center(
-                                                      child: Container(
-                                                        width: 12,
-                                                        height: 12,
-                                                        decoration: BoxDecoration(
-                                                          color: bg,
-                                                          borderRadius: BorderRadius.circular(2),
-                                                          border: isToday
-                                                              ? Border.all(color: cs.primary, width: 1.5)
-                                                              : null,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              if (backupReminder != null)
-                                QuietEmpty(
-                                  message: backupReminder,
-                                  action: TextButton(
-                                    onPressed: () => context.go('/configuracoes'),
-                                    child: const Text('Ajustes'),
-                                  ),
-                                ),
-                              const SizedBox(height: 8),
-                              // StaggeredFadeIn: entrada escalonada do pulo de ritmo
-                              StaggeredFadeIn(
-                                children: [
-                                  SectionLabel('Seu ritmo'),
-                                  RepaintBoundary(
-                                    child: StatsStrip(
-                                      items: [
-                                        ('${data['streakDays'] ?? 0}', 'dias seguidos'),
-                                        ('${data['studyMinutesToday'] ?? 0}', 'min hoje'),
-                                        ('${((data['accuracy'] as num? ?? 0) * 100).toStringAsFixed(0)}%', 'acerto'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (!focus) ...[
-                                SectionLabel('Explorar'),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    ActionChip(
-                                      avatar: const Icon(Icons.playlist_play_rounded, size: 18),
-                                      label: const Text('Fila'),
-                                      onPressed: () => context.go('/fila'),
-                                    ),
-                                    ActionChip(
-                                      avatar: const Icon(Icons.local_hospital_rounded, size: 18),
-                                      label: const Text('Áreas'),
-                                      onPressed: () => context.go('/medicina'),
-                                    ),
-                                    ActionChip(
-                                      avatar: const Icon(Icons.menu_book_rounded, size: 18),
-                                      label: const Text('Biblioteca'),
-                                      onPressed: () => context.go('/biblioteca'),
-                                    ),
-                                    ActionChip(
-                                      avatar: const Icon(Icons.bolt_rounded, size: 18),
-                                      label: const Text('Simulados'),
-                                      onPressed: () => context.go('/simulados'),
-                                    ),
-                                    ActionChip(
-                                      avatar: const Icon(Icons.center_focus_strong_rounded, size: 18),
-                                      label: const Text('Modo Foco'),
-                                      onPressed: () => context.go('/foco'),
-                                    ),
-                                  ],
-                                ),
-                              ] else ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Modo foco ativado — só o essencial. Desligue no menu lateral.',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: cs.onSurface.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
-                              if (exam.isNotEmpty && examDays != null) ...[
-                                const SizedBox(height: 12),
-                                Text(
-                                  examDays >= 0 ? 'Prova: $exam' : 'Data da prova: $exam',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: cs.onSurface.f45,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                          const SizedBox(height: 32),
                         ],
                       ),
                     ),
@@ -2154,6 +1563,388 @@ class _ExamSuggestionTile extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Widgets simplificados para o dashboard limpo
+// ---------------------------------------------------------------------------
+
+/// 4 atalhos grandes e claros
+class _SimpleQuickActions extends StatelessWidget {
+  const _SimpleQuickActions({required this.cs, required this.sessionPath});
+  final ColorScheme cs;
+  final String sessionPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = [
+      _ActionItem(
+        icon: Icons.menu_book,
+        label: 'Biblioteca',
+        subtitle: '92 PDFs',
+        color: cs.primary,
+        onTap: () => context.go('/biblioteca'),
+      ),
+      _ActionItem(
+        icon: Icons.play_circle_fill,
+        label: 'Praticar',
+        subtitle: 'Questões',
+        color: cs.tertiary,
+        onTap: () => context.go(sessionPath),
+      ),
+      _ActionItem(
+        icon: Icons.smart_toy,
+        label: 'Tutor IA',
+        subtitle: 'Dúvidas',
+        color: cs.secondary,
+        onTap: () => context.go('/tutor'),
+      ),
+      _ActionItem(
+        icon: Icons.history_edu,
+        label: 'Provas',
+        subtitle: 'Oficiais',
+        color: cs.error,
+        onTap: () => context.go('/simulados'),
+      ),
+    ];
+
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 2.2,
+      children: actions.map((a) => _buildCard(context, a)).toList(),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, _ActionItem a) {
+    return Material(
+      color: cs.surfaceContainerHighest.withOpacity(0.3),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: a.onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: a.color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(a.icon, color: a.color, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      a.label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    Text(
+                      a.subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: cs.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionItem {
+  const _ActionItem({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+}
+
+/// Card de recomendação simples
+class _SimpleRecommendationCard extends StatelessWidget {
+  const _SimpleRecommendationCard({required this.recommendations, required this.cs});
+  final Map<String, dynamic> recommendations;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = recommendations['summary']?.toString() ?? '';
+    final materials = recommendations['materials'] as List? ?? [];
+    final exams = recommendations['exams'] as List? ?? [];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.primary.withOpacity(0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_rounded, color: cs.primary, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Recomendação do dia',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+            ],
+          ),
+          if (summary.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              summary,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.5,
+                color: cs.onSurface.withOpacity(0.8),
+              ),
+            ),
+          ],
+          if (materials.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: materials.take(3).map((raw) {
+                final m = Map<String, dynamic>.from(raw as Map);
+                final title = m['title']?.toString() ?? 'Material';
+                final pdf = m['pdfFilename']?.toString() ?? '';
+                return ActionChip(
+                  avatar: const Icon(Icons.picture_as_pdf, size: 16),
+                  label: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  onPressed: pdf.isNotEmpty
+                      ? () => context.go(Uri(path: '/estudar', queryParameters: {
+                            'pdf': pdf,
+                            'title': title,
+                            'subject': m['subject']?.toString() ?? '',
+                          }).toString())
+                      : null,
+                );
+              }).toList(),
+            ),
+          ],
+          if (exams.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: exams.take(2).map((raw) {
+                final e = Map<String, dynamic>.from(raw as Map);
+                final year = e['year']?.toString() ?? '';
+                return ActionChip(
+                  avatar: const Icon(Icons.history_edu, size: 16),
+                  label: Text('PAES $year'),
+                  onPressed: () => context.go('/simulados?ano=$year'),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Checklist simples do dia
+class _SimpleChecklist extends StatelessWidget {
+  const _SimpleChecklist({
+    required this.cs,
+    required this.sessionDone,
+    required this.cardsDone,
+    required this.revisionsDone,
+    required this.dayClosed,
+    required this.gapN,
+    required this.onSession,
+    required this.onCards,
+    required this.onRevisions,
+    required this.onCloseDay,
+    required this.examDays,
+    required this.dailyGoal,
+  });
+  final ColorScheme cs;
+  final bool sessionDone;
+  final bool cardsDone;
+  final bool revisionsDone;
+  final bool dayClosed;
+  final int gapN;
+  final VoidCallback onSession;
+  final VoidCallback onCards;
+  final VoidCallback onRevisions;
+  final VoidCallback? onCloseDay;
+  final int? examDays;
+  final int dailyGoal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.checklist_rounded, color: cs.primary, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Atividades do dia',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+              const Spacer(),
+              if (examDays != null && examDays! > 0)
+                Text(
+                  '$examDays dias',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: cs.primary,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _CheckRow(
+            done: sessionDone,
+            label: 'Sessão de estudo',
+            icon: Icons.play_circle_outline,
+            onAction: onSession,
+            cs: cs,
+          ),
+          _CheckRow(
+            done: cardsDone,
+            label: 'Flashcards',
+            icon: Icons.style_outlined,
+            onAction: onCards,
+            cs: cs,
+          ),
+          _CheckRow(
+            done: revisionsDone,
+            label: gapN > 0 ? '$gapN tópicos para revisar' : 'Revisões em dia',
+            icon: Icons.replay_outlined,
+            onAction: onRevisions,
+            cs: cs,
+          ),
+          if (onCloseDay != null) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: onCloseDay,
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label: const Text('Encerrar dia'),
+                style: TextButton.styleFrom(
+                  foregroundColor: cs.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            'Meta: $dailyGoal min/dia',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: cs.onSurface.withOpacity(0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckRow extends StatelessWidget {
+  const _CheckRow({
+    required this.done,
+    required this.label,
+    required this.icon,
+    required this.onAction,
+    required this.cs,
+  });
+  final bool done;
+  final String label;
+  final IconData icon;
+  final VoidCallback onAction;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: done ? null : onAction,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: Row(
+            children: [
+              Icon(
+                done ? Icons.check_circle : icon,
+                size: 22,
+                color: done ? cs.primary : cs.onSurface.withOpacity(0.4),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: done ? FontWeight.w600 : FontWeight.w500,
+                    color: done ? cs.primary : cs.onSurface.withOpacity(0.7),
+                    decoration: done ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              if (!done)
+                Icon(Icons.chevron_right, size: 20, color: cs.onSurface.withOpacity(0.3)),
+            ],
           ),
         ),
       ),
