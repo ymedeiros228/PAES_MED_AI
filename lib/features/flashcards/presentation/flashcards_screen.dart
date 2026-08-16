@@ -326,8 +326,8 @@ class _FlipCardState extends State<_FlipCard> with SingleTickerProviderStateMixi
 }
 
 // ============================================================
-// _CardDeckView — carrossel de cartas estilo jogo de TCG
-// Mostra 1 carta centralizada com prev/next e contador
+// _CardDeckView — carrossel horizontal estilo Netflix
+// PageView com peek das cartas vizinhas + indicador de progresso
 // ============================================================
 
 class _CardDeckView extends StatefulWidget {
@@ -358,19 +358,42 @@ class _CardDeckView extends StatefulWidget {
 }
 
 class _CardDeckViewState extends State<_CardDeckView> {
+  late PageController _pageController;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.78);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant _CardDeckView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sincronizar currentIndex com currentId
     if (widget.currentId != null) {
       final idx = widget.items.indexWhere((r) {
         if (r is! Map) return false;
         final id = r['id'] is int ? r['id'] : int.tryParse('${r['id']}');
         return id == widget.currentId;
       });
-      if (idx >= 0) _currentIndex = idx;
+      if (idx >= 0 && idx != _currentIndex) {
+        _currentIndex = idx;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_pageController.hasClients) {
+            _pageController.animateToPage(
+              idx,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+            );
+          }
+        });
+      }
     }
   }
 
@@ -378,112 +401,114 @@ class _CardDeckViewState extends State<_CardDeckView> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     if (widget.items.isEmpty) return const SizedBox.shrink();
-
-    // Garantir que currentIndex é válido
-    if (_currentIndex >= widget.items.length) _currentIndex = 0;
-    final raw = widget.items[_currentIndex];
-    final item = Map<String, dynamic>.from(raw as Map);
-    final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
-    if (id == null) return const SizedBox.shrink();
-
-    final subj = item['subject']?.toString() ?? '';
-    final top = item['topic']?.toString() ?? '';
-    final src = item['source']?.toString() ?? '';
-    final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-    final accent = Color(subjectColorSeed(subj));
-    final imgPath = flashcardImageFor(subj, top);
-    final flipped = widget.showBack && widget.currentId == id;
     final total = widget.items.length;
-    final pos = _currentIndex + 1;
 
     return Column(
       children: [
-        // Contador de cartas
+        // Indicador de progresso "2 / 300"
         Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            '${_currentIndex + 1} / $total',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ),
+        // Barra de progresso
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 4),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: total > 0 ? (_currentIndex + 1) / total : 0,
+              minHeight: 4,
+              backgroundColor: cs.surfaceContainerHighest,
+              color: cs.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Carrossel PageView estilo Netflix
+        SizedBox(
+          height: 460,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: total,
+            onPageChanged: (index) {
+              HapticFeedback.selectionClick();
+              setState(() => _currentIndex = index);
+            },
+            itemBuilder: (context, index) {
+              final raw = widget.items[index];
+              final item = Map<String, dynamic>.from(raw as Map);
+              final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
+              if (id == null) return const SizedBox.shrink();
+
+              final subj = item['subject']?.toString() ?? '';
+              final top = item['topic']?.toString() ?? '';
+              final src = item['source']?.toString() ?? '';
+              final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
+              final accent = Color(subjectColorSeed(subj));
+              final flipped = widget.showBack && widget.currentId == id;
+
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  double scale = 1.0;
+                  if (_pageController.position.haveDimensions) {
+                    final page = _pageController.page ?? _currentIndex.toDouble();
+                    final diff = (index - page).abs();
+                    scale = (1 - diff * 0.08).clamp(0.85, 1.0);
+                  }
+                  return Transform.scale(scale: scale, child: child);
+                },
+                child: _GameCard(
+                  flipped: flipped,
+                  subject: subj,
+                  topic: top,
+                  fromAxes: fromAxes,
+                  frontText: item['front']?.toString() ?? '',
+                  backText: item['back']?.toString() ?? '',
+                  accent: accent,
+                  dueLabel: humanDueLabel(item['next_due']?.toString()),
+                  onTap: () => widget.onFlip(id),
+                  onRemember: () => widget.onRemember(id),
+                  onForgot: () => widget.onForgot(id),
+                  onDelete: () => widget.onDelete(id),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Indicadores de ponto (estilo Netflix dots)
+        if (total <= 12)
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            children: List.generate(total, (i) {
+              final active = i == _currentIndex;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: active ? 24 : 8,
+                height: 8,
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: accent.withOpacity(0.3)),
+                  color: active ? cs.primary : cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.style_rounded, size: 16, color: accent),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$pos / $total',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: accent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              );
+            }),
           ),
-        ),
-        // Carta centralizada
-        Center(
-          child: SizedBox(
-            width: 340,
-            child: _GameCard(
-              flipped: flipped,
-              subject: subj,
-              topic: top,
-              fromAxes: fromAxes,
-              frontText: item['front']?.toString() ?? '',
-              backText: item['back']?.toString() ?? '',
-              accent: accent,
-              imagePath: imgPath,
-              dueLabel: humanDueLabel(item['next_due']?.toString()),
-              onTap: () => widget.onFlip(id),
-              onRemember: () => widget.onRemember(id),
-              onForgot: () => widget.onForgot(id),
-              onDelete: () => widget.onDelete(id),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Navegação prev/next
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton.filled(
-              onPressed: _currentIndex > 0 ? widget.onPrev : null,
-              icon: const Icon(Icons.navigate_before_rounded),
-              style: IconButton.styleFrom(backgroundColor: cs.surfaceContainerHighest),
-            ),
-            const SizedBox(width: 24),
-            Text(
-              _currentIndex > 0 ? 'Anterior' : 'Início',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: cs.onSurface.withOpacity(0.4),
-              ),
-            ),
-            const SizedBox(width: 24),
-            IconButton.filled(
-              onPressed: _currentIndex < total - 1 ? widget.onNext : null,
-              icon: const Icon(Icons.navigate_next_rounded),
-              style: IconButton.styleFrom(backgroundColor: cs.surfaceContainerHighest),
-            ),
-          ],
-        ),
       ],
     );
   }
 }
 
 // ============================================================
-// _GameCard — carta estilo TCG (Clash Royale / Hearthstone)
+// _GameCard — carta estilo TCG com herói gradiente + ícone
 // ============================================================
 
 class _GameCard extends StatelessWidget {
@@ -495,7 +520,6 @@ class _GameCard extends StatelessWidget {
     required this.frontText,
     required this.backText,
     required this.accent,
-    required this.imagePath,
     required this.dueLabel,
     required this.onTap,
     required this.onRemember,
@@ -510,7 +534,6 @@ class _GameCard extends StatelessWidget {
   final String frontText;
   final String backText;
   final Color accent;
-  final String? imagePath;
   final String dueLabel;
   final VoidCallback onTap;
   final VoidCallback onRemember;
@@ -524,37 +547,34 @@ class _GameCard extends StatelessWidget {
         // Cartas empilhadas atrás (efeito deck)
         if (!flipped) ...[
           Positioned(
-            left: 8,
-            right: 8,
-            top: 6,
+            left: 10,
+            right: 10,
+            top: 8,
             child: Container(
-              height: 380,
+              height: 400,
               decoration: BoxDecoration(
-                color: accent.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(20),
+                color: accent.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(22),
               ),
             ),
           ),
           Positioned(
-            left: 4,
-            right: 4,
-            top: 3,
+            left: 5,
+            right: 5,
+            top: 4,
             child: Container(
-              height: 380,
+              height: 400,
               decoration: BoxDecoration(
-                color: accent.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(20),
+                color: accent.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(22),
               ),
             ),
           ),
         ],
-        // Card principal
         _FlipCard(
           flipped: flipped,
           front: _GameCardFace(
             text: frontText,
-            accent: accent,
-            imagePath: imagePath,
             subject: subject,
             topic: topic,
             fromAxes: fromAxes,
@@ -564,8 +584,6 @@ class _GameCard extends StatelessWidget {
           ),
           back: _GameCardFace(
             text: backText,
-            accent: accent,
-            imagePath: imagePath,
             subject: subject,
             topic: topic,
             fromAxes: fromAxes,
@@ -585,8 +603,6 @@ class _GameCard extends StatelessWidget {
 class _GameCardFace extends StatelessWidget {
   const _GameCardFace({
     required this.text,
-    required this.accent,
-    required this.imagePath,
     required this.subject,
     required this.topic,
     required this.fromAxes,
@@ -599,8 +615,6 @@ class _GameCardFace extends StatelessWidget {
   });
 
   final String text;
-  final Color accent;
-  final String? imagePath;
   final String subject;
   final String topic;
   final bool fromAxes;
@@ -614,200 +628,230 @@ class _GameCardFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // Cor "raridade" baseada na matéria
-    final rarityGradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [accent, accent.withOpacity(0.6)],
-    );
+    final accent = Color(subjectColorSeed(subject));
+    final gradColors = subjectGradient(subject);
+    final icon = subjectIcon(subject);
+    final emoji = subjectEmoji(subject);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: accent, width: 3),
+            borderRadius: BorderRadius.circular(22),
+            color: cs.surface,
+            border: Border.all(color: accent.withOpacity(0.3), width: 2),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: accent.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              color: cs.surface,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // === HEADER com imagem (estilo retrato de carta) ===
-                  Stack(
-                    children: [
-                      // Imagem de fundo
-                      Container(
-                        height: 140,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: rarityGradient,
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // === HERÓI: gradiente + ícone grande + emoji ===
+                Stack(
+                  children: [
+                    Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: gradColors,
                         ),
-                        child: imagePath != null
-                            ? Image.asset(
-                                imagePath!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Center(
-                                  child: Icon(
-                                    isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
-                                    color: Colors.white.withOpacity(0.5),
-                                    size: 48,
-                                  ),
-                                ),
-                              )
-                            : Center(
-                                child: Icon(
-                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
-                                  color: Colors.white.withOpacity(0.5),
-                                  size: 48,
-                                ),
-                              ),
                       ),
-                      // Overlay gradiente para legibilidade
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.1),
-                                Colors.black.withOpacity(0.5),
+                      child: Stack(
+                        children: [
+                          // Ícone grande de fundo (decorativo)
+                          Positioned(
+                            right: -20,
+                            top: -10,
+                            child: Icon(
+                              icon,
+                              size: 140,
+                              color: Colors.white.withOpacity(0.08),
+                            ),
+                          ),
+                          // Emoji grande centralizado
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 52),
+                                ),
+                                const SizedBox(height: 4),
+                                Icon(
+                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
+                                  color: Colors.white.withOpacity(0.7),
+                                  size: 24,
+                                ),
                               ],
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                    // Overlay gradiente inferior para legibilidade
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.6),
+                            ],
+                          ),
                         ),
                       ),
-                      // Badge de raridade (canto superior esquerdo)
+                    ),
+                    // Badge FRENTE/VERSO (canto superior esquerdo)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
+                        ),
+                        child: Text(
+                          isBack ? 'VERSO' : 'FRENTE',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Badge EIXOS (canto superior direito)
+                    if (fromAxes)
                       Positioned(
-                        top: 8,
-                        left: 8,
+                        top: 10,
+                        right: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.amber.shade700.withOpacity(0.85),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
                           ),
-                          child: Text(
-                            isBack ? 'VERSO' : 'FRENTE',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 1.5,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star_rounded, size: 14, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                'EIXOS',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      // Badge "eixos" (canto superior direito)
-                      if (fromAxes)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                                const SizedBox(width: 3),
-                                Text(
-                                  'EIXOS',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                    // Nome da matéria + tópico (rodapé do herói)
+                    Positioned(
+                      bottom: 8,
+                      left: 14,
+                      right: 14,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            subject.isNotEmpty ? subject : 'Flashcard',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
                               ],
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      // Nome da matéria (canto inferior)
-                      Positioned(
-                        bottom: 6,
-                        left: 10,
-                        right: 10,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                          if (topic.isNotEmpty)
                             Text(
-                              subject.isNotEmpty ? subject : 'Flashcard',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                              topic,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withOpacity(0.85),
                                 shadows: [
-                                  Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
+                                  Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
                                 ],
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            if (topic.isNotEmpty)
-                              Text(
-                                topic,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.85),
-                                  shadows: [
-                                    Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
-                                  ],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                // === BARRA DE RARIDADE ===
+                Container(
+                  height: 5,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [accent, accent.withOpacity(0.3), accent],
+                    ),
                   ),
-                  // === BARRA DE RARIDADE ===
-                  Container(
-                    height: 4,
-                    decoration: BoxDecoration(gradient: rarityGradient),
-                  ),
-                  // === CORPO DA CARTA ===
-                  Padding(
+                ),
+                // === CORPO DA CARTA ===
+                Flexible(
+                  child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Texto principal
-                        SelectableText(
-                          text,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: cs.onSurface,
-                            height: 1.5,
-                          ),
-                          contextMenuBuilder: (context, editableTextState) =>
-                              AdaptiveTextSelectionToolbar.editableText(
-                            editableTextState: editableTextState,
+                        Flexible(
+                          child: SingleChildScrollView(
+                            child: SelectableText(
+                              text,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurface,
+                                height: 1.5,
+                              ),
+                              contextMenuBuilder: (context, editableTextState) =>
+                                  AdaptiveTextSelectionToolbar.editableText(
+                                editableTextState: editableTextState,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Dica / próxima revisão
+                        // Próxima revisão
                         if (dueLabel.isNotEmpty)
                           Row(
                             children: [
@@ -833,7 +877,7 @@ class _GameCardFace extends StatelessWidget {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: accent,
                                     foregroundColor: Colors.white,
-                                    minimumSize: const Size.fromHeight(42),
+                                    minimumSize: const Size.fromHeight(44),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.check_rounded, size: 20),
@@ -849,7 +893,7 @@ class _GameCardFace extends StatelessWidget {
                                   onPressed: onForgot,
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: accent,
-                                    minimumSize: const Size.fromHeight(42),
+                                    minimumSize: const Size.fromHeight(44),
                                     side: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
@@ -862,7 +906,7 @@ class _GameCardFace extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Center(
                             child: TextButton.icon(
                               onPressed: onDelete,
@@ -879,7 +923,7 @@ class _GameCardFace extends StatelessWidget {
                         ],
                         // Dica de flip (só na frente)
                         if (!isBack) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Center(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -901,8 +945,8 @@ class _GameCardFace extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -910,4 +954,3 @@ class _GameCardFace extends StatelessWidget {
     );
   }
 }
-

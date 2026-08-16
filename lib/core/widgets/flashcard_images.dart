@@ -1,6 +1,8 @@
-/// Mapeia assunto/matéria do flashcard para uma imagem de capa.
-/// Retorna null se não houver imagem correspondente.
+/// Mapeia assunto/matéria do flashcard para cor, ícone e gradiente.
+/// Design estilo carta de TCG — herói com gradiente + ícone grande.
 library;
+
+import 'package:flutter/material.dart';
 
 /// Mapeia o nome da matéria para o prefixo das imagens.
 String? _subjectToPrefix(String subject) {
@@ -175,4 +177,55 @@ int subjectColorSeed(String subject) {
   if (s.contains('filosof')) return 0xFF455A64; // cinza escuro
   if (s.contains('sociolog')) return 0xFF5D4037; // marrom escuro
   return 0xFF424242; // cinza padrão
+}
+
+/// Retorna um ícone representativo para a matéria.
+IconData subjectIcon(String subject) {
+  final s = subject.toLowerCase().trim();
+  if (s.contains('biolog')) return Icons.eco_rounded;
+  if (s.contains('química') || s.contains('quimica')) return Icons.science_rounded;
+  if (s.contains('física') || s.contains('fisica')) return Icons.bolt_rounded;
+  if (s.contains('matemá') || s.contains('matema')) return Icons.calculate_rounded;
+  if (s.contains('geograf')) return Icons.public_rounded;
+  if (s.contains('histó') || s.contains('histor')) return Icons.account_balance_rounded;
+  if (s.contains('portugu')) return Icons.menu_book_rounded;
+  if (s.contains('inglês') || s.contains('ingles')) return Icons.translate_rounded;
+  if (s.contains('espanhol')) return Icons.language_rounded;
+  if (s.contains('filosof')) return Icons.psychology_rounded;
+  if (s.contains('sociolog')) return Icons.groups_rounded;
+  return Icons.style_rounded;
+}
+
+/// Retorna um gradiente bonito para o herói da carta.
+List<Color> subjectGradient(String subject) {
+  final s = subject.toLowerCase().trim();
+  if (s.contains('biolog')) return [const Color(0xFF1B5E20), const Color(0xFF4CAF50)]; // verde
+  if (s.contains('química') || s.contains('quimica')) return [const Color(0xFFBF360C), const Color(0xFFFF7043)]; // laranja
+  if (s.contains('física') || s.contains('fisica')) return [const Color(0xFF0D47A1), const Color(0xFF42A5F5)]; // azul
+  if (s.contains('matemá') || s.contains('matema')) return [const Color(0xFF4A148C), const Color(0xFFAB47BC)]; // roxo
+  if (s.contains('geograf')) return [const Color(0xFF1B5E20), const Color(0xFF66BB6A)]; // verde claro
+  if (s.contains('histó') || s.contains('histor')) return [const Color(0xFF3E2723), const Color(0xFF8D6E63)]; // marrom
+  if (s.contains('portugu')) return [const Color(0xFFB71C1C), const Color(0xFFEF5350)]; // vermelho
+  if (s.contains('inglês') || s.contains('ingles')) return [const Color(0xFF01579B), const Color(0xFF29B6F6)]; // azul claro
+  if (s.contains('espanhol')) return [const Color(0xFFF57F17), const Color(0xFFFFCA28)]; // amarelo/dourado
+  if (s.contains('filosof')) return [const Color(0xFF263238), const Color(0xFF607D8B)]; // cinza escuro
+  if (s.contains('sociolog')) return [const Color(0xFF3E2723), const Color(0xFF6D4C41)]; // marrom escuro
+  return [const Color(0xFF212121), const Color(0xFF616161)]; // cinza padrão
+}
+
+/// Retorna um emoji/símbolo decorativo para a matéria.
+String subjectEmoji(String subject) {
+  final s = subject.toLowerCase().trim();
+  if (s.contains('biolog')) return '🧬';
+  if (s.contains('química') || s.contains('quimica')) return '⚗️';
+  if (s.contains('física') || s.contains('fisica')) return '⚡';
+  if (s.contains('matemá') || s.contains('matema')) return '📐';
+  if (s.contains('geograf')) return '🌍';
+  if (s.contains('histó') || s.contains('histor')) return '🏛️';
+  if (s.contains('portugu')) return '📖';
+  if (s.contains('inglês') || s.contains('ingles')) return '🇬🇧';
+  if (s.contains('espanhol')) return '🇪🇸';
+  if (s.contains('filosof')) return '🧠';
+  if (s.contains('sociolog')) return '👥';
+  return '🃏';
 }
