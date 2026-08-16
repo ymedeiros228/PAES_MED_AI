@@ -120979,7 +120979,7 @@ a2=a6==null?null:J.u(a6)
 f=a2==null?"":a2
 if(B.d.bO(f.toLowerCase(),"paes_med_ai_windows")&&B.d.hy(f.toLowerCase(),".zip")){a4=J.p(g,"browser_download_url")
 h=a4==null?null:J.u(a4)
-break}}e="1.0.0+17"
+break}}e="1.0.0.18"
 d=o.aoI(e,l)
 o.sb2(0,new A.ip(l,k,j,h,null,d,!1))
 q=1
@@ -121434,7 +121434,7 @@ l=A.ay(B.QQ,k==null?l.c:k,e,14)
 k=A.n(a1).ax
 j=k.e
 i=t.p
-b=A.a([A.aj(A.a([o,B.aE,p,A.at(e,A.aj(A.a([l,B.c8,A.j("1.0.0+17",e,e,e,e,A.E().$3$color$fontSize$fontWeight(j==null?k.c:j,12,B.u),e,e)],i),B.l,B.e,B.M,e),B.f,e,e,new A.ar(m,e,e,n,e,e,B.r),e,e,e,e,B.n6,e,e,e)],i),B.l,B.e,B.h,e),B.p,A.j("Plataforma de estudos para PAES UEMA Medicina.\n\u2022 Funciona sem internet \u2014 dados no seu computador\n\u2022 Usa apenas quest\xf5es oficiais reais\n\u2022 Tutor IA com seu material de estudo",e,e,e,e,A.E().$2$fontSize$height(14,1.5),e,e),B.J,new A.c1(new A.aZL(a1),e),B.mR,new A.ZG(c,new A.aZM(f),B.abz,B.a9k,A.ay(B.k2,A.n(a1).ax.b,e,e),B.z,e),B.mR,A.ii(!0,B.aQ,!1,e,!0,B.n,e,A.jc(),b,e,e,e,e,e,2,B.SM,B.a4,!0,e,!0,e,!1,e,B.b9,e,e,e,e,e,e,e,e,1,e,e,!1,"\u2022",e,new A.aZN(f),e,new A.aZO(f),e,!1,e,!1,e,!0,e,B.aX,e,e,B.b5,B.aT,e,e,e,e,e,e,e,B.ac,e,B.bx,e,e,e,e)],i)
+b=A.a([A.aj(A.a([o,B.aE,p,A.at(e,A.aj(A.a([l,B.c8,A.j("1.0.0.18",e,e,e,e,A.E().$3$color$fontSize$fontWeight(j==null?k.c:j,12,B.u),e,e)],i),B.l,B.e,B.M,e),B.f,e,e,new A.ar(m,e,e,n,e,e,B.r),e,e,e,e,B.n6,e,e,e)],i),B.l,B.e,B.h,e),B.p,A.j("Plataforma de estudos para PAES UEMA Medicina.\n\u2022 Funciona sem internet \u2014 dados no seu computador\n\u2022 Usa apenas quest\xf5es oficiais reais\n\u2022 Tutor IA com seu material de estudo",e,e,e,e,A.E().$2$fontSize$height(14,1.5),e,e),B.J,new A.c1(new A.aZL(a1),e),B.mR,new A.ZG(c,new A.aZM(f),B.abz,B.a9k,A.ay(B.k2,A.n(a1).ax.b,e,e),B.z,e),B.mR,A.ii(!0,B.aQ,!1,e,!0,B.n,e,A.jc(),b,e,e,e,e,e,2,B.SM,B.a4,!0,e,!0,e,!1,e,B.b9,e,e,e,e,e,e,e,e,1,e,e,!1,"\u2022",e,new A.aZN(f),e,new A.aZO(f),e,!1,e,!1,e,!0,e,B.aX,e,e,B.b5,B.aT,e,e,e,e,e,e,e,B.ac,e,B.bx,e,e,e,e)],i)
 if(f.gaD().ca(a.gb0(),t.HK).gug()!=null)B.b.D(b,A.a([B.ag,new A.dg(B.bh,e,e,A.j(new A.aZP(f).$0(),e,e,e,e,A.E().$3$color$fontSize$height(A.b5(A.n(a1).ax.k3,184),13,1.5),e,e),e)],i))
 b=A.a7(b,B.w,e,B.e,B.h)
 a=f.gaD().ca($.adp(),t.jm)
@@ -121620,7 +121620,7 @@ $0(){return this.a.z=A.aH(this.b,"Erro ao ler PDF.")},
 $S:0}
 A.aZL.prototype={
 $1(a){var s=null,r=A.a([],t.p)
-r.push(A.qE(A.ay(B.QB,A.n(this.a).ax.b,s,16),s,A.j("Vers\xe3o web \xb7 1.0.0+17",s,s,s,s,s,s,s),s,s,s,B.f1))
+r.push(A.qE(A.ay(B.QB,A.n(this.a).ax.b,s,16),s,A.j("Vers\xe3o web \xb7 1.0.0.18",s,s,s,s,s,s,s),s,s,s,B.f1))
 return A.a7(r,B.w,s,B.e,B.h)},
 $S:767}
 A.aZM.prototype={
@@ -121816,7 +121816,7 @@ return A.z($async$xf,r)},
 C(a){var s,r,q,p,o=null,n=A.n(a).ax,m=this.gaD().ca($.b8P(),t.We),l=A.qr(o,!0,o,o,A.j("Atualiza\xe7\xf5es",o,o,o,o,A.ax().$1$fontWeight(B.o),o,o)),k=n.d,j=k==null,i=j?n.b:k,h=A.ah(14),g=n.b,f=n.k3.a,e=f>>>16&255,d=f>>>8&255
 f&=255
 s=t.p
-h=A.a([A.at(o,A.ay(B.Rw,g,o,26),B.f,o,o,new A.ar(i,o,o,h,o,o,B.r),o,48,o,o,o,o,o,48),B.ck,A.aZ(A.a7(A.a([A.j("Vers\xe3o instalada",o,o,o,o,A.ax().$2$fontSize$fontWeight(16,B.o),o,o),A.j("v1.0.0+17",o,o,o,o,A.E().$2$color$fontSize(A.h(153,e,d,f),13),o,o)],s),B.w,o,B.e,B.h),1)],s)
+h=A.a([A.at(o,A.ay(B.Rw,g,o,26),B.f,o,o,new A.ar(i,o,o,h,o,o,B.r),o,48,o,o,o,o,o,48),B.ck,A.aZ(A.a7(A.a([A.j("Vers\xe3o instalada",o,o,o,o,A.ax().$2$fontSize$fontWeight(16,B.o),o,o),A.j("v1.0.0.18",o,o,o,o,A.E().$2$color$fontSize(A.h(153,e,d,f),13),o,o)],s),B.w,o,B.e,B.h),1)],s)
 i=m.f
 if(i){r=n.cy
 if(r==null){r=n.CW
@@ -121843,7 +121843,7 @@ i=A.ah(14)
 j=A.j("Nova vers\xe3o dispon\xedvel",o,o,o,o,A.ax().$2$fontSize$fontWeight(17,B.u),o,o)
 g=m.a
 if(g==null)g="-"
-g=A.a([j,B.dd,A.j("Vers\xe3o 1.0.0+17 \u2192 "+g,o,o,o,o,A.E().$2$fontSize$fontWeight(14,B.o),o,o)],s)
+g=A.a([j,B.dd,A.j("Vers\xe3o 1.0.0.18 \u2192 "+g,o,o,o,o,A.E().$2$fontSize$fontWeight(14,B.o),o,o)],s)
 j=m.b
 if((j==null?o:j.length!==0)===!0)B.b.D(g,A.a([B.ag,A.j("Publicada em: "+A.e(j),o,o,o,o,A.E().$2$color$fontSize(A.h(153,e,d,f),12),o,o)],s))
 g.push(B.a5)
