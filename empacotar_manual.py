@@ -23,22 +23,28 @@ shutil.copytree(backend, dist / "backend", dirs_exist_ok=True)
 shutil.copytree(branding, dist / "branding", dirs_exist_ok=True)
 
 # Copia dados essenciais (sem backups - eles sao gerados localmente)
-for sub in ["provas", "gabaritos", "edital", "aulas", "inventory"]:
+for sub in ["provas", "gabaritos", "edital", "aulas", "inventory", "materiais", "media"]:
     src = data / sub
     dst = dist / "data" / sub
     if src.exists():
-        dst.mkdir(parents=True, exist_ok=True)
-        for item in src.iterdir():
-            if item.is_file():
-                shutil.copy2(item, dst)
-            elif item.is_dir():
-                shutil.copytree(item, dst / item.name, dirs_exist_ok=True)
+        shutil.copytree(src, dst, dirs_exist_ok=True)
     else:
         dst.mkdir(parents=True, exist_ok=True)
+
+# Arquivos soltos do data
+for f in ["ACERVO.md", "ACERVO_MANIFEST.json", "perfil_banca.md"]:
+    src = data / f
+    if src.exists():
+        shutil.copy2(src, dist / "data" / f)
 
 # Pastas vazias para uso do usuario
 for sub in ["backups", "exports", "logs"]:
     (dist / "data" / sub).mkdir(parents=True, exist_ok=True)
+
+# CONTEUDO_PROGRAMATICO na raiz
+cp = root / "CONTEUDO_PROGRAMATICO_PAES.md"
+if cp.exists():
+    shutil.copy2(cp, dist / "CONTEUDO_PROGRAMATICO_PAES.md")
 
 # Copia banco
 shutil.copy2(data / "paes_med_ai.db", dist / "data" / "paes_med_ai.db")
