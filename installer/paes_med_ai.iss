@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.20"
+#define MyAppVersion "1.0.0.22"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -45,6 +45,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
+[InstallDelete]
+; Limpa atalhos antigos na Area de Trabalho e Menu Iniciar
+Type: files; Name: "{userdesktop}\PAES MED AI*.lnk"
+Type: files; Name: "{commondesktop}\PAES MED AI*.lnk"
+Type: files; Name: "{userstartmenu}\PAES MED AI*.lnk"
+Type: files; Name: "{commonstartmenu}\PAES MED AI*.lnk"
+
 [Files]
 ; Aplicativo Flutter
 Source: "staging\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -66,7 +73,7 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFil
 Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\tools\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 ; Area de Trabalho
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\PAES MED AI Desktop"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 ; Abrir app apos instalar

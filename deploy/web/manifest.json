@@ -1,6 +1,6 @@
 {
-    "name": "PAES MED AI",
-    "short_name": "PAES AI",
+    "name": "PAES MED AI Web",
+    "short_name": "PAES AI Web",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
