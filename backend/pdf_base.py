@@ -184,12 +184,7 @@ def generate_educational_pdf(
         section_images = downloaded_images
 
     story = []
-    story.append(Spacer(1, 2*cm))
-    if LOGO_PATH.exists():
-        img = Image(str(LOGO_PATH), width=2.5*cm, height=2.5*cm)
-        img.hAlign = 'CENTER'
-        story.append(img)
-    story.append(Spacer(1, 0.5*cm))
+    story.append(Spacer(1, 2.5*cm))
     story.append(Paragraph(content["titulo"], style_title))
     story.append(Paragraph(f'{content["disciplina"]} — {content["topico"]}', style_sub))
     story.append(HRFlowable(width="60%", thickness=2, color=PRIMARY, hAlign='CENTER'))

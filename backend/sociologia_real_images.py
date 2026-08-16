@@ -22,7 +22,7 @@ REAL_IMAGES = {
         {"file": "socio_viol_real2.jpg", "caption": "Sam Shepard Stealth", "source": "Wikipédia (Português do Brasil)", "source_url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Sam_Shepard_Stealth.jpg?utm_source=pt.wikipedia.org&utm_campaign=imageinfo&utm_content=original"},
     ],
     "socio_cultura": [
-        {"file": "socio_cult_real1.jpg", "caption": "Colheita agrícola — cultura e trabalho", "source": "Wikipédia (Português do Brasil)", "source_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/2023-07-23_Ernte_in_Tauberbischofsheim_11.jpg?utm_source=pt.wikipedia.org&utm_campaign=imageinfo&utm_content=original"},
+        {"file": "socio_cult_real1_v2.png", "caption": "Colheita agrícola — cultura e trabalho", "source": "Wikipédia (Português do Brasil)", "source_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/2023-07-23_Ernte_in_Tauberbischofsheim_11.jpg?utm_source=pt.wikipedia.org&utm_campaign=imageinfo&utm_content=original"},
         {"file": "socio_cult_real2.jpg", "caption": "Robocrane Project", "source": "Wikipédia (Português do Brasil)", "source_url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Robocrane_Project.jpg?utm_source=pt.wikipedia.org&utm_campaign=imageinfo&utm_content=original"},
     ],
     "socio_trabalho": [
