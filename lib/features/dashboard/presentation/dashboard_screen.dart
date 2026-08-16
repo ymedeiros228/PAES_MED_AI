@@ -454,7 +454,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           _WeekMiniChart(
                             cs: cs,
                             weekProgress: data['weekProgress'] as Map?,
-                            studyCalendar: data['studyCalendar'] as List?,
+                            studyCalendar: (data['studyCalendar'] as Map?)?['items'] as List?,
                           ),
                           const SizedBox(height: 20),
 
@@ -699,34 +699,27 @@ class _WeekMiniChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // studyCalendar tem 28 dias; pegamos os últimos 7
+    // studyCalendar tem 28 dias com {date, active, closed, isToday, weekday}
     final calendar = studyCalendar ?? [];
     final last7 = calendar.length >= 7
         ? calendar.sublist(calendar.length - 7)
         : calendar;
-    // Cada item tem {date, minutes} ou similar
-    final bars = <double>[];
+    // Cada item: active=true -> barra cheia, closed=true -> meia barra, resto -> vazio
+    final bars = <bool>[]; // active
+    final closed = <bool>[]; // closed
     for (final item in last7) {
       if (item is Map) {
-        final m = (item['minutes'] as num?)?.toDouble() ??
-            (item['studyMinutes'] as num?)?.toDouble() ?? 0;
-        bars.add(m);
+        bars.add(item['active'] == true);
+        closed.add(item['closed'] == true);
       } else {
-        bars.add(0);
+        bars.add(false);
+        closed.add(false);
       }
     }
-    // Se não há dados, usar weekProgress
-    if (bars.isEmpty) {
-      final wp = weekProgress;
-      if (wp != null) {
-        final mins = (wp['minutes'] as num?)?.toDouble() ?? 0;
-        bars.add(mins);
-      }
-    }
-    final maxVal = bars.isEmpty ? 1.0 : bars.reduce((a, b) => a > b ? a : b);
-    final safeMax = maxVal <= 0 ? 1.0 : maxVal;
     final weekLabel = weekProgress?['label']?.toString() ?? 'Esta semana';
-    final days = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
+    final daysActive = weekProgress?['daysActive'] as int? ?? 0;
+    final goalDays = weekProgress?['goalDays'] as int? ?? 5;
+    final dayLabels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
     return SurfacePanel(
       color: cs.surfaceContainerHighest.withOpacity(0.2),
@@ -749,15 +742,24 @@ class _WeekMiniChart extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  weekLabel,
+                  '$daysActive/$goalDays dias',
                   style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: cs.onSurface.withOpacity(0.5),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: cs.primary,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              weekLabel,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: cs.onSurface.withOpacity(0.5),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 16),
             if (bars.isEmpty)
@@ -787,19 +789,21 @@ class _WeekMiniChart extends StatelessWidget {
                             Flexible(
                               child: Container(
                                 width: double.infinity,
-                                height: (bars[i] / safeMax) * 60,
+                                height: bars[i] ? 60 : (closed[i] ? 30 : 6),
                                 constraints: const BoxConstraints(minHeight: 4),
                                 decoration: BoxDecoration(
-                                  color: bars[i] > 0
+                                  color: bars[i]
                                       ? cs.primary.withOpacity(0.8)
-                                      : cs.surfaceContainerHighest,
+                                      : closed[i]
+                                          ? cs.primary.withOpacity(0.4)
+                                          : cs.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              i < days.length ? days[i] : '',
+                              i < dayLabels.length ? dayLabels[i] : '',
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 color: cs.onSurface.withOpacity(0.4),
