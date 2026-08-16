@@ -59,10 +59,9 @@ if not defined PY if exist "%PROJECT%\backend\venv\Scripts\python.exe" set "PY=%
 if not defined PY (
   where python >nul 2>nul
   if errorlevel 1 (
-    echo ERRO: Python nao encontrado. Instale Python 3 para iniciar o backend.
-    >> "%LOG%" echo ERRO: Python nao encontrado no PATH.
-    pause
-    exit /b 1
+    echo AVISO: Python nao encontrado. App abre em modo offline.
+    >> "%LOG%" echo AVISO: Python nao encontrado no PATH. Abrindo app sem backend.
+    goto open_app
   )
   set "PY=python"
 )
@@ -125,18 +124,15 @@ goto wait_health
 
 :health_fail
 echo.
-echo FALHA: backend nao respondeu em ~30s.
-echo Motivo registrado em:
-echo   %LOG%
-echo Ultimas linhas do diagnostico:
-powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Test-Path '%LOG%') { Get-Content '%LOG%' -Tail 12 }"
-echo [%date% %time%] health FAIL >> "%DATA%\logs\launcher.log"
-pause
-exit /b 1
+echo AVISO: backend nao respondeu. App abre em modo offline.
+echo [%date% %time%] health FAIL - abrindo app offline >> "%DATA%\logs\launcher.log"
+goto open_app
 
 :health_ok
 echo API OK.
 echo [%date% %time%] health OK >> "%DATA%\logs\launcher.log"
+
+:open_app
 echo Abrindo app...
 start "" "%EXE%"
 exit /b 0

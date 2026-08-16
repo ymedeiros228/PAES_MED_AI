@@ -62,6 +62,9 @@ def main():
 
     # Launcher
     shutil.copy2(ROOT / "Iniciar_PAES_MED_AI.bat", STAGING / "Iniciar_PAES_MED_AI.bat")
+    vbs = ROOT / "Iniciar_PAES_MED_AI.vbs"
+    if vbs.exists():
+        shutil.copy2(vbs, STAGING / "Iniciar_PAES_MED_AI.vbs")
     shutil.copy2(ROOT / "VERSION", STAGING / "VERSION.txt")
 
     print(f"Staging pronto em: {STAGING}")

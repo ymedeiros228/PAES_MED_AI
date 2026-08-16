@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.23"
+#define MyAppVersion "1.0.0.24"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -48,7 +48,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [InstallDelete]
 ; Limpa atalhos antigos na Area de Trabalho e Menu Iniciar
 Type: files; Name: "{userdesktop}\PAES MED AI*.lnk"
-Type: files; Name: "{commondesktop}\PAES MED AI*.lnk"
+Type: files; Name: "{userdesktop}\PAES MED AI Desktop.lnk"
 Type: files; Name: "{userstartmenu}\PAES MED AI*.lnk"
 Type: files; Name: "{commonstartmenu}\PAES MED AI*.lnk"
 
@@ -64,20 +64,21 @@ Source: "staging\data\materiais\*"; DestDir: "{app}\data\materiais"; Flags: only
 Source: "staging\tools\*"; DestDir: "{app}\tools"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Launcher
 Source: "staging\Iniciar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "staging\Iniciar_PAES_MED_AI.vbs"; DestDir: "{app}"; Flags: ignoreversion
 ; Versao
 Source: "staging\VERSION.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Menu Iniciar
-Name: "{group}\{#MyAppName}"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; IconFilename: "{app}\app\{#MyAppExeName}"; Comment: "Iniciar PAES MED AI"
 Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\tools\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
-; Area de Trabalho
-Name: "{commondesktop}\PAES MED AI Desktop"; Filename: "{app}\Iniciar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon
+; Area de Trabalho - usa {userdesktop} pois PrivilegesRequired=lowest
+Name: "{userdesktop}\PAES MED AI Desktop"; Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Iniciar PAES MED AI"
 
 [Run]
-; Abrir app apos instalar
-Filename: "{app}\Iniciar_PAES_MED_AI.bat"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+; Abrir app apos instalar (via VBS, sem tela preta)
+Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; Remove venv local criado pelo launcher
