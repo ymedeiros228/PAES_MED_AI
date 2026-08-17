@@ -27,18 +27,40 @@ bool get isWindows {
   }
 }
 
-/// Retorna o path do atualizador (.bat) se existir, ou vazio.
-String updaterPath() {
+/// Procura o python.exe no PATH e em locais comuns do Windows.
+String _findPython() {
+  // Locais comuns
+  final home = Platform.environment['USERNAME'] ?? '';
+  final candidates = <String>[
+    'C:\\Users\\$home\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
+    'C:\\Users\\$home\\AppData\\Local\\Programs\\Python\\Python312\\python.exe',
+    'C:\\Users\\$home\\AppData\\Local\\Programs\\Python\\Python311\\python.exe',
+    'C:\\Users\\$home\\AppData\\Local\\Programs\\Python\\Python310\\python.exe',
+  ];
+  for (final c in candidates) {
+    if (File(c).existsSync()) return c;
+  }
+  // Tenta no PATH
+  try {
+    final result = Process.runSync('where', ['python.exe']);
+    if (result.exitCode == 0) {
+      final lines = (result.stdout as String).trim().split('\n');
+      if (lines.isNotEmpty) return lines.first.trim();
+    }
+  } catch (_) {}
+  return '';
+}
+
+/// Retorna o path do updater_gui.py se existir, ou vazio.
+String updaterScriptPath() {
   if (!isWindows) return '';
   try {
     final exe = Platform.resolvedExecutable;
     final dir = p.dirname(exe); // .../app
     final root = p.dirname(dir); // .../PAES_MED_AI
-    // Procura em varios lugares possiveis
     final candidates = [
-      p.join(root, 'Atualizar_PAES_MED_AI.bat'), // raiz do app
-      p.join(root, 'tools', 'Atualizar_PAES_MED_AI.bat'), // tools/
-      p.join(dir, 'Atualizar_PAES_MED_AI.bat'), // mesma pasta do exe
+      p.join(root, 'tools', 'updater_gui.py'),
+      p.join(dir, 'tools', 'updater_gui.py'),
     ];
     for (final c in candidates) {
       if (File(c).existsSync()) return c;
@@ -48,14 +70,15 @@ String updaterPath() {
 }
 
 Future<bool> launchUpdater() async {
-  final path = updaterPath();
-  if (path.isEmpty) return false;
+  if (!isWindows) return false;
   try {
-    // Usa 'call' em vez de 'start' para evitar erro de parse do caminho
-    // O Dart coloca aspas automaticamente se o path tiver espaços
-    // Chama o .bat com o path entre aspas para evitar erro de parse
-    final command = 'call "$path"';
-    await Process.start('cmd.exe', ['/c', command]);
+    final py = _findPython();
+    if (py.isEmpty) return false;
+    final script = updaterScriptPath();
+    if (script.isEmpty) return false;
+    // Chama python diretamente, sem passar por cmd/bat
+    // runInShell=true para herdar o desktop e mostrar a janela tkinter
+    await Process.start(py, [script], runInShell: true);
     return true;
   } catch (_) {}
   return false;
