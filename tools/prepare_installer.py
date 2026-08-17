@@ -88,6 +88,10 @@ def main():
     vbs = ROOT / "Iniciar_PAES_MED_AI.vbs"
     if vbs.exists():
         shutil.copy2(vbs, STAGING / "Iniciar_PAES_MED_AI.vbs")
+    # Atualizador visual (bat na raiz)
+    updater_bat = ROOT / "Atualizar_PAES_MED_AI.bat"
+    if updater_bat.exists():
+        shutil.copy2(updater_bat, STAGING / "Atualizar_PAES_MED_AI.bat")
     shutil.copy2(ROOT / "VERSION", STAGING / "VERSION.txt")
 
     print(f"Staging pronto em: {STAGING}")

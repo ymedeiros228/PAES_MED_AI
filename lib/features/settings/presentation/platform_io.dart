@@ -32,11 +32,17 @@ String updaterPath() {
   if (!isWindows) return '';
   try {
     final exe = Platform.resolvedExecutable;
-    final dir = p.dirname(exe);
-    final sibling = p.join(p.dirname(dir), 'Atualizar_PAES_MED_AI.bat');
-    final same = p.join(dir, 'Atualizar_PAES_MED_AI.bat');
-    if (File(sibling).existsSync()) return sibling;
-    if (File(same).existsSync()) return same;
+    final dir = p.dirname(exe); // .../app
+    final root = p.dirname(dir); // .../PAES_MED_AI
+    // Procura em varios lugares possiveis
+    final candidates = [
+      p.join(root, 'Atualizar_PAES_MED_AI.bat'), // raiz do app
+      p.join(root, 'tools', 'Atualizar_PAES_MED_AI.bat'), // tools/
+      p.join(dir, 'Atualizar_PAES_MED_AI.bat'), // mesma pasta do exe
+    ];
+    for (final c in candidates) {
+      if (File(c).existsSync()) return c;
+    }
   } catch (_) {}
   return '';
 }

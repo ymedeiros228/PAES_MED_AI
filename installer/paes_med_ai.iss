@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.27"
+#define MyAppVersion "1.0.0.28"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -65,13 +65,15 @@ Source: "staging\tools\*"; DestDir: "{app}\tools"; Flags: ignoreversion recurses
 ; Launcher
 Source: "staging\Iniciar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "staging\Iniciar_PAES_MED_AI.vbs"; DestDir: "{app}"; Flags: ignoreversion
+; Atualizador visual (bat na raiz + script em tools)
+Source: "staging\Atualizar_PAES_MED_AI.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; Versao
 Source: "staging\VERSION.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Menu Iniciar
 Name: "{group}\{#MyAppName}"; Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; IconFilename: "{app}\app\{#MyAppExeName}"; Comment: "Iniciar PAES MED AI"
-Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\tools\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
+Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\Atualizar_PAES_MED_AI.bat"; IconFilename: "{app}\app\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 ; Area de Trabalho - usa {userdesktop} pois PrivilegesRequired=lowest
 Name: "{userdesktop}\PAES MED AI Desktop"; Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Iniciar PAES MED AI"
