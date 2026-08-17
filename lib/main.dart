@@ -13,6 +13,8 @@ String _shortUiError(String raw) {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // Fontes Poppins e Inter estao embutidas em assets/fonts/ (pubspec.yaml).
+  // GoogleFonts usa automaticamente as fontes locais quando declaradas no pubspec.
   ErrorWidget.builder = (details) {
     final err = _shortUiError(details.exceptionAsString());
     return Material(
