@@ -54,8 +54,31 @@ def main():
     # Backend
     copy_tree(ROOT / "backend", STAGING / "backend")
 
-    # Dados
-    copy_tree(ROOT / "data", STAGING / "data")
+    # Dados: copia tudo exceto o banco original (use o banco limpo)
+    db_src = ROOT / "data" / "paes_med_ai.db"
+    clean_db = ROOT / "data" / "paes_med_ai_clean.db"
+
+    # Gera o banco limpo se nao existir
+    if not clean_db.exists():
+        import subprocess
+        subprocess.run(["python", str(ROOT / "tools" / "prepare_clean_database.py")], check=True)
+
+    # Copia tudo da pasta data, mas substitui o banco pelo limpo
+    for item in (ROOT / "data").iterdir():
+        if item.name == "paes_med_ai.db" and clean_db.exists():
+            # pula o original
+            continue
+        if item.name == "paes_med_ai_clean.db":
+            # copia com o nome que o app espera: paes_med_ai.db
+            target = STAGING / "data" / "paes_med_ai.db"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(clean_db, target)
+        elif item.is_dir():
+            copy_tree(item, STAGING / "data" / item.name)
+        else:
+            target = STAGING / "data" / item.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(item, target)
 
     # Tools
     copy_tree(ROOT / "tools", STAGING / "tools")

@@ -74,3 +74,12 @@ pack_last*.txt
 backend/smoke_*.txt
 backend/data/logs/
 
+# Backups locais do banco (nao commitar)
+data/paes_med_ai.db.backup_*
+data/paes_med_ai_clean.db
+
+# Scripts temporarios de debug
+ler_atalho.ps1
+listar_atalhos.ps1
+nul
+
