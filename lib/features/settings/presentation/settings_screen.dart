@@ -657,25 +657,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       leading: Icon(Icons.restore_rounded, color: Theme.of(context).colorScheme.tertiary),
                       title: const Text('Restaurar cópia'),
                       subtitle: Text('${backups.length} cópia(s) disponível(is)'),
-                      trailing: DropdownButton<String>(
-                        value: null,
-                        hint: const Text('Escolher'),
-                        items: backups.map((b) => DropdownMenuItem<String>(value: b.toString(), child: Text(b.toString()))).toList(),
-                        onChanged: (name) async {
-                          if (name == null) return;
-                          final ok = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Restaurar cópia de segurança?'),
-                              content: Text('Isto substitui seus dados atuais pelos de $name.'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
-                              ],
-                            ),
-                          );
-                          if (ok == true) await _restore(name);
-                        },
+                      trailing: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: null,
+                          hint: const Text('Escolher'),
+                          isDense: true,
+                          borderRadius: BorderRadius.circular(10),
+                          items: backups.map((b) => DropdownMenuItem<String>(value: b.toString(), child: Text(b.toString()))).toList(),
+                          onChanged: (name) async {
+                            if (name == null) return;
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Restaurar cópia de segurança?'),
+                                content: Text('Isto substitui seus dados atuais pelos de $name.'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                                  FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
+                                ],
+                              ),
+                            );
+                            if (ok == true) await _restore(name);
+                          },
+                        ),
                       ),
                     ),
                   if (isWindows && !kIsWeb) ...[
@@ -696,16 +700,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: Text('Tipo: $kind — use a Biblioteca para importar'),
                     trailing: FilledButton.tonal(onPressed: _pickPdf, child: const Text('Escolher')),
                   ),
-                  Wrap(
-                    spacing: 6,
-                    children: [
-                      for (final k in ['prova', 'gabarito', 'edital'])
-                        ChoiceChip(
-                          label: Text(k),
-                          selected: kind == k,
-                          onSelected: (_) => setState(() => kind = k),
-                        ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 56, bottom: 12),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        for (final k in ['prova', 'gabarito', 'edital'])
+                          ChoiceChip(
+                            label: Text(k),
+                            selected: kind == k,
+                            onSelected: (_) => setState(() => kind = k),
+                          ),
+                      ],
+                    ),
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
