@@ -53,7 +53,9 @@ Future<bool> launchUpdater() async {
   try {
     // Usa 'call' em vez de 'start' para evitar erro de parse do caminho
     // O Dart coloca aspas automaticamente se o path tiver espaços
-    await Process.start('cmd.exe', ['/c', 'call', path]);
+    // Chama o .bat com o path entre aspas para evitar erro de parse
+    final command = 'call "$path"';
+    await Process.start('cmd.exe', ['/c', command]);
     return true;
   } catch (_) {}
   return false;
