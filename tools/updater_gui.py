@@ -248,7 +248,7 @@ class UpdaterGUI:
             self.root.after(0, lambda: self.set_status("Preparando download..."))
             url, filename = get_download_url(self.latest_version)
             if not url:
-                self.root.after(0, lambda: self.set_status("Erro: instalador nao encontrado."))
+                self.root.after(0, lambda: self.set_status("Erro: instalador nao encontrado no GitHub."))
                 self.root.after(0, lambda: self.btn.config(state="normal"))
                 self.is_updating = False
                 return
@@ -257,13 +257,35 @@ class UpdaterGUI:
             self.root.after(0, lambda: self.set_status("Baixando atualizacao..."))
             tmp_dir = Path(tempfile.gettempdir()) / "PAES_MED_AI_Update"
             tmp_dir.mkdir(parents=True, exist_ok=True)
-            self.download_path = str(tmp_dir / filename)
+            self.download_path = os.path.abspath(str(tmp_dir / filename))
+
+            # Apaga arquivo antigo se existir
+            if os.path.exists(self.download_path):
+                try:
+                    os.remove(self.download_path)
+                except Exception:
+                    pass
 
             # Download com progresso
             self.download_with_progress(url, self.download_path)
 
+            # Verifica se o arquivo foi baixado
+            if not os.path.exists(self.download_path):
+                self.root.after(0, lambda: self.set_status("Erro: o download falhou.\nTente novamente."))
+                self.root.after(0, lambda: self.btn.config(state="normal"))
+                self.is_updating = False
+                return
+
+            file_size = os.path.getsize(self.download_path)
+            if file_size < 1_000_000:  # menor que 1MB = erro
+                self.root.after(0, lambda: self.set_status(f"Erro: arquivo baixado muito pequeno ({file_size} bytes).\nTente novamente."))
+                self.root.after(0, lambda: self.btn.config(state="normal"))
+                self.is_updating = False
+                return
+
+            self.root.after(0, lambda: self.set_status(f"Download concluido: {file_size // (1024*1024)} MB\nFechando aplicativo..."))
+
             # 3. Fecha o app antigo
-            self.root.after(0, lambda: self.set_status("Fechando aplicativo..."))
             self.root.after(0, lambda: self.set_pct(100, "100%"))
             self.kill_app()
 
@@ -277,14 +299,14 @@ class UpdaterGUI:
 
             # 4b. Verifica se a versao mudou no registro
             import time as _time
-            _time.sleep(2)
+            _time.sleep(3)
             new_ver = get_installed_version()
 
-            if not ok or (new_ver and not is_newer(new_ver, self.latest_version) and new_ver != self.latest_version):
+            if not ok or (new_ver and new_ver != self.latest_version):
                 # Instalador pode ter falhado; tenta de novo sem /SILENT
                 self.root.after(0, lambda: self.set_status("Instalando... aguarde a janela do instalador."))
                 ok2 = self.run_installer_interactive(self.download_path)
-                _time.sleep(2)
+                _time.sleep(3)
                 new_ver = get_installed_version()
 
             if new_ver == self.latest_version:
@@ -311,12 +333,19 @@ class UpdaterGUI:
             self.is_updating = False
 
     def download_with_progress(self, url: str, dest: str):
-        """Baixa arquivo mostrando progresso na barra."""
-        req = urllib.request.Request(url, headers={"User-Agent": "PAES-MED-AI-Updater"})
-        with urllib.request.urlopen(req, timeout=180) as resp:
+        """Baixa arquivo mostrando progresso na barra. Trata redirecionamentos do GitHub."""
+        # GitHub faz redirecionamento 302 - urllib segue automaticamente
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "PAES-MED-AI-Updater",
+            "Accept": "application/octet-stream",
+        })
+        with urllib.request.urlopen(req, timeout=300) as resp:
             total = int(resp.headers.get("Content-Length", 0))
+            if total == 0:
+                # Tenta pegar do Content-Range ou assume 160MB
+                total = 160 * 1024 * 1024
             downloaded = 0
-            chunk_size = 64 * 1024  # 64KB
+            chunk_size = 256 * 1024  # 256KB - mais rapido
 
             with open(dest, "wb") as f:
                 while True:
@@ -325,11 +354,14 @@ class UpdaterGUI:
                         break
                     f.write(chunk)
                     downloaded += len(chunk)
-                    if total > 0:
-                        pct = int(100 * downloaded / total)
-                        mb_done = downloaded / (1024 * 1024)
-                        mb_total = total / (1024 * 1024)
-                        self.root.after(0, lambda p=pct, d=mb_done, t=mb_total: self.set_pct(p, f"{d:.0f} MB / {t:.0f} MB ({p}%)"))
+                    pct = int(100 * downloaded / total)
+                    mb_done = downloaded / (1024 * 1024)
+                    mb_total = total / (1024 * 1024)
+                    self.root.after(0, lambda p=pct, d=mb_done, t=mb_total: self.set_pct(p, f"{d:.0f} MB / {t:.0f} MB ({p}%)"))
+
+            # Garante que o arquivo foi salvo
+            f.flush()
+            os.fsync(f.fileno())
 
     def kill_app(self):
         """Fecha o paes_med_ai.exe se estiver rodando."""
@@ -344,11 +376,17 @@ class UpdaterGUI:
     def run_installer(self, setup_path: str) -> bool:
         """Executa o instalador silenciosamente com elevacao UAC via ShellExecute."""
         try:
+            # Verifica se o arquivo existe
+            if not os.path.exists(setup_path):
+                self.root.after(0, lambda: self.set_status(f"Erro: arquivo nao encontrado:\n{setup_path}"))
+                return False
+
             import ctypes
             from ctypes import wintypes
 
             SEE_MASK_NOCLOSEPROCESS = 0x00000040
             SEE_MASK_NO_CONSOLE = 0x00008000
+            SEE_MASK_FLAG_NO_UI = 0x00000400
 
             class SHELLEXECUTEINFO(ctypes.Structure):
                 _fields_ = [
@@ -374,16 +412,18 @@ class UpdaterGUI:
 
             sei = SHELLEXECUTEINFO()
             sei.cbSize = ctypes.sizeof(SHELLEXECUTEINFO)
-            sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE
+            sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE | SEE_MASK_FLAG_NO_UI
             sei.hwnd = None
             sei.lpVerb = "runas"  # pede elevacao UAC
             sei.lpFile = setup_path
             sei.lpParameters = "/SILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS"
             sei.lpDirectory = None
-            sei.nShow = SW_HIDE
+            sei.nShow = SW_SHOWNORMAL  # mostra a janela do instalador
 
             ok = ctypes.windll.shell32.ShellExecuteExW(ctypes.byref(sei))
             if not ok:
+                err = ctypes.windll.kernel32.GetLastError()
+                self.root.after(0, lambda: self.set_status(f"Erro ao iniciar instalador (codigo {err}).\nTente executar manualmente:\n{setup_path}"))
                 return False
 
             # Espera o processo terminar (ate 5 minutos)
