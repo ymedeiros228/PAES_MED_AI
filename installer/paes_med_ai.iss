@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.28"
+#define MyAppVersion "1.0.0.29"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -77,6 +77,11 @@ Name: "{group}\Atualizar {#MyAppName}"; Filename: "{app}\Atualizar_PAES_MED_AI.b
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 ; Area de Trabalho - usa {userdesktop} pois PrivilegesRequired=lowest
 Name: "{userdesktop}\PAES MED AI Desktop"; Filename: "wscript.exe"; Parameters: """{app}\Iniciar_PAES_MED_AI.vbs"""; IconFilename: "{app}\app\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Iniciar PAES MED AI"
+
+[Registry]
+; Grava versao e caminho no registro de forma confiavel
+Root: HKCU; Subkey: "Software\PAES_MED_AI"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\PAES_MED_AI"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"; Flags: uninsdeletekey
 
 [Run]
 ; Abrir app apos instalar (via VBS, sem tela preta)

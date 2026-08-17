@@ -270,19 +270,40 @@ class UpdaterGUI:
             import time
             time.sleep(2)
 
-            # 4. Instala silenciosamente
-            self.root.after(0, lambda: self.set_status("Instalando nova versao..."))
+            # 4. Instala silenciosamente (com elevacao UAC)
+            self.root.after(0, lambda: self.set_status("Instalando nova versao...\nClique SIM se o Windows pedir permissao."))
             self.root.after(0, lambda: self.set_pct(0, ""))
-            self.run_installer(self.download_path)
+            ok = self.run_installer(self.download_path)
 
-            # 5. Reabre o app
-            self.root.after(0, lambda: self.set_status("Abrindo PAES MED AI..."))
-            self.reopen_app()
+            # 4b. Verifica se a versao mudou no registro
+            import time as _time
+            _time.sleep(2)
+            new_ver = get_installed_version()
 
-            # 6. Aviso final
-            self.root.after(0, lambda: self.set_status(f"Atualizacao concluida!\nVersao {self.latest_version} instalada com sucesso."))
-            self.root.after(0, lambda: self.btn_var.set("Fechar"))
-            self.root.after(0, lambda: self.btn.config(state="normal", command=self.root.quit))
+            if not ok or (new_ver and not is_newer(new_ver, self.latest_version) and new_ver != self.latest_version):
+                # Instalador pode ter falhado; tenta de novo sem /SILENT
+                self.root.after(0, lambda: self.set_status("Instalando... aguarde a janela do instalador."))
+                ok2 = self.run_installer_interactive(self.download_path)
+                _time.sleep(2)
+                new_ver = get_installed_version()
+
+            if new_ver == self.latest_version:
+                # 5. Reabre o app
+                self.root.after(0, lambda: self.set_status("Abrindo PAES MED AI..."))
+                self.reopen_app()
+
+                # 6. Aviso final
+                self.root.after(0, lambda: self.set_status(f"Atualizacao concluida!\nVersao {self.latest_version} instalada com sucesso."))
+                self.root.after(0, lambda: self.btn_var.set("Fechar"))
+                self.root.after(0, lambda: self.btn.config(state="normal", command=self.root.quit))
+            else:
+                self.root.after(0, lambda: self.set_status(
+                    f"A instalacao pode nao ter concluido.\n"
+                    f"Versao atual: {new_ver or 'desconhecida'}\n"
+                    f"Tente instalar manualmente o arquivo baixado."
+                ))
+                self.root.after(0, lambda: self.btn_var.set("Fechar"))
+                self.root.after(0, lambda: self.btn.config(state="normal", command=self.root.quit))
 
         except Exception as e:
             self.root.after(0, lambda: self.set_status(f"Erro na atualizacao: {e}"))
@@ -320,18 +341,79 @@ class UpdaterGUI:
         except Exception:
             pass
 
-    def run_installer(self, setup_path: str):
-        """Executa o instalador silenciosamente."""
+    def run_installer(self, setup_path: str) -> bool:
+        """Executa o instalador silenciosamente com elevacao UAC via ShellExecute."""
         try:
-            proc = subprocess.Popen(
-                [setup_path, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS"],
-                close_fds=True
-            )
-            proc.wait(timeout=300)  # espera ate 5 minutos
-        except subprocess.TimeoutExpired:
-            proc.kill()
+            import ctypes
+            from ctypes import wintypes
+
+            SEE_MASK_NOCLOSEPROCESS = 0x00000040
+            SEE_MASK_NO_CONSOLE = 0x00008000
+
+            class SHELLEXECUTEINFO(ctypes.Structure):
+                _fields_ = [
+                    ("cbSize", wintypes.DWORD),
+                    ("fMask", wintypes.ULONG),
+                    ("hwnd", wintypes.HWND),
+                    ("lpVerb", wintypes.LPCWSTR),
+                    ("lpFile", wintypes.LPCWSTR),
+                    ("lpParameters", wintypes.LPCWSTR),
+                    ("lpDirectory", wintypes.LPCWSTR),
+                    ("nShow", ctypes.c_int),
+                    ("hInstApp", wintypes.HINSTANCE),
+                    ("lpIDList", wintypes.LPVOID),
+                    ("lpClass", wintypes.LPCWSTR),
+                    ("hkeyClass", wintypes.HKEY),
+                    ("dwHotKey", wintypes.DWORD),
+                    ("hIcon", wintypes.HANDLE),
+                    ("hProcess", wintypes.HANDLE),
+                ]
+
+            SW_SHOWNORMAL = 1
+            SW_HIDE = 0
+
+            sei = SHELLEXECUTEINFO()
+            sei.cbSize = ctypes.sizeof(SHELLEXECUTEINFO)
+            sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE
+            sei.hwnd = None
+            sei.lpVerb = "runas"  # pede elevacao UAC
+            sei.lpFile = setup_path
+            sei.lpParameters = "/SILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS"
+            sei.lpDirectory = None
+            sei.nShow = SW_HIDE
+
+            ok = ctypes.windll.shell32.ShellExecuteExW(ctypes.byref(sei))
+            if not ok:
+                return False
+
+            # Espera o processo terminar (ate 5 minutos)
+            INFINITE = 0xFFFFFFFF
+            WAIT_TIMEOUT = 300000
+            ctypes.windll.kernel32.WaitForSingleObject(sei.hProcess, WAIT_TIMEOUT)
+            ctypes.windll.kernel32.CloseHandle(sei.hProcess)
+            return True
         except Exception:
-            pass
+            return False
+
+    def run_installer_interactive(self, setup_path: str) -> bool:
+        """Executa o instalador de forma visivel (sem /SILENT) com elevacao UAC."""
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            SW_SHOWNORMAL = 1
+
+            ret = ctypes.windll.shell32.ShellExecuteW(
+                None,
+                "runas",
+                setup_path,
+                "/NORESTART /CLOSEAPPLICATIONS",
+                None,
+                SW_SHOWNORMAL
+            )
+            return ret > 32
+        except Exception:
+            return False
 
     def reopen_app(self):
         """Reabre o app apos a instalacao."""

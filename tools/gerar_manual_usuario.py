@@ -317,7 +317,7 @@ def build_manual():
         "questoes, resumos, materiais e um assistente inteligente que "
         "te ajuda a entender qualquer topico."
     ))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     # Layout em duas colunas para aproveitar a paisagem
     left_col = [
@@ -343,7 +343,7 @@ def build_manual():
         ("RIGHTPADDING", (0, 0), (-1, -1), 0),
     ]))
     story.append(two_col)
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 2 * mm))
 
     # Imagem do dashboard grande
     p = anno_img("01-dashboard.png", [
@@ -351,7 +351,7 @@ def build_manual():
         {"type": "arrow", "x": 0.10, "y": 0.30, "x2": 0.03, "y2": 0.12, "color": (229, 160, 75, 255)},
         {"type": "label", "x": 0.40, "y": 0.10, "text": "Seu resumo", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.50, "y": 0.35, "x2": 0.45, "y2": 0.12, "color": (31, 168, 135, 255)},
-    ], max_h=150 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Tela inicial — menu a esquerda, resumo no centro"))
@@ -369,7 +369,7 @@ def build_manual():
         "Se o icone nao estiver na Area de Trabalho, procure no "
         "Menu Iniciar digitando \"PAES MED AI\"."
     ))
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 2 * mm))
 
     # 3. Tela Inicial
     story.append(section("3", "Tela Inicial"))
@@ -387,14 +387,14 @@ def build_manual():
     two_col = Table([[left_col, right_col]], colWidths=[CONTENT_W / 2 - 5 * mm, CONTENT_W / 2 - 5 * mm])
     two_col.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
     story.append(two_col)
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("02-dashboard-2.png", [
         {"type": "label", "x": 0.35, "y": 0.08, "text": "Estatisticas", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.45, "y": 0.25, "x2": 0.40, "y2": 0.10, "color": (31, 168, 135, 255)},
         {"type": "label", "x": 0.65, "y": 0.45, "text": "Estudar agora", "color": (229, 160, 75, 255)},
         {"type": "arrow", "x": 0.75, "y": 0.55, "x2": 0.70, "y2": 0.47, "color": (229, 160, 75, 255)},
-    ], max_h=150 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Tela inicial com estatisticas e botao de estudar"))
@@ -406,14 +406,14 @@ def build_manual():
     story.append(step(1, "Clique em \"Estudar\" no menu a esquerda"))
     story.append(step(2, "Escolha a materia ou aceite a sugestao do dia"))
     story.append(step(3, "Clique em \"Iniciar\""))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("03-sessao.png", [
         {"type": "label", "x": 0.35, "y": 0.08, "text": "Escolha a materia", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.45, "y": 0.30, "x2": 0.40, "y2": 0.10, "color": (31, 168, 135, 255)},
         {"type": "label", "x": 0.65, "y": 0.60, "text": "Iniciar", "color": (229, 160, 75, 255)},
         {"type": "arrow", "x": 0.72, "y": 0.70, "x2": 0.68, "y2": 0.62, "color": (229, 160, 75, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Tela de estudo — escolha a materia e clique em Iniciar"))
@@ -426,14 +426,14 @@ def build_manual():
     story.append(step(2, "Clique na alternativa desejada"))
     story.append(step(3, "Clique em \"Confirmar\""))
     story.append(step(4, "Veja se acertou ou errou, com a explicacao"))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("04-questao.png", [
         {"type": "label", "x": 0.30, "y": 0.05, "text": "Enunciado", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.35, "y": 0.20, "x2": 0.32, "y2": 0.07, "color": (31, 168, 135, 255)},
         {"type": "label", "x": 0.30, "y": 0.55, "text": "Alternativas", "color": (229, 160, 75, 255)},
         {"type": "arrow", "x": 0.35, "y": 0.65, "x2": 0.32, "y2": 0.57, "color": (229, 160, 75, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Questao — enunciado em cima, alternativas embaixo"))
@@ -455,14 +455,14 @@ def build_manual():
     two_col = Table([[left_col, right_col]], colWidths=[CONTENT_W / 2 - 5 * mm, CONTENT_W / 2 - 5 * mm])
     two_col.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
     story.append(two_col)
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("05-questao-resolvida.png", [
         {"type": "label", "x": 0.30, "y": 0.05, "text": "Resultado", "color": (46, 155, 107, 255)},
         {"type": "arrow", "x": 0.35, "y": 0.15, "x2": 0.32, "y2": 0.07, "color": (46, 155, 107, 255)},
         {"type": "label", "x": 0.55, "y": 0.50, "text": "Explicacao", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.60, "y": 0.60, "x2": 0.57, "y2": 0.52, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Questao respondida — resultado e explicacao"))
@@ -471,12 +471,12 @@ def build_manual():
     story.append(PageBreak())
     story.append(section("7", "Seu Progresso"))
     story.append(body("A aba <b>Progresso</b> mostra graficos do seu desempenho. E aqui voce descobre onde esta indo bem e onde precisa melhorar."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("06-progresso-evolucao.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Seu desempenho", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.30, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Grafico de evolucao — quanto mais alto, melhor"))
@@ -486,12 +486,12 @@ def build_manual():
     story.append(section("8", "Radar por Materia"))
     story.append(body("O grafico de teia mostra como voce esta em cada materia. Quanto mais cheia, melhor."))
     story.append(tip_box("Estude mais as materias onde a teia esta mais vazia. Sao as que voce mais precisa melhorar."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("07-progresso-radar.png", [
         {"type": "label", "x": 0.40, "y": 0.08, "text": "Teia de materias", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.50, "y": 0.30, "x2": 0.45, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Radar — cada ponta e uma materia"))
@@ -500,12 +500,12 @@ def build_manual():
     story.append(PageBreak())
     story.append(section("9", "Analise Detalhada"))
     story.append(body("A analise mostra seus numeros por materia e por topico. Use para saber exatamente onde focar."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("08-progresso-analise.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Por materia", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Analise detalhada — desempenho por materia"))
@@ -518,12 +518,12 @@ def build_manual():
     story.append(step(2, "Escolha a materia"))
     story.append(step(3, "Clique na aula que quer ler"))
     story.append(step(4, "A aula abre dentro do app"))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("09-biblioteca-aulas.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Lista de aulas", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Biblioteca — aulas organizadas por materia"))
@@ -536,12 +536,12 @@ def build_manual():
     story.append(step(2, "Navegue ou use a busca"))
     story.append(step(3, "Clique no material desejado"))
     story.append(step(4, "O texto abre dentro do app"))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("10-biblioteca-materiais.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Lista de materiais", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Materiais — lista de textos para estudo"))
@@ -551,12 +551,12 @@ def build_manual():
     story.append(section("12", "Material Aberto"))
     story.append(body("Quando voce clica em um material, ele abre dentro do proprio aplicativo. Nao precisa de nenhum programa extra."))
     story.append(tip_box("Todos os materiais funcionam sem internet. Voce pode estudar em qualquer lugar."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("11-material-aberto.png", [
         {"type": "label", "x": 0.35, "y": 0.05, "text": "Texto aberto", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.45, "y": 0.20, "x2": 0.40, "y2": 0.07, "color": (31, 168, 135, 255)},
-    ], max_h=165 * mm)
+    ], max_h=180 * mm)
     if p:
         story.append(p)
         story.append(caption("Material aberto — leitura dentro do app"))
@@ -570,14 +570,14 @@ def build_manual():
     story.append(step(3, "Leia a pergunta na tela"))
     story.append(step(4, "Pense na resposta e clique em \"Mostrar\""))
     story.append(step(5, "Marque se voce \"Acertou\" ou \"Errou\""))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("15-flashcards.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Pergunta", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.30, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
         {"type": "label", "x": 0.60, "y": 0.70, "text": "Mostrar resposta", "color": (229, 160, 75, 255)},
         {"type": "arrow", "x": 0.65, "y": 0.80, "x2": 0.62, "y2": 0.72, "color": (229, 160, 75, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Cartao de revisao — pergunta na frente, resposta no verso"))
@@ -592,14 +592,14 @@ def build_manual():
     story.append(step(2, "Clique no botao \"Explicar\" ou \"Assistente\""))
     story.append(step(3, "O assistente vai explicar tudo em detalhes"))
     story.append(step(4, "Voce pode fazer mais perguntas se quiser"))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("16-tutor-ia-novo.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Explicacao", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
         {"type": "label", "x": 0.60, "y": 0.65, "text": "Pergunte mais", "color": (229, 160, 75, 255)},
         {"type": "arrow", "x": 0.65, "y": 0.75, "x2": 0.62, "y2": 0.67, "color": (229, 160, 75, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Assistente explicando uma questao em detalhes"))
@@ -612,12 +612,12 @@ def build_manual():
     story.append(body("A aba <b>Ajustes</b> deixa voce personalizar o app."))
     story.append(subsection("Tema claro e escuro"))
     story.append(body("Voce pode trocar entre tema claro e escuro. O tema escuro e melhor para estudar a noite."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("12-ajustes-escuro.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Tema escuro", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Ajustes — tema escuro"))
@@ -626,12 +626,12 @@ def build_manual():
     story.append(PageBreak())
     story.append(section("16", "Tema Claro"))
     story.append(body("O tema claro e melhor para estudar de dia ou em ambientes bem iluminados."))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 1 * mm))
 
     p = anno_img("13-ajustes-claro.png", [
         {"type": "label", "x": 0.30, "y": 0.08, "text": "Tema claro", "color": (31, 168, 135, 255)},
         {"type": "arrow", "x": 0.40, "y": 0.20, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
-    ], max_h=155 * mm)
+    ], max_h=178 * mm)
     if p:
         story.append(p)
         story.append(caption("Ajustes — tema claro"))
@@ -663,7 +663,7 @@ def build_manual():
     two_col = Table([[left_col, right_col]], colWidths=[CONTENT_W / 2 - 5 * mm, CONTENT_W / 2 - 5 * mm])
     two_col.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
     story.append(two_col)
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 2 * mm))
     story.append(tip_box("O segredo e a <b>constancia</b>. Estudar 30 minutos por dia e melhor do que 4 horas uma vez por semana."))
 
     # 18. Problemas comuns
@@ -684,7 +684,7 @@ def build_manual():
     two_col = Table([[left_col, right_col]], colWidths=[CONTENT_W / 2 - 5 * mm, CONTENT_W / 2 - 5 * mm])
     two_col.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
     story.append(two_col)
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 2 * mm))
     story.append(warning_box("Se nada funcionar, entre em contato: Yuri Medeiros Bandeira"))
 
     # 19. Acesso Web
@@ -694,7 +694,7 @@ def build_manual():
     story.append(step(1, "Abra o navegador (Chrome, Edge, Firefox)"))
     story.append(step(2, "Digite: paes-med-ai.onrender.com"))
     story.append(step(3, "Use normalmente"))
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 2 * mm))
     story.append(tip_box("Pelo navegador voce pode estudar de qualquer computador ou celular com internet."))
 
     # === CONTRA CAPA ===
