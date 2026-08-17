@@ -63,7 +63,14 @@ def get_install_path() -> str:
 
 def fetch_latest_version() -> str:
     try:
-        with urllib.request.urlopen(VERSION_URL, timeout=15) as resp:
+        # Adiciona cache-buster para evitar cache da CDN do GitHub
+        import time
+        url = f"{VERSION_URL}?nocache={int(time.time())}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "PAES-MED-AI-Updater",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+        })
+        with urllib.request.urlopen(req, timeout=15) as resp:
             return resp.read().decode("utf-8").strip()
     except Exception:
         return ""
@@ -358,10 +365,9 @@ class UpdaterGUI:
                     mb_done = downloaded / (1024 * 1024)
                     mb_total = total / (1024 * 1024)
                     self.root.after(0, lambda p=pct, d=mb_done, t=mb_total: self.set_pct(p, f"{d:.0f} MB / {t:.0f} MB ({p}%)"))
-
-            # Garante que o arquivo foi salvo
-            f.flush()
-            os.fsync(f.fileno())
+                # Garante que o arquivo foi salvo antes de fechar
+                f.flush()
+                os.fsync(f.fileno())
 
     def kill_app(self):
         """Fecha o paes_med_ai.exe se estiver rodando."""
