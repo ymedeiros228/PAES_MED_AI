@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
@@ -113,19 +112,19 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
         children: [
           Text(
             isVideo ? 'Mais vídeos · ${widget.subject} · ${widget.topic}' : 'Mais leituras · ${widget.subject} · ${widget.topic}',
-            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
           ),
           if (disclaimer != null && disclaimer.isNotEmpty)
-            SelectableText(disclaimer, style: GoogleFonts.inter(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
+            SelectableText(disclaimer, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
           for (final raw in items.take(5))
             ListTile(
-              title: Text(raw['title']?.toString() ?? (isVideo ? 'Vídeo' : 'Leitura'), style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface)),
+              title: Text(raw['title']?.toString() ?? (isVideo ? 'Vídeo' : 'Leitura'), style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface)),
               subtitle: Text(
                 [
                   raw['channel']?.toString() ?? raw['source']?.toString() ?? '',
                   if (readUrls.contains(raw['url']?.toString() ?? '')) 'li',
                 ].where((s) => s.isNotEmpty).join(' · '),
-                style: GoogleFonts.inter(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72)),
+                style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.72)),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

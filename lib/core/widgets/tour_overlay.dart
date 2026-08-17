@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Tour guiado: mostra balao explicativo na primeira visita de cada tela.
@@ -28,7 +27,7 @@ class TourOverlay {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: TextStyle(fontFamily: 'Poppins', 
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -38,7 +37,7 @@ class TourOverlay {
         ),
         content: Text(
           body,
-          style: GoogleFonts.inter(fontSize: 15, height: 1.5),
+          style: TextStyle(fontFamily: 'Inter', fontSize: 15, height: 1.5),
         ),
         actions: [
           TextButton(

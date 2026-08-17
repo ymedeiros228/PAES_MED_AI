@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Identidade PAES MED AI: teal clínico + navy.
 /// Light = ar limpo. Dark = foco noturno (ink).
@@ -119,13 +118,16 @@ class AppTheme {
 
     // Poppins: títulos/display (geométrica, moderna, distinta)
     // Inter: corpo/UI (otimizada para tela, x-height alto, legível)
-    final display = GoogleFonts.poppins(
+    // Usa fontes embutidas em assets/fonts/ - sem depender de internet
+    final display = TextStyle(
+      fontFamily: 'Poppins',
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
       height: 1.15,
       letterSpacing: -0.5,
     );
-    final body = GoogleFonts.inter(
+    final body = TextStyle(
+      fontFamily: 'Inter',
       color: scheme.onSurface,
       height: 1.55,
       letterSpacing: -0.1,
@@ -166,7 +168,7 @@ class AppTheme {
         foregroundColor: scheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(fontFamily: 'Poppins', 
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: scheme.onSurface,
@@ -195,7 +197,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           minimumSize: const Size(88, 48),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle: GoogleFonts.inter(
+          textStyle: TextStyle(fontFamily: 'Inter', 
             fontSize: 14,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.1,
@@ -208,7 +210,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
           side: BorderSide(color: scheme.outline.withOpacity(0.7)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: GoogleFonts.inter(
+          textStyle: TextStyle(fontFamily: 'Inter', 
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -218,7 +220,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: scheme.primary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle: GoogleFonts.inter(
+          textStyle: TextStyle(fontFamily: 'Inter', 
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -227,7 +229,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surfaceContainerHigh,
         selectedColor: scheme.primaryContainer,
-        labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+        labelStyle: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w500),
         side: BorderSide.none,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -254,7 +256,7 @@ class AppTheme {
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((s) {
-          return GoogleFonts.inter(
+          return TextStyle(fontFamily: 'Inter', 
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: s.contains(WidgetState.selected)
@@ -270,12 +272,12 @@ class AppTheme {
         unselectedIconTheme: IconThemeData(
           color: dark ? scheme.onSurface.withOpacity(0.85) : scheme.onSurface.withOpacity(0.5),
         ),
-        selectedLabelTextStyle: GoogleFonts.inter(
+        selectedLabelTextStyle: TextStyle(fontFamily: 'Inter', 
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: scheme.primary,
         ),
-        unselectedLabelTextStyle: GoogleFonts.inter(
+        unselectedLabelTextStyle: TextStyle(fontFamily: 'Inter', 
           fontSize: 12,
           color: dark ? scheme.onSurface.withOpacity(0.9) : scheme.onSurface.withOpacity(0.6),
         ),
@@ -283,7 +285,7 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: dark ? scheme.surfaceContainerHigh : navy,
-        contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+        contentTextStyle: TextStyle(fontFamily: 'Inter', color: Colors.white, fontSize: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -310,9 +312,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.error, width: 2),
         ),
-        hintStyle: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.4)),
-        labelStyle: GoogleFonts.inter(color: scheme.onSurface.withOpacity(0.6)),
-        floatingLabelStyle: GoogleFonts.inter(
+        hintStyle: TextStyle(fontFamily: 'Inter', color: scheme.onSurface.withOpacity(0.4)),
+        labelStyle: TextStyle(fontFamily: 'Inter', color: scheme.onSurface.withOpacity(0.6)),
+        floatingLabelStyle: TextStyle(fontFamily: 'Inter', 
           color: scheme.primary,
           fontWeight: FontWeight.w600,
         ),
@@ -327,7 +329,7 @@ class AppTheme {
           color: dark ? scheme.surfaceContainerHighest : navy,
           borderRadius: BorderRadius.circular(8),
         ),
-        textStyle: GoogleFonts.inter(fontSize: 12, color: Colors.white),
+        textStyle: TextStyle(fontFamily: 'Inter', fontSize: 12, color: Colors.white),
         waitDuration: const Duration(milliseconds: 500),
         showDuration: const Duration(milliseconds: 2000),
         preferBelow: true,
@@ -336,12 +338,12 @@ class AppTheme {
         backgroundColor: scheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(fontFamily: 'Poppins', 
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: scheme.onSurface,
         ),
-        contentTextStyle: GoogleFonts.inter(
+        contentTextStyle: TextStyle(fontFamily: 'Inter', 
           fontSize: 14,
           color: scheme.onSurface.withOpacity(0.88),
           height: 1.55,

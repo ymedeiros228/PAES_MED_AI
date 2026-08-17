@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -264,7 +263,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     if (examDays != null && examDays >= 0) ...[
                       Text(
                         '$examDays',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'Poppins', 
                           fontSize: 48,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -274,7 +273,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       Text(
                         'dias para a prova',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 15,
                           color: Colors.white.withOpacity(0.8),
                           fontWeight: FontWeight.w500,
@@ -283,7 +282,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ] else ...[
                       Text(
                         'PAES MED AI',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'Poppins', 
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -294,7 +293,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Medicina · UEMA',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.75),
                           fontWeight: FontWeight.w500,
@@ -305,7 +304,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     // Coach line — uma frase curta
                     Text(
                       coachLine,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(fontFamily: 'Poppins', 
                         fontSize: 17,
                         color: Colors.white,
                         height: 1.3,
@@ -394,7 +393,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 children: [
                                   Text(
                                     'Primeiros passos',
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(fontFamily: 'Poppins', 
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: cs.onPrimaryContainer,
@@ -407,7 +406,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                             'Acesse a Biblioteca para importar mais provas.'
                                         : 'Acesse a Biblioteca para importar as provas oficiais da UEMA '
                                             'e comece a estudar.',
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(fontFamily: 'Inter', 
                                       fontSize: 14,
                                       height: 1.5,
                                       color: cs.onPrimaryContainer.withOpacity(0.9),
@@ -583,7 +582,7 @@ class _DashboardStatsRow extends StatelessWidget {
                         children: [
                           Text(
                             'Tópico do dia',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Inter', 
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: cs.onSurface.withOpacity(0.5),
@@ -591,7 +590,7 @@ class _DashboardStatsRow extends StatelessWidget {
                           ),
                           Text(
                             '$subj · $topic',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(fontFamily: 'Poppins', 
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: cs.onSurface,
@@ -659,7 +658,7 @@ class _StatCard extends StatelessWidget {
                   children: [
                     Text(
                       value,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(fontFamily: 'Poppins', 
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: cs.onSurface,
@@ -668,7 +667,7 @@ class _StatCard extends StatelessWidget {
                     ),
                     Text(
                       label,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter', 
                         fontSize: 11,
                         color: cs.onSurface.withOpacity(0.5),
                       ),
@@ -734,7 +733,7 @@ class _WeekMiniChart extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Evolução da semana',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(fontFamily: 'Poppins', 
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: cs.onSurface,
@@ -743,7 +742,7 @@ class _WeekMiniChart extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '$daysActive/$goalDays dias',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: cs.primary,
@@ -754,7 +753,7 @@ class _WeekMiniChart extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               weekLabel,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 11,
                 color: cs.onSurface.withOpacity(0.5),
               ),
@@ -768,7 +767,7 @@ class _WeekMiniChart extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Text(
                     'Sem dados ainda',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 13,
                       color: cs.onSurface.withOpacity(0.4),
                     ),
@@ -804,7 +803,7 @@ class _WeekMiniChart extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               i < dayLabels.length ? dayLabels[i] : '',
-                              style: GoogleFonts.inter(
+                              style: TextStyle(fontFamily: 'Inter', 
                                 fontSize: 10,
                                 color: cs.onSurface.withOpacity(0.4),
                               ),
@@ -920,7 +919,7 @@ class _SimpleQuickActions extends StatelessWidget {
                   children: [
                     Text(
                       a.label,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(fontFamily: 'Poppins', 
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: cs.onSurface,
@@ -928,7 +927,7 @@ class _SimpleQuickActions extends StatelessWidget {
                     ),
                     Text(
                       a.subtitle,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter', 
                         fontSize: 12,
                         color: cs.onSurface.withOpacity(0.5),
                       ),
@@ -988,7 +987,7 @@ class _SimpleRecommendationCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Recomendação do dia',
-                style: GoogleFonts.poppins(
+                style: TextStyle(fontFamily: 'Poppins', 
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface,
@@ -1000,7 +999,7 @@ class _SimpleRecommendationCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               summary,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 14,
                 height: 1.5,
                 color: cs.onSurface.withOpacity(0.8),
@@ -1099,7 +1098,7 @@ class _SimpleChecklist extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Atividades do dia',
-                style: GoogleFonts.poppins(
+                style: TextStyle(fontFamily: 'Poppins', 
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface,
@@ -1109,7 +1108,7 @@ class _SimpleChecklist extends StatelessWidget {
               if (examDays != null && examDays! > 0)
                 Text(
                   '$examDays dias',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: cs.primary,
@@ -1157,7 +1156,7 @@ class _SimpleChecklist extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Meta: $dailyGoal min/dia',
-            style: GoogleFonts.inter(
+            style: TextStyle(fontFamily: 'Inter', 
               fontSize: 12,
               color: cs.onSurface.withOpacity(0.4),
             ),
@@ -1202,7 +1201,7 @@ class _CheckRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 14,
                     fontWeight: done ? FontWeight.w600 : FontWeight.w500,
                     color: done ? cs.primary : cs.onSurface.withOpacity(0.7),

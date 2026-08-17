@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../features/settings/data/update_provider.dart';
 
@@ -43,12 +42,12 @@ class UpdateBanner extends ConsumerWidget {
                     children: [
                       Text(
                         'Atualização disponível',
-                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
+                        style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Nova versão ${update.latestVersion!} está disponível. Toque para atualizar.',
-                        style: GoogleFonts.inter(fontSize: 13, color: cs.onTertiaryContainer.withOpacity(0.85)),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onTertiaryContainer.withOpacity(0.85)),
                       ),
                     ],
                   ),

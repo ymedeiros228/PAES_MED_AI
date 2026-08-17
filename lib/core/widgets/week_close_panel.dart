@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
@@ -103,19 +102,19 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SelectableText(hint, style: GoogleFonts.inter(fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+              SelectableText(hint, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
               if (due != null) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Cartões para revisar: $due',
-                  style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.f65),
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface.f65),
                 ),
               ],
               if (gaps.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Lacunas quentes',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
+                  style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
                 ),
                 for (final raw in gaps)
                   Builder(
@@ -133,7 +132,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                           ? (topic.isNotEmpty ? '$subject · $topic' : subject)
                           : (key.isNotEmpty ? key : 'Lacuna');
                       if (subject.isEmpty) {
-                        return Text('· $label', style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface));
+                        return Text('· $label', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface));
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -149,7 +148,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                                 );},
                                 child: Text(
                                   '· $label → treinar',
-                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
+                                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
                             ),
@@ -202,7 +201,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                   else if (closed)
                     Text(
                       'Semana encerrada',
-                      style: GoogleFonts.inter(fontSize: 12, color: cs.primary),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.primary),
                     )
                   else
                     FilledButton(
@@ -232,7 +231,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 const SizedBox(height: 8),
                 Text(
                   exportMsg!,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 13,
                     color: cs.onSurface.f65,
                   ),

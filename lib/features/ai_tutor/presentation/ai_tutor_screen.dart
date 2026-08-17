@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -217,7 +216,7 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                                   child: SelectableText(
                                     state.messages.first.content,
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(fontFamily: 'Inter', 
                                       fontSize: 14,
                                       height: 1.5,
                                       color: cs.onSurface.withOpacity(0.85),
@@ -340,13 +339,13 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                             minLines: 1,
                             maxLines: 5,
                             textInputAction: TextInputAction.send,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Inter', 
                               fontSize: 14,
                               color: cs.onSurface,
                             ),
                             decoration: InputDecoration(
                               hintText: 'Sua dúvida… (Ctrl+Enter envia)',
-                              hintStyle: GoogleFonts.inter(
+                              hintStyle: TextStyle(fontFamily: 'Inter', 
                                 fontSize: 14,
                                 color: cs.onSurface.withOpacity(0.5),
                               ),
@@ -536,7 +535,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
                 child: Text(
                   'Conteúdo geral · sem questão do seu material',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: scheme.onSurface,
@@ -564,7 +563,7 @@ class _MessageBubble extends StatelessWidget {
                     message.model!.startsWith('offline-')
                         ? 'Modo sem internet'
                         : 'IA conectada',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: scheme.onPrimaryContainer,
@@ -579,7 +578,7 @@ class _MessageBubble extends StatelessWidget {
             ],
             SelectableText(
               message.content,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 14,
                 height: 1.5,
                 color: message.isUser
@@ -591,7 +590,7 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Próximo passo',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: scheme.onSurface,
@@ -636,7 +635,7 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Fontes na resposta',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: scheme.onSurface,
@@ -668,7 +667,7 @@ class _MessageBubble extends StatelessWidget {
                     },
                     child: Text(
                       '• ${_citeLine(c)}',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter', 
                         fontSize: 13,
                         color: scheme.onSurface.withOpacity(0.7),
                       ).copyWith(
@@ -800,7 +799,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
             const SizedBox(width: 8),
             Text(
               'Pensando…',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 13,
                 color: cs.onSurface.withOpacity(0.7),
               ).copyWith(
@@ -865,7 +864,7 @@ class _ModelSelectorButton extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 120),
               child: Text(
                 label ?? 'Auto',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: cs.onPrimaryContainer,
@@ -888,8 +887,8 @@ class _ModelSelectorButton extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Automático', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                  Text('Melhor provedor disponível', style: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.withOpacity(0.5))),
+                  Text('Automático', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Melhor provedor disponível', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: cs.onSurface.withOpacity(0.5))),
                 ],
               ),
             ],
@@ -918,7 +917,7 @@ class _ModelSelectorButton extends StatelessWidget {
                     children: [
                       Text(
                         info.label,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: configured ? null : cs.onSurface.withOpacity(0.4),
@@ -926,7 +925,7 @@ class _ModelSelectorButton extends StatelessWidget {
                       ),
                       Text(
                         configured ? model : 'Não configurado',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 11,
                           color: cs.onSurface.withOpacity(0.5),
                         ),

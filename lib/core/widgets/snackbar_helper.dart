@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Helper padronizado para snackbars — success/error/info com ícone e cor.
 /// Substitui as 40+ chamadas manuais de ScaffoldMessenger.showSnackBar
@@ -89,7 +88,7 @@ class SnackbarHelper {
                 message,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 14,
                   height: 1.45,
                 ),

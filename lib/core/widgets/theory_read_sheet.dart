@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/api_client.dart';
@@ -65,7 +64,7 @@ Future<void> openTheoryReadSheet(
                   children: [
                     Text(
                       'Teoria · $subject · $topic',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
                     ),
                     const SizedBox(height: 8),
                     AnimatedSwitcher(
@@ -78,7 +77,7 @@ Future<void> openTheoryReadSheet(
                             children: [
                               Text(
                                 isRead ? 'Passo 2 de 2' : 'Passo 1 de 2',
-                                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: Theme.of(ctx).colorScheme.onSurface),
+                                style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w800, color: Theme.of(ctx).colorScheme.onSurface),
                               ),
                               const Spacer(),
                               Icon(
@@ -89,7 +88,7 @@ Future<void> openTheoryReadSheet(
                               const SizedBox(width: 4),
                               Text(
                                 isRead ? 'Treinar' : 'Ler',
-                                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62)),
+                                style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.62)),
                               ),
                             ],
                           ),
@@ -125,7 +124,7 @@ Future<void> openTheoryReadSheet(
                                   readMap['at'] != null
                                       ? 'Marcado como lido · ${readMap['at']}'
                                       : 'Marcado como lido',
-                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.primary),
+                                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w700, color: Theme.of(ctx).colorScheme.primary),
                                 ),
                               ),
                             ],
@@ -134,7 +133,7 @@ Future<void> openTheoryReadSheet(
                       ),
                     if (note != null && note.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      SelectableText(note, style: GoogleFonts.inter(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
+                      SelectableText(note, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
                     ],
                     if (items.isEmpty) ...[
                       const SizedBox(height: 16),
@@ -269,7 +268,7 @@ Future<void> openTheoryReadSheet(
                       const SizedBox(height: 16),
                       Text(
                         'Leituras de reforço',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'Poppins', 
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Theme.of(ctx).colorScheme.onSurface,
@@ -278,7 +277,7 @@ Future<void> openTheoryReadSheet(
                       if (artDisclaimer != null)
                         SelectableText(
                           artDisclaimer,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 13,
                             color: Theme.of(ctx).colorScheme.onSurface.withOpacity(0.7),
                           ),
@@ -355,7 +354,7 @@ Future<void> openTheoryReadSheet(
                       isRead
                           ? 'Passo 2 · Teoria lida — treine o tópico agora.'
                           : 'Passo 1 · Leia o material e marque como lido. Depois treine.',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter', 
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Theme.of(ctx).colorScheme.onSurface.f72,

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -329,7 +328,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           children: [
                             Text(
                               'Missão de redação',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(fontFamily: 'Poppins', 
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,
@@ -337,7 +336,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                             ),
                             Text(
                               'Prática · não banca',
-                              style: GoogleFonts.inter(
+                              style: TextStyle(fontFamily: 'Inter', 
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
                               ),
@@ -756,7 +755,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         if (focus)
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Inter', 
                               fontSize: 13,
                               color: Theme.of(ctx).colorScheme.onSurface.f72,
                             ),
@@ -812,7 +811,7 @@ class _GapDot extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter', 
             fontSize: 11,
             fontWeight: FontWeight.w800,
             color: active ? cs.onPrimary : cs.onSurface.f72,

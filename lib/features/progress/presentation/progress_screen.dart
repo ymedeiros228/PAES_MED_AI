@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../../../core/data/api_client.dart';
@@ -366,7 +365,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       children: [
                         Text(
                           'Ritmo ${data?['readiness'] ?? '—'}',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(fontFamily: 'Poppins', 
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: cs.onSurface,
@@ -394,7 +393,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         const SizedBox(height: 8),
                         Text(
                           'Consistência de prática — não é % de aprovação.',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 13,
                             color: cs.onSurface.f72,
                           ),
@@ -413,7 +412,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                             children: [
                               Text(
                                 'Curva de acerto',
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(fontFamily: 'Poppins', 
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: cs.onSurface,
@@ -436,7 +435,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                             children: [
                               Text(
                                 'Desempenho por área',
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(fontFamily: 'Poppins', 
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: cs.onSurface,
@@ -589,7 +588,7 @@ class _ReadableRelief extends StatelessWidget {
             children: [
               Text(
                 'Escala: 0–${maxScale.toStringAsFixed(0)}',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 14,
                   color: Colors.white.withOpacity(0.92),
                   fontWeight: FontWeight.w700,
@@ -652,7 +651,7 @@ class _ReliefLegend extends StatelessWidget {
         const SizedBox(width: kGap4),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter', 
             fontSize: 11,
             color: Colors.white.withOpacity(0.78),
           ),
@@ -699,7 +698,7 @@ class _ReliefRow extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 13,
                 color: Colors.white.withOpacity(0.92),
                 fontWeight: FontWeight.w700,
@@ -717,7 +716,7 @@ class _ReliefRow extends StatelessWidget {
               child: Text(
                 value.toStringAsFixed(1),
                 textAlign: TextAlign.right,
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 14,
                   color: Colors.white.withOpacity(0.92),
                   fontWeight: FontWeight.w700,
@@ -881,12 +880,12 @@ class _BarChartPainter extends CustomPainter {
     canvas.drawLine(
         Offset(0, chartBottom), Offset(chartWidth, chartBottom), axisPaint);
 
-    final valueStyle = GoogleFonts.inter(
+    final valueStyle = TextStyle(fontFamily: 'Inter', 
       fontSize: 11,
       fontWeight: FontWeight.w800,
       color: cs.onSurface,
     );
-    final labelStyle = GoogleFonts.inter(
+    final labelStyle = TextStyle(fontFamily: 'Inter', 
       fontSize: 10,
       fontWeight: FontWeight.w600,
       color: cs.onSurface.withOpacity(0.7),
@@ -1025,7 +1024,7 @@ class _EvolutionLineChart extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   value.toInt().toString(),
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface.withOpacity(0.5),
@@ -1041,7 +1040,7 @@ class _EvolutionLineChart extends StatelessWidget {
               interval: 25,
               getTitlesWidget: (value, meta) => Text(
                 '${value.toInt()}%',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: cs.onSurface.withOpacity(0.5),
@@ -1056,7 +1055,7 @@ class _EvolutionLineChart extends StatelessWidget {
             tooltipRoundedRadius: 10,
             getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
               '${s.x.toInt()} questões\n${s.y.toStringAsFixed(1)}% acerto',
-              GoogleFonts.inter(
+              TextStyle(fontFamily: 'Inter', 
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -1147,7 +1146,7 @@ class _ErrorTypeDonut extends StatelessWidget {
         ),
         radius: 48,
         title: '${pct.toStringAsFixed(0)}%',
-        titleStyle: GoogleFonts.inter(
+        titleStyle: TextStyle(fontFamily: 'Inter', 
           fontSize: 13,
           fontWeight: FontWeight.w800,
           color: Colors.white,
@@ -1222,7 +1221,7 @@ class _ErrorTypeDonut extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 _labels[entries[i].key] ?? entries[i].key,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: cs.onSurface,
@@ -1231,7 +1230,7 @@ class _ErrorTypeDonut extends StatelessWidget {
                             ),
                             Text(
                               '${entries[i].value}',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(fontFamily: 'Poppins', 
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: colors[i % colors.length],
@@ -1257,7 +1256,7 @@ class _ErrorTypeDonut extends StatelessWidget {
             ),
             child: Text(
               'Total: $total erros registrados',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onSurface.withOpacity(0.7),
@@ -1343,7 +1342,7 @@ class _WeakTopicsHeatmap extends StatelessWidget {
                   Expanded(
                     child: Text(
                       subj,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter', 
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
@@ -1357,7 +1356,7 @@ class _WeakTopicsHeatmap extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 topic,
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 11,
                   color: Colors.white.withOpacity(0.9),
                 ),
@@ -1373,7 +1372,7 @@ class _WeakTopicsHeatmap extends StatelessWidget {
                 ),
                 child: Text(
                   '${(acc * 100).toStringAsFixed(0)}% · $n resp.',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(fontFamily: 'Poppins', 
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -1414,7 +1413,7 @@ class _StudyHeatmapCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   'Sua semana',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(fontFamily: 'Poppins', 
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: cs.onSurface,
@@ -1426,7 +1425,7 @@ class _StudyHeatmapCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '$streak dias',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'Poppins', 
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFFE8A04B),
@@ -1508,7 +1507,7 @@ class _HeatmapCell extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           dayLabel,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter', 
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: studied ? cs.onSurface.withOpacity(0.7) : cs.onSurface.withOpacity(0.35),
@@ -1551,7 +1550,7 @@ class _ProgressTrendChip extends StatelessWidget {
           Expanded(
             child: Text(
               msg,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter', 
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: cs.onSurface.withOpacity(0.8),

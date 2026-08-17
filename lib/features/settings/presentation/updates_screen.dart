@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_version.dart';
@@ -36,7 +35,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Atualizações', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text('Atualizações', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -63,11 +62,11 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         children: [
                           Text(
                             'Versão instalada',
-                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                           Text(
                             'v$local',
-                            style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.6)),
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.6)),
                           ),
                         ],
                       ),
@@ -79,7 +78,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         avatar: Icon(Icons.new_releases_rounded, color: cs.tertiary, size: 18),
                         label: Text(
                           'Nova',
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
                         ),
                       ),
                   ],
@@ -90,7 +89,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                     children: [
                       SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: cs.primary)),
                       const SizedBox(width: 12),
-                      Text('Verificando atualizações...', style: GoogleFonts.inter(fontSize: 14, color: cs.onSurface.withOpacity(0.7))),
+                      Text('Verificando atualizações...', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: cs.onSurface.withOpacity(0.7))),
                     ],
                   )
                 else if (update.error != null)
@@ -101,7 +100,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                       children: [
                         Icon(Icons.error_outline_rounded, color: cs.error, size: 20),
                         const SizedBox(width: 10),
-                        Expanded(child: Text(update.error!, style: GoogleFonts.inter(fontSize: 13, color: cs.onErrorContainer))),
+                        Expanded(child: Text(update.error!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onErrorContainer))),
                       ],
                     ),
                   )
@@ -121,18 +120,18 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                       children: [
                         Text(
                           'Nova versão disponível',
-                          style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w700),
+                          style: TextStyle(fontFamily: 'Poppins', fontSize: 17, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Versão $local → ${update.latestVersion ?? '-'}',
-                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                         if (update.publishedAt?.isNotEmpty == true) ...[
                           const SizedBox(height: 4),
                           Text(
                             'Publicada em: ${update.publishedAt}',
-                            style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
                           ),
                         ],
                         const SizedBox(height: 16),
@@ -170,7 +169,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         Expanded(
                           child: Text(
                             'Você está na versão mais recente.',
-                            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer),
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer),
                           ),
                         ),
                       ],
@@ -194,7 +193,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
           const SizedBox(height: 12),
           Text(
             'As atualizações são baixadas do GitHub Releases. Você precisa de conexão com a internet para atualizar.',
-            style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6), height: 1.5),
+            style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface.withOpacity(0.6), height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],

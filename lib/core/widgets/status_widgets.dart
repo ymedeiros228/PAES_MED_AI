@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 import '../data/api_error.dart';
@@ -252,7 +251,7 @@ class _EmptyStateState extends State<EmptyState>
                   const SizedBox(height: 20),
                   Text(
                     widget.title,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'Poppins', 
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: cs.onSurface,
@@ -264,7 +263,7 @@ class _EmptyStateState extends State<EmptyState>
                   Text(
                     widget.subtitle,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 14,
                       color: cs.onSurface.f72,
                       height: 1.4,

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/api_client.dart';
 
@@ -123,7 +122,7 @@ class _StartupSplashState extends State<StartupSplash>
                 const SizedBox(height: 24),
                 Text(
                   'PAES MED AI',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(fontFamily: 'Poppins', 
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: cs.onSurface,
@@ -133,7 +132,7 @@ class _StartupSplashState extends State<StartupSplash>
                 const SizedBox(height: 8),
                 Text(
                   _status,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 14,
                     color: cs.onSurface.withOpacity(0.6),
                   ),

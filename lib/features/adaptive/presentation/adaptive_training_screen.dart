@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -258,7 +257,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                 if (generatedPartialNote != null) ...[
                   SelectableText(
                     generatedPartialNote!,
-                    style: GoogleFonts.inter(fontSize: 13, color: cs.tertiary),
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.tertiary),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -277,7 +276,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Fim da fila', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
+                        Text('Fim da fila', style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
                         const SizedBox(height: 8),
                         Text(
                           'Acertos $correctCount de $answeredCount'
@@ -288,7 +287,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           const SizedBox(height: 8),
                           Text(
                             'Tipo dominante recente: ${errorTypeLabelPt(meta!['dominantErrorType'].toString())}',
-                            style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                           ),
                         ],
                         const SizedBox(height: 16),
@@ -403,12 +402,12 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           'Questão ${index + 1}/${queue.length}'
                           ' · ${_phaseLabel[q['_phase']] ?? q['_phase']}'
                           '${q['generated'] == true ? ' · revisar depois' : ''}',
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${q['subject'] ?? subject} · ${q['topic'] ?? topic}',
-                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                          style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                         ),
                         const SizedBox(height: 10),
                         StatementView(
@@ -447,7 +446,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             ),
                         if (!revealed) ...[
                           const SizedBox(height: 8),
-                          Text('Se errar, tipo de erro:', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
+                          Text('Se errar, tipo de erro:', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                           Wrap(
                             spacing: 8,
                             children: [
@@ -475,7 +474,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           ),
                           if (pendingErrorPick) ...[
                             const SizedBox(height: 8),
-                            Text('Tipo de erro (1–5):', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
+                            Text('Tipo de erro (1–5):', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                             Wrap(
                               spacing: 8,
                               children: [
@@ -581,7 +580,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           pendingErrorPick
                               ? 'Atalhos: 1–5 tipo de erro · Enter registra'
                               : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',
-                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f45),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.f45),
                         ),
                       ],
                     ),

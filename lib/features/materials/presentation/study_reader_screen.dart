@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
@@ -91,7 +90,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
       appBar: AppBar(
         title: Text(
           widget.title,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 16),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -324,7 +323,7 @@ class _PdfFallbackState extends State<_PdfFallback> {
               const SizedBox(height: 20),
               Text(
                 _opened ? 'PDF aberto no visualizador' : 'Abrindo PDF...',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Text(
@@ -416,7 +415,7 @@ class _TutorPanel extends ConsumerWidget {
                     children: [
                       Text(
                         'Tutor IA',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'Poppins', 
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -548,7 +547,7 @@ class _TutorPanel extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'Tutor IA',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(

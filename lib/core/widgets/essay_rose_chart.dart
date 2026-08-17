@@ -3,7 +3,6 @@ library;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'ui_kit.dart';
 
@@ -94,9 +93,9 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                   radarBorderData: BorderSide(color: cs.outlineVariant),
                   tickBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.5)),
                   gridBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.6)),
-                  ticksTextStyle: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.withOpacity(0.5)),
+                  ticksTextStyle: TextStyle(fontFamily: 'Inter', fontSize: 11, color: cs.onSurface.withOpacity(0.5)),
                   tickCount: 5,
-                  titleTextStyle: GoogleFonts.inter(
+                  titleTextStyle: TextStyle(fontFamily: 'Inter', 
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface.withOpacity(0.8),
@@ -120,7 +119,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
         const SizedBox(height: 8),
         Text(
           'Radar dos eixos (0–10) · treino local',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter', 
             fontSize: 11,
             color: cs.onSurface.withOpacity(0.6),
           ),
@@ -144,7 +143,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                         Expanded(
                           child: Text(
                             label,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(fontFamily: 'Inter', 
                               fontSize: 14,
                               color: cs.onSurface,
                             ),
@@ -156,7 +155,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                         ],
                         Text(
                           value == null ? '—' : value.toStringAsFixed(1),
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: cs.onSurface,

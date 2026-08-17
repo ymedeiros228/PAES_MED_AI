@@ -5,7 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -336,7 +335,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             type: MaterialType.transparency,
             child: Text(
               '${q.subject} · ${q.topic} · ${q.year}',
-              style: GoogleFonts.poppins(
+              style: TextStyle(fontFamily: 'Poppins', 
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.2,
@@ -348,7 +347,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         const SizedBox(height: 4),
         Text(
           kSoftAtalhosHint,
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter', 
             fontSize: 11.5,
             color: cs.onSurface.f60,
           ),
@@ -386,7 +385,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               children: [
                 Text(
                   'PDF ${q.year}: ainda não está na pasta Provas do PC (sem inventar).',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 13,
                     color: cs.onSurface.withOpacity(0.7),
                   ),
@@ -485,7 +484,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                         selected == q.correctIndex
                             ? 'Correto!'
                             : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: selected == q.correctIndex ? cs.primary : cs.error,
@@ -531,7 +530,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       children: [
         Text(
           'Professor',
-          style: GoogleFonts.poppins(
+          style: TextStyle(fontFamily: 'Poppins', 
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: cs.onSurface,
@@ -652,7 +651,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             tilePadding: EdgeInsets.zero,
             title: Text(
               'Prioridade local (não é incidência UEMA)',
-              style: GoogleFonts.poppins(
+              style: TextStyle(fontFamily: 'Poppins', 
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: cs.onSurface,
@@ -663,7 +662,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 'Prioridade ${chance['priorityScore'] ?? chance['probability'] ?? '—'}'
                 ' · ${chance['confidence'] ?? '—'}\n'
                 '${chance['reason'] ?? ''}\n${chance['disclaimer'] ?? ''}',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 13,
                   height: 1.5,
                   color: cs.onSurface.withOpacity(0.75),
@@ -711,7 +710,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 children: [
                   Text(
                     'Rascunho',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'Poppins', 
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: cs.onSurface,
@@ -720,7 +719,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   const SizedBox(height: 4),
                   SelectableText(
                     professorDraft!['resolution']?.toString() ?? '',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter', 
                       fontSize: 14,
                       height: 1.55,
                       color: cs.onSurface.withOpacity(0.88),

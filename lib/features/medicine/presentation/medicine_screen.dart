@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,7 +129,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           Expanded(
                             child: Text(
                               'Provas UEMA na base',
-                              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                              style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                             ),
                           ),
                           FilledButton.tonal(
@@ -205,7 +204,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                     tilePadding: EdgeInsets.zero,
                     title: Text(
                       'Avançado',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(fontFamily: 'Poppins', 
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: cs.onSurface,
@@ -318,7 +317,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               'Oficiais: $officialN · Natureza: $natN\n'
                               'Resoluções reais: $realN'
                               '${realPct != null ? ' ($realPct%)' : ''}',
-                              style: GoogleFonts.inter(
+                              style: TextStyle(fontFamily: 'Inter', 
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
                               ),
@@ -327,7 +326,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 curation['message'].toString(),
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 13,
                                   color: cs.onSurface.f72,
                                 ),
@@ -335,7 +334,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                             ],
                             Text(
                               'Números da base — sem inventar % de frequência na prova.',
-                              style: GoogleFonts.inter(
+                              style: TextStyle(fontFamily: 'Inter', 
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,

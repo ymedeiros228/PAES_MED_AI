@@ -1,7 +1,6 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1194,7 +1193,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       Expanded(
                         child: Text(
                           msg ?? 'Trabalhando no acervo… pode demorar um pouco.',
-                          style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                         ),
                       ),
                     ],
@@ -1208,12 +1207,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bem-vindo — Semana 1', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
+                      Text('Bem-vindo — Semana 1', style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
                       const SizedBox(height: 8),
                       Text(
                         'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
                         'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9)),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
@@ -1290,7 +1289,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   searchHistoryNote!,
-                  style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.error),
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.error),
                 ),
               ],
               if (searchHistory.isNotEmpty) ...[
@@ -1372,14 +1371,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         children: [
                           Icon(Icons.waving_hand_rounded, color: cs.primary, size: 24),
                           const SizedBox(width: 8),
-                          Text('Bem-vindo!', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
+                          Text('Bem-vindo!', style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Importe as provas oficiais da UEMA para começar a estudar. '
                         'Toque em "Importar todos" abaixo.',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
@@ -1476,7 +1475,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   children: [
                                     Text(
                                       '$y',
-                                      style: GoogleFonts.poppins(
+                                      style: TextStyle(fontFamily: 'Poppins', 
                                         fontSize: 28,
                                         fontWeight: FontWeight.w800,
                                         color: iconColor,
@@ -1490,7 +1489,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   children: [
                                     Text(
                                       ready ? '${n} questões' : label,
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(fontFamily: 'Inter', 
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: ready ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.85),
@@ -1501,7 +1500,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(fontFamily: 'Inter', 
                                         fontSize: 11,
                                         color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.withOpacity(0.6),
                                       ),
@@ -1548,7 +1547,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 const SizedBox(height: 8),
                 Text(
                   '$anosParciais ano(s) com prova mas sem gabarito. Coloque o gabarito na pasta para importar.',
-                  style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                 ),
               ],
 
@@ -1572,7 +1571,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Provas antigas (2014–23)', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                title: Text('Provas antigas (2014–23)', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 subtitle: Text(
                   anosParciais > 0
                       ? '$anosParciais sem gabarito — coloque o arquivo na pasta'
@@ -1673,7 +1672,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 initiallyExpanded: false,
-                title: Text('Opções avançadas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                title: Text('Opções avançadas', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 subtitle: const Text('Estatísticas, pastas, download e edital'),
                 children: [
                   if (curation != null) ...[
@@ -1682,12 +1681,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       'Com gabarito oficial: ${curation!['realCount'] ?? 0}'
                       '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
                       'Questões interdisciplinares: ${curation!['crossDomainCount'] ?? 0}',
-                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                     if (curation!['message'] != null)
                       Text(
                         curation!['message'].toString(),
-                        style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                     const SizedBox(height: 8),
                   ],
@@ -1754,13 +1753,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     const SizedBox(height: 8),
                     Text(
                       coverage!['message']?.toString() ?? '',
-                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                   ],
                   if (library?['dataDir'] != null)
                     Text(
                       'Pasta: ${library!['dataDir']}',
-                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                 ],
               ),
@@ -1803,7 +1802,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 else
                   Text(
                     msg!,
-                    style: GoogleFonts.inter(fontSize: 13, color: cs.primary),
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.primary),
                   ),
               ],
 
@@ -1867,12 +1866,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   children: [
                     Text(
                       'Estante de Materiais',
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '$totalPdfs PDFs em ${subjects.length} disciplinas',
-                      style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
                     ),
                   ],
                 ),
@@ -1885,7 +1884,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
                 child: Text(
                   '$totalPdfs',
-                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w900, color: cs.onPrimary),
+                  style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w900, color: cs.onPrimary),
                 ),
               ),
             ],
@@ -2046,7 +2045,7 @@ class _DisciplineCard extends StatelessWidget {
                             children: [
                               Text(
                                 subject,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(fontFamily: 'Poppins', 
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
                                   color: isExpanded ? Colors.white : cs.onSurface,
@@ -2054,7 +2053,7 @@ class _DisciplineCard extends StatelessWidget {
                               ),
                               Text(
                                 '${items.length} ${items.length == 1 ? "material" : "materiais"}',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: isExpanded ? Colors.white.withOpacity(0.8) : cs.onSurface.withOpacity(0.4),
@@ -2130,7 +2129,7 @@ class _PdfListTile extends StatelessWidget {
               width: 28,
               child: Text(
                 '$index',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter', 
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: color.withOpacity(0.4),
@@ -2150,7 +2149,7 @@ class _PdfListTile extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: TextStyle(fontFamily: 'Poppins', 
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: cs.onSurface,
@@ -2163,7 +2162,7 @@ class _PdfListTile extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               sizeStr,
-              style: GoogleFonts.inter(fontSize: 11, color: cs.onSurface.withOpacity(0.35)),
+              style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: cs.onSurface.withOpacity(0.35)),
             ),
             const SizedBox(width: 8),
             Icon(Icons.chevron_right_rounded, size: 20, color: color.withOpacity(0.5)),

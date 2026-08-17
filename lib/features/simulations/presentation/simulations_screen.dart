@@ -6,7 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -520,7 +519,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(err, style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
+            Text(err, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
             TextButton(
               onPressed: () {
                 HapticFeedback.selectionClick();
@@ -686,7 +685,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           children: [
                             Text(
                               _clock,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(fontFamily: 'Poppins', 
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
                                 color: cs.onSurface,
@@ -696,7 +695,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                             if (examLocked && diaProvaHardCap != null)
                               Text(
                                 '−$_timeRemainingLabel',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: cs.onSurface.f65,
@@ -786,13 +785,13 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       children: [
                         Text(
                           'Simulado em andamento',
-                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
+                          style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Modo ${pendingSimCheckpoint!['mode'] ?? '—'} · '
                           '${(pendingSimCheckpoint!['answers'] as Map? ?? {}).length} respondida(s)',
-                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -833,7 +832,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   tilePadding: EdgeInsets.zero,
                   initiallyExpanded: showOtherModes || mode != 'dia_prova',
                   onExpansionChanged: (v) => setState(() => showOtherModes = v),
-                  title: Text('Outros modos', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  title: Text('Outros modos', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     for (final m in _modes.where((e) => e.$1 != 'dia_prova'))
                       _ModeCard(
@@ -867,7 +866,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       'Escolha a disciplina antes de iniciar.',
-                      style: GoogleFonts.inter(fontSize: 13, color: cs.error),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.error),
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -955,18 +954,18 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           children: [
                             Text(
                               'Simulado do dia em andamento',
-                              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
+                              style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Respostas: ${answers.length}/${questions.length} · tempo $_clock'
                               '${diaProvaHardCap != null ? ' · restam $_timeRemainingLabel' : ''}',
-                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
-                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.f65),
+                              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.f65),
                             ),
                           ],
                         ),
@@ -993,12 +992,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                             'Questão ${qi + 1} de ${questions.length}'
                             '${year != null ? ' · $year' : ''}'
                             '${kbActive ? ' · teclado' : ''}',
-                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
+                            style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: kbActive ? cs.onPrimaryContainer : cs.onSurface),
+                            style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: kbActive ? cs.onPrimaryContainer : cs.onSurface),
                           ),
                           const SizedBox(height: 8),
                           StatementView(
@@ -1093,13 +1092,13 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                                   : cs.error;
                           return Text(
                             '$pct% de acerto',
-                            style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w800, color: color),
+                            style: TextStyle(fontFamily: 'Poppins', fontSize: 22, fontWeight: FontWeight.w800, color: color),
                           );
                         },
                       ),
                       Text(
                         '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
-                        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
+                        style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
                       ),
                       if (report!['estimatedScore'] != null) ...[
                         const SizedBox(height: 6),
@@ -1110,7 +1109,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                           builder: (context, value, _) {
                             return Text(
                               'Nota estimada: ${value.toStringAsFixed(0)}/1000',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(fontFamily: 'Poppins', 
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: cs.primary,
@@ -1120,13 +1119,13 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         ),
                         Text(
                           'Estimativa local — não é nota oficial UEMA.',
-                          style: GoogleFonts.inter(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
                         ),
                       ],
                       if (report!['avgTimeMs'] != null)
                         Text(
                           'Média ${((report!['avgTimeMs'] as num) / 1000).toStringAsFixed(1)}s por item',
-                          style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                         ),
                       if (report!['warning'] != null) ...[
                         const SizedBox(height: 8),
@@ -1192,7 +1191,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         children: [
                           Text(
                             '${r['subject'] ?? ''} · ${r['topic'] ?? ''}',
-                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onSurface),
+                            style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: cs.onSurface),
                           ),
                           _debriefBlock(
                             r['questionId']?.toString() ?? '',
@@ -1273,7 +1272,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 const SizedBox(height: 8),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Detalhe das respostas', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  title: Text('Detalhe das respostas', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     for (final r in (report!['results'] as List? ?? []))
                       ListTile(
@@ -1294,7 +1293,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       ),
                     if ((report!['professorHints'] as List? ?? []).isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text('Macete dos erros', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                      Text('Macete dos erros', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                       for (final h in (report!['professorHints'] as List).take(5))
                         ListTile(
                           dense: true,
@@ -1365,10 +1364,10 @@ class _ModeCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? cs.onPrimaryContainer : cs.onSurface)),
+                        Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: selected ? cs.onPrimaryContainer : cs.onSurface)),
                         Text(
                           subtitle,
-                          style: GoogleFonts.inter(fontSize: 13, color: selected ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.f72),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: selected ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.f72),
                         ),
                       ],
                     ),
@@ -1419,7 +1418,7 @@ class _CircularTimer extends StatelessWidget {
           ),
           Text(
             '$mins:$secs',
-            style: GoogleFonts.poppins(
+            style: TextStyle(fontFamily: 'Poppins', 
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: cs.onSurface,

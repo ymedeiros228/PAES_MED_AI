@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
@@ -160,7 +159,7 @@ class _LevelCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$level',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(fontFamily: 'Poppins', 
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: cs.onPrimary,
@@ -175,7 +174,7 @@ class _LevelCard extends StatelessWidget {
                     children: [
                       Text(
                         'Nivel $level - $levelTitle',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(fontFamily: 'Poppins', 
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: cs.onSurface,
@@ -184,7 +183,7 @@ class _LevelCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '$xp XP totais',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter', 
                           fontSize: 14,
                           color: cs.onSurface.withOpacity(0.6),
                         ),
@@ -210,14 +209,14 @@ class _LevelCard extends StatelessWidget {
               children: [
                 Text(
                   '$xpInLevel / $xpForNext XP',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     color: cs.onSurface.withOpacity(0.5),
                   ),
                 ),
                 Text(
                   '${(progress * 100).round()}%',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(fontFamily: 'Inter', 
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: cs.primary,
@@ -290,7 +289,7 @@ class _AchievementCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 achievement['title'] ?? '',
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(fontFamily: 'Poppins', 
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: unlocked
@@ -310,7 +309,7 @@ class _AchievementCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           achievement['description'] ?? '',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter', 
                             fontSize: 13,
                             color: cs.onSurface.withOpacity(0.6),
                           ),

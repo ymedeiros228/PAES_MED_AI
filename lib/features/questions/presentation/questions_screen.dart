@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -192,7 +191,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   tilePadding: EdgeInsets.zero,
                   title: Text(
                     'Mais filtros',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(fontFamily: 'Poppins', 
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -413,7 +412,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 'Página ${page + 1} · ${selected + 1} de ${items.length}',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(fontFamily: 'Inter', 
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: cs.onSurface.f72,

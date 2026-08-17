@@ -3,7 +3,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -194,12 +193,12 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           'Cole pelo menos ~80 caracteres de legenda.',
-                          style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
                     if (status != null) ...[
                       const SizedBox(height: 8),
-                      Text(status!, style: GoogleFonts.inter(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
+                      Text(status!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
                     ],
                   ],
                 ),
@@ -214,7 +213,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     children: [
                       Text(
                         '${lastLesson!['subject']} · ${lastLesson!['topic']}',
-                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                        style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                       ),
                       if (lastLesson!['summary'] != null) ...[
                         const SizedBox(height: 8),
@@ -222,7 +221,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ],
                       if (lastLesson!['macetes'] != null) ...[
                         const SizedBox(height: 8),
-                        SelectableText('Macete: ${lastLesson!['macetes']}', style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
+                        SelectableText('Macete: ${lastLesson!['macetes']}', style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
                       ],
                       const SizedBox(height: 12),
                       FilledButton.tonal(
@@ -278,7 +277,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                         if (item['incidenceNote'] != null)
                                           Text(
                                             '${item['incidenceNote']}',
-                                            style: GoogleFonts.inter(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                           ),
                                         const SizedBox(height: 8),
                                         FilledButton.tonal(
