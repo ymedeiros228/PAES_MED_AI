@@ -39,5 +39,5 @@ if not defined PY (
 )
 
 REM Executa o atualizador visual (tkinter)
-start "" "!PY!" "%HERE%\updater_gui.py"
+start "" "!PY!" "%HERE%\tools\updater_gui.py"
 exit /b 0
