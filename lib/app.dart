@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/data/theme_mode_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_shell.dart';
+import 'core/widgets/startup_splash.dart';
 import 'features/adaptive/presentation/adaptive_training_screen.dart';
 import 'features/ai_tutor/presentation/ai_tutor_screen.dart';
 import 'features/approval/presentation/approval_screen.dart';
@@ -242,11 +244,18 @@ CustomTransitionPage<void> _fadePage(Widget child) {
   );
 }
 
-class PaesMedAiApp extends ConsumerWidget {
+class PaesMedAiApp extends ConsumerStatefulWidget {
   const PaesMedAiApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PaesMedAiApp> createState() => _PaesMedAiAppState();
+}
+
+class _PaesMedAiAppState extends ConsumerState<PaesMedAiApp> {
+  bool _backendReady = false;
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'PAES MED AI',
@@ -256,10 +265,20 @@ class PaesMedAiApp extends ConsumerWidget {
       themeMode: themeMode,
       routerConfig: appRouter,
       // Scrollbars sempre visíveis no desktop — descobre que há mais conteúdo
-      builder: (context, child) => ScrollConfiguration(
-        behavior: const _PaesScrollBehavior(),
-        child: child ?? const SizedBox.shrink(),
-      ),
+      builder: (context, child) {
+        // No desktop, mostra splash ate o backend ficar pronto
+        if (!_backendReady &&
+            !kIsWeb &&
+            defaultTargetPlatform == TargetPlatform.windows) {
+          return StartupSplash(
+            onReady: () => setState(() => _backendReady = true),
+          );
+        }
+        return ScrollConfiguration(
+          behavior: const _PaesScrollBehavior(),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

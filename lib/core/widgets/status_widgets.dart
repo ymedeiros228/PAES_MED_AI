@@ -27,7 +27,8 @@ class _BackendStatusBannerState extends ConsumerState<BackendStatusBanner> {
   @override
   void initState() {
     super.initState();
-    _check();
+    // Da um tempo para o backend iniciar antes de checar
+    Future.delayed(const Duration(seconds: 2), _check);
   }
 
   @override
