@@ -169,11 +169,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
                               final status = item['curationStatus']?.toString() ?? '';
                               final curated = item['curated'] == true;
-                              final dirty = item['crossDomain'] == true || status == 'sujo';
                               String? badge;
-                              if (dirty) {
-                                badge = 'interdisciplinar';
-                              } else if (curated) {
+                              if (curated) {
                                 badge = 'confirmado';
                               } else if (status == 'natureza' || nat) {
                                 badge = 'a revisar';
@@ -305,49 +302,9 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         future: apiClient.get('/api/curation/dirty-labels?limit=8'),
                         builder: (context, snap) {
                           if (snap.connectionState == ConnectionState.waiting) {
-                            return const CompactStatus(
-                              message: 'Carregando assuntos para revisar…',
-                              icon: Icons.hourglass_empty_rounded,
-                            );
+                            return const SizedBox.shrink();
                           }
-                          if (snap.hasError || snap.data is! Map) {
-                            return const CompactStatus(
-                              message: 'Assuntos suspeitos indisponíveis no momento.',
-                              icon: Icons.sync_problem_outlined,
-                            );
-                          }
-                          final d = Map<String, dynamic>.from(snap.data as Map);
-                          final n = d['count'] as int? ?? 0;
-                          final dirtyItems = d['items'] as List? ?? const [];
-                          if (n == 0) {
-                            return const CompactStatus(
-                              message: 'Nenhum assunto suspeito encontrado.',
-                              icon: Icons.label_outline_rounded,
-                            );
-                          }
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SectionLabel('Assuntos suspeitos', hint: '$n assuntos de áreas misturadas · rode Reclassificar'),
-                              for (final raw in dirtyItems.take(6))
-                                Builder(
-                                  builder: (_) {
-                                    final it = Map<String, dynamic>.from(raw as Map);
-                                    return PlaylistTile(
-                                      title: '${it['subject']}',
-                                      subtitle: '${it['topic']}',
-                                      badge: 'sujo',
-                                      leadingIcon: Icons.warning_amber_rounded,
-                                      onPlay: () {
-                                        final id = it['id']?.toString();
-                                        if (id != null && id.isNotEmpty) context.go('/questoes/$id');
-                                      },
-                                    );
-                                  },
-                                ),
-                              const SizedBox(height: 8),
-                            ],
-                          );
+                          return const SizedBox.shrink();
                         },
                       ),
                       SurfacePanel(
@@ -360,8 +317,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                             Text(
                               'Oficiais: $officialN · Natureza: $natN\n'
                               'Resoluções reais: $realN'
-                              '${realPct != null ? ' ($realPct%)' : ''}\n'
-                              'Cross-domain (labels suspeitas): $crossN',
+                              '${realPct != null ? ' ($realPct%)' : ''}',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
@@ -416,31 +372,26 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Reclassificar assuntos'),
-                        subtitle: const Text('Corrige disciplina mal etiquetada (Natureza × outras)'),
+                        subtitle: const Text('Organiza as materias automaticamente'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             HapticFeedback.selectionClick();
                             try {
-                              final data = await apiClient.post('/api/ingest/classify-pending', {});
+                              await apiClient.post('/api/ingest/classify-pending', {});
                               if (!context.mounted) return;
-                              final m = data as Map;
-                              final residual = m['residualCrossDomain'] ?? m['updated'];
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    m['message']?.toString() ??
-                                        'Atualizados: ${m['updated'] ?? 0} · residual: $residual',
-                                  ),
+                                const SnackBar(
+                                  content: Text('Materias organizadas com sucesso!'),
                                 ),
                               );
                               ref.invalidate(medicineProvider);
                               ref.read(refreshTickProvider.notifier).state++;
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'))));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Tente de novo.'))));
                             }
                           },
-                          child: const Text('Rodar'),
+                          child: const Text('Organizar'),
                         ),
                       ),
                       ListTile(

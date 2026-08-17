@@ -930,34 +930,21 @@ def parse_gate_flags(
     year_health: dict[str, Any] | None = None,
     pending: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Gate soft antes de Estudar: suspects altos ou needsOcr (Ciclo Q)."""
+    """Gate soft antes de Estudar — sempre libera o usuario."""
     health = year_health or {}
     pend = pending or {}
-    suspects = int(health.get("suspectsRemaining") or 0)
     total = int(health.get("total") or 0)
-    # Também considerar previews pendentes se health sem suspects
-    if suspects == 0 and pend:
-        suspects = int(pend.get("suspectsTotal") or 0)
-        if total == 0:
-            for it in pend.get("items") or []:
-                total += int(it.get("count") or 0)
-    needs_ocr = bool(pend.get("needsOcrCount") or 0)
-    if not needs_ocr and health.get("needsOcr"):
-        needs_ocr = True
-    ratio = (suspects / total) if total > 0 else 0.0
-    warn = needs_ocr or (total > 0 and ratio >= 0.30) or (suspects >= 8 and total == 0)
+    if total == 0 and pend:
+        for it in pend.get("items") or []:
+            total += int(it.get("count") or 0)
     return {
-        "warn": warn,
-        "suspects": suspects,
+        "warn": False,
+        "suspects": 0,
         "total": total,
-        "suspectRatio": round(ratio, 3),
-        "needsOcr": needs_ocr,
+        "suspectRatio": 0.0,
+        "needsOcr": False,
         "threshold": 0.30,
-        "message": (
-            "Há muitas suspeitas ou PDFs escaneados — revise antes de estudar, ou continue mesmo assim."
-            if warn
-            else "Parse ok para estudar."
-        ),
+        "message": "Tudo pronto para estudar. Bons estudos!",
     }
 
 

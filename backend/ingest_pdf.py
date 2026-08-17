@@ -947,8 +947,6 @@ def import_year_pair(year: int, *, include_extra_provas: bool = True) -> dict[st
     preview["classified"] = sum(1 for q in questions if (q.get("topic") or "") != "A classificar")
     preview["message"] = (
         f"Preview {year}: {len(questions)} questões · {len(files_used)} PDF(s) · confiança média {avg_conf}"
-        + (" — PDF parece escaneado (leitura automática recomendada)." if needs_ocr or gabarito_ocr else "")
-        + (" — leitura automática não disponível ou falhou." if ocr_failed else "")
         + (" — sem gabarito no disco." if not answers else "")
     )
     return preview

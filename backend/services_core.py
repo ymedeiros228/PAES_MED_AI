@@ -272,7 +272,7 @@ def list_dirty_labels(*, limit: int = 40) -> dict[str, Any]:
         "count": int(inv.get("crossDomainCount") or 0),
         "items": items,
         "bySubject": inv.get("bySubject"),
-        "disclaimer": "Assuntos suspeitos da base local — rode Reclassificar lote.",
+        "disclaimer": "",
     }
 
 

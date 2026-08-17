@@ -344,27 +344,13 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (needsOcr || ocrFailed)
-                        Material(
-                          color: Theme.of(context).colorScheme.tertiaryContainer.f45,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: SelectableText(
-                              ocrFailed
-                                  ? 'A leitura automática falhou ou está indisponível. Revise o texto manualmente.'
-                                  : 'O PDF parece escaneado. Confirme os enunciados e revise o texto antes de importar.',
-                              style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.tertiary),
-                            ),
-                          ),
-                        ),
                       Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${questions.length} questões · conf. média ${meta['avgParseConfidence'] ?? '—'} · '
-                              '$suspects duvidosas',
+                              '${questions.length} questões prontas para revisão',
                               style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                             ),
                             Text(pair['message']?.toString() ?? '', style: GoogleFonts.inter(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
@@ -379,7 +365,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                                 style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
                               ),
                             FilterChip(
-                              label: Text(filterSuspects ? 'Só duvidosas ($suspects)' : 'Todas'),
+                              label: Text(filterSuspects ? 'Para revisar ($suspects)' : 'Todas'),
                               selected: filterSuspects,
                               onSelected: (v) { HapticFeedback.selectionClick(); setState(() {
                                 filterSuspects = v;
@@ -400,10 +386,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             return ListTile(
                               selected: i == index,
                               dense: true,
-                              tileColor: suspect ? Theme.of(context).colorScheme.tertiaryContainer.f45 : null,
-                              leading: suspect
-                                  ? Icon(Icons.warning_amber, color: Theme.of(context).colorScheme.onTertiaryContainer, size: 18)
-                                  : const Icon(Icons.check_circle_outline, color: AppTheme.teal, size: 18),
+                              leading: const Icon(Icons.check_circle_outline, color: AppTheme.teal, size: 18),
                               title: Text('Q${q['number'] ?? i + 1}'),
                               subtitle: Text(
                                 '${q['subject']} / ${q['topic']}'

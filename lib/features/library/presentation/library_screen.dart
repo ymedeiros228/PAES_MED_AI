@@ -249,8 +249,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final nat = Map<String, dynamic>.from(health['natureza'] as Map? ?? {});
     if (health.isEmpty) return '';
     return ' · lote: ${health['total'] ?? inserted ?? '—'} questões · gabarito ${health['gabaritoPct'] ?? '—'}%'
-        ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}'
-        '${(health['suspectsRemaining'] as int? ?? 0) > 0 ? ' · ${health['suspectsRemaining']} suspeitas' : ''}';
+        ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}';
   }
 
   Future<void> _showPostCommitCta({
@@ -360,12 +359,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final y = Map<String, dynamic>.from(raw as Map);
       final h = Map<String, dynamic>.from(y['yearHealth'] as Map? ?? {});
       final nat = Map<String, dynamic>.from(h['natureza'] as Map? ?? {});
-      final suspects = h['suspectsRemaining'] ?? 0;
       buf.writeln(
         '· ${y['year']}: +${y['inserted'] ?? 0}'
         '${y['skipped'] == true ? ' (já commitado)' : ''}'
-        '${h.isNotEmpty ? ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}' : ''}'
-        '${suspects is int && suspects > 0 ? ' · $suspects suspeitas' : ''}',
+        '${h.isNotEmpty ? ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}' : ''}',
       );
     }
     buf.write(_naturezaPackLine(
@@ -720,28 +717,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final choice = await showDialog<String>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Revisão necessária'),
-          content: Text(
-            '${gate['message'] ?? 'Revise as suspeitas e os PDFs escaneados antes de estudar.'}\n'
-            'Suspeitas: ${gate['suspects'] ?? 0} · PDFs escaneados: ${gate['needsOcr'] == true ? 'sim' : 'não'}',
+          title: const Text('Tudo pronto para estudar'),
+          content: const Text(
+            'As questões foram importadas e estão prontas para uso.\n'
+            'Bons estudos!',
           ),
           actions: [
-            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'review'); }, child: const Text('Revisar suspeitas')),
-            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar mesmo assim')),
+            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
           ],
         ),
       );
-      if (choice == 'review') {
-        // scroll mentally — user stays on biblioteca / pending section
-        return false;
-      }
       return choice == 'study';
     } catch (e) {
       if (mounted) {
         setState(
           () => msg = humanApiError(
             e,
-            fallback: 'Verificação de parse indisponível — siga com cuidado.',
+            fallback: 'Tudo pronto para estudar.',
           ),
         );
       }

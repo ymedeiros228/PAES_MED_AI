@@ -1,7 +1,7 @@
 """
 Gera o Manual do Usuario do PAES MED AI em PDF.
-PDF em portrait (A4), com capturas de tela e instrucoes passo-a-passo.
-Destinado ao cliente (Jonas Almeida Medeiros).
+Versao simplificada, intuitiva, em portugues, sem termos tecnicos.
+Com imagens grandes e anotacoes (setas/circulos) apontando elementos.
 """
 from pathlib import Path
 from reportlab.lib import colors
@@ -11,13 +11,15 @@ from reportlab.lib.units import mm
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Image as RLImage,
-    Frame, PageTemplate, PageBreak, Table, TableStyle, KeepTogether
+    Frame, PageTemplate, PageBreak, Table, TableStyle, NextPageTemplate
 )
 from reportlab.pdfgen import canvas
-from PIL import Image as PILImage
+from PIL import Image as PILImage, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 SHOTS = ROOT / "docs" / "screenshots" / "manual"
+ANNO = ROOT / "docs" / "screenshots" / "manual_annotated"
+ANNO.mkdir(parents=True, exist_ok=True)
 OUT = ROOT / "docs" / "PAES_MED_AI_Manual_Usuario.pdf"
 
 # Paleta do app
@@ -34,62 +36,138 @@ C_ALERT = colors.HexColor("#E8A04B")
 C_DANGER = colors.HexColor("#D3544A")
 C_SUCCESS = colors.HexColor("#2E9B6B")
 
-PAGE_W, PAGE_H = A4  # 595 x 842 pt (portrait)
-MARGIN = 20 * mm
+PAGE_W, PAGE_H = A4
+MARGIN = 18 * mm
 CONTENT_W = PAGE_W - 2 * MARGIN
 CONTENT_H = PAGE_H - 2 * MARGIN
 
-# Estilos
 styles = {
-    "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=28, textColor=C_WHITE, alignment=TA_CENTER, spaceAfter=6, leading=32),
-    "subtitle": ParagraphStyle("subtitle", fontName="Helvetica-Bold", fontSize=14, textColor=C_TEAL, alignment=TA_CENTER, spaceAfter=4, leading=18),
-    "meta": ParagraphStyle("meta", fontName="Helvetica", fontSize=10, textColor=C_MINT, alignment=TA_CENTER, leading=14),
-    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=18, textColor=C_NAVY, spaceBefore=16, spaceAfter=8, leading=22),
-    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=14, textColor=C_TEAL_DEEP, spaceBefore=12, spaceAfter=6, leading=18),
-    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=11, textColor=C_INK, alignment=TA_JUSTIFY, spaceAfter=6, leading=16),
-    "bullet": ParagraphStyle("bullet", fontName="Helvetica", fontSize=11, textColor=C_INK, leftIndent=18, bulletIndent=6, spaceAfter=4, leading=15),
-    "caption": ParagraphStyle("caption", fontName="Helvetica-Oblique", fontSize=9, textColor=C_MUTED, alignment=TA_CENTER, spaceBefore=4, spaceAfter=12, leading=12),
-    "tip": ParagraphStyle("tip", fontName="Helvetica", fontSize=10, textColor=C_NAVY_SOFT, leftIndent=10, rightIndent=10, spaceAfter=8, leading=14),
-    "step": ParagraphStyle("step", fontName="Helvetica-Bold", fontSize=12, textColor=C_TEAL_DEEP, spaceBefore=10, spaceAfter=4, leading=16),
+    "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=30, textColor=C_WHITE, alignment=TA_CENTER, spaceAfter=6, leading=34),
+    "subtitle": ParagraphStyle("subtitle", fontName="Helvetica-Bold", fontSize=16, textColor=C_TEAL, alignment=TA_CENTER, spaceAfter=4, leading=20),
+    "meta": ParagraphStyle("meta", fontName="Helvetica", fontSize=11, textColor=C_MINT, alignment=TA_CENTER, leading=15),
+    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=20, textColor=C_NAVY, spaceBefore=14, spaceAfter=6, leading=24),
+    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=14, textColor=C_TEAL_DEEP, spaceBefore=10, spaceAfter=4, leading=18),
+    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=12, textColor=C_INK, alignment=TA_JUSTIFY, spaceAfter=6, leading=17),
+    "bullet": ParagraphStyle("bullet", fontName="Helvetica", fontSize=12, textColor=C_INK, leftIndent=18, bulletIndent=6, spaceAfter=4, leading=16),
+    "caption": ParagraphStyle("caption", fontName="Helvetica-Oblique", fontSize=10, textColor=C_MUTED, alignment=TA_CENTER, spaceBefore=4, spaceAfter=10, leading=13),
+    "tip": ParagraphStyle("tip", fontName="Helvetica", fontSize=11, textColor=C_NAVY_SOFT, leftIndent=10, rightIndent=10, spaceAfter=8, leading=15),
+    "step": ParagraphStyle("step", fontName="Helvetica-Bold", fontSize=13, textColor=C_TEAL_DEEP, spaceBefore=8, spaceAfter=3, leading=17),
     "footer": ParagraphStyle("footer", fontName="Helvetica", fontSize=8, textColor=C_MUTED, alignment=TA_CENTER, leading=10),
+    "intro": ParagraphStyle("intro", fontName="Helvetica", fontSize=13, textColor=C_INK, alignment=TA_LEFT, spaceAfter=8, leading=18),
 }
 
 
+# ============================================================
+# ANOTACAO DE IMAGENS (setas, circulos, labels)
+# ============================================================
+
+def annotate_image(src_path, dst_path, annotations):
+    """
+    Adiciona anotacoes em uma imagem.
+    annotations: lista de dicts com:
+      - type: 'arrow' | 'circle' | 'label'
+      - x, y: coordenadas em porcentagem (0-1) da imagem
+      - x2, y2: coordenada final (para arrow)
+      - text: texto do label
+      - color: cor (R,G,B)
+    """
+    im = PILImage.open(src_path).convert("RGBA")
+    w, h = im.size
+    overlay = PILImage.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    try:
+        font = ImageFont.truetype("arial.ttf", size=int(h * 0.035))
+        font_small = ImageFont.truetype("arial.ttf", size=int(h * 0.028))
+    except IOError:
+        font = ImageFont.load_default()
+        font_small = font
+
+    for ann in annotations:
+        atype = ann.get("type", "label")
+        color = ann.get("color", (229, 160, 75, 255))  # laranja por padrao
+        x = int(ann["x"] * w)
+        y = int(ann["y"] * h)
+
+        if atype == "arrow":
+            x2 = int(ann["x2"] * w)
+            y2 = int(ann["y2"] * h)
+            # linha
+            draw.line([(x2, y2), (x, y)], fill=color, width=max(4, int(w * 0.004)))
+            # ponta da seta
+            import math
+            angle = math.atan2(y - y2, x - x2)
+            arrow_len = int(w * 0.015)
+            for da in [0.4, -0.4]:
+                ax = x - arrow_len * math.cos(angle + da)
+                ay = y - arrow_len * math.sin(angle + da)
+                draw.line([(x, y), (ax, ay)], fill=color, width=max(4, int(w * 0.004)))
+
+        elif atype == "circle":
+            r = int(ann.get("r", 0.02) * w)
+            draw.ellipse([x - r, y - r, x + r, y + r], outline=color, width=max(4, int(w * 0.004)))
+
+        elif atype == "label":
+            text = ann.get("text", "")
+            # fundo do label
+            tw = int(len(text) * h * 0.022)
+            th = int(h * 0.045)
+            bx, by = x, y
+            draw.rounded_rectangle([bx, by, bx + tw, by + th], radius=th // 3, fill=color)
+            # texto
+            draw.text((bx + tw * 0.1, by + th * 0.15), text, fill=(255, 255, 255, 255), font=font_small)
+
+    result = PILImage.alpha_composite(im, overlay)
+    result = result.convert("RGB")
+    result.save(dst_path, "PNG", optimize=True)
+    return dst_path
+
+
+def get_annotated(name, annotations):
+    """Pega imagem anotada (ou cria se nao existir)."""
+    src = SHOTS / name
+    if not src.exists():
+        return None
+    dst = ANNO / name
+    annotate_image(src, dst, annotations)
+    return dst
+
+
+# ============================================================
+# LAYOUT DAS PAGINAS
+# ============================================================
+
 def draw_cover(c, doc):
-    """Capa do manual."""
     c.saveState()
     c.setFillColor(C_NAVY)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
-
-    # Faixas superior e inferior
     c.setFillColor(C_TEAL)
     c.rect(0, PAGE_H - 8 * mm, PAGE_W, 8 * mm, fill=1, stroke=0)
     c.setFillColor(C_TEAL_DEEP)
     c.rect(0, 0, PAGE_W, 8 * mm, fill=1, stroke=0)
 
-    # Logo / titulo
     c.setFillColor(C_WHITE)
-    c.setFont("Helvetica-Bold", 32)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 80 * mm, "PAES MED AI")
+    c.setFont("Helvetica-Bold", 34)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 75 * mm, "PAES MED AI")
     c.setFillColor(C_TEAL)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 95 * mm, "MANUAL DO USUARIO")
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 92 * mm, "MANUAL DO USUARIO")
     c.setFillColor(C_MINT)
-    c.setFont("Helvetica", 11)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 110 * mm, "Guia pratico para usar a plataforma de estudos")
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 108 * mm, "Guia simples e pratico para usar a plataforma")
 
-    # Caixa de informacoes
     c.setFillColor(C_NAVY_SOFT)
-    c.roundRect(40 * mm, PAGE_H - 175 * mm, PAGE_W - 80 * mm, 50 * mm, 4 * mm, fill=1, stroke=0)
+    c.roundRect(35 * mm, PAGE_H - 175 * mm, PAGE_W - 70 * mm, 55 * mm, 4 * mm, fill=1, stroke=0)
     c.setFillColor(C_MINT)
-    c.setFont("Helvetica-Bold", 10)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 140 * mm, "INFORMACOES")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 135 * mm, "PARA")
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColor(C_WHITE)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 148 * mm, "Jonas Almeida Medeiros")
+    c.setFillColor(C_MINT)
     c.setFont("Helvetica", 10)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 150 * mm, "Cliente: Jonas Almeida Medeiros")
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 160 * mm, "Versao: 1.0.0.26")
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 170 * mm, "Data: 17 de agosto de 2026")
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 162 * mm, "Versao 1.0.0.26  |  17 de agosto de 2026")
 
-    # Rodape
     c.setFillColor(C_MUTED)
     c.setFont("Helvetica", 9)
     c.drawCentredString(PAGE_W / 2, 20 * mm, "Desenvolvido por Yuri Medeiros Bandeira")
@@ -97,31 +175,27 @@ def draw_cover(c, doc):
 
 
 def draw_page(c, doc):
-    """Paginas internas com cabecalho e rodape."""
     c.saveState()
-    # Cabecalho
     c.setFillColor(C_NAVY)
-    c.rect(0, PAGE_H - 15 * mm, PAGE_W, 15 * mm, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 14 * mm, PAGE_W, 14 * mm, fill=1, stroke=0)
     c.setFillColor(C_TEAL)
-    c.rect(0, PAGE_H - 16 * mm, PAGE_W, 1 * mm, fill=1, stroke=0)
+    c.rect(0, PAGE_H - 15 * mm, PAGE_W, 1 * mm, fill=1, stroke=0)
     c.setFillColor(C_WHITE)
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(MARGIN, PAGE_H - 10 * mm, "PAES MED AI")
+    c.drawString(MARGIN, PAGE_H - 9 * mm, "PAES MED AI")
     c.setFillColor(C_MINT)
     c.setFont("Helvetica", 8)
-    c.drawRightString(PAGE_W - MARGIN, PAGE_H - 10 * mm, "Manual do Usuario")
+    c.drawRightString(PAGE_W - MARGIN, PAGE_H - 9 * mm, "Manual do Usuario")
 
-    # Rodape
     c.setFillColor(C_TEAL_DEEP)
     c.rect(0, 0, PAGE_W, 1 * mm, fill=1, stroke=0)
     c.setFillColor(C_MUTED)
     c.setFont("Helvetica", 8)
-    c.drawCentredString(PAGE_W / 2, 6 * mm, f"Pagina {doc.page}  |  PAES MED AI v1.0.0.26")
+    c.drawCentredString(PAGE_W / 2, 6 * mm, f"Pagina {doc.page}  |  PAES MED AI")
     c.restoreState()
 
 
 def draw_backcover(c, doc):
-    """Contra-capa."""
     c.saveState()
     c.setFillColor(C_NAVY)
     c.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
@@ -131,31 +205,33 @@ def draw_backcover(c, doc):
     c.rect(0, 0, PAGE_W, 8 * mm, fill=1, stroke=0)
 
     c.setFillColor(C_WHITE)
-    c.setFont("Helvetica-Bold", 20)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 60 * mm, "Obrigado!")
+    c.setFont("Helvetica-Bold", 22)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 60 * mm, "Bons estudos!")
     c.setFillColor(C_MINT)
-    c.setFont("Helvetica", 12)
+    c.setFont("Helvetica", 13)
     c.drawCentredString(PAGE_W / 2, PAGE_H - 80 * mm, "PAES MED AI - Estudos para Medicina")
     c.setFillColor(C_TEAL)
-    c.setFont("Helvetica-Bold", 10)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 100 * mm, "Suporte e contato:")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 105 * mm, "Precisa de ajuda?")
     c.setFillColor(C_MINT)
-    c.setFont("Helvetica", 10)
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 112 * mm, "Yuri Medeiros Bandeira")
-    c.drawCentredString(PAGE_W / 2, PAGE_H - 124 * mm, "github.com/ymedeiros228/PAES_MED_AI")
+    c.setFont("Helvetica", 11)
+    c.drawCentredString(PAGE_W / 2, PAGE_H - 118 * mm, "Entre em contato com Yuri Medeiros Bandeira")
 
     c.setFillColor(C_MUTED)
     c.setFont("Helvetica", 8)
-    c.drawCentredString(PAGE_W / 2, 20 * mm, "Versao 1.0.0.26  |  17 de agosto de 2026")
+    c.drawCentredString(PAGE_W / 2, 20 * mm, "Versao 1.0.0.26  |  Agosto de 2026")
     c.restoreState()
 
 
+# ============================================================
+# HELPERS DE CONTEUDO
+# ============================================================
+
 def img_flowable(path, max_w=None, max_h=None):
-    """Cria uma Image preservando aspect ratio."""
     if max_w is None:
         max_w = CONTENT_W
     if max_h is None:
-        max_h = 110 * mm
+        max_h = 135 * mm
     with PILImage.open(path) as im:
         iw, ih = im.size
     ratio = min(max_w / iw, max_h / ih)
@@ -165,37 +241,34 @@ def img_flowable(path, max_w=None, max_h=None):
 
 
 def tip_box(text):
-    """Caixa de dica com fundo mint."""
     p = Paragraph(f"<b>Dica:</b> {text}", styles["tip"])
     t = Table([[p]], colWidths=[CONTENT_W])
     t.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), C_MINT),
         ("BOX", (0, 0), (-1, -1), 0.5, C_TEAL),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
     ]))
     return t
 
 
 def warning_box(text):
-    """Caixa de aviso."""
     p = Paragraph(f"<b>Atencao:</b> {text}", styles["tip"])
     t = Table([[p]], colWidths=[CONTENT_W])
     t.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFF3E0")),
         ("BOX", (0, 0), (-1, -1), 0.5, C_ALERT),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
     ]))
     return t
 
 
 def section(num, title):
-    """Titulo de secao numerada."""
     return Paragraph(f"{num}. {title}", styles["h1"])
 
 
@@ -219,19 +292,30 @@ def caption(text):
     return Paragraph(text, styles["caption"])
 
 
+def anno_img(name, annotations, max_h=None):
+    """Imagem anotada com setas/circulos."""
+    p = get_annotated(name, annotations)
+    if p:
+        return img_flowable(p, max_h=max_h)
+    return None
+
+
+# ============================================================
+# CONSTRUCAO DO MANUAL
+# ============================================================
+
 def build_manual():
     doc = SimpleDocTemplate(
         str(OUT),
         pagesize=A4,
         leftMargin=MARGIN,
         rightMargin=MARGIN,
-        topMargin=22 * mm,
-        bottomMargin=15 * mm,
+        topMargin=20 * mm,
+        bottomMargin=14 * mm,
     )
 
-    # Templates
     frame_cover = Frame(0, 0, PAGE_W, PAGE_H, leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0, id="cover")
-    frame_content = Frame(MARGIN, 12 * mm, CONTENT_W, PAGE_H - 35 * mm, id="content")
+    frame_content = Frame(MARGIN, 10 * mm, CONTENT_W, PAGE_H - 30 * mm, id="content")
     frame_back = Frame(0, 0, PAGE_W, PAGE_H, leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0, id="back")
 
     doc.addPageTemplates([
@@ -249,403 +333,440 @@ def build_manual():
     story.append(NextPageTemplate("content"))
     story.append(PageBreak())
 
-    # Indice / Boas-vindas
-    story.append(section("1", "Bem-vindo ao PAES MED AI"))
+    # 1. Bem-vindo
+    story.append(section("1", "Bem-vindo!"))
     story.append(body(
-        "O PAES MED AI e uma plataforma de estudos completa para o exame "
-        "vestibular de Medicina da UEMA. Ele reune questoes historicas, "
-        "flashcards, aulas, materiais em PDF, simulados e um tutor com "
-        "inteligencia artificial — tudo em um so aplicativo."
+        "O <b>PAES MED AI</b> e a sua plataforma de estudos para o "
+        "vestibular de Medicina. Com ele voce tem tudo em um so lugar: "
+        "questoes, resumos, materiais e um assistente inteligente que "
+        "te ajuda a entender qualquer topico."
     ))
     story.append(body(
-        "Este manual vai te ensinar, passo a passo, como usar cada parte "
-        "da plataforma. Nao precisa de experiencia anterior — basta seguir "
-        "as instrucoes e as capturas de tela."
+        "Este manual e curto e direto. Vai te mostrar como usar cada "
+        "parte do aplicativo, sem complicacao."
     ))
-    story.append(Spacer(1, 6 * mm))
-
-    story.append(subsection("O que voce encontra no app"))
-    story.append(bullet("720 questoes de 2014 a 2026"))
-    story.append(bullet("738 flashcards para revisao rapida"))
-    story.append(bullet("218 aulas resumidas por materia"))
-    story.append(bullet("92 materiais em PDF para estudo profundo"))
-    story.append(bullet("Tutor IA para tirar duvidas a qualquer momento"))
-    story.append(bullet("Acompanhamento de progresso e estatisticas"))
-    story.append(bullet("Funciona offline (sem internet)"))
     story.append(Spacer(1, 4 * mm))
 
-    story.append(subsection("Menu de navegacao"))
-    story.append(body(
-        "Na lateral esquerda do aplicativo voce encontra o menu principal "
-        "com as seguintes opcoes:"
-    ))
-    story.append(bullet("<b>Inicio</b> — Dashboard com resumo do seu progresso"))
-    story.append(bullet("<b>Estudar</b> — Sessoes de questoes e flashcards"))
-    story.append(bullet("<b>Progresso</b> — Graficos e estatisticas"))
-    story.append(bullet("<b>Biblioteca</b> — Aulas e materiais em PDF"))
-    story.append(bullet("<b>Materiais</b> — Lista de PDFs para download/leitura"))
-    story.append(bullet("<b>Ajustes</b> — Configuracoes e preferencias"))
+    story.append(subsection("O que voce tem no app"))
+    story.append(bullet("Mais de <b>700 questoes</b> de provas reais"))
+    story.append(bullet("Mais de <b>700 cartoes de revisao</b>"))
+    story.append(bullet("Mais de <b>200 aulas resumidas</b>"))
+    story.append(bullet("Mais de <b>90 materiais completos</b> em PDF"))
+    story.append(bullet("Um <b>assistente inteligente</b> que explica tudo"))
+    story.append(bullet("Acompanhamento do seu <b>progresso</b>"))
+    story.append(bullet("Funciona <b>sem internet</b>"))
 
-    # === SECAO 2: Primeiros passos ===
-    story.append(PageBreak())
-    story.append(section("2", "Primeiros Passos"))
-
-    story.append(subsection("Abrindo o aplicativo"))
-    story.append(body(
-        "Para abrir o PAES MED AI, de um duplo clique no atalho "
-        "<b>PAES MED AI Desktop</b> na sua Area de Trabalho."
-    ))
-    story.append(step(1, "Duplo clique no icone da Area de Trabalho"))
-    story.append(body(
-        "O aplicativo abre em poucos segundos. Na primeira vez, "
-        "aguarde cerca de 5 a 10 segundos para o sistema carregar "
-        "completamente."
-    ))
-    if (SHOTS / "01-dashboard.png").exists():
-        story.append(img_flowable(SHOTS / "01-dashboard.png", max_h=90 * mm))
-        story.append(caption("Tela inicial do PAES MED AI — Dashboard"))
     story.append(Spacer(1, 4 * mm))
-
-    story.append(tip_box(
-        "Se o aplicativo nao abrir, verifique se o icone existe na Area "
-        "de Trabalho. Se nao existir, procure no Menu Iniciar por "
-        "\"PAES MED AI\"."
-    ))
-
-    # === SECAO 3: Dashboard ===
-    story.append(PageBreak())
-    story.append(section("3", "Tela Inicial (Dashboard)"))
+    story.append(subsection("O menu lateral"))
     story.append(body(
-        "O Dashboard e a primeira tela que voce ve ao abrir o app. "
-        "Ele mostra um resumo do seu progresso e atalhos rapidos."
+        "No lado esquerdo da tela voce sempre ve o menu. E por ele que "
+        "voce navega entre as partes do app:"
+    ))
+    story.append(bullet("<b>Inicio</b> — sua tela principal, com o resumo do dia"))
+    story.append(bullet("<b>Estudar</b> — onde voce faz questoes e revisa cartoes"))
+    story.append(bullet("<b>Progresso</b> — graficos do seu desempenho"))
+    story.append(bullet("<b>Biblioteca</b> — aulas e materiais para ler"))
+    story.append(bullet("<b>Ajustes</b> — configuracoes do app"))
+
+    # Imagem do dashboard com anotacoes
+    story.append(Spacer(1, 3 * mm))
+    p = anno_img("01-dashboard.png", [
+        {"type": "label", "x": 0.02, "y": 0.10, "text": "Menu", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.10, "y": 0.30, "x2": 0.03, "y2": 0.12, "color": (229, 160, 75, 255)},
+        {"type": "label", "x": 0.40, "y": 0.10, "text": "Seu resumo", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.50, "y": 0.35, "x2": 0.45, "y2": 0.12, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Tela inicial — menu a esquerda, resumo no centro"))
+
+    # 2. Primeiros passos
+    story.append(PageBreak())
+    story.append(section("2", "Comecando a usar"))
+    story.append(body(
+        "Para abrir o app, basta dar <b>dois cliques</b> no icone "
+        "<b>PAES MED AI</b> que esta na sua Area de Trabalho."
+    ))
+    story.append(step(1, "Dois cliques no icone da Area de Trabalho"))
+    story.append(body(
+        "O app abre em poucos segundos. Na primeira vez, "
+        "espere uns 10 segundos para tudo carregar."
+    ))
+    story.append(tip_box(
+        "Se o icone nao estiver na Area de Trabalho, procure no "
+        "Menu Iniciar digitando \"PAES MED AI\"."
     ))
 
-    story.append(subsection("O que voce ve no Dashboard"))
-    story.append(bullet("<b>Questoes respondidas</b> — total e porcentagem de acerto"))
-    story.append(bullet("<b>Flashcards revisados</b> — quantidade de cards estudados"))
-    story.append(bullet("<b>Dias para a prova</b> — contagem regressiva"))
-    story.append(bullet("<b>Sequencia de estudos (streak)</b> — dias consecutivos"))
-    story.append(bullet("<b>Materia do dia</b> — sugestao do que estudar hoje"))
+    # 3. Tela Inicial
+    story.append(PageBreak())
+    story.append(section("3", "Tela Inicial"))
+    story.append(body(
+        "Ao abrir, voce ve a tela inicial. Ela mostra um resumo "
+        "rapido de como estao seus estudos."
+    ))
 
-    if (SHOTS / "02-dashboard-2.png").exists():
-        story.append(img_flowable(SHOTS / "02-dashboard-2.png", max_h=90 * mm))
-        story.append(caption("Dashboard com estatisticas e materia do dia"))
+    story.append(subsection("O que aparece na tela inicial"))
+    story.append(bullet("Quantas questoes voce ja respondeu"))
+    story.append(bullet("Quantos cartoes voce ja revisou"))
+    story.append(bullet("Quantos dias faltam para a prova"))
+    story.append(bullet("Quantos dias seguidos voce estudou"))
+    story.append(bullet("O que e sugerido estudar hoje"))
+
+    p = anno_img("02-dashboard-2.png", [
+        {"type": "label", "x": 0.35, "y": 0.08, "text": "Estatisticas", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.45, "y": 0.25, "x2": 0.40, "y2": 0.10, "color": (31, 168, 135, 255)},
+        {"type": "label", "x": 0.65, "y": 0.45, "text": "Estudar agora", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.75, "y": 0.55, "x2": 0.70, "y2": 0.47, "color": (229, 160, 75, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Tela inicial com estatisticas e botao de estudar"))
 
     story.append(tip_box(
-        "Clique em \"Continuar estudo\" para retomar de onde parou, "
-        "ou em \"Nova sessao\" para comecar um estudo novo."
+        "Clique em \"Continuar\" para voltar de onde parou, "
+        "ou em \"Nova sessao\" para comecar algo novo."
     ))
 
-    # === SECAO 4: Estudar ===
+    # 4. Estudando
     story.append(PageBreak())
-    story.append(section("4", "Estudando (Sessoes)"))
+    story.append(section("4", "Estudando"))
     story.append(body(
         "A aba <b>Estudar</b> e onde voce passa a maior parte do tempo. "
-        "Aqui voce responde questoes e revisa flashcards."
+        "Aqui voce responde questoes e revisa cartoes."
     ))
 
-    story.append(subsection("Iniciando uma sessao"))
-    story.append(step(1, "Clique em \"Estudar\" no menu lateral"))
-    story.append(step(2, "Escolha a materia ou deixe o sistema sugerir"))
-    story.append(step(3, "Clique em \"Iniciar sessao\""))
-    story.append(body(
-        "O sistema vai montar uma sessao com questoes do nivel e materia "
-        "escolhidos. Cada sessao tem cerca de 10 a 20 questoes."
-    ))
+    story.append(subsection("Como comecar uma sessao"))
+    story.append(step(1, "Clique em \"Estudar\" no menu a esquerda"))
+    story.append(step(2, "Escolha a materia ou aceite a sugestao do dia"))
+    story.append(step(3, "Clique em \"Iniciar\""))
 
-    if (SHOTS / "03-sessao.png").exists():
-        story.append(img_flowable(SHOTS / "03-sessao.png", max_h=90 * mm))
-        story.append(caption("Tela de sessao de estudo — escolha de materia"))
+    p = anno_img("03-sessao.png", [
+        {"type": "label", "x": 0.35, "y": 0.08, "text": "Escolha a materia", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.45, "y": 0.30, "x2": 0.40, "y2": 0.10, "color": (31, 168, 135, 255)},
+        {"type": "label", "x": 0.65, "y": 0.60, "text": "Iniciar", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.72, "y": 0.70, "x2": 0.68, "y2": 0.62, "color": (229, 160, 75, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Tela de estudo — escolha a materia e clique em Iniciar"))
 
-    # === SECAO 5: Questoes ===
+    # 5. Questoes
     story.append(PageBreak())
     story.append(section("5", "Respondendo Questoes"))
     story.append(body(
-        "Cada questao aparece com o enunciado e 5 alternativas (A, B, C, D, E). "
-        "Leia com atencao e clique na alternativa que acha correta."
+        "Cada questao aparece com o enunciado e 5 alternativas. "
+        "Leia com atencao e escolha a que acha correta."
     ))
 
     story.append(subsection("Como responder"))
-    story.append(step(1, "Leia o enunciado com atencao"))
+    story.append(step(1, "Leia o enunciado com calma"))
     story.append(step(2, "Clique na alternativa desejada"))
-    story.append(step(3, "Clique em \"Confirmar\" para registrar sua resposta"))
+    story.append(step(3, "Clique em \"Confirmar\""))
     story.append(step(4, "Veja se acertou ou errou, com a explicacao"))
 
-    if (SHOTS / "04-questao.png").exists():
-        story.append(img_flowable(SHOTS / "04-questao.png", max_h=85 * mm))
-        story.append(caption("Tela de questao — enunciado e alternativas"))
+    p = anno_img("04-questao.png", [
+        {"type": "label", "x": 0.30, "y": 0.05, "text": "Enunciado", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.35, "y": 0.20, "x2": 0.32, "y2": 0.07, "color": (31, 168, 135, 255)},
+        {"type": "label", "x": 0.30, "y": 0.55, "text": "Alternativas", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.35, "y": 0.65, "x2": 0.32, "y2": 0.57, "color": (229, 160, 75, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Questao — enunciado em cima, alternativas embaixo"))
 
-    story.append(subsection("Apos responder"))
-    story.append(body(
-        "Depois de confirmar sua resposta, o sistema mostra:"
-    ))
+    story.append(subsection("Depois de responder"))
+    story.append(body("O app mostra:"))
     story.append(bullet("Se voce <b>acertou</b> ou <b>errou</b>"))
-    story.append(bullet("A <b>resolucao completa</b> da questao"))
-    story.append(bullet("O <b>macete</b> (dica rapida para lembrar)"))
-    story.append(bullet("Possiveis <b>pegadinhas</b> da questao"))
-    story.append(bullet("Botao para pedir explicacao ao <b>Tutor IA</b>"))
+    story.append(bullet("A <b>explicacao completa</b> da questao"))
+    story.append(bullet("Uma <b>dica rapida</b> para lembrar"))
+    story.append(bullet("Se a questao tem alguma <b>pegadinha</b>"))
+    story.append(bullet("Um botao para pedir mais explicacao ao <b>assistente</b>"))
 
-    if (SHOTS / "05-questao-resolvida.png").exists():
-        story.append(img_flowable(SHOTS / "05-questao-resolvida.png", max_h=85 * mm))
-        story.append(caption("Questao respondida com resolucao e explicacao"))
+    p = anno_img("05-questao-resolvida.png", [
+        {"type": "label", "x": 0.30, "y": 0.05, "text": "Resultado", "color": (46, 155, 107, 255)},
+        {"type": "arrow", "x": 0.35, "y": 0.15, "x2": 0.32, "y2": 0.07, "color": (46, 155, 107, 255)},
+        {"type": "label", "x": 0.55, "y": 0.50, "text": "Explicacao", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.60, "y": 0.60, "x2": 0.57, "y2": 0.52, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Questao respondida — resultado e explicacao"))
 
-    story.append(tip_box(
-        "Use o botao \"Tutor IA\" sempre que nao entender a explicacao. "
-        "A inteligencia artificial vai te dar uma explicacao detalhada "
-        "e personalizada."
-    ))
-
-    # === SECAO 6: Progresso ===
+    # 6. Progresso
     story.append(PageBreak())
-    story.append(section("6", "Acompanhando seu Progresso"))
+    story.append(section("6", "Seu Progresso"))
     story.append(body(
-        "A aba <b>Progresso</b> mostra graficos e estatisticas do seu "
-        "desempenho. E fundamental para saber onde voce esta indo bem "
-        "e onde precisa melhorar."
+        "A aba <b>Progresso</b> mostra graficos do seu desempenho. "
+        "E aqui voce descobre onde esta indo bem e onde precisa melhorar."
     ))
 
-    story.append(subsection("Grafico de Evolucao"))
+    story.append(subsection("Grafico de evolucao"))
     story.append(body(
-        "Mostra seu desempenho ao longo do tempo. Cada ponto no grafico "
-        "representa uma sessao de estudo. A linha verde mostra a sua "
-        "taxa de acerto."
+        "Mostra como seu desempenho mudou ao longo do tempo. "
+        "Cada ponto e uma sessao de estudo."
     ))
-    if (SHOTS / "06-progresso-evolucao.png").exists():
-        story.append(img_flowable(SHOTS / "06-progresso-evolucao.png", max_h=85 * mm))
-        story.append(caption("Grafico de evolucao do desempenho"))
+    p = anno_img("06-progresso-evolucao.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Seu desempenho", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.30, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=115 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Grafico de evolucao — quanto mais alto, melhor"))
 
-    story.append(subsection("Radar por Materia"))
+    story.append(subsection("Radar por materia"))
     story.append(body(
-        "O grafico de radar (teia) mostra seu desempenho em cada materia. "
-        "Quanto mais cheia a teia, melhor seu desempenho naquela area."
+        "O grafico de teia mostra como voce esta em cada materia. "
+        "Quanto mais cheia, melhor."
     ))
-    if (SHOTS / "07-progresso-radar.png").exists():
-        story.append(img_flowable(SHOTS / "07-progresso-radar.png", max_h=85 * mm))
-        story.append(caption("Radar de desempenho por materia"))
-
-    story.append(subsection("Analise Detalhada"))
-    story.append(body(
-        "A analise detalhada mostra estatisticas por materia, topico e "
-        "dificuldade. Use para identificar onde focar seus estudos."
-    ))
-    if (SHOTS / "08-progresso-analise.png").exists():
-        story.append(img_flowable(SHOTS / "08-progresso-analise.png", max_h=85 * mm))
-        story.append(caption("Analise detalhada por materia e topico"))
+    p = anno_img("07-progresso-radar.png", [
+        {"type": "label", "x": 0.40, "y": 0.08, "text": "Teia de materias", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.50, "y": 0.30, "x2": 0.45, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=115 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Radar — cada ponta e uma materia"))
 
     story.append(tip_box(
-        "Estude mais as materias onde sua taxa de acerto esta abaixo de 60%. "
-        "O proprio app sugere revisao desses topicos."
+        "Estude mais as materias onde a teia esta mais vazia. "
+        "Sao as que voce mais precisa melhorar."
     ))
 
-    # === SECAO 7: Biblioteca ===
+    # Analise detalhada
+    story.append(PageBreak())
+    story.append(subsection("Analise detalhada"))
+    story.append(body(
+        "A analise mostra seus numeros por materia e por topico. "
+        "Use para saber exatamente onde focar."
+    ))
+    p = anno_img("08-progresso-analise.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Por materia", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Analise detalhada — desempenho por materia"))
+
+    # 7. Biblioteca
     story.append(PageBreak())
     story.append(section("7", "Biblioteca de Aulas"))
     story.append(body(
-        "A aba <b>Biblioteca</b> contem aulas resumidas organizadas por "
-        "materia. Cada aula cobre um topico especifico do edital."
+        "A aba <b>Biblioteca</b> tem aulas resumidas organizadas por materia. "
+        "Cada aula cobre um topico do edital."
     ))
 
-    story.append(subsection("Como acessar as aulas"))
-    story.append(step(1, "Clique em \"Biblioteca\" no menu lateral"))
-    story.append(step(2, "Escolha a materia (Biologia, Quimica, Fisica, etc.)"))
-    story.append(step(3, "Clique na aula que deseja ler"))
-    story.append(step(4, "A aula abre dentro do aplicativo"))
+    story.append(step(1, "Clique em \"Biblioteca\" no menu"))
+    story.append(step(2, "Escolha a materia"))
+    story.append(step(3, "Clique na aula que quer ler"))
+    story.append(step(4, "A aula abre dentro do app"))
 
-    if (SHOTS / "09-biblioteca-aulas.png").exists():
-        story.append(img_flowable(SHOTS / "09-biblioteca-aulas.png", max_h=85 * mm))
-        story.append(caption("Biblioteca — lista de aulas por materia"))
+    p = anno_img("09-biblioteca-aulas.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Lista de aulas", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Biblioteca — aulas organizadas por materia"))
 
-    # === SECAO 8: Materiais ===
+    # 8. Materiais
     story.append(PageBreak())
-    story.append(section("8", "Materiais de Estudo (PDF)"))
+    story.append(section("8", "Materiais de Estudo"))
     story.append(body(
-        "A aba <b>Materiais</b> tem 92 PDFs completos para estudo profundo. "
-        "Cada PDF cobre um topico com detalhes, diagramas e exercicios."
+        "A aba <b>Materiais</b> tem mais de 90 textos completos para "
+        "estudo profundo. Cada um cobre um topico com detalhes."
     ))
 
-    story.append(subsection("Como abrir um material"))
-    story.append(step(1, "Clique em \"Materiais\" no menu lateral"))
-    story.append(step(2, "Navegue pela lista ou use a busca"))
+    story.append(step(1, "Clique em \"Materiais\" no menu"))
+    story.append(step(2, "Navegue ou use a busca"))
     story.append(step(3, "Clique no material desejado"))
-    story.append(step(4, "O PDF abre dentro do aplicativo"))
+    story.append(step(4, "O texto abre dentro do app"))
 
-    if (SHOTS / "10-biblioteca-materiais.png").exists():
-        story.append(img_flowable(SHOTS / "10-biblioteca-materiais.png", max_h=85 * mm))
-        story.append(caption("Lista de materiais em PDF"))
+    p = anno_img("10-biblioteca-materiais.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Lista de materiais", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Materiais — lista de textos para estudo"))
 
-    if (SHOTS / "11-material-aberto.png").exists():
-        story.append(img_flowable(SHOTS / "11-material-aberto.png", max_h=90 * mm))
-        story.append(caption("Material de estudo aberto — Botanica"))
+    p = anno_img("11-material-aberto.png", [
+        {"type": "label", "x": 0.35, "y": 0.05, "text": "Texto aberto", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.45, "y": 0.20, "x2": 0.40, "y2": 0.07, "color": (31, 168, 135, 255)},
+    ], max_h=130 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Material aberto — leitura dentro do app"))
 
     story.append(tip_box(
-        "Voce pode ler os materiais sem internet. Todos os 92 PDFs ja "
-        "vem instalados no aplicativo."
+        "Todos os materiais funcionam sem internet. "
+        "Voce pode estudar em qualquer lugar."
     ))
 
-    # === SECAO 9: Ajustes ===
+    # 9. Cartoes de revisao (flashcards) - NOVA IMAGEM
     story.append(PageBreak())
-    story.append(section("9", "Configuracoes (Ajustes)"))
+    story.append(section("9", "Cartoes de Revisao"))
     story.append(body(
-        "A aba <b>Ajustes</b> permite personalizar o aplicativo conforme "
-        "sua preferencia."
+        "Os cartoes de revisao sao como fichas de estudo. "
+        "Cada cartao tem uma pergunta na frente e a resposta no verso. "
+        "Servem para memorizar rapido."
     ))
 
-    story.append(subsection("Tema Claro e Escuro"))
-    story.append(body(
-        "Voce pode alternar entre tema claro e escuro. O tema escuro "
-        "e melhor para estudar a noite e cansa menos os olhos."
-    ))
-    if (SHOTS / "12-ajustes-escuro.png").exists():
-        story.append(img_flowable(SHOTS / "12-ajustes-escuro.png", max_h=85 * mm))
-        story.append(caption("Ajustes — Tema escuro"))
+    story.append(subsection("Como usar"))
+    story.append(step(1, "Va em \"Estudar\" no menu"))
+    story.append(step(2, "Escolha \"Cartoes\" em vez de \"Questoes\""))
+    story.append(step(3, "Leia a pergunta na tela"))
+    story.append(step(4, "Pense na resposta e clique em \"Mostrar\""))
+    story.append(step(5, "Marque se voce \"Acertou\" ou \"Errou\""))
 
-    if (SHOTS / "13-ajustes-claro.png").exists():
-        story.append(img_flowable(SHOTS / "13-ajustes-claro.png", max_h=85 * mm))
-        story.append(caption("Ajustes — Tema claro"))
+    p = anno_img("15-flashcards.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Pergunta", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.30, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+        {"type": "label", "x": 0.60, "y": 0.70, "text": "Mostrar resposta", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.65, "y": 0.80, "x2": 0.62, "y2": 0.72, "color": (229, 160, 75, 255)},
+    ], max_h=130 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Cartao de revisao — pergunta na frente, resposta no verso"))
+
+    story.append(tip_box(
+        "Estude cartoes por 10 a 15 minutos por dia. "
+        "E melhor do que estudar 1 hora uma vez por semana."
+    ))
+
+    # 10. Assistente Inteligente (Tutor IA) - NOVA IMAGEM + antiga
+    story.append(PageBreak())
+    story.append(section("10", "Assistente Inteligente"))
+    story.append(body(
+        "O assistente inteligente e como ter um professor particular "
+        "dentro do app. Ele explica questoes, tira duvidas e da exemplos."
+    ))
+
+    story.append(subsection("Como usar"))
+    story.append(step(1, "Responda uma questao (certa ou errada)"))
+    story.append(step(2, "Clique no botao \"Explicar\" ou \"Assistente\""))
+    story.append(step(3, "O assistente vai explicar tudo em detalhes"))
+    story.append(step(4, "Voce pode fazer mais perguntas se quiser"))
+
+    p = anno_img("16-tutor-ia-novo.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Explicacao", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+        {"type": "label", "x": 0.60, "y": 0.65, "text": "Pergunte mais", "color": (229, 160, 75, 255)},
+        {"type": "arrow", "x": 0.65, "y": 0.75, "x2": 0.62, "y2": 0.67, "color": (229, 160, 75, 255)},
+    ], max_h=130 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Assistente explicando uma questao em detalhes"))
+
+    # Imagem antiga do tutor (tema branco) como exemplo adicional
+    p2 = anno_img("13-ajustes-claro.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Tema claro", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.20, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=115 * mm)
+    if p2:
+        story.append(p2)
+        story.append(caption("O app tambem pode ser usado com tema claro"))
+
+    story.append(tip_box(
+        "Faca perguntas especificas. Em vez de \"nao entendi\", "
+        "tente \"por que a alternativa C esta errada?\""
+    ))
+
+    # 11. Ajustes
+    story.append(PageBreak())
+    story.append(section("11", "Configuracoes"))
+    story.append(body(
+        "A aba <b>Ajustes</b> deixa voce personalizar o app."
+    ))
+
+    story.append(subsection("Tema claro e escuro"))
+    story.append(body(
+        "Voce pode trocar entre tema claro e escuro. "
+        "O tema escuro e melhor para estudar a noite."
+    ))
+
+    p = anno_img("12-ajustes-escuro.png", [
+        {"type": "label", "x": 0.30, "y": 0.08, "text": "Tema escuro", "color": (31, 168, 135, 255)},
+        {"type": "arrow", "x": 0.40, "y": 0.25, "x2": 0.35, "y2": 0.10, "color": (31, 168, 135, 255)},
+    ], max_h=120 * mm)
+    if p:
+        story.append(p)
+        story.append(caption("Ajustes — tema escuro"))
 
     story.append(subsection("Data da prova"))
     story.append(body(
-        "Configure a data da sua prova para o app calcular a contagem "
-        "regressiva e sugerir um plano de estudo adequado."
+        "Configure a data da sua prova para o app calcular "
+        "a contagem regressiva e sugerir um plano de estudo."
     ))
 
-    story.append(subsection("Inteligencia Artificial"))
+    story.append(subsection("Assistente inteligente"))
     story.append(body(
-        "O app ja vem com 4 provedores de IA configurados:"
-    ))
-    story.append(bullet("OpenAI (GPT-4.1 Mini)"))
-    story.append(bullet("Gemini (Google)"))
-    story.append(bullet("Groq (Llama 3.1)"))
-    story.append(bullet("OpenRouter (Nemotron)"))
-    story.append(body(
-        "Voce pode escolher qual usar em Ajustes. Todos ja estao "
-        "prontos para uso — nao precisa configurar nada."
+        "O assistente ja vem pronto para uso. Voce nao precisa "
+        "configurar nada — e so usar."
     ))
 
-    # === SECAO 10: Tutor IA ===
-    story.append(PageBreak())
-    story.append(section("10", "Tutor IA — Sua Duvida Explicada"))
-    story.append(body(
-        "O Tutor IA e uma das funcionalidades mais poderosas do PAES MED AI. "
-        "Ele usa inteligencia artificial para explicar questoes, tirar duvidas "
-        "e dar exemplos extras."
-    ))
-
-    story.append(subsection("Como usar o Tutor IA"))
-    story.append(step(1, "Responda uma questao (certa ou errada)"))
-    story.append(step(2, "Clique no botao \"Tutor IA\" ou \"Explicar\""))
-    story.append(step(3, "A IA vai gerar uma explicacao detalhada"))
-    story.append(step(4, "Voce pode fazer perguntas adicionais"))
-
-    if (SHOTS / "14-tutor-ia.png").exists():
-        story.append(img_flowable(SHOTS / "14-tutor-ia.png", max_h=90 * mm))
-        story.append(caption("Tutor IA explicando uma questao"))
-
-    story.append(tip_box(
-        "O Tutor IA funciona melhor quando voce faz perguntas especificas. "
-        "Em vez de \"nao entendi\", tente \"por que a alternativa C esta errada?\""
-    ))
-
-    # === SECAO 11: Flashcards ===
-    story.append(PageBreak())
-    story.append(section("11", "Flashcards — Revisao Rapida"))
-    story.append(body(
-        "Flashcards sao cartoes de revisao rapida. Cada cartao tem uma "
-        "pergunta na frente e a resposta no verso. Sao excelentes para "
-        "memorizar conteudos."
-    ))
-
-    story.append(subsection("Como usar flashcards"))
-    story.append(step(1, "Va em \"Estudar\" no menu lateral"))
-    story.append(step(2, "Escolha \"Flashcards\" em vez de \"Questoes\""))
-    story.append(step(3, "Leia a pergunta na tela"))
-    story.append(step(4, "Pense na resposta e clique em \"Mostrar resposta\""))
-    story.append(step(5, "Marque se voce \"Acertou\" ou \"Errou\""))
-    story.append(body(
-        "O sistema usa repeticao espacada: cartoes que voce erra aparecem "
-        "com mais frequancia, e os que voce acerta aparecem menos."
-    ))
-
-    story.append(tip_box(
-        "Estude flashcards 10-15 minutos por dia. E mais eficiente "
-        "do que estudar 1 hora uma vez por semana."
-    ))
-
-    # === SECAO 12: Dicas de estudo ===
+    # 12. Dicas
     story.append(PageBreak())
     story.append(section("12", "Dicas para Aproveitar ao Maximo"))
-    story.append(body(
-        "Aqui estao algumas dicas para tirar o maximo de proveito do "
-        "PAES MED AI:"
-    ))
 
     story.append(subsection("Rotina de estudos"))
     story.append(bullet("Estude <b>todos os dias</b>, mesmo que seja pouco"))
     story.append(bullet("Faca pelo menos <b>1 sessao de questoes</b> por dia"))
-    story.append(bullet("Revise <b>flashcards</b> 10-15 minutos por dia"))
-    story.append(bullet("Leia <b>1 material em PDF</b> por semana"))
-    story.append(bullet("Use o <b>Tutor IA</b> sempre que tiver duvida"))
+    story.append(bullet("Revise <b>cartoes</b> por 10-15 minutos por dia"))
+    story.append(bullet("Leia <b>1 material</b> por semana"))
+    story.append(bullet("Use o <b>assistente</b> sempre que tiver duvida"))
 
     story.append(subsection("Estrategia de revisao"))
-    story.append(bullet("Foque nas materias com <b>menor taxa de acerto</b>"))
-    story.append(bullet("Refaca questoes que voce <b>errou</b> anteriormente"))
-    story.append(bullet("Use o <b>radar</b> para ver quais materias estao fracas"))
-    story.append(bullet("Faca <b>simulados</b> proximos a data da prova"))
+    story.append(bullet("Foque nas materias com <b>menor acerto</b>"))
+    story.append(bullet("Refaca questoes que voce <b>errou</b>"))
+    story.append(bullet("Use a <b>teia</b> para ver quais materias estao fracas"))
+    story.append(bullet("Preste atencao nas <b>pegadinhas</b> marcadas"))
 
-    story.append(subsection("Atencao aos pegadinhas"))
-    story.append(body(
-        "Muitas questoes da UEMA tem pegadinhas. O PAES MED AI marca "
-        "essas questoes e mostra o tipo de pegadinha na resolucao. "
-        "Preste atencao especial a essas questoes."
+    story.append(tip_box(
+        "O segredo e a <b>constancia</b>. Estudar 30 minutos por dia "
+        "e melhor do que 4 horas uma vez por semana."
     ))
 
-    # === SECAO 13: Problemas comuns ===
+    # 13. Problemas comuns
     story.append(PageBreak())
-    story.append(section("13", "Problemas Comuns e Solucoes"))
+    story.append(section("13", "Problemas Comuns"))
 
-    story.append(subsection("O aplicativo nao abre"))
+    story.append(subsection("O app nao abre"))
     story.append(body(
-        "Verifique se o atalho existe na Area de Trabalho. Se nao, "
-        "procure no Menu Iniciar por \"PAES MED AI\". Se ainda assim "
-        "nao abrir, reinicie o computador e tente novamente."
+        "Procure o icone na Area de Trabalho ou no Menu Iniciar. "
+        "Se nao abrir, reinicie o computador e tente de novo."
     ))
 
-    story.append(subsection("Aparece \"Sem conexao\" ou \"Offline\""))
+    story.append(subsection("Aparece \"Sem conexao\""))
     story.append(body(
-        "Isso significa que o backend (servidor local) nao subiu. "
-        "Aguarde 10 segundos e feche/reabra o app. Se persistir, "
-        "verifique se o Python esta instalado no computador."
+        "Espere 10 segundos e feche/reabra o app. "
+        "O resto do app funciona normalmente sem internet."
     ))
 
-    story.append(subsection("O Tutor IA nao responde"))
+    story.append(subsection("O assistente nao responde"))
     story.append(body(
-        "O Tutor IA precisa de internet para funcionar (ele consulta "
-        "servicos externos de IA). Verifique sua conexao com a internet. "
-        "Se estiver offline, o restante do app funciona normalmente."
+        "O assistente precisa de internet para funcionar. "
+        "Verifique sua conexao. O restante do app funciona offline."
     ))
 
     story.append(warning_box(
-        "Se nada funcionar, entre em contato com o suporte: "
-        "Yuri Medeiros Bandeira — github.com/ymedeiros228/PAES_MED_AI"
+        "Se nada funcionar, entre em contato: "
+        "Yuri Medeiros Bandeira"
     ))
 
-    # === SECAO 14: Acesso Web ===
+    # 14. Acesso Web
     story.append(PageBreak())
-    story.append(section("14", "Acesso Web (PWA)"))
+    story.append(section("14", "Acessar pelo Navegador"))
     story.append(body(
-        "Alem do aplicativo desktop, o PAES MED AI tambem funciona "
-        "no navegador. Voce pode acessar de qualquer computador "
-        "ou celular com internet."
+        "Alem do aplicativo no computador, voce tambem pode usar "
+        "o PAES MED AI pelo navegador de internet, de qualquer lugar."
     ))
 
-    story.append(subsection("Como acessar via web"))
     story.append(step(1, "Abra o navegador (Chrome, Edge, Firefox)"))
-    story.append(step(2, "Acesse: https://paes-med-ai.onrender.com"))
-    story.append(step(3, "Use normalmente — mesma conta e dados"))
+    story.append(step(2, "Digite: paes-med-ai.onrender.com"))
+    story.append(step(3, "Use normalmente"))
 
     story.append(tip_box(
-        "A versao web sincroniza com a versao desktop. Seu progresso "
-        "e mantido em ambas as plataformas."
+        "Pelo navegador voce pode estudar de qualquer computador "
+        "ou celular com internet."
     ))
 
     # === CONTRA CAPA ===
@@ -656,9 +777,6 @@ def build_manual():
     print(f"Manual gerado: {OUT}")
     print(f"Tamanho: {OUT.stat().st_size / 1024:.0f} KB")
 
-
-# Import necessario no final
-from reportlab.platypus import NextPageTemplate
 
 if __name__ == "__main__":
     build_manual()
