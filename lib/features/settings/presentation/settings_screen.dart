@@ -628,7 +628,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: const Text('Backup, atualização, ferramentas e pastas'),
                 children: [
                   SectionLabel('Backup e dados'),
-                  SectionLabel('Backup e dados'),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: online ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error),
