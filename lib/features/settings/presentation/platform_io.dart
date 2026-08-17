@@ -51,8 +51,10 @@ Future<bool> launchUpdater() async {
   final path = updaterPath();
   if (path.isEmpty) return false;
   try {
-    final process = await Process.start('cmd.exe', ['/c', 'start', '', path]);
-    return await process.exitCode == 0;
+    // Usa 'call' em vez de 'start' para evitar erro de parse do caminho
+    // O Dart coloca aspas automaticamente se o path tiver espaços
+    await Process.start('cmd.exe', ['/c', 'call', path]);
+    return true;
   } catch (_) {}
   return false;
 }
