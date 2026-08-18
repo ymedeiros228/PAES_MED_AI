@@ -635,6 +635,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       online
                           ? '${health?['officialCount'] ?? 0} questões oficiais · ${(health?['questions'] ?? '—')} no total'
                           : health?['error']?.toString() ?? 'Reabra pelo ícone da área de trabalho',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     trailing: IconButton(
                       tooltip: 'Verificar conexão',
@@ -647,7 +649,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.backup_rounded, color: Theme.of(context).colorScheme.primary),
                     title: const Text('Backup automático'),
-                    subtitle: Text(lastBackup?['name']?.toString() ?? lastBackup?['date']?.toString() ?? 'Nenhum backup ainda'),
+                    subtitle: Text(
+                      lastBackup?['name']?.toString() ?? lastBackup?['date']?.toString() ?? 'Nenhum backup ainda',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     trailing: FilledButton.tonal(onPressed: _backup, child: const Text('Fazer agora')),
                   ),
                   if (backups.isNotEmpty)
@@ -662,7 +668,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           hint: const Text('Escolher'),
                           isDense: true,
                           borderRadius: BorderRadius.circular(10),
-                          items: backups.map((b) => DropdownMenuItem<String>(value: b.toString(), child: Text(b.toString()))).toList(),
+                          items: backups.map((b) => DropdownMenuItem<String>(
+                            value: b.toString(),
+                            child: Text(b.toString(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          )).toList(),
                           onChanged: (name) async {
                             if (name == null) return;
                             final ok = await showDialog<bool>(
@@ -699,7 +708,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.picture_as_pdf_outlined, color: Theme.of(context).colorScheme.primary),
                     title: const Text('Importar PDF'),
-                    subtitle: Text('Tipo: $kind — use a Biblioteca para importar'),
+                    subtitle: Text('Tipo: $kind — use a Biblioteca para importar', maxLines: 2, overflow: TextOverflow.ellipsis),
                     trailing: FilledButton.tonal(onPressed: _pickPdf, child: const Text('Escolher')),
                   ),
                   Padding(
@@ -762,6 +771,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: Text(
                       health?['dataDir']?.toString() ?? '—',
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

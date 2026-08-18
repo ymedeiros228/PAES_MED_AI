@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from db import DATA_DIR
 from material_service import (
     delete_material,
     generate_material,
@@ -19,8 +20,8 @@ from material_service import (
 
 router = APIRouter(prefix="/api/materials", tags=["materiais"])
 
-# Diretório de PDFs gerados
-_PDF_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "materiais"
+# Diretório de PDFs gerados — usa DATA_DIR (respeita PAES_DATA_DIR no PyInstaller).
+_PDF_DIR = DATA_DIR / "materiais"
 
 
 class GenerateRequest(BaseModel):

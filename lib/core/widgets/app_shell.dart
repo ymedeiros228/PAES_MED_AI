@@ -180,12 +180,6 @@ class AppShell extends ConsumerWidget {
                         ),
                         if (expanded) ...[
                           const SizedBox(height: 10),
-                          // Barra de atalhos visível — descobre atalhos sem ler docs.
-                          _ShortcutHint(label: 'Ctrl+K', desc: 'Buscar'),
-                          _ShortcutHint(label: 'F', desc: 'Foco'),
-                          _ShortcutHint(label: 'Ctrl+T', desc: 'Tema'),
-                          _ShortcutHint(label: 'R', desc: 'Recarregar'),
-                          _ShortcutHint(label: 'S', desc: 'Sessão'),
                         ],
                       ],
                     ),
@@ -649,47 +643,4 @@ class _NavItem {
   final String path;
   final String label;
   final IconData icon;
-}
-
-/// Atalho de teclado visível no rodapé do rail — chip discreto com tecla + descrição.
-class _ShortcutHint extends StatelessWidget {
-  const _ShortcutHint({required this.label, required this.desc});
-  final String label;
-  final String desc;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: cs.outlineVariant.f60),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 10,
-                color: cs.onSurface,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            desc,
-            style: TextStyle(
-              fontSize: 11,
-              color: cs.onSurface.f55,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
