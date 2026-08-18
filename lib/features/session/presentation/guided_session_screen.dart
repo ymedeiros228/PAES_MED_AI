@@ -537,7 +537,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               Expanded(
                 child: Text(
                   pct >= 70 ? 'Bom trabalho!' : 'Bloco encerrado',
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: cs.onPrimaryContainer,
@@ -553,7 +553,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                   child: Text(
                     '$pct%',
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: cs.onPrimary,
@@ -567,7 +567,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             total > 0
                 ? '$correctCount acerto${correctCount == 1 ? '' : 's'} · $wrong erro${wrong == 1 ? '' : 's'} · $total questão${total == 1 ? '' : 'ês'}'
                 : 'Sessão encerrada.',
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 13,
               color: cs.onPrimaryContainer.withOpacity(0.8),
             ),
@@ -584,7 +584,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const SizedBox(height: 14),
             Text(
               'Revisar agora',
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
@@ -1079,7 +1079,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 children: [
                   Text(
                     paused ? 'Pausado' : '${current['title']}',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: cs.onSurface.withOpacity(0.7),
@@ -1088,7 +1088,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   const Spacer(),
                   Text(
                     '${(qIndex + cardsDone)}/${(sessionQuestions.length + sessionCards.length)}',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: cs.primary,
@@ -1148,7 +1148,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                         children: [
                           Text(
                             'Teoria do edital',
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: cs.onSurface,
@@ -1157,7 +1157,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   const Spacer(),
                   Text(
                     snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: cs.primary,
@@ -1202,7 +1202,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                           children: [
                             Text(
                               '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: cs.primary,
@@ -1359,7 +1359,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     Text('• $s'),
                   SelectableText(
                     lastRemediation!['practiceHint']?.toString() ?? '',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 13,
                       height: 1.5,
                       color: cs.onSurface.withOpacity(0.75),
@@ -1479,7 +1479,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const SizedBox(height: 8),
             Text(
               'Pacote: $exportMsg',
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 13,
                 color: cs.onSurface.withOpacity(0.7),
               ),
@@ -1568,7 +1568,7 @@ class _BreathingClockState extends State<_BreathingClock>
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: c,
@@ -1681,7 +1681,7 @@ class _SessionInsightBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
                 fontWeight: FontWeight.w600,
@@ -1737,7 +1737,7 @@ class _SessionStartCard extends StatelessWidget {
                 children: [
                   Text(
                     'Pronto para estudar',
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: cs.onSurface,
@@ -1752,7 +1752,7 @@ class _SessionStartCard extends StatelessWidget {
                     ),
                     child: Text(
                       '$subj · $top',
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: cs.onPrimaryContainer,
@@ -1781,7 +1781,7 @@ class _SessionStartCard extends StatelessWidget {
                       icon: const Icon(Icons.play_arrow_rounded, size: 24),
                       label: Text(
                         'Estudar agora',
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1801,7 +1801,7 @@ class _SessionStartCard extends StatelessWidget {
               backgroundColor: cs.surfaceContainerHighest.withOpacity(0.2),
               title: Text(
                 'Personalizar sessão',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: cs.onSurface.withOpacity(0.7),
@@ -1809,7 +1809,7 @@ class _SessionStartCard extends StatelessWidget {
               ),
               subtitle: Text(
                 'Escolha outro modo de estudo',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 12,
                   color: cs.onSurface.withOpacity(0.4),
                 ),
@@ -1854,7 +1854,7 @@ class _Metric extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(fontFamily: 'Poppins', 
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
             color: cs.onSurface,
@@ -1862,7 +1862,7 @@ class _Metric extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(fontFamily: 'Inter', 
+          style: TextStyle(
             fontSize: 12,
             color: cs.onSurface.withOpacity(0.5),
           ),

@@ -328,7 +328,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           children: [
                             Text(
                               'Missão de redação',
-                              style: TextStyle(fontFamily: 'Poppins', 
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,
@@ -336,7 +336,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                             ),
                             Text(
                               'Prática · não banca',
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
                               ),
@@ -755,7 +755,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                         if (focus)
                           Text(
                             'Modo foco: Plano/Domínio escondidos (F desliga)',
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 13,
                               color: Theme.of(ctx).colorScheme.onSurface.f72,
                             ),
@@ -811,7 +811,7 @@ class _GapDot extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(fontFamily: 'Inter', 
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,
             color: active ? cs.onPrimary : cs.onSurface.f72,

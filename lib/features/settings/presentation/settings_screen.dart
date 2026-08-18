@@ -337,7 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Expanded(
                           child: Text(
                             'PAES MED AI',
-                            style: TextStyle(fontFamily: 'Poppins', 
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                             ),
@@ -360,7 +360,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 kAppVersionLabel,
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -377,7 +377,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       '• Funciona sem internet — dados no seu computador\n'
                       '• Usa apenas questões oficiais reais\n'
                       '• Tutor IA com seu material de estudo',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5),
+                      style: TextStyle(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 12),
                     Builder(
@@ -412,7 +412,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 defaultTargetPlatform == TargetPlatform.windows
                                     ? 'Versão Windows · modo desenvolvimento'
                                     : 'Versão de estudo',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).colorScheme.onSurface.f72,
@@ -460,7 +460,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             if (d == 0) return 'Prova: é hoje!';
                             return 'Prova em \$d dia(s)';
                           }(),
-                          style: TextStyle(fontFamily: 'Inter', 
+                          style: TextStyle(
                             fontSize: 13,
                             height: 1.5,
                             color: Theme.of(context).colorScheme.onSurface.f72,
@@ -512,7 +512,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ? 'Nenhum provedor ativo'
                                     : 'Ativo: ${providerNames[active] ?? active}'
                                         '${activeModel == null ? '' : ' · $activeModel'}',
-                                style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                               ),
                             ),
                             IconButton(
@@ -602,7 +602,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'As chaves ficam somente neste computador, fora das cópias de segurança e do repositório.',
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5),
+                          style: TextStyle(fontSize: 13, height: 1.5),
                         ),
                         if (aiBusy)
                           const CompactStatus(
@@ -623,7 +623,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 8),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('Avançado', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600)),
+                title: Text('Avançado', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                 subtitle: const Text('Backup, atualização, ferramentas e pastas'),
                 children: [
                   SectionLabel('Backup e dados'),
@@ -758,14 +758,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: const Text('Pasta de dados'),
                     subtitle: Text(
                       health?['dataDir']?.toString() ?? '—',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
               ),
               if (msg != null) ...[
                 const SizedBox(height: 12),
-                Text(msg!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5)),
+                Text(msg!, style: TextStyle(fontSize: 13, height: 1.5)),
               ],
             ],
           ),
@@ -794,13 +794,13 @@ class _ThemeModePicker extends ConsumerWidget {
             children: [
               Icon(Icons.palette_outlined, size: 20, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 8),
-              Text('Tema', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600)),
+              Text('Tema', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             'Escolha claro, escuro ou automático. Atalho: Ctrl+T',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5),
+            style: TextStyle(fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 12),
           SegmentedButton<ThemeMode>(
@@ -880,7 +880,7 @@ class _AiProviderEditor extends StatelessWidget {
             Expanded(
               child: Text(
                 '$name · $_statusText',
-                style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
             ),
           ],

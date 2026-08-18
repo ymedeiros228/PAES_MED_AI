@@ -185,7 +185,7 @@ final appRouter = GoRouter(
               children: [
                 Text(
                   'Essa página não existe',
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: cs.onSurface,
@@ -196,7 +196,7 @@ final appRouter = GoRouter(
                 Text(
                   'Volte ao início e siga pelo menu. Se veio de um link antigo, abra Hoje.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.5,
                     color: cs.onSurface.withOpacity(0.65),

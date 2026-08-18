@@ -193,12 +193,12 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           'Cole pelo menos ~80 caracteres de legenda.',
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                          style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                         ),
                       ),
                     if (status != null) ...[
                       const SizedBox(height: 8),
-                      Text(status!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
+                      Text(status!, style: TextStyle(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
                     ],
                   ],
                 ),
@@ -213,7 +213,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     children: [
                       Text(
                         '${lastLesson!['subject']} · ${lastLesson!['topic']}',
-                        style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                       ),
                       if (lastLesson!['summary'] != null) ...[
                         const SizedBox(height: 8),
@@ -221,7 +221,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ],
                       if (lastLesson!['macetes'] != null) ...[
                         const SizedBox(height: 8),
-                        SelectableText('Macete: ${lastLesson!['macetes']}', style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
+                        SelectableText('Macete: ${lastLesson!['macetes']}', style: TextStyle(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
                       ],
                       const SizedBox(height: 12),
                       FilledButton.tonal(
@@ -277,7 +277,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                         if (item['incidenceNote'] != null)
                                           Text(
                                             '${item['incidenceNote']}',
-                                            style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
                                           ),
                                         const SizedBox(height: 8),
                                         FilledButton.tonal(

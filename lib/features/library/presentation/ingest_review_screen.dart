@@ -317,7 +317,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                               'Sem gabarito aplicado (0/${questions.length}). '
                               'Coloque o gabarito do ano na pasta Gabaritos ou marque as respostas. '
                               'Gravar fica desativado para não inventar acertos.',
-                              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.tertiary),
+                              style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.tertiary),
                             ),
                           ),
                         ],
@@ -331,7 +331,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Text(
                         'Gabarito: $_gabaritoAppliedCount/${questions.length} · altas conf. $highN',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.onPrimaryContainer),
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.onPrimaryContainer),
                       ),
                     ),
                   ),
@@ -350,18 +350,18 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                           children: [
                             Text(
                               '${questions.length} questões prontas para revisão',
-                              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                              style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                             ),
-                            Text(pair['message']?.toString() ?? '', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
+                            Text(pair['message']?.toString() ?? '', style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                             if (unmatchedQ.isNotEmpty)
                               Text(
                                 'Sem gabarito: ${unmatchedQ.take(12).join(', ')}${unmatchedQ.length > 12 ? '…' : ''}',
-                                style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
                               ),
                             if (unmatchedA.isNotEmpty)
                               Text(
                                 'Gabarito sem questão: ${unmatchedA.take(12).join(', ')}${unmatchedA.length > 12 ? '…' : ''}',
-                                style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(color: cs.onTertiaryContainer),
                               ),
                             FilterChip(
                               label: Text(filterSuspects ? 'Para revisar ($suspects)' : 'Todas'),
@@ -417,7 +417,7 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                         ),
                       Text(
                         'Q${current['number'] ?? index + 1} · ${current['subject']} / ${current['topic']}',
-                        style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w700, color: cs.onSurface),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: cs.onSurface),
                       ),
                       Text(
                         'Confiança parse: ${((current['parseConfidence'] as num?)?.toDouble() ?? 0) * 100 ~/ 1}%'
@@ -430,14 +430,14 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                       const SizedBox(height: 12),
                       SelectableText(
                         'Dica: setas mudam a questão · 1–5 marca gabarito · H grava só as boas',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(
                               color: cs.onSurface.f72,
                             ),
                       ),
                       const SizedBox(height: 12),
                       SelectableText(
                         current['statement']?.toString() ?? '',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 16, height: 1.5, color: cs.onSurface),
+                        style: TextStyle(fontSize: 16, height: 1.5, color: cs.onSurface),
                       ),
                       const SizedBox(height: 16),
                       for (var i = 0; i < (current['options'] as List? ?? []).length; i++)

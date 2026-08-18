@@ -235,7 +235,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 const SizedBox(height: 16),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Criar cartão manual', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  title: Text('Criar cartão manual', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     TextField(controller: frontCtrl, decoration: const InputDecoration(labelText: 'Frente')),
                     const SizedBox(height: 8),
@@ -427,7 +427,7 @@ class _CardDeckViewState extends State<_CardDeckView> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 '${_currentIndex + 1} / $total',
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface.withOpacity(0.5),
@@ -767,7 +767,7 @@ class _GameCardFace extends StatelessWidget {
                         ),
                         child: Text(
                           isBack ? 'VERSO' : 'FRENTE',
-                          style: TextStyle(fontFamily: 'Inter', 
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -795,7 +795,7 @@ class _GameCardFace extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 'EIXOS',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -816,7 +816,7 @@ class _GameCardFace extends StatelessWidget {
                         children: [
                           Text(
                             subject.isNotEmpty ? subject : 'Flashcard',
-                            style: TextStyle(fontFamily: 'Poppins', 
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
@@ -830,7 +830,7 @@ class _GameCardFace extends StatelessWidget {
                           if (topic.isNotEmpty)
                             Text(
                               topic,
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white.withOpacity(0.85),
@@ -870,7 +870,7 @@ class _GameCardFace extends StatelessWidget {
                           child: SingleChildScrollView(
                             child: SelectableText(
                               text,
-                              style: TextStyle(fontFamily: 'Poppins', 
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,
@@ -892,7 +892,7 @@ class _GameCardFace extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 dueLabel,
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 11,
                                   color: cs.onSurface.withOpacity(0.4),
                                 ),
@@ -916,7 +916,7 @@ class _GameCardFace extends StatelessWidget {
                                   icon: const Icon(Icons.check_rounded, size: 20),
                                   label: Text(
                                     'Lembrei',
-                                    style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w700),
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                                   ),
                                 ),
                               ),
@@ -933,7 +933,7 @@ class _GameCardFace extends StatelessWidget {
                                   icon: const Icon(Icons.refresh_rounded, size: 20),
                                   label: Text(
                                     'Esqueci',
-                                    style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w700),
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                                   ),
                                 ),
                               ),
@@ -946,7 +946,7 @@ class _GameCardFace extends StatelessWidget {
                               icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
                               label: Text(
                                 'Apagar cartão',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: cs.onSurface.withOpacity(0.35),
                                 ),
@@ -965,7 +965,7 @@ class _GameCardFace extends StatelessWidget {
                                 const SizedBox(width: 6),
                                 Text(
                                   'Toque para virar a carta',
-                                  style: TextStyle(fontFamily: 'Inter', 
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: accent.withOpacity(0.6),
@@ -1179,7 +1179,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                         ),
                                         child: Text(
                                           'VERSO',
-                                          style: TextStyle(fontFamily: 'Inter', 
+                                          style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w900,
                                             color: Colors.white,
@@ -1206,7 +1206,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                               const SizedBox(width: 4),
                                               Text(
                                                 'EIXOS',
-                                                style: TextStyle(fontFamily: 'Inter', 
+                                                style: TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w900,
                                                   color: Colors.white,
@@ -1226,7 +1226,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                         children: [
                                           Text(
                                             subj.isNotEmpty ? subj : 'Flashcard',
-                                            style: TextStyle(fontFamily: 'Poppins', 
+                                            style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.white,
@@ -1240,7 +1240,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                           if (top.isNotEmpty)
                                             Text(
                                               top,
-                                              style: TextStyle(fontFamily: 'Inter', 
+                                              style: TextStyle(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.white.withOpacity(0.85),
@@ -1277,7 +1277,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                       children: [
                                         SelectableText(
                                           backText,
-                                          style: TextStyle(fontFamily: 'Poppins', 
+                                          style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             color: cs.onSurface,
@@ -1296,7 +1296,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                               const SizedBox(width: 4),
                                               Text(
                                                 dueLabel,
-                                                style: TextStyle(fontFamily: 'Inter', 
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   color: cs.onSurface.withOpacity(0.4),
                                                 ),
@@ -1322,7 +1322,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                                 icon: const Icon(Icons.check_rounded, size: 22),
                                                 label: Text(
                                                   'Lembrei',
-                                                  style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700),
+                                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                                                 ),
                                               ),
                                             ),
@@ -1342,7 +1342,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                                 icon: const Icon(Icons.refresh_rounded, size: 22),
                                                 label: Text(
                                                   'Esqueci',
-                                                  style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700),
+                                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                                                 ),
                                               ),
                                             ),
@@ -1360,7 +1360,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                               icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
                                               label: Text(
                                                 'Apagar',
-                                                style: TextStyle(fontFamily: 'Inter', 
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   color: cs.onSurface.withOpacity(0.35),
                                                 ),
@@ -1373,7 +1373,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                                 const SizedBox(width: 6),
                                                 Text(
                                                   'Toque para fechar',
-                                                  style: TextStyle(fontFamily: 'Inter', 
+                                                  style: TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w600,
                                                     color: accent.withOpacity(0.6),

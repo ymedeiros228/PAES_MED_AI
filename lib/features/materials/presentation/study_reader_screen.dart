@@ -90,7 +90,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
       appBar: AppBar(
         title: Text(
           widget.title,
-          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -323,7 +323,7 @@ class _PdfFallbackState extends State<_PdfFallback> {
               const SizedBox(height: 20),
               Text(
                 _opened ? 'PDF aberto no visualizador' : 'Abrindo PDF...',
-                style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Text(
@@ -415,7 +415,7 @@ class _TutorPanel extends ConsumerWidget {
                     children: [
                       Text(
                         'Tutor IA',
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -547,7 +547,7 @@ class _TutorPanel extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'Tutor IA',
-              style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(

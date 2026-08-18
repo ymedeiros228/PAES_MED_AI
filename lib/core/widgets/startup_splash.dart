@@ -122,7 +122,7 @@ class _StartupSplashState extends State<StartupSplash>
                 const SizedBox(height: 24),
                 Text(
                   'PAES MED AI',
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: cs.onSurface,
@@ -132,7 +132,7 @@ class _StartupSplashState extends State<StartupSplash>
                 const SizedBox(height: 8),
                 Text(
                   _status,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 14,
                     color: cs.onSurface.withOpacity(0.6),
                   ),

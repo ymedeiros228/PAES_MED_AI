@@ -141,7 +141,7 @@ class AppShell extends ConsumerWidget {
                               padding: const EdgeInsets.fromLTRB(10, 12, 10, 8),
                               child: Text(
                                 group.label.toUpperCase(),
-                                style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: cs.onSurface.f38, letterSpacing: 1.4, fontWeight: FontWeight.w600),
+                                style: TextStyle(fontSize: 11, color: cs.onSurface.f38, letterSpacing: 1.4, fontWeight: FontWeight.w600),
                               ),
                             ),
                           for (final item in group.items)
@@ -229,7 +229,7 @@ class AppShell extends ConsumerWidget {
                     if (examSyncPending)
                       Text(
                         'Data da prova pendente',
-                        style: TextStyle(fontFamily: 'Inter', 
+                        style: TextStyle(
                           fontSize: 11,
                           color: cs.tertiary,
                           fontWeight: FontWeight.w600,
@@ -308,7 +308,7 @@ class AppShell extends ConsumerWidget {
                           leading: Icon(Icons.sync_problem_rounded, size: 18, color: cs.onTertiaryContainer),
                           title: Text(
                             'Data da prova não sincronizou',
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 12,
                               color: cs.onTertiaryContainer,
                               fontWeight: FontWeight.w700,
@@ -398,7 +398,7 @@ class _BrandHeader extends StatelessWidget {
                   children: [
                     Text(
                       'PAES MED',
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
@@ -407,7 +407,7 @@ class _BrandHeader extends StatelessWidget {
                     ),
                     Text(
                       focus ? 'Modo foco' : 'Medicina · UEMA',
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 13,
                         color: cs.primary,
                         fontWeight: FontWeight.w600,
@@ -427,7 +427,7 @@ class _BrandHeader extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Data da prova pendente',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 11,
                       color: cs.tertiary,
                       fontWeight: FontWeight.w600,
@@ -448,7 +448,7 @@ class _BrandHeader extends StatelessWidget {
               ),
               child: Text(
                 examDays! >= 0 ? '$examDays dias para a prova' : 'Data da prova passou',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 13,
                   color: cs.onSurface.withOpacity(0.85),
                 ),
@@ -556,7 +556,7 @@ class _NavTileState extends State<_NavTile> {
                             widget.item.label,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
                               color: widget.selected
@@ -619,7 +619,7 @@ class _RailControl extends StatelessWidget {
                           Expanded(
                             child: Text(
                               label,
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: active ? cs.onPrimaryContainer : cs.onSurface,
@@ -673,7 +673,7 @@ class _ShortcutHint extends StatelessWidget {
             ),
             child: Text(
               label,
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 10,
                 color: cs.onSurface,
@@ -683,7 +683,7 @@ class _ShortcutHint extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             desc,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 11,
               color: cs.onSurface.f55,
             ),

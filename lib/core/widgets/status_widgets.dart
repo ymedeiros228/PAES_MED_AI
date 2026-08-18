@@ -251,7 +251,7 @@ class _EmptyStateState extends State<EmptyState>
                   const SizedBox(height: 20),
                   Text(
                     widget.title,
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: cs.onSurface,
@@ -263,7 +263,7 @@ class _EmptyStateState extends State<EmptyState>
                   Text(
                     widget.subtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 14,
                       color: cs.onSurface.f72,
                       height: 1.4,

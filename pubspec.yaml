@@ -16,7 +16,6 @@ dependencies:
   file_picker: ^8.1.7
   path: ^1.9.0
   shared_preferences: ^2.5.3
-  google_fonts: ^6.3.0
   url_launcher: ^6.3.1
 
 dev_dependencies:
@@ -29,25 +28,3 @@ flutter:
   assets:
     - assets/branding/
     - data/materiais/imagens/
-
-  fonts:
-    - family: Poppins
-      fonts:
-        - asset: assets/fonts/Poppins-Regular.ttf
-        - asset: assets/fonts/Poppins-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Poppins-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Poppins-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Poppins-ExtraBold.ttf
-          weight: 800
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700

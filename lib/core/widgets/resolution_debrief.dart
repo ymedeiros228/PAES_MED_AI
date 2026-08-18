@@ -40,7 +40,7 @@ class ResolutionDebrief extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onPrimaryContainer,
@@ -49,7 +49,7 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               t,
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.6,
                 color: cs.onPrimaryContainer,
@@ -71,7 +71,7 @@ class ResolutionDebrief extends StatelessWidget {
               Expanded(
                 child: Text(
                   isReal ? 'Explicação (4 eixos)' : 'Rascunho / modelo',
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: cs.onPrimaryContainer,
@@ -101,7 +101,7 @@ class ResolutionDebrief extends StatelessWidget {
                       : 'Treino rotulado (não oficial UEMA)';
               return Text(
                 similar != null ? '$blabel · similar a $similar' : blabel,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: board == 'UEMA_PAES' ? cs.primary : cs.tertiary,
@@ -115,7 +115,7 @@ class ResolutionDebrief extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Isto não é texto oficial da banca nem aula fechada — só apoio didático local.',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 13,
                   color: cs.onPrimaryContainer.withOpacity(0.7),
                 ),
@@ -130,12 +130,12 @@ class ResolutionDebrief extends StatelessWidget {
                 resolution.trim().isNotEmpty)
               SelectableText(
                 resolution,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.6),
+                style: TextStyle(fontSize: 14, height: 1.6),
               ),
           ] else if (resolution.trim().isNotEmpty) ...[
             Text(
               'Texto',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onPrimaryContainer,
@@ -144,14 +144,14 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               resolution,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.6),
+              style: TextStyle(fontSize: 14, height: 1.6),
             ),
             const SizedBox(height: 12),
           ],
           if (macete.trim().isNotEmpty) ...[
             Text(
               'Macete',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onPrimaryContainer,
@@ -160,14 +160,14 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               macete,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.6),
+              style: TextStyle(fontSize: 14, height: 1.6),
             ),
             const SizedBox(height: 12),
           ],
           if (pegadinha.trim().isNotEmpty) ...[
             Text(
               'Pegadinha',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onPrimaryContainer,
@@ -176,14 +176,14 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               pegadinha,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.6),
+              style: TextStyle(fontSize: 14, height: 1.6),
             ),
             const SizedBox(height: 12),
           ],
           if (banca.trim().isNotEmpty) ...[
             Text(
               'Intenção da banca',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: cs.onPrimaryContainer,
@@ -192,7 +192,7 @@ class ResolutionDebrief extends StatelessWidget {
             const SizedBox(height: 4),
             SelectableText(
               banca,
-              style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.6),
+              style: TextStyle(fontSize: 14, height: 1.6),
             ),
           ],
           if (trailing != null) ...[

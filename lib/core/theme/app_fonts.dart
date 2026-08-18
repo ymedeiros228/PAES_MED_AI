@@ -12,7 +12,6 @@ class AppFonts {
     double letterSpacing = 0,
   }) {
     return TextStyle(
-      fontFamily: 'Poppins',
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
@@ -30,7 +29,6 @@ class AppFonts {
     double letterSpacing = 0,
   }) {
     return TextStyle(
-      fontFamily: 'Inter',
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,

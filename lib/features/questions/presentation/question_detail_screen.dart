@@ -335,7 +335,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             type: MaterialType.transparency,
             child: Text(
               '${q.subject} · ${q.topic} · ${q.year}',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.2,
@@ -347,7 +347,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         const SizedBox(height: 4),
         Text(
           kSoftAtalhosHint,
-          style: TextStyle(fontFamily: 'Inter', 
+          style: TextStyle(
             fontSize: 11.5,
             color: cs.onSurface.f60,
           ),
@@ -385,7 +385,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               children: [
                 Text(
                   'PDF ${q.year}: ainda não está na pasta Provas do PC (sem inventar).',
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 13,
                     color: cs.onSurface.withOpacity(0.7),
                   ),
@@ -484,7 +484,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                         selected == q.correctIndex
                             ? 'Correto!'
                             : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
-                        style: TextStyle(fontFamily: 'Inter', 
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: selected == q.correctIndex ? cs.primary : cs.error,
@@ -530,7 +530,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       children: [
         Text(
           'Professor',
-          style: TextStyle(fontFamily: 'Poppins', 
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: cs.onSurface,
@@ -651,7 +651,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
             tilePadding: EdgeInsets.zero,
             title: Text(
               'Prioridade local (não é incidência UEMA)',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: cs.onSurface,
@@ -662,7 +662,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 'Prioridade ${chance['priorityScore'] ?? chance['probability'] ?? '—'}'
                 ' · ${chance['confidence'] ?? '—'}\n'
                 '${chance['reason'] ?? ''}\n${chance['disclaimer'] ?? ''}',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
                   color: cs.onSurface.withOpacity(0.75),
@@ -710,7 +710,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 children: [
                   Text(
                     'Rascunho',
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: cs.onSurface,
@@ -719,7 +719,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   const SizedBox(height: 4),
                   SelectableText(
                     professorDraft!['resolution']?.toString() ?? '',
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 14,
                       height: 1.55,
                       color: cs.onSurface.withOpacity(0.88),

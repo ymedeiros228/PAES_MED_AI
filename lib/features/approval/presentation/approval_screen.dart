@@ -165,7 +165,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
                     children: [
                       Text(
                         '${q['subject']} · ${q['topic']} (${q['year']})',
-                        style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
                       ),
                       const SizedBox(height: 8),
                       Text(

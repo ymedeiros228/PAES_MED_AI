@@ -191,7 +191,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   tilePadding: EdgeInsets.zero,
                   title: Text(
                     'Mais filtros',
-                    style: TextStyle(fontFamily: 'Poppins', 
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Theme.of(context).colorScheme.onSurface,
@@ -412,7 +412,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 'Página ${page + 1} · ${selected + 1} de ${items.length}',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: cs.onSurface.f72,

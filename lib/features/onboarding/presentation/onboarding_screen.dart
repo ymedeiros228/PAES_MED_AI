@@ -246,7 +246,7 @@ class _WelcomePage extends StatelessWidget {
             const SizedBox(height: 32),
             Text(
               'PAES MED AI',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w800,
                 color: cs.onSurface,
@@ -256,7 +256,7 @@ class _WelcomePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Seu caminho para Medicina UEMA',
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 16,
                 color: cs.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w500,
@@ -301,7 +301,7 @@ class _WelcomePage extends StatelessWidget {
                 ),
                 child: Text(
                   'Começar',
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -350,7 +350,7 @@ class _DatePage extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'Quando é a sua prova?',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
@@ -360,7 +360,7 @@ class _DatePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Opcional — você pode mudar depois em Ajustes',
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 14,
                 color: cs.onSurface.withOpacity(0.55),
               ),
@@ -413,7 +413,7 @@ class _DatePage extends StatelessWidget {
                         children: [
                           Text(
                             dateLabel,
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: examDate == null
@@ -427,7 +427,7 @@ class _DatePage extends StatelessWidget {
                               daysLeft > 0
                                   ? '$daysLeft dias restantes'
                                   : 'Data no passado',
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: daysLeft > 0
@@ -463,7 +463,7 @@ class _DatePage extends StatelessWidget {
                 ),
                 child: Text(
                   examDate != null ? 'Próximo' : 'Pular por agora',
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -526,7 +526,7 @@ class _ReadyPage extends StatelessWidget {
             const SizedBox(height: 32),
             Text(
               'Tudo configurado!',
-              style: TextStyle(fontFamily: 'Poppins', 
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: cs.onSurface,
@@ -536,7 +536,7 @@ class _ReadyPage extends StatelessWidget {
             if (hasDate && daysLeft > 0) ...[
               Text(
                 '$daysLeft',
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.teal,
@@ -545,7 +545,7 @@ class _ReadyPage extends StatelessWidget {
               ),
               Text(
                 'dias até a prova',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 16,
                   color: cs.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
@@ -554,7 +554,7 @@ class _ReadyPage extends StatelessWidget {
             ] else ...[
               Text(
                 'Bem-vindo ao PAES MED AI',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 16,
                   color: cs.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
@@ -589,7 +589,7 @@ class _ReadyPage extends StatelessWidget {
                         children: [
                           Text(
                             'Estudar agora',
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
                             ),
@@ -642,7 +642,7 @@ class _FeatureItem extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface,
@@ -650,7 +650,7 @@ class _FeatureItem extends StatelessWidget {
               ),
               Text(
                 subtitle,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 13,
                   color: cs.onSurface.withOpacity(0.55),
                 ),

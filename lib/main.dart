@@ -34,7 +34,6 @@ void main() {
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        fontFamily: 'Poppins',
                       ),
                     ),
                   ),
@@ -43,7 +42,7 @@ void main() {
               const SizedBox(height: 12),
               Text(
                 err,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 12,
                   height: 1.35,
                   color: Colors.black87,
@@ -52,7 +51,7 @@ void main() {
               const SizedBox(height: 16),
               Text(
                 'O que fazer:',
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                   color: Colors.black,
@@ -61,15 +60,15 @@ void main() {
               const SizedBox(height: 8),
               Text(
                 '· Feche e reabra o atalho PAES MED AI na área de trabalho',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.black87),
+                style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
               Text(
                 '· Hoje → Continuar sessão (se havia checkpoint)',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.black87),
+                style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
               Text(
                 '· Atalhos: F foco · Ctrl+T tema',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: Colors.black87),
+                style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
             ],
           ),

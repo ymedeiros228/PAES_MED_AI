@@ -244,23 +244,23 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               children: [
                 Text(
                   item['theme']?.toString() ?? 'Redação',
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w800, color: cs.onSurface),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cs.onSurface),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Nota ${item['score'] ?? '—'} · ${item['createdAt'] ?? ''} · prática de redação',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                  style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                 ),
                 const SizedBox(height: 12),
-                Text('Texto', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                Text('Texto', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                 const SizedBox(height: 8),
                 SelectableText(
                   item['text']?.toString() ?? '(vazio)',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                  style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                 ),
                 if (fbMap.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text('Comentários', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  Text('Comentários', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   const SizedBox(height: 8),
                   for (final a in [
                     ('Gramática', fbMap['grammar']),
@@ -274,18 +274,18 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: SelectableText(
                           '${a.$1}: ${a.$2}',
-                          style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                          style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                         ),
                       ),
                   if (fbMap['strengths'] != null)
                     SelectableText(
                       'Fortes: ${fbMap['strengths']}',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                      style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                     ),
                   if (fbMap['improvements'] != null)
                     SelectableText(
                       'Melhorar: ${fbMap['improvements']}',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                      style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                     ),
                 ],
                 const SizedBox(height: 16),
@@ -433,7 +433,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
                         '${streak > 0 ? ' · sequência $streak dia(s)' : ''}'
                         '${progress!['levelLabel'] != null ? ' · ${progress!['levelLabel']}' : ''}',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 12),
                       EssayRoseChart(
@@ -451,7 +451,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   child: SelectableText(
                     progress!['disclaimer']?.toString() ??
                         'Corrija ao menos 1 redação para ver o progresso por eixos (prática de redação).',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                    style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                   ),
                 ),
               ],
@@ -495,7 +495,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       if (hint == null || hint.isEmpty) return const SizedBox.shrink();
                       return Text(
                         'O que olho: $hint',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.f72),
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.f72),
                       );
                     },
                   ),
@@ -537,7 +537,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   children: [
                     Text(
                       '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f72),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f72),
                     ),
                     const SizedBox(width: 8),
                     // Barra de progresso visual para mínimo de caracteres
@@ -559,7 +559,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                       textCtrl.text.trim().length >= 50
                           ? 'pronto para corrigir'
                           : '${50 - textCtrl.text.trim().length} chars',
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: textCtrl.text.trim().length >= 50
@@ -599,7 +599,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         _draftRestored
                             ? 'Rascunho restaurado · salvo automaticamente no seu PC'
                             : 'Rascunho salvo automaticamente no seu PC',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.f55),
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.f55),
                       ),
                     ),
                     if (textCtrl.text.trim().isNotEmpty)
@@ -639,7 +639,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           curve: Curves.easeOut,
                           builder: (context, v, _) => Text(
                             'Nota ${v.toStringAsFixed(1)}',
-                            style: TextStyle(fontFamily: 'Poppins', fontSize: 24, fontWeight: FontWeight.w800, color: cs.onPrimaryContainer),
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: cs.onPrimaryContainer),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -670,7 +670,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                         Builder(
                           builder: (_) {
                             final fb = last!['feedback'];
-                            if (fb is! Map) return SelectableText('$fb', style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface));
+                            if (fb is! Map) return SelectableText('$fb', style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface));
                             final axisRows = [
                               ('grammar', 'Gramática', fb['grammar']),
                               ('cohesion', 'Coesão', fb['cohesion']),
@@ -687,7 +687,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                     child: Text(
                                       'Mentor: ${fb['personaLabel'] ?? fb['persona']}'
                                       '${fb['focusAxis'] != null ? ' · eixo ${_axisPt(fb['focusAxis'].toString())}' : ''}',
-                                      style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
                                     ),
                                   ),
                                 for (final a in axisRows)
@@ -698,26 +698,26 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                         a.$3 is num
                                             ? '${a.$2}: ${(a.$3 as num).toStringAsFixed(1)}'
                                             : '${a.$2}: ${a.$3}',
-                                        style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                                        style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                                       ),
                                     ),
                                 if (fb['tips'] is Map) ...[
                                   const SizedBox(height: 8),
-                                  Text('O que treinar', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                                  Text('O que treinar', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                                   for (final tip in (fb['tips'] as Map).values)
-                                    SelectableText('· $tip', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
+                                    SelectableText('· $tip', style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
                                 ],
                                 if (fb['strengths'] != null) ...[
                                   const SizedBox(height: 8),
                                   SelectableText(
                                     'Fortes: ${fb['strengths']}',
-                                    style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                                    style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                                   ),
                                 ],
                                 if (fb['improvements'] != null)
                                   SelectableText(
                                     'Melhorar: ${fb['improvements']}',
-                                    style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                                    style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
                                   ),
                                 if (fb['rewriteExample'] != null) ...[
                                   const SizedBox(height: 8),
@@ -732,7 +732,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                       children: [
                                         Text(
                                           'Exemplo de reescrita',
-                                          style: TextStyle(fontFamily: 'Inter', 
+                                          style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
                                             color: cs.onPrimaryContainer.withOpacity(0.85),
@@ -741,7 +741,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                         const SizedBox(height: 4),
                                         SelectableText(
                                           '${fb['rewriteExample']}',
-                                          style: TextStyle(fontFamily: 'Inter', 
+                                          style: TextStyle(
                                             fontSize: 14,
                                             height: 1.5,
                                             color: cs.onPrimaryContainer,
@@ -755,7 +755,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                                 if (fb['note'] != null)
                                   SelectableText(
                                     '${fb['note']}',
-                                    style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                                   ),
                                 const SizedBox(height: 12),
                                 Wrap(

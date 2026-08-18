@@ -129,7 +129,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           Expanded(
                             child: Text(
                               'Provas UEMA na base',
-                              style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
                             ),
                           ),
                           FilledButton.tonal(
@@ -204,7 +204,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                     tilePadding: EdgeInsets.zero,
                     title: Text(
                       'Avançado',
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: cs.onSurface,
@@ -317,7 +317,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               'Oficiais: $officialN · Natureza: $natN\n'
                               'Resoluções reais: $realN'
                               '${realPct != null ? ' ($realPct%)' : ''}',
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: cs.onSurface.withOpacity(0.7),
                               ),
@@ -326,7 +326,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 curation['message'].toString(),
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: cs.onSurface.f72,
                                 ),
@@ -334,7 +334,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                             ],
                             Text(
                               'Números da base — sem inventar % de frequência na prova.',
-                              style: TextStyle(fontFamily: 'Inter', 
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,

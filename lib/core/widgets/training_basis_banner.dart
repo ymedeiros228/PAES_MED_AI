@@ -76,7 +76,7 @@ class _TrainingBasisBannerState extends State<TrainingBasisBanner> {
                   children: [
                     Text(
                       'Ainda no modo treino',
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: cs.onTertiaryContainer,
@@ -85,7 +85,7 @@ class _TrainingBasisBannerState extends State<TrainingBasisBanner> {
                     const SizedBox(height: 2),
                     Text(
                       'Importe provas UEMA na Biblioteca para estatísticas reais.',
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 12,
                         height: 1.45,
                         color: cs.onTertiaryContainer.withOpacity(0.85),

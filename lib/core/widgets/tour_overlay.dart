@@ -27,7 +27,7 @@ class TourOverlay {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -37,7 +37,7 @@ class TourOverlay {
         ),
         content: Text(
           body,
-          style: TextStyle(fontFamily: 'Inter', fontSize: 15, height: 1.5),
+          style: TextStyle(fontSize: 15, height: 1.5),
         ),
         actions: [
           TextButton(

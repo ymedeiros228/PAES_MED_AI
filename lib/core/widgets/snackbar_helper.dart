@@ -88,7 +88,7 @@ class SnackbarHelper {
                 message,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.45,
                 ),

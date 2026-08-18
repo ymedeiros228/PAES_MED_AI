@@ -102,19 +102,19 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SelectableText(hint, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+              SelectableText(hint, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
               if (due != null) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Cartões para revisar: $due',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface.f65),
+                  style: TextStyle(fontSize: 12, color: cs.onSurface.f65),
                 ),
               ],
               if (gaps.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Lacunas quentes',
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
                 ),
                 for (final raw in gaps)
                   Builder(
@@ -132,7 +132,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                           ? (topic.isNotEmpty ? '$subject · $topic' : subject)
                           : (key.isNotEmpty ? key : 'Lacuna');
                       if (subject.isEmpty) {
-                        return Text('· $label', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.onSurface));
+                        return Text('· $label', style: TextStyle(fontSize: 12, color: cs.onSurface));
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -148,7 +148,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                                 );},
                                 child: Text(
                                   '· $label → treinar',
-                                  style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary),
                                 ),
                               ),
                             ),
@@ -201,7 +201,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                   else if (closed)
                     Text(
                       'Semana encerrada',
-                      style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: cs.primary),
+                      style: TextStyle(fontSize: 12, color: cs.primary),
                     )
                   else
                     FilledButton(
@@ -231,7 +231,7 @@ class _WeekClosePanelState extends State<WeekClosePanel> {
                 const SizedBox(height: 8),
                 Text(
                   exportMsg!,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 13,
                     color: cs.onSurface.f65,
                   ),

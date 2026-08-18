@@ -91,7 +91,7 @@ void showOpenPathSnackBar(
               message,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
                 color: Colors.white,

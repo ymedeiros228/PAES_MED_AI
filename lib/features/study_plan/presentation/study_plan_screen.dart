@@ -241,12 +241,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         Expanded(
                           child: Text(
                             plan.isEmpty ? 'Sem plano gerado' : '$doneN / ${plan.length} dias marcados',
-                            style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                           ),
                         ),
                         Text(
                           '${(progress * 100).toStringAsFixed(0)}%',
-                          style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface).copyWith(
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface).copyWith(
                                 color: cs.primary,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -317,7 +317,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ),
               if (exportMsg != null) ...[
                 const SizedBox(height: 8),
-                Text(exportMsg!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.primary)),
+                Text(exportMsg!, style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.primary)),
               ],
               if (loading) ...[
                 const SizedBox(height: 12),
@@ -365,7 +365,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               Expanded(
                                 child: Text(
                                   'Hoje: $rSubj · $rTopic',
-                                  style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
                                 ),
                               ),
                               FilledButton(
@@ -381,11 +381,11 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Foco da semana', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer)),
+                            Text('Foco da semana', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer)),
                             const SizedBox(height: 4),
                             Text(
                               '${revs.length} revisões · erros recentes abaixo',
-                              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onPrimaryContainer.withOpacity(0.85)),
+                              style: TextStyle(fontSize: 13, color: cs.onPrimaryContainer.withOpacity(0.85)),
                             ),
                             for (final raw in hot)
                               PlaylistTile(
@@ -481,7 +481,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                               children: [
                                 Text(
                                   '$subject — $topic',
-                                  style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
+                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
                                         decoration: done ? TextDecoration.lineThrough : null,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -489,12 +489,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                                 SelectableText(
                                   item['reason']?.toString() ?? '',
                                   maxLines: 3,
-                                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                                  style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                                 ),
                                 if (fromErrors)
                                   Text(
                                     'Erro recente',
-                                    style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSurface).copyWith(
                                           color: cs.tertiary,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -569,7 +569,7 @@ class _SmartPlanCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$countdown',
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: cs.onPrimaryContainer,
@@ -584,7 +584,7 @@ class _SmartPlanCard extends StatelessWidget {
                     children: [
                       Text(
                         'Cronograma Inteligente',
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: cs.onPrimaryContainer,
@@ -593,7 +593,7 @@ class _SmartPlanCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '$studyDays dias de estudo + $reviewDays de revisao - $totalTopics topicos',
-                        style: TextStyle(fontFamily: 'Inter', 
+                        style: TextStyle(
                           fontSize: 13,
                           color: cs.onPrimaryContainer.withOpacity(0.85),
                         ),
@@ -607,7 +607,7 @@ class _SmartPlanCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 'Hoje:',
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface.withOpacity(0.7),
@@ -622,7 +622,7 @@ class _SmartPlanCard extends StatelessWidget {
                     Chip(
                       label: Text(
                         '${t['subject']} - ${t['topic']}',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 12),
+                        style: TextStyle(fontSize: 12),
                       ),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -697,7 +697,7 @@ class _GoalChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: cs.onSurface.withOpacity(0.7),

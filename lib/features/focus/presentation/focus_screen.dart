@@ -59,7 +59,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.go('/dashboard'),
         ),
-        title: Text('Modo Foco', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+        title: Text('Modo Foco', style: TextStyle(fontWeight: FontWeight.w700)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -74,13 +74,13 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
               Text(
                 'Estudo sem distrações',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 24, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
                 'Uma questão por vez. Responda, veja a resolução e avance.\nSem sidebar, sem notificações — só você e a prova.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: cs.onSurface.withOpacity(0.6)),
+                style: TextStyle(fontSize: 14, color: cs.onSurface.withOpacity(0.6)),
               ),
               const SizedBox(height: 32),
               _FilterChip(
@@ -125,7 +125,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(padding: const EdgeInsets.all(16), child: Text('Escolha a disciplina', style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600))),
+            Padding(padding: const EdgeInsets.all(16), child: Text('Escolha a disciplina', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
             ...subjects.map((s) => ListTile(
               title: Text(s),
               trailing: widget.subject == s || (s == 'Todas' && widget.subject == null) ? Icon(Icons.check, color: cs.primary) : null,
@@ -151,7 +151,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(padding: const EdgeInsets.all(16), child: Text('Escolha o ano', style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w600))),
+            Padding(padding: const EdgeInsets.all(16), child: Text('Escolha o ano', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
             ...years.map((y) => ListTile(
               title: Text(y == null ? 'Todos os anos' : y.toString()),
               trailing: widget.year == y ? Icon(Icons.check, color: cs.primary) : null,
@@ -176,7 +176,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text('Carregando questões...', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: cs.onSurface.withOpacity(0.6))),
+            Text('Carregando questões...', style: TextStyle(fontSize: 14, color: cs.onSurface.withOpacity(0.6))),
           ],
         ),
       ),
@@ -194,7 +194,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
             children: [
               Icon(Icons.error_outline, size: 48, color: cs.error),
               const SizedBox(height: 16),
-              Text(state.error!, textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+              Text(state.error!, textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
               const SizedBox(height: 24),
               FilledButton(onPressed: () => setState(() => _started = false), child: const Text('Voltar')),
             ],
@@ -245,7 +245,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                       children: [
                         Icon(Icons.timer_outlined, size: 16, color: cs.primary),
                         const SizedBox(width: 4),
-                        Text(_fmtTime(state.elapsedSeconds), style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer)),
+                        Text(_fmtTime(state.elapsedSeconds), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.onPrimaryContainer)),
                       ],
                     ),
                   ),
@@ -259,20 +259,20 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 children: [
                   Text(
                     'Questão ${state.currentIndex + 1} de ${state.total}',
-                    style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.5)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.withOpacity(0.5)),
                   ),
                   const Spacer(),
                   if (q.year > 0)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: cs.secondaryContainer, borderRadius: BorderRadius.circular(6)),
-                      child: Text('${q.year}', style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSecondaryContainer)),
+                      child: Text('${q.year}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onSecondaryContainer)),
                     ),
                   const SizedBox(width: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: cs.tertiaryContainer, borderRadius: BorderRadius.circular(6)),
-                    child: Text(q.subject, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600, color: cs.onTertiaryContainer)),
+                    child: Text(q.subject, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.onTertiaryContainer)),
                   ),
                 ],
               ),
@@ -289,7 +289,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: cs.outlineVariant),
                     ),
-                    child: Text(q.statement, style: TextStyle(fontFamily: 'Inter', fontSize: 15, height: 1.5)),
+                    child: Text(q.statement, style: TextStyle(fontSize: 15, height: 1.5)),
                   ),
                   const SizedBox(height: 16),
                   ...List.generate(q.options.length, (i) {
@@ -341,7 +341,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                                 child: Center(
                                   child: Text(
                                     letter,
-                                    style: TextStyle(fontFamily: 'Inter', 
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
                                       color: showResult && (isCorrect || (isSelected && !isCorrect)) ? cs.onPrimary : cs.onSurface,
@@ -350,7 +350,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(q.options[i], style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.4))),
+                              Expanded(child: Text(q.options[i], style: TextStyle(fontSize: 14, height: 1.4))),
                               if (trailing != null) ...[const SizedBox(width: 8), trailing],
                             ],
                           ),
@@ -374,11 +374,11 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                             children: [
                               Icon(Icons.lightbulb_outline, size: 18, color: cs.primary),
                               const SizedBox(width: 6),
-                              Text('Resolução', style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: cs.primary)),
+                              Text('Resolução', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.primary)),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(q.resolution!, style: TextStyle(fontFamily: 'Inter', fontSize: 13, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.95))),
+                          Text(q.resolution!, style: TextStyle(fontSize: 13, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.95))),
                         ],
                       ),
                     ),
@@ -434,7 +434,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => context.go('/dashboard')),
-        title: Text('Resultado', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
+        title: Text('Resultado', style: TextStyle(fontWeight: FontWeight.w700)),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -454,13 +454,13 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
               Text(
                 '$pct%',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 48, fontWeight: FontWeight.w800, color: cs.primary),
+                style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: cs.primary),
               ),
               const SizedBox(height: 4),
               Text(
                 '$correct de $total questões corretas',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 16, color: cs.onSurface.withOpacity(0.7)),
+                style: TextStyle(fontSize: 16, color: cs.onSurface.withOpacity(0.7)),
               ),
               const SizedBox(height: 24),
               _StatCard(icon: Icons.check_circle_outline, label: 'Acertos', value: '$correct', color: cs.primary),
@@ -546,7 +546,7 @@ class _FilterChip extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: cs.primary),
             const SizedBox(width: 12),
-            Expanded(child: Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w500))),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500))),
             Icon(Icons.keyboard_arrow_down_rounded, color: cs.onSurface.withOpacity(0.4)),
           ],
         ),
@@ -576,8 +576,8 @@ class _StatCard extends StatelessWidget {
         children: [
           Icon(icon, size: 22, color: color),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: cs.onSurface.withOpacity(0.7)))),
-          Text(value, style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700, color: color)),
+          Expanded(child: Text(label, style: TextStyle(fontSize: 14, color: cs.onSurface.withOpacity(0.7)))),
+          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );

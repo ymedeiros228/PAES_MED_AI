@@ -122,7 +122,7 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Biblioteca', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600)),
+        title: Text('Biblioteca', style: TextStyle(fontWeight: FontWeight.w600)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -273,7 +273,7 @@ class _SubjectSection extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 subject,
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: cs.onSurface,
@@ -348,7 +348,7 @@ class _PdfCard extends StatelessWidget {
                   children: [
                     Text(
                       pdf.title,
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: cs.onSurface,

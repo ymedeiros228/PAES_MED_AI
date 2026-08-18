@@ -72,7 +72,7 @@ class PageHeader extends StatelessWidget {
         if (eyebrow != null) ...[
           Text(
             eyebrow!.toUpperCase(),
-            style: TextStyle(fontFamily: 'Poppins', 
+            style: TextStyle(
               fontSize: 11,
               color: cs.primary,
               letterSpacing: 1.4,
@@ -87,7 +87,7 @@ class PageHeader extends StatelessWidget {
             Flexible(
               child: Text(
                 title,
-                style: TextStyle(fontFamily: 'Poppins', 
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.4,
@@ -106,7 +106,7 @@ class PageHeader extends StatelessWidget {
                 ),
                 child: Text(
                   badge!,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: cs.onPrimaryContainer,
@@ -129,7 +129,7 @@ class PageHeader extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             subtitle!,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 14,
               color: cs.onSurface.f72,
               height: 1.4,
@@ -189,7 +189,7 @@ class SectionLabel extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface,
@@ -206,7 +206,7 @@ class SectionLabel extends StatelessWidget {
                   ),
                   child: Text(
                     chip!,
-                    style: TextStyle(fontFamily: 'Inter', 
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: cs.onTertiaryContainer,
@@ -220,7 +220,7 @@ class SectionLabel extends StatelessWidget {
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 hint!,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 12,
                   color: cs.onSurface.f72,
                 ),
@@ -370,7 +370,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                                   widget.title,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontFamily: 'Poppins', 
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                     color: cs.onSurface,
@@ -381,7 +381,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                                     widget.subtitle!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontFamily: 'Inter', 
+                                    style: TextStyle(
                                       fontSize: 12,
                                       color: cs.onSurface.withOpacity(0.72),
                                     ),
@@ -399,7 +399,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                               ),
                               child: Text(
                                 widget.badge!,
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: widget.badgeColor != null
@@ -457,7 +457,7 @@ class StatsStrip extends StatelessWidget {
                   children: [
                     _StatValue(
                       raw: items[i].$1,
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
@@ -468,7 +468,7 @@ class StatsStrip extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       items[i].$2,
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 11,
                         color: cs.onSurface.f72,
                         fontWeight: FontWeight.w500,
@@ -572,7 +572,7 @@ class PhaseProgressBar extends StatelessWidget {
                       ],
                       Text(
                         phases[i],
-                        style: TextStyle(fontFamily: 'Inter', 
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: i == currentIndex ? FontWeight.w700 : FontWeight.w600,
                           color: i == currentIndex
@@ -666,7 +666,7 @@ class _QuietEmptyState extends State<QuietEmpty>
             Expanded(
               child: Text(
                 widget.message,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 14,
                   color: cs.onSurface.f72,
                   height: 1.5,
@@ -706,7 +706,7 @@ class CompactStatus extends StatelessWidget {
             Expanded(
               child: Text(
                 message,
-                style: TextStyle(fontFamily: 'Inter', 
+                style: TextStyle(
                   fontSize: 12,
                   color: cs.onSurface.f72,
                 ),
@@ -881,7 +881,7 @@ class _ConstellationMapState extends State<ConstellationMap>
                   children: [
                     Text(
                       title,
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFFF0F2F8),
@@ -892,7 +892,7 @@ class _ConstellationMapState extends State<ConstellationMap>
                     const SizedBox(height: 2),
                     Text(
                       hint,
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 11.5,
                         color: Colors.white.withOpacity(0.42),
                         height: 1.3,
@@ -917,7 +917,7 @@ class _ConstellationMapState extends State<ConstellationMap>
                     const SizedBox(width: 3),
                     Text(
                       '${widget.streakDays}d',
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         color: starColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 12.5,
@@ -1007,7 +1007,7 @@ class _StatChip extends StatelessWidget {
         const SizedBox(width: 5),
         Text(
           value,
-          style: TextStyle(fontFamily: 'Poppins', 
+          style: TextStyle(
             color: const Color(0xFFF0F2F8),
             fontWeight: FontWeight.w700,
             fontSize: 13,
@@ -1016,7 +1016,7 @@ class _StatChip extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(fontFamily: 'Inter', 
+          style: TextStyle(
             color: Colors.white.withOpacity(0.35),
             fontSize: 11,
             fontWeight: FontWeight.w400,
@@ -1845,7 +1845,7 @@ class _AchievementOverlayState extends State<_AchievementOverlay>
                         children: [
                           Text(
                             'CONQUISTA DESBLOQUEADA',
-                            style: TextStyle(fontFamily: 'Poppins', 
+                            style: TextStyle(
                               color: widget.color.withOpacity(0.7),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -1855,7 +1855,7 @@ class _AchievementOverlayState extends State<_AchievementOverlay>
                           const SizedBox(height: 3),
                           Text(
                             widget.title,
-                            style: TextStyle(fontFamily: 'Poppins', 
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -1863,7 +1863,7 @@ class _AchievementOverlayState extends State<_AchievementOverlay>
                           ),
                           Text(
                             widget.subtitle,
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               color: Colors.white.withOpacity(0.65),
                               fontSize: 12,
                               height: 1.4,
@@ -2129,7 +2129,7 @@ class _SoftLoaderState extends State<SoftLoader> with TickerProviderStateMixin {
                 builder: (context, _) => Text(
                   widget.label!,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 14,
                     color: cs.onSurface.withOpacity(0.55 + _pulse.value * 0.25),
                   ),
@@ -2397,7 +2397,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                       ),
                       child: Text(
                         letter,
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           color: letterFg,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
@@ -2409,7 +2409,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                   Expanded(
                     child: SelectableText(
                       widget.label,
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         height: 1.45,
                         fontSize: 14,
                         color: widget.revealCorrect == true
@@ -2532,7 +2532,7 @@ class _StudyCheckRowState extends State<StudyCheckRow>
           Expanded(
             child: Text(
               widget.label,
-              style: TextStyle(fontFamily: 'Inter', 
+              style: TextStyle(
                 fontSize: 14,
                 decoration: widget.done ? TextDecoration.lineThrough : null,
                 color: widget.done ? cs.onSurface.f55 : cs.onSurface,
@@ -2610,7 +2610,7 @@ class HeroStudyStrip extends StatelessWidget {
                     if (eyebrow != null) ...[
                       Text(
                         eyebrow!.toUpperCase(),
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           color: isDark ? const Color(0xFF3DC9A8) : const Color(0xFF0C7A63),
                           fontWeight: FontWeight.w600,
                           letterSpacing: 1.4,
@@ -2621,7 +2621,7 @@ class HeroStudyStrip extends StatelessWidget {
                     ],
                     Text(
                       title,
-                      style: TextStyle(fontFamily: 'Poppins', 
+                      style: TextStyle(
                         fontSize: 20,
                         color: textOn,
                         fontWeight: FontWeight.w700,
@@ -2633,7 +2633,7 @@ class HeroStudyStrip extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         subtitle!,
-                        style: TextStyle(fontFamily: 'Inter', 
+                        style: TextStyle(
                           fontSize: 14,
                           color: muted,
                           height: 1.5,
@@ -2698,7 +2698,7 @@ class MissionQuestCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface,
@@ -2713,7 +2713,7 @@ class MissionQuestCard extends StatelessWidget {
                 ),
                 child: Text(
                   statusLabel,
-                  style: TextStyle(fontFamily: 'Inter', 
+                  style: TextStyle(
                     fontSize: 11,
                     color: statusColor,
                     fontWeight: FontWeight.w700,
@@ -2725,7 +2725,7 @@ class MissionQuestCard extends StatelessWidget {
           const SizedBox(height: 8),
           SelectableText(
             why,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 14,
               color: cs.onSurface.withOpacity(0.88),
               height: 1.55,
@@ -2734,7 +2734,7 @@ class MissionQuestCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             honestNote,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: cs.primary,
@@ -2786,7 +2786,7 @@ class DeltaChip extends StatelessWidget {
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(kRadiusHighlight)),
       child: Text(
         text,
-        style: TextStyle(fontFamily: 'Inter', 
+        style: TextStyle(
           fontSize: 12,
           color: fg,
           fontWeight: FontWeight.w700,
@@ -2805,7 +2805,7 @@ class HonestBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Text(
       label,
-      style: TextStyle(fontFamily: 'Inter', 
+      style: TextStyle(
         fontSize: 12,
         color: cs.primary,
         fontWeight: FontWeight.w600,
@@ -2866,7 +2866,7 @@ class SoftTimeline extends StatelessWidget {
                       children: [
                         Text(
                           items[i].title,
-                          style: TextStyle(fontFamily: 'Poppins', 
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: cs.onSurface,
@@ -2876,7 +2876,7 @@ class SoftTimeline extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             items[i].subtitle!,
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 12,
                               color: cs.onSurface.f72,
                               height: 1.4,
@@ -2964,7 +2964,7 @@ class SessionResumeBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Continuar sessão',
-                  style: TextStyle(fontFamily: 'Poppins', 
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: cs.onPrimaryContainer,
@@ -2981,7 +2981,7 @@ class SessionResumeBanner extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(fontFamily: 'Inter', 
+            style: TextStyle(
               fontSize: 12,
               color: cs.onPrimaryContainer.withOpacity(0.85),
               height: 1.5,
@@ -3014,7 +3014,7 @@ class SessionResumeBanner extends StatelessWidget {
                       ),
                       child: Text(
                         '${i + 1}',
-                        style: TextStyle(fontFamily: 'Poppins', 
+                        style: TextStyle(
                           color: i <= step ? cs.onPrimary : cs.onSurface.f72,
                           fontWeight: FontWeight.w700,
                           fontSize: 10,
@@ -3024,7 +3024,7 @@ class SessionResumeBanner extends StatelessWidget {
                     const SizedBox(height: 5),
                     Text(
                       labels[i],
-                      style: TextStyle(fontFamily: 'Inter', 
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: i == step ? FontWeight.w700 : FontWeight.w500,
                         color: i == step ? cs.primary : cs.onSurface.f72,

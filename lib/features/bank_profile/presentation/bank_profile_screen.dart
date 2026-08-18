@@ -149,7 +149,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 children: [
                                   Text(
                                     total != null ? '$total questões na análise' : 'Perfil local',
-                                    style: TextStyle(fontFamily: 'Poppins', 
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: cs.onPrimaryContainer,
@@ -160,7 +160,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                       padding: const EdgeInsets.only(top: 2),
                                       child: Text(
                                         'Tamanho médio do enunciado: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
-                                        style: TextStyle(fontFamily: 'Inter', 
+                                        style: TextStyle(
                                           fontSize: 12,
                                           color: cs.onPrimaryContainer.withOpacity(0.85),
                                         ),
@@ -210,7 +210,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                 DataColumn(
                                   label: Text(
                                     'Disc.',
-                                    style: TextStyle(fontFamily: 'Inter', 
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       color: cs.onSurface,
@@ -221,7 +221,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                   DataColumn(
                                     label: Text(
                                       y,
-                                      style: TextStyle(fontFamily: 'Inter', 
+                                      style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         color: cs.onSurface,
@@ -236,7 +236,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                       DataCell(
                                         Text(
                                           entry.key.toString().split(' ').first,
-                                          style: TextStyle(fontFamily: 'Inter', 
+                                          style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                             color: cs.onSurface,
@@ -286,7 +286,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       ],
                       ExpansionTile(
                         tilePadding: EdgeInsets.zero,
-                        title: Text('Detalhes e export', style: TextStyle(fontFamily: 'Poppins', 
+                        title: Text('Detalhes e export', style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: cs.onSurface,
@@ -297,7 +297,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 'Dificuldade: ${data['difficultyDistribution']}',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: cs.onSurface.f72,
                                 ),
@@ -308,7 +308,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(
                                 'Viés de alternativa: ${data['correctAlternativeBias']}',
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: cs.onSurface.f72,
                                 ),
@@ -316,7 +316,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                             ),
                           const SizedBox(height: 12),
                           if ((data['topVerbs'] as List? ?? []).isNotEmpty) ...[
-                            Text('Verbos frequentes', style: TextStyle(fontFamily: 'Poppins', 
+                            Text('Verbos frequentes', style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: cs.onSurface,
@@ -333,7 +333,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ],
                           if ((data['topKeywords'] as List? ?? []).isNotEmpty) ...[
                             const SizedBox(height: 12),
-                            Text('Palavras', style: TextStyle(fontFamily: 'Poppins', 
+                            Text('Palavras', style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: cs.onSurface,
@@ -362,7 +362,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                               padding: const EdgeInsets.only(top: 8),
                               child: Text(
                                 exportMsg!,
-                                style: TextStyle(fontFamily: 'Inter', 
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: cs.onSurface.f72,
                                 ),
@@ -462,7 +462,7 @@ class _HeatCell extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         '$value',
-        style: TextStyle(fontFamily: 'Inter', 
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: isHot

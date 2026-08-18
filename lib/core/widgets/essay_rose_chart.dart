@@ -93,9 +93,9 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                   radarBorderData: BorderSide(color: cs.outlineVariant),
                   tickBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.5)),
                   gridBorderData: BorderSide(color: cs.outlineVariant.withOpacity(0.6)),
-                  ticksTextStyle: TextStyle(fontFamily: 'Inter', fontSize: 11, color: cs.onSurface.withOpacity(0.5)),
+                  ticksTextStyle: TextStyle(fontSize: 11, color: cs.onSurface.withOpacity(0.5)),
                   tickCount: 5,
-                  titleTextStyle: TextStyle(fontFamily: 'Inter', 
+                  titleTextStyle: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: cs.onSurface.withOpacity(0.8),
@@ -119,7 +119,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
         const SizedBox(height: 8),
         Text(
           'Radar dos eixos (0–10) · treino local',
-          style: TextStyle(fontFamily: 'Inter', 
+          style: TextStyle(
             fontSize: 11,
             color: cs.onSurface.withOpacity(0.6),
           ),
@@ -143,7 +143,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                         Expanded(
                           child: Text(
                             label,
-                            style: TextStyle(fontFamily: 'Inter', 
+                            style: TextStyle(
                               fontSize: 14,
                               color: cs.onSurface,
                             ),
@@ -155,7 +155,7 @@ class _EssayRoseChartState extends State<EssayRoseChart>
                         ],
                         Text(
                           value == null ? '—' : value.toStringAsFixed(1),
-                          style: TextStyle(fontFamily: 'Inter', 
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: cs.onSurface,

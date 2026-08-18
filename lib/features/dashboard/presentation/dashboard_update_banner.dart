@@ -42,12 +42,12 @@ class UpdateBanner extends ConsumerWidget {
                     children: [
                       Text(
                         'Atualização disponível',
-                        style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onTertiaryContainer),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Nova versão ${update.latestVersion!} está disponível. Toque para atualizar.',
-                        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: cs.onTertiaryContainer.withOpacity(0.85)),
+                        style: TextStyle(fontSize: 13, color: cs.onTertiaryContainer.withOpacity(0.85)),
                       ),
                     ],
                   ),
