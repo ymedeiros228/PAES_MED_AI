@@ -72,7 +72,10 @@ def on_startup() -> None:
 
             bootstrap_production()
         except Exception as exc:
-            print(f"Bootstrap prod falhou (não fatal): {exc}")
+            try:
+                print(f"Bootstrap prod falhou (não fatal): {exc}")
+            except Exception:
+                pass
     else:
         try:
             from services_advanced import index_all_questions
@@ -101,9 +104,15 @@ def on_startup() -> None:
                         needs_backup = True
             if needs_backup:
                 result = create_backup()
-                print(f"Backup automático: {result.get('path')} | ok={result.get('ok')}")
+                try:
+                    print(f"Backup automático: {result.get('path')} | ok={result.get('ok')}")
+                except Exception:
+                    pass
         except Exception as exc:
-            print(f"Backup automático falhou (não fatal): {exc}")
+            try:
+                print(f"Backup automático falhou (não fatal): {exc}")
+            except Exception:
+                pass
 
 
 # --- Servir front web (deploy unificado) ---

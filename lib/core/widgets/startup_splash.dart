@@ -24,8 +24,8 @@ class StartupSplash extends StatefulWidget {
 
 class _StartupSplashState extends State<StartupSplash>
     with SingleTickerProviderStateMixin {
-  static const _maxAttempts = 30; // 30s
-  static const _showContinueAfter = 8; // 8s -> botao Continuar aparece
+  static const _maxAttempts = 90; // 90s — primeira exec com banco fresh e lenta
+  static const _showContinueAfter = 15; // 15s -> botao Continuar aparece
 
   late final AnimationController _ctrl;
   late final Animation<double> _fade;

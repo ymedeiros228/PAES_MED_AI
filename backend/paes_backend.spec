@@ -111,7 +111,7 @@ a = Analysis(
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
-    runtime_hooks=[],
+    runtime_hooks=["paes_backend_rt_hook.py"],
     excludes=[
         # Nao usados em runtime pelo servidor (apenas em scripts de geracao).
         "reportlab",

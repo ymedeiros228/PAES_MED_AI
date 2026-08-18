@@ -73,17 +73,49 @@ Future<bool> launchLocalBackend() async {
     log.line('procurando bundle: $backendExe (exists=${File(backendExe).existsSync()})');
     if (File(backendExe).existsSync()) {
       try {
-        await Process.start(
+        final proc = await Process.start(
           backendExe,
           ['--host', '127.0.0.1', '--port', '8000'],
           workingDirectory: useBackend,
           environment: env,
           mode: ProcessStartMode.detached,
         );
-        log.line('[OK] backend iniciado via paes_backend.exe');
+        log.line('[OK] backend iniciado via paes_backend.exe (PID=${proc.pid})');
+        // Espera 3s e verifica se o processo ainda esta vivo.
+        // Se crashou imediatamente, o exit code ja estara disponivel.
+        int? exitCode;
+        try {
+          exitCode = await proc.exitCode.timeout(const Duration(seconds: 3));
+        } catch (_) {
+          // Timeout = processo ainda rodando = OK
+        }
+        if (exitCode != null) {
+          log.line('ERRO: paes_backend.exe crashou em <3s (exitCode=$exitCode)');
+          // Tenta ler stderr para diagnostico.
+          try {
+            final stderr = await proc.stderr
+                .timeout(const Duration(seconds: 1))
+                .join('\n');
+            if (stderr.isNotEmpty) {
+              log.line('stderr do backend: $stderr');
+            }
+          } catch (_) {}
+        } else {
+          log.line('backend vivo apos 3s — OK');
+        }
         return true;
       } catch (e) {
         log.line('falhou paes_backend.exe: $e — caindo para python.exe');
+      }
+    } else {
+      log.line('AVISO: paes_backend.exe nao encontrado em $backendExe');
+      log.line('  Conteudo de $useBackend:');
+      try {
+        for (final f in Directory(useBackend).listSync()) {
+          log.line('    ${f.path}');
+        }
+      } catch (e) {
+        log.line('  Erro ao listar: $e');
       }
     }
 
