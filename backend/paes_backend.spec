@@ -139,7 +139,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,  # console=True para ver logs/erros do backend
+    console=False,  # console=False: roda silencioso em background
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
