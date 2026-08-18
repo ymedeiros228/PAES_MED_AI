@@ -21,15 +21,29 @@ from pathlib import Path
 
 def _resolve_log_dir() -> Path:
     """Descobre onde colocar o log de stdout/stderr."""
-    # 1) PAES_DATA_DIR (setado pelo launcher Flutter)
+    # 1) PAES_DATA_DIR (setado pelo launcher Flutter) — deve ser gravavel.
     data_dir = os.environ.get("PAES_DATA_DIR", "").strip().strip('"')
     if data_dir:
         p = Path(data_dir) / "logs"
-        p.mkdir(parents=True, exist_ok=True)
-        return p
-    # 2) Relativo ao exe: <install_dir>/data/logs/
-    #    exe esta em <install_dir>/backend/paes_backend.exe
-    #    ou   <install_dir>/paes_backend.exe
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+            # Testa se e gravavel.
+            test = p / ".write_test"
+            test.write_text("ok", encoding="utf-8")
+            test.unlink(missing_ok=True)
+            return p
+        except Exception:
+            pass  # cai para fallback
+    # 2) %LOCALAPPDATA%\PAES_MED_AI\data\logs (instalacao em Program Files)
+    local_app_data = os.environ.get("LOCALAPPDATA", "").strip()
+    if local_app_data:
+        p = Path(local_app_data) / "PAES_MED_AI" / "data" / "logs"
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+        except Exception:
+            pass
+    # 3) Relativo ao exe: <install_dir>/data/logs/
     exe_dir = Path(sys.executable).resolve().parent
     for candidate in (exe_dir.parent / "data", exe_dir / "data"):
         try:
@@ -37,7 +51,7 @@ def _resolve_log_dir() -> Path:
             return candidate / "logs"
         except Exception:
             continue
-    # 3) Fallback: temp dir
+    # 4) Fallback: temp dir
     import tempfile
     return Path(tempfile.gettempdir())
 

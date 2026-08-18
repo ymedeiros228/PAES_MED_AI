@@ -4,8 +4,16 @@
 //   1. paes_backend.exe  (bundle PyInstaller — nao precisa de Python instalado)
 //   2. python.exe -m uvicorn main:app  (requer Python + deps no cliente)
 //
+// PASTA DE DADOS GRAVAVEL:
+//   Se o app for instalado em Program Files, a pasta <install>/data NAO e
+//   gravavel por processos sem admin. O SQLite precisa escrever no .db,
+//   criar backups, logs, etc. Por isso, PAES_DATA_DIR aponta para:
+//     %LOCALAPPDATA%\PAES_MED_AI\data
+//   Na primeira execucao, o banco seed e PDFs sao copiados do <install>/data
+//   para essa pasta gravavel. Em dev (repo), usa <root>/data normalmente.
+//
 // Em ambos os casos:
-//   - seta PAES_DATA_DIR para a pasta data ao lado do exe
+//   - seta PAES_DATA_DIR para a pasta data gravavel
 //   - mata processo que ocupa a porta 8000 antes de subir
 //   - grava log em <data>/logs/backend_launcher.log para diagnostico
 //   - roda detached (nao bloqueia o app)
@@ -26,34 +34,45 @@ Future<bool> launchLocalBackend() async {
     // Estrutura dev:        <root>/backend, <root>/data
     final backendDir = p.join(root, 'backend');
     final libsDir = p.join(root, 'libs');
-    final dataDir = p.join(root, 'data');
+    final installDataDir = p.join(root, 'data');
 
     // Estrutura alternativa (tudo dentro de app/, portable zip)
     final altBackend = p.join(appDir, 'backend');
     final altLibs = p.join(appDir, 'libs');
-    final altData = p.join(appDir, 'data');
+    final altInstallData = p.join(appDir, 'data');
 
     final useBackend = Directory(backendDir).existsSync() ? backendDir : altBackend;
     final useLibs = Directory(libsDir).existsSync() ? libsDir : altLibs;
-    final useData = Directory(dataDir).existsSync() ? dataDir : altData;
+    final sourceDataDir = Directory(installDataDir).existsSync() ? installDataDir : altInstallData;
+
+    // Descobre a pasta de dados GRAVAVEL.
+    // Em dev (repo): usa <root>/data (e gravavel).
+    // Em instalacao (Program Files): usa %LOCALAPPDATA%\PAES_MED_AI\data.
+    final useData = _resolveWritableDataDir(sourceDataDir, root, log);
 
     log.line('=== launchLocalBackend ===');
     log.line('exe=$exe');
     log.line('root=$root');
     log.line('useBackend=$useBackend (exists=${Directory(useBackend).existsSync()})');
-    log.line('useData=$useData (exists=${Directory(useData).existsSync()})');
+    log.line('sourceDataDir=$sourceDataDir (exists=${Directory(sourceDataDir).existsSync()})');
+    log.line('useData (gravavel)=$useData');
 
     if (!Directory(useBackend).existsSync()) {
       log.line('ERRO: pasta backend nao encontrada');
       return false;
     }
 
-    // Garante que a pasta data existe (o backend cria subpastas, mas a raiz precisa existir).
+    // Garante que a pasta data gravavel existe.
     try {
       Directory(useData).createSync(recursive: true);
     } catch (e) {
-      log.line('aviso: nao criou $useData: $e');
+      log.line('ERRO: nao criou $useData: $e');
+      return false;
     }
+
+    // Copia dados seed (banco + PDFs) do <install>/data para o data gravavel
+    // na primeira execucao. So copia o que ainda nao existe.
+    _seedWritableData(sourceDataDir, useData, log);
 
     // Libera a porta 8000 se ja estiver ocupada (evita "address already in use").
     await _freePort8000(log);
@@ -145,6 +164,90 @@ Future<bool> launchLocalBackend() async {
   } catch (e, st) {
     log.line('ERRO inesperado: $e\n$st');
     return false;
+  }
+}
+
+/// Decide qual pasta de dados usar:
+/// - Em dev (repo): <root>/data (gravavel, nao precisa de LOCALAPPDATA).
+/// - Em instalacao: %LOCALAPPDATA%\PAES_MED_AI\data (sempre gravavel pelo usuario).
+/// Criterio: se <root> contem "Program Files" ou se <sourceDataDir> nao for
+/// gravavel, usa LOCALAPPDATA. Caso contrario, usa <sourceDataDir>.
+String _resolveWritableDataDir(String sourceDataDir, String root, _BackendLogger log) {
+  // Dev: se o root nao esta em Program Files e a pasta e gravavel, usa ela.
+  final lowerRoot = root.toLowerCase();
+  final isProgramFiles = lowerRoot.contains('program files');
+  if (!isProgramFiles) {
+    // Testa se consegue escrever um arquivo temporario na pasta.
+    if (_isDirWritable(sourceDataDir)) {
+      log.line('data dir gravavel: $sourceDataDir (modo dev/portable)');
+      return sourceDataDir;
+    }
+    log.line('aviso: $sourceDataDir nao e gravavel — caindo para LOCALAPPDATA');
+  } else {
+    log.line('install em Program Files detectado — usando LOCALAPPDATA');
+  }
+  // Instalacao em Program Files: usa %LOCALAPPDATA%\PAES_MED_AI\data
+  final localAppData = Platform.environment['LOCALAPPDATA'] ?? '';
+  if (localAppData.isEmpty) {
+    log.line('ERRO: LOCALAPPDATA nao definido — usando $sourceDataDir como fallback');
+    return sourceDataDir;
+  }
+  return p.join(localAppData, 'PAES_MED_AI', 'data');
+}
+
+/// Testa se uma pasta e gravavel tentando criar/escrever/deletar um arquivo temp.
+bool _isDirWritable(String dirPath) {
+  try {
+    final d = Directory(dirPath);
+    if (!d.existsSync()) return false;
+    final testFile = File(p.join(dirPath, '.paes_write_test'));
+    testFile.writeAsStringSync('ok');
+    testFile.deleteSync();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Copia dados seed (banco + PDFs + edital) do <install>/data para o data
+/// gravavel na primeira execucao. So copia arquivos que ainda nao existem
+/// no destino. Nao sobrescreve dados do usuario.
+void _seedWritableData(String sourceDir, String destDir, _BackendLogger log) {
+  final src = Directory(sourceDir);
+  if (!src.existsSync()) {
+    log.line('seed: pasta origem $sourceDir nao existe — pulando copia');
+    return;
+  }
+  try {
+    _copyTreeIfMissing(src, Directory(destDir), log);
+    log.line('seed: copia concluida de $sourceDir -> $destDir');
+  } catch (e) {
+    log.line('seed: erro ao copiar $sourceDir -> $destDir: $e');
+  }
+}
+
+/// Copia recursivamente, mas so arquivos que nao existem no destino.
+void _copyTreeIfMissing(Directory src, Directory dst, _BackendLogger log) {
+  for (final entity in src.listSync(recursive: false)) {
+    final name = p.basename(entity.path);
+    final target = p.join(dst.path, name);
+    if (entity is File) {
+      final tf = File(target);
+      if (!tf.existsSync()) {
+        try {
+          tf.parent.createSync(recursive: true);
+          entity.copySync(target);
+        } catch (e) {
+          log.line('seed: nao copiou ${entity.path}: $e');
+        }
+      }
+    } else if (entity is Directory) {
+      final td = Directory(target);
+      if (!td.existsSync()) {
+        td.createSync(recursive: true);
+      }
+      _copyTreeIfMissing(entity, td, log);
+    }
   }
 }
 
@@ -251,9 +354,17 @@ class _BackendLogger {
       final exe = Platform.resolvedExecutable;
       final appDir = p.dirname(exe);
       final root = p.dirname(appDir);
-      final dataDir = Directory(p.join(root, 'data')).existsSync()
+      // Tenta <root>/data primeiro (dev), depois LOCALAPPDATA (instalacao).
+      String dataDir = Directory(p.join(root, 'data')).existsSync()
           ? p.join(root, 'data')
           : p.join(appDir, 'data');
+      // Se <root>/data nao for gravavel (Program Files), usa LOCALAPPDATA.
+      if (!_isDirWritable(dataDir)) {
+        final localAppData = Platform.environment['LOCALAPPDATA'] ?? '';
+        if (localAppData.isNotEmpty) {
+          dataDir = p.join(localAppData, 'PAES_MED_AI', 'data');
+        }
+      }
       final logsDir = p.join(dataDir, 'logs');
       Directory(logsDir).createSync(recursive: true);
       _path = p.join(logsDir, 'backend_launcher.log');
