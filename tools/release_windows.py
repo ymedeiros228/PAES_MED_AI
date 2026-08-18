@@ -104,6 +104,13 @@ def _build_windows() -> None:
     print("[OK] Build Flutter Windows concluido")
 
 
+def _build_backend_exe() -> None:
+    """Gera paes_backend.exe via PyInstaller (nao exige Python no cliente)."""
+    script = REPO_ROOT / "tools" / "build_backend_exe.py"
+    _run([sys.executable, str(script), "--clean"], cwd=REPO_ROOT)
+    print("[OK] Build backend exe (PyInstaller) concluido")
+
+
 def _build_web() -> None:
     _run([str(FLUTTER), "build", "web", "--release", "--no-pub"], cwd=REPO_ROOT)
     # Copia para deploy/web
@@ -132,6 +139,13 @@ def _compile_installer() -> None:
     iss = REPO_ROOT / "installer" / "paes_med_ai.iss"
     _run([str(INNO), str(iss)])
     print("[OK] Instalador compilado")
+
+
+def _prepare_staging() -> None:
+    """Monta installer/staging com app + backend bundle + dados + tools."""
+    script = REPO_ROOT / "tools" / "prepare_installer.py"
+    _run([sys.executable, str(script)], cwd=REPO_ROOT)
+    print("[OK] Staging do instalador preparado")
 
 
 def _git_commit_and_push(version: str) -> None:
@@ -195,10 +209,12 @@ def main() -> int:
         _update_installer_version(version)
 
         _build_windows()
+        _build_backend_exe()
         if not args.no_web:
             _build_web()
 
         _sync_deploy_data()
+        _prepare_staging()
         _compile_installer()
 
         _git_commit_and_push(version)

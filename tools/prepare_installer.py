@@ -52,7 +52,19 @@ def main():
             shutil.copy2(item, STAGING / "app" / item.name)
 
     # Backend
-    copy_tree(ROOT / "backend", STAGING / "backend")
+    # Prioridade 1: bundle PyInstaller (paes_backend.exe + _internal/).
+    # Se existir em backend/dist/paes_backend, copia apenas esse (nao precisa
+    # dos .py nem do venv no cliente). Caso contrario, copia os .py do backend
+    # (modo legacy — exige Python + deps no cliente).
+    bundle = ROOT / "backend" / "dist" / "paes_backend"
+    if bundle.is_dir():
+        copy_tree(bundle, STAGING / "backend")
+        print(f"[OK] Bundle PyInstaller copiado para staging/backend ({bundle})")
+    else:
+        print("[!] Bundle PyInstaller nao encontrado — copiando .py do backend")
+        print("    Rode antes: python tools/build_backend_exe.py")
+        print("    O cliente precisara ter Python + deps instalados.")
+        copy_tree(ROOT / "backend", STAGING / "backend")
 
     # Dados: copia tudo exceto o banco original (use o banco limpo)
     db_src = ROOT / "data" / "paes_med_ai.db"
