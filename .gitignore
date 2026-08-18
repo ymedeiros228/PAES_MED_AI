@@ -49,6 +49,8 @@ data/exports/*
 # Pack e artefatos Windows enormes
 dist/
 *.lnk
+PAES_MED_AI_portable.zip
+portable_test.png
 
 # Instalador Inno Setup (nao commitar artefatos grandes)
 installer/Output/
