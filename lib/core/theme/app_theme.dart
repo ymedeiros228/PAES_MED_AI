@@ -116,22 +116,25 @@ class AppTheme {
       inversePrimary: dark ? tealDeep : const Color(0xFF3DC9A8),
     );
 
-    // Poppins: títulos/display (geométrica, moderna, distinta)
-    // Inter: corpo/UI (otimizada para tela, x-height alto, legível)
-    // Usa fontes embutidas em assets/fonts/ - sem depender de internet
+    // Usa fonte padrao do Windows (Segoe UI) com fallback para Arial.
+    // Fontes Poppins/Inter embutidas deram problema no Flutter Windows desktop
+    // — quando nao carregavam, o fallback fazia letras empilharem verticalmente.
     final display = TextStyle(
+      fontFamily: 'Segoe UI',
+      fontFamilyFallback: const ['Arial', 'sans-serif'],
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
       height: 1.15,
-      letterSpacing: -0.5,
     );
     final body = TextStyle(
+      fontFamily: 'Segoe UI',
+      fontFamilyFallback: const ['Arial', 'sans-serif'],
       color: scheme.onSurface,
       height: 1.55,
-      letterSpacing: -0.1,
     );
 
     return ThemeData(
+      fontFamily: 'Segoe UI',
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,

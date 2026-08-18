@@ -207,6 +207,15 @@ Win32Window::MessageHandler(HWND hwnd,
       return 0;
     }
 
+    case WM_GETMINMAXINFO: {
+      // Largura minima 1150 x altura minima 700
+      // Evita que texto empilhe quando a janela fica muito estreita.
+      MINMAXINFO* mmi = reinterpret_cast<MINMAXINFO*>(lparam);
+      mmi->ptMinTrackSize.x = 1150;
+      mmi->ptMinTrackSize.y = 700;
+      return 0;
+    }
+
     case WM_ACTIVATE:
       if (child_content_ != nullptr) {
         SetFocus(child_content_);
