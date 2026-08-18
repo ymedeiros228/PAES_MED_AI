@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/data/backend_launcher.dart';
 import 'core/theme/app_theme.dart';
 
 String _shortUiError(String raw) {
@@ -12,8 +13,8 @@ String _shortUiError(String raw) {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Fontes Poppins e Inter estao embutidas em assets/fonts/ (pubspec.yaml).
-  // GoogleFonts usa automaticamente as fontes locais quando declaradas no pubspec.
+  // Inicia o backend Python local automaticamente no Windows
+  launchLocalBackend();
   ErrorWidget.builder = (details) {
     final err = _shortUiError(details.exceptionAsString());
     return Material(
