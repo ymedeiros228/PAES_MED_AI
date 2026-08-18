@@ -68,7 +68,8 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
       String? zipUrl;
       for (final asset in assets) {
         final name = (asset as Map)['name']?.toString() ?? '';
-        if (name.toLowerCase().startsWith('paes_med_ai_windows') && name.toLowerCase().endsWith('.zip')) {
+        // Novos releases usam o instalador .exe (PAESMedAI_Setup_X.X.X.X.exe)
+        if (name.toLowerCase().startsWith('paesmedai_setup') && name.toLowerCase().endsWith('.exe')) {
           zipUrl = asset['browser_download_url']?.toString();
           break;
         }

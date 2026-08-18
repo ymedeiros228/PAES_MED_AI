@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_version.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../data/update_provider.dart';
-import '../presentation/platform_io.dart' show launchUpdater;
+import '../presentation/platform_io.dart' show runNativeUpdater;
 
 class UpdatesScreen extends ConsumerStatefulWidget {
   const UpdatesScreen({super.key});
@@ -136,15 +136,22 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         ],
                         const SizedBox(height: 16),
                         FilledButton.icon(
-                          onPressed: () {
+                          onPressed: () async {
                             final messenger = ScaffoldMessenger.of(context);
-                            launchUpdater().then((ok) {
-                              if (!ok) {
-                                messenger.showSnackBar(
-                                  const SnackBar(content: Text('Não foi possível abrir o atualizador. Verifique se o arquivo Atualizar_PAES_MED_AI.bat existe na pasta.')),
-                                );
-                              }
-                            });
+                            final url = update.zipUrl;
+                            if (url == null || url.isEmpty) {
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text('Link da nova versão não encontrado. Abra pelo GitHub.')),
+                              );
+                              return;
+                            }
+                            messenger.showSnackBar(
+                              const SnackBar(content: Text('Baixando instalador... aguarde.'), duration: Duration(seconds: 3)),
+                            );
+                            final (ok, msg) = await runNativeUpdater(url);
+                            messenger.showSnackBar(
+                              SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
+                            );
                           },
                           icon: const Icon(Icons.download_for_offline_rounded),
                           label: const Text('Atualizar agora'),
