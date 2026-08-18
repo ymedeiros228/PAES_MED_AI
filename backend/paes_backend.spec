@@ -138,7 +138,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,  # upx=False: evita falsos positivos de antivirus
     console=False,  # console=False: roda silencioso em background
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -152,7 +152,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,  # upx=False: evita falsos positivos de antivirus
     upx_exclude=[],
     name="paes_backend",
 )
