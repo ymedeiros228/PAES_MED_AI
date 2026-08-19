@@ -212,14 +212,22 @@ bool _isDirWritable(String dirPath) {
 /// Copia dados seed (banco + PDFs + edital) do <install>/data para o data
 /// gravavel na primeira execucao. So copia arquivos que ainda nao existem
 /// no destino. Nao sobrescreve dados do usuario.
+/// Usa um arquivo marcador (.paes_seed_done) para nao varrer a arvore
+/// toda vez que o app abrir (evita lentidao).
 void _seedWritableData(String sourceDir, String destDir, _BackendLogger log) {
   final src = Directory(sourceDir);
   if (!src.existsSync()) {
     log.line('seed: pasta origem $sourceDir nao existe — pulando copia');
     return;
   }
+  final marker = File(p.join(destDir, '.paes_seed_done'));
+  if (marker.existsSync()) {
+    log.line('seed: marker encontrado, pulando copia');
+    return;
+  }
   try {
     _copyTreeIfMissing(src, Directory(destDir), log);
+    marker.writeAsStringSync('seed concluido');
     log.line('seed: copia concluida de $sourceDir -> $destDir');
   } catch (e) {
     log.line('seed: erro ao copiar $sourceDir -> $destDir: $e');

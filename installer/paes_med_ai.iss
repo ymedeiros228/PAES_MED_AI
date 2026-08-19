@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.57"
+#define MyAppVersion "1.0.0.58"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]

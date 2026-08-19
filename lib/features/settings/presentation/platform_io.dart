@@ -1,8 +1,7 @@
 // platform_io.dart — implementacao desktop/mobile (usa dart:io)
 import 'dart:async';
-import 'dart:io' show Directory, File, Platform, Process;
+import 'dart:io' show Directory, File, HttpClient, Platform, Process, X509Certificate;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
 (String, bool) readVersionFile() {
@@ -54,36 +53,55 @@ Future<bool> _openUrl(String url) async {
 /// Faz download do instalador .exe para a pasta temp.
 /// [url] e o link direto do asset (ex: .../download/v1.0.0.54/PAESMedAI_Setup_1.0.0.54.exe)
 /// Retorna o path local ou null em caso de erro.
+/// Em VMs sem certificados CA atualizados, faz fallback para HTTPS sem
+/// verificacao de certificado (necessario para baixar do GitHub).
 Future<String?> _downloadSetup(String url, void Function(int received, int total)? onProgress) async {
-  try {
-    final client = http.Client();
-    final request = http.Request('GET', Uri.parse(url));
-    request.headers['User-Agent'] = 'PAES-MED-AI-Updater';
-    final response = await client.send(request).timeout(const Duration(seconds: 120));
-    if (response.statusCode != 200) {
-      debugPrint('Updater: download falhou, status=${response.statusCode}');
+  Future<String?> doDownload({required bool insecure}) async {
+    final client = HttpClient()
+      ..userAgent = 'PAES-MED-AI-Updater'
+      ..connectionTimeout = const Duration(seconds: 120);
+    if (insecure) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+    }
+    try {
+      final req = await client.getUrl(Uri.parse(url));
+      req.headers.set('User-Agent', 'PAES-MED-AI-Updater');
+      final response = await req.close();
+      if (response.statusCode != 200) {
+        debugPrint('Updater: download falhou, status=${response.statusCode}');
+        return null;
+      }
+
+      final total = response.contentLength;
+      final tempDir = Directory.systemTemp.createTempSync('paes_update_');
+      final fileName = url.split('/').last;
+      final out = File(p.join(tempDir.path, fileName.isNotEmpty ? fileName : 'PAESMedAI_Setup_latest.exe'));
+
+      final sink = out.openWrite();
+      var received = 0;
+      await for (final chunk in response) {
+        sink.add(chunk);
+        received += chunk.length;
+        if (onProgress != null && total > 0) onProgress(received, total);
+      }
+      await sink.close();
+      return out.path;
+    } finally {
       client.close();
+    }
+  }
+
+  try {
+    return await doDownload(insecure: false);
+  } catch (e) {
+    debugPrint('Updater: HTTPS padrao falhou ($e), tentando sem verificacao de certificado');
+    try {
+      return await doDownload(insecure: true);
+    } catch (e2) {
+      debugPrint('Updater: erro no download: $e2');
       return null;
     }
-
-    final total = response.contentLength ?? 0;
-    final tempDir = Directory.systemTemp.createTempSync('paes_update_');
-    final fileName = url.split('/').last;
-    final out = File(p.join(tempDir.path, fileName.isNotEmpty ? fileName : 'PAESMedAI_Setup_latest.exe'));
-
-    final sink = out.openWrite();
-    var received = 0;
-    await for (final chunk in response.stream) {
-      sink.add(chunk);
-      received += chunk.length;
-      if (onProgress != null && total > 0) onProgress(received, total);
-    }
-    await sink.close();
-    client.close();
-    return out.path;
-  } catch (e) {
-    debugPrint('Updater: erro no download: $e');
-    return null;
   }
 }
 

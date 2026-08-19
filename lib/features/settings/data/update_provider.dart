@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io' show HttpClient, X509Certificate;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_version.dart';
 
@@ -48,19 +48,48 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
   static const _owner = 'ymedeiros228';
   static const _repo = 'PAES_MED_AI';
 
+  /// Busca a release mais recente no GitHub.
+  /// Em VMs sem certificados de CA atualizados, o HTTPS falha. Por isso
+  /// tenta primeiro com verificacao normal; se der HandshakeException,
+  /// faz uma segunda tentativa aceitando qualquer certificado.
+  Future<String> _fetchReleaseJson() async {
+    Future<String> doFetch({required bool insecure}) async {
+      final client = HttpClient()
+        ..userAgent = 'PAES_MED_AI'
+        ..connectionTimeout = const Duration(seconds: 15);
+      if (insecure) {
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+      }
+      try {
+        final req = await client.getUrl(
+          Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
+        );
+        req.headers.set('User-Agent', 'PAES_MED_AI');
+        final response = await req.close();
+        if (response.statusCode != 200) {
+          throw Exception('GitHub API retornou ${response.statusCode}');
+        }
+        final body = await response.transform(utf8.decoder).join();
+        return body;
+      } finally {
+        client.close();
+      }
+    }
+
+    try {
+      return await doFetch(insecure: false);
+    } catch (e) {
+      // Fallback para certificados invalidos (VMs limpas).
+      return await doFetch(insecure: true);
+    }
+  }
+
   Future<void> check() async {
     state = state.copyWith(checking: true, error: null);
     try {
-      final response = await http.get(
-        Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
-        headers: {'User-Agent': 'PAES_MED_AI'},
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode != 200) {
-        throw Exception('GitHub API retornou ${response.statusCode}');
-      }
-
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final raw = await _fetchReleaseJson().timeout(const Duration(seconds: 30));
+      final data = jsonDecode(raw) as Map<String, dynamic>;
       final latest = data['tag_name']?.toString() ?? '';
       final published = data['published_at']?.toString() ?? '';
       final releaseUrl = data['html_url']?.toString() ?? '';
