@@ -105,63 +105,55 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
   }
 }
 
-/// Cria um .bat temporario que:
-/// 1. Espera o app fechar (timeout 3s)
-/// 2. Roda o instalador em /SILENT no mesmo diretorio
-/// 3. Se limpa (auto-delete)
+/// Cria um .vbs temporario que:
+/// 1. Espera o app fechar (Sleep 2s)
+/// 2. Abre o instalador em MODO WIZARD com /FORCECLOSEAPPLICATIONS
+///    para o Inno Setup fechar app + backend automaticamente
+/// 3. Se auto-deleta
 ///
-/// Necessario porque o Inno Setup nao consegue substituir
-/// paes_med_ai.exe e paes_backend.exe enquanto estao em uso.
+/// Usa .vbs em vez de .bat para nao mostrar janela de CMD.
 Future<String?> _createUpdateLauncher(String setupPath) async {
   try {
     final installDir = _installDir() ?? '';
-    final batPath = p.join(
+    final vbsPath = p.join(
       Directory.systemTemp.createTempSync('paes_update_').path,
-      'atualizar_paes_med_ai.bat',
+      'atualizar_paes_med_ai.vbs',
     );
+    final dirArg = installDir.isNotEmpty ? ' /DIR=""$installDir""' : '';
     final lines = [
-      '@echo off',
-      'setlocal',
-      'set SETUP="$setupPath"',
-      'set DIR=${installDir.isNotEmpty ? '/DIR="$installDir"' : ''}',
-      'echo [PAES Update Launcher] aguardando o app fechar...',
-      'timeout /t 3 /nobreak > nul',
-      'echo Iniciando instalador...',
-      'start "" /wait %SETUP% /SILENT /NOCANCEL /SUPPRESSMSGBOXES /NORESTART %DIR%',
-      'if %errorlevel% == 0 (',
-      '  echo Atualizacao concluida.',
-      ') else (',
-      '  echo Atualizacao terminou com codigo %errorlevel%',
-      ')',
-      'del "%~f0"',
+      "' Atualizador oculto do PAES MED AI",
+      "' Aguarda o app fechar e abre o instalador em modo wizard",
+      'Set sh = CreateObject("WScript.Shell")',
+      'Set fso = CreateObject("Scripting.FileSystemObject")',
+      'WScript.Sleep 2000',
+      'sh.Run """$setupPath"" /FORCECLOSEAPPLICATIONS /NORESTART$dirArg""", 1, True',
+      'fso.DeleteFile(WScript.ScriptFullName)',
     ];
-    File(batPath).writeAsStringSync(lines.join('\r\n'));
-    return batPath;
+    File(vbsPath).writeAsStringSync(lines.join('\r\n'));
+    return vbsPath;
   } catch (e) {
     debugPrint('Updater: erro ao criar update launcher: $e');
     return null;
   }
 }
 
-/// Executa o instalador .exe em modo silencioso e fecha o app.
-/// Usa /SILENT do Inno Setup (barra de progresso, sem wizard).
-/// O Inno Setup com /SILENT substitui os arquivos, mas precisa que o
-/// app feche para liberar os .exe e DLLs.
+/// Executa o instalador .exe em modo wizard.
+/// O .vbs oculto orquestra: espera o app fechar, inicia o setup.exe
+/// com /FORCECLOSEAPPLICATIONS, e o Inno Setup mata o app/backend
+/// em uso antes de copiar os novos arquivos.
 Future<bool> _runInstaller(String setupPath) async {
   try {
-    final batPath = await _createUpdateLauncher(setupPath);
-    if (batPath == null || !File(batPath).existsSync()) return false;
+    final vbsPath = await _createUpdateLauncher(setupPath);
+    if (vbsPath == null || !File(vbsPath).existsSync()) return false;
 
-    // Inicia o .bat em uma janela separada e NAO espera.
-    // O .bat vive sozinho, espera o app fechar e roda o instalador.
+    // Inicia a .vbs via wscript. A .vbs é oculta; o setup.exe mostra o wizard.
     final r = await Process.start(
-      'cmd',
-      ['/c', batPath],
-      runInShell: true,
+      'wscript.exe',
+      [vbsPath],
       mode: ProcessStartMode.detached,
     );
     if (r.pid <= 0) return false;
-    // Da um tempinho para o SO iniciar o .bat.
+    // Da um tempinho para o SO iniciar o .vbs.
     await Future.delayed(const Duration(seconds: 1));
     return true;
   } catch (e) {

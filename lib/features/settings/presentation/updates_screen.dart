@@ -1,4 +1,4 @@
-import 'dart:io' show exit, Process;
+import 'dart:io' show exit;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -149,7 +149,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                             }
                             messenger.showSnackBar(
                               const SnackBar(
-                                content: Text('Baixando instalador... aguarde. O app vai fechar sozinho para concluir.'),
+                                content: Text('Baixando instalador... aguarde. Depois o wizard de atualização será aberto.'),
                                 duration: Duration(seconds: 5),
                               ),
                             );
@@ -159,17 +159,17 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                                 SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
                               );
                             } else {
-                              // Sucesso: o instalador está rodando. Fecha o app
-                              // para liberar os arquivos para o Inno Setup substituir.
+                              // Sucesso: o .vbs oculto vai orquestrar. O app
+                              // precisa fechar para o Inno Setup conseguir
+                              // substituir os arquivos em uso.
                               messenger.showSnackBar(
                                 const SnackBar(
-                                  content: Text('Instalador iniciado. Fechando o app para concluir...'),
-                                  duration: Duration(seconds: 2),
+                                  content: Text('O instalador será aberto. Clique Avançar/Instalar no wizard.'),
+                                  duration: Duration(seconds: 4),
                                 ),
                               );
                               await Future.delayed(const Duration(seconds: 2));
-                              // Fecha o app — o instalador /SILENT continua rodando.
-                              await Process.start('cmd', ['/c', 'timeout', '/t', '2', '/nobreak', '>', 'nul'], runInShell: true);
+                              // Fecha o app imediatamente. O .vbs espera 2s e abre o wizard.
                               exit(0);
                             }
                           },
