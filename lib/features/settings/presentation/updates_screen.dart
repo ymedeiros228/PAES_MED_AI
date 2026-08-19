@@ -1,3 +1,5 @@
+import 'dart:io' show exit, Process;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -146,12 +148,30 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                               return;
                             }
                             messenger.showSnackBar(
-                              const SnackBar(content: Text('Baixando instalador... aguarde.'), duration: Duration(seconds: 3)),
+                              const SnackBar(
+                                content: Text('Baixando instalador... aguarde. O app vai fechar sozinho para concluir.'),
+                                duration: Duration(seconds: 5),
+                              ),
                             );
                             final (ok, msg) = await runNativeUpdater(url);
-                            messenger.showSnackBar(
-                              SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
-                            );
+                            if (!ok) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
+                              );
+                            } else {
+                              // Sucesso: o instalador está rodando. Fecha o app
+                              // para liberar os arquivos para o Inno Setup substituir.
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Instalador iniciado. Fechando o app para concluir...'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                              await Future.delayed(const Duration(seconds: 2));
+                              // Fecha o app — o instalador /SILENT continua rodando.
+                              await Process.start('cmd', ['/c', 'timeout', '/t', '2', '/nobreak', '>', 'nul'], runInShell: true);
+                              exit(0);
+                            }
                           },
                           icon: const Icon(Icons.download_for_offline_rounded),
                           label: const Text('Atualizar agora'),

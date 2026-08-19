@@ -89,6 +89,9 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
 
 /// Executa o instalador .exe em modo silencioso e fecha o app.
 /// Usa /SILENT do Inno Setup (barra de progresso, sem wizard).
+/// O Inno Setup com /SILENT substitui os arquivos, mas precisa que o
+/// app feche para liberar os .exe e DLLs. O instalador pede para fechar
+/// automaticamente quando detecta arquivos em uso.
 Future<bool> _runInstaller(String setupPath) async {
   try {
     final installDir = _installDir() ?? '';
@@ -101,13 +104,13 @@ Future<bool> _runInstaller(String setupPath) async {
       '/SILENT',
       '/NOCANCEL',
       '/SUPPRESSMSGBOXES',
+      '/NORESTART',
     ];
     // Inicia o instalador e NAO espera (senao travaria o app).
-    // Depois de iniciado, pede para o usuario fechar o app manualmente.
     final r = await Process.start('cmd', args, runInShell: true);
     if (r.pid <= 0) return false;
     // Da um tempinho para o SO iniciar o installer.
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3));
     return true;
   } catch (e) {
     debugPrint('Updater: erro ao executar instalador: $e');

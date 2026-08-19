@@ -92,12 +92,15 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
   }
 
   bool _hasNewerVersion(String local, String remote) {
-    // Compara versões simples: remove prefixo 'v' e compara numericamente
+    // Compara versões com ate 4 partes: 1.0.0.56 vs 1.0.0.57
     final l = _parseVersion(local);
     final r = _parseVersion(remote);
-    for (int i = 0; i < 3; i++) {
-      if (r[i] > l[i]) return true;
-      if (r[i] < l[i]) return false;
+    final maxLen = l.length > r.length ? l.length : r.length;
+    for (int i = 0; i < maxLen; i++) {
+      final li = i < l.length ? l[i] : 0;
+      final ri = i < r.length ? r[i] : 0;
+      if (ri > li) return true;
+      if (ri < li) return false;
     }
     return false;
   }
@@ -105,11 +108,8 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
   List<int> _parseVersion(String v) {
     final clean = v.replaceFirst(RegExp(r'^v'), '').split('+').first;
     final parts = clean.split('.').map(int.tryParse).toList();
-    return [
-      parts.isNotEmpty ? (parts[0] ?? 0) : 0,
-      parts.length > 1 ? (parts[1] ?? 0) : 0,
-      parts.length > 2 ? (parts[2] ?? 0) : 0,
-    ];
+    // Retorna todas as partes disponiveis (ate 4: major.minor.patch.build)
+    return parts.whereType<int>().toList();
   }
 
   void dismiss() {
