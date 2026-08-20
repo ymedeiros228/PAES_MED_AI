@@ -13,8 +13,16 @@ String _shortUiError(String raw) {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicia o backend Python local automaticamente no Windows
-  launchLocalBackend();
+  // Inicia o backend Python local automaticamente no Windows.
+  // Tenta ate 3x com intervalo de 2s — se falhar (ex: porta ocupada),
+  // tenta novamente antes de desistir.
+  () async {
+    for (int i = 0; i < 3; i++) {
+      final ok = await launchLocalBackend();
+      if (ok) break;
+      await Future.delayed(const Duration(seconds: 2));
+    }
+  }();
   ErrorWidget.builder = (details) {
     final err = _shortUiError(details.exceptionAsString());
     return Material(

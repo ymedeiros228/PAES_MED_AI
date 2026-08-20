@@ -147,9 +147,35 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                               );
                               return;
                             }
+                            // Dialogo de confirmacao antes de baixar/fechar o app.
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Atualizar agora?'),
+                                content: Text(
+                                  'O app vai baixar o instalador da versão '
+                                  '${update.latestVersion ?? '-'} e fechá-lo '
+                                  'automaticamente.\n\n'
+                                  'Depois o instalador será aberto — clique '
+                                  'Avançar/Instalar para concluir.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text('Atualizar'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirmed != true) return;
+
                             messenger.showSnackBar(
                               const SnackBar(
-                                content: Text('Baixando instalador... aguarde. Depois o wizard de atualização será aberto.'),
+                                content: Text('Baixando instalador... aguarde.'),
                                 duration: Duration(seconds: 5),
                               ),
                             );
@@ -159,17 +185,16 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                                 SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
                               );
                             } else {
-                              // Sucesso: o .vbs oculto vai orquestrar. O app
-                              // precisa fechar para o Inno Setup conseguir
-                              // substituir os arquivos em uso.
+                              // Sucesso: o instalador foi lancado diretamente.
+                              // O Inno Setup vai fechar o app via CloseApplications.
+                              // Damos um tempinho e fechamos para liberar os arquivos.
                               messenger.showSnackBar(
                                 const SnackBar(
-                                  content: Text('O instalador será aberto. Clique Avançar/Instalar no wizard.'),
-                                  duration: Duration(seconds: 4),
+                                  content: Text('Instalador aberto. O app vai fechar agora...'),
+                                  duration: Duration(seconds: 3),
                                 ),
                               );
                               await Future.delayed(const Duration(seconds: 2));
-                              // Fecha o app imediatamente. O .vbs espera 2s e abre o wizard.
                               exit(0);
                             }
                           },
@@ -180,7 +205,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         TextButton.icon(
                           onPressed: () => _openRelease(update.releaseUrl),
                           icon: const Icon(Icons.open_in_new_rounded),
-                          label: const Text('Ver release no GitHub'),
+                          label: const Text('Baixar manualmente no GitHub'),
                         ),
                       ],
                     ),

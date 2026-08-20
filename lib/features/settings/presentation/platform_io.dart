@@ -29,17 +29,6 @@ bool get isWindows {
   }
 }
 
-/// Path para a pasta de instalacao do app.
-/// Usado pelo updater para substituir a versao antiga.
-String? _installDir() {
-  try {
-    final exe = Platform.resolvedExecutable;
-    return p.dirname(p.dirname(exe)); // <...>/PAES_MED_AI
-  } catch (_) {
-    return null;
-  }
-}
-
 /// Tenta abrir uma URL no browser.
 Future<bool> _openUrl(String url) async {
   try {
@@ -105,56 +94,22 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
   }
 }
 
-/// Cria um .vbs temporario que:
-/// 1. Espera o app fechar (Sleep 2s)
-/// 2. Abre o instalador em MODO WIZARD com /FORCECLOSEAPPLICATIONS
-///    para o Inno Setup fechar app + backend automaticamente
-/// 3. Se auto-deleta
-///
-/// Usa .vbs em vez de .bat para nao mostrar janela de CMD.
-Future<String?> _createUpdateLauncher(String setupPath) async {
-  try {
-    final installDir = _installDir() ?? '';
-    final vbsPath = p.join(
-      Directory.systemTemp.createTempSync('paes_update_').path,
-      'atualizar_paes_med_ai.vbs',
-    );
-    final dirArg = installDir.isNotEmpty ? ' /DIR=""$installDir""' : '';
-    final lines = [
-      "' Atualizador oculto do PAES MED AI",
-      "' Aguarda o app fechar e abre o instalador em modo wizard",
-      'Set sh = CreateObject("WScript.Shell")',
-      'Set fso = CreateObject("Scripting.FileSystemObject")',
-      'WScript.Sleep 2000',
-      'sh.Run """$setupPath"" /FORCECLOSEAPPLICATIONS /NORESTART$dirArg""", 1, True',
-      'fso.DeleteFile(WScript.ScriptFullName)',
-    ];
-    File(vbsPath).writeAsStringSync(lines.join('\r\n'));
-    return vbsPath;
-  } catch (e) {
-    debugPrint('Updater: erro ao criar update launcher: $e');
-    return null;
-  }
-}
-
-/// Executa o instalador .exe em modo wizard.
-/// O .vbs oculto orquestra: espera o app fechar, inicia o setup.exe
-/// com /FORCECLOSEAPPLICATIONS, e o Inno Setup mata o app/backend
-/// em uso antes de copiar os novos arquivos.
+/// Executa o instalador .exe diretamente, sem wrapper .vbs ou .bat.
+/// O Inno Setup abre em MODO WIZARD (Avancar/Instalar/Concluir).
+/// /FORCECLOSEAPPLICATIONS faz o Inno Setup fechar paes_med_ai.exe e
+/// paes_backend.exe automaticamente antes de copiar os arquivos.
+/// Nao usa /DIR= — o Inno Setup detecta o path anterior pelo registro
+/// ou usa DefaultDirName automaticamente (evita "pasta nao encontrada").
 Future<bool> _runInstaller(String setupPath) async {
   try {
-    final vbsPath = await _createUpdateLauncher(setupPath);
-    if (vbsPath == null || !File(vbsPath).existsSync()) return false;
-
-    // Inicia a .vbs via wscript. A .vbs é oculta; o setup.exe mostra o wizard.
     final r = await Process.start(
-      'wscript.exe',
-      [vbsPath],
+      setupPath,
+      ['/FORCECLOSEAPPLICATIONS', '/NORESTART'],
       mode: ProcessStartMode.detached,
     );
     if (r.pid <= 0) return false;
-    // Da um tempinho para o SO iniciar o .vbs.
-    await Future.delayed(const Duration(seconds: 1));
+    // Da um tempinho para o SO iniciar o instalador.
+    await Future.delayed(const Duration(milliseconds: 500));
     return true;
   } catch (e) {
     debugPrint('Updater: erro ao executar instalador: $e');
@@ -181,9 +136,8 @@ Future<(bool, String)> runNativeUpdater(String downloadUrl, {void Function(int r
     return (false, 'Falha ao iniciar o instalador.');
   }
 
-  // 3) Pede para o usuario fechar o app manualmente.
-  // O instalador /SILENT ja esta rodando e vai substituir a instalacao.
-  return (true, 'Instalador baixado e iniciado. Feche o app para concluir a atualizacao.');
+  // 3) Instalador iniciado. O app sera fechado pelo caller apos confirmar.
+  return (true, 'Instalador iniciado. O app será fechado automaticamente.');
 }
 
 /// Mantem compatibilidade com o nome antigo. Preferencialmente chame runNativeUpdater.

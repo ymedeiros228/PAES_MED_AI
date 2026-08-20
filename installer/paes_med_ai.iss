@@ -8,7 +8,7 @@
 #define MyAppPublisher     "PAES MED AI"
 #define MyAppURL           "https://github.com/ymedeiros228/PAES_MED_AI"
 #define MyAppExeName       "paes_med_ai.exe"
-#define MyAppVersion "1.0.0.62"
+#define MyAppVersion "1.0.0.63"
 #define MyAppIcon          "..\windows\runner\resources\app_icon.ico"
 
 [Setup]
@@ -40,10 +40,20 @@ UninstallDisplayName={#MyAppFullName}
 ; Fecha automaticamente o app e o backend se estiverem em uso durante update/reinstalacao
 CloseApplications=yes
 RestartApplications=no
+; Cria a pasta de instalacao se nao existir (evita "pasta nao encontrada")
+CreateAppDir=yes
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Messages]
+ReadyMemoDir=O PAES MED AI será instalado em:
+InstallingLabel=Instalando PAES MED AI... aguarde.
+FinishedHeadingLabel=Instalação concluída!
+FinishedLabel=O PAES MED AI foi instalado com sucesso. Clique Concluir para finalizar.
+FinishedRestartLabel=Seu computador não precisa ser reiniciado.
+ConfirmUninstall=Tem certeza de que deseja remover o PAES MED AI?
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
