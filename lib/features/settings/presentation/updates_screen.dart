@@ -29,6 +29,97 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     }
   }
 
+  /// Executa o update com dialog de progresso.
+  /// Mostra progresso de download em tempo real.
+  Future<void> _doUpdate(String url, String version) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Dialog de progresso
+    var received = 0;
+    var total = 0;
+    var progressText = 'Baixando instalador...';
+    var downloadDone = false;
+
+    final progressNotifier = ValueNotifier<String>(progressText);
+
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Atualizando'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ValueListenableBuilder<String>(
+              valueListenable: progressNotifier,
+              builder: (_, text, __) => Text(text, style: const TextStyle(fontSize: 14)),
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: (total > 0) ? (received / total) : null,
+            ),
+            const SizedBox(height: 8),
+            if (total > 0)
+              Text(
+                '${(received / 1024 / 1024).toStringAsFixed(1)} MB de ${(total / 1024 / 1024).toStringAsFixed(1)} MB',
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final (ok, msg) = await runNativeUpdater(
+        url,
+        onProgress: (r, t) {
+          received = r;
+          total = t;
+          if (t > 0) {
+            final pct = ((r / t) * 100).round();
+            progressNotifier.value = 'Baixando... $pct%';
+          } else {
+            progressNotifier.value = 'Baixando... ${(r / 1024 / 1024).toStringAsFixed(1)} MB';
+          }
+        },
+      );
+      downloadDone = true;
+
+      if (mounted) Navigator.pop(context); // fecha dialog de progresso
+
+      if (!ok) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(msg), duration: const Duration(seconds: 8)),
+          );
+        }
+        return;
+      }
+
+      // Sucesso: instalador foi lancado.
+      if (mounted) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Instalador aberto. O app vai fechar agora...'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+      // Espera 5s para o instalador abrir (UAC pode demorar).
+      await Future.delayed(const Duration(seconds: 5));
+      exit(0);
+    } catch (e) {
+      if (!downloadDone && mounted) Navigator.pop(context);
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Erro inesperado: $e'), duration: const Duration(seconds: 8)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -139,10 +230,9 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         const SizedBox(height: 16),
                         FilledButton.icon(
                           onPressed: () async {
-                            final messenger = ScaffoldMessenger.of(context);
                             final url = update.zipUrl;
                             if (url == null || url.isEmpty) {
-                              messenger.showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Link da nova versão não encontrado. Abra pelo GitHub.')),
                               );
                               return;
@@ -172,31 +262,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                               ),
                             );
                             if (confirmed != true) return;
-
-                            messenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('Baixando instalador... aguarde.'),
-                                duration: Duration(seconds: 5),
-                              ),
-                            );
-                            final (ok, msg) = await runNativeUpdater(url);
-                            if (!ok) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text(msg), duration: const Duration(seconds: 6)),
-                              );
-                            } else {
-                              // Sucesso: o instalador foi lancado diretamente.
-                              // O Inno Setup vai fechar o app via CloseApplications.
-                              // Damos um tempinho e fechamos para liberar os arquivos.
-                              messenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Instalador aberto. O app vai fechar agora...'),
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
-                              await Future.delayed(const Duration(seconds: 2));
-                              exit(0);
-                            }
+                            await _doUpdate(url, update.latestVersion ?? '-');
                           },
                           icon: const Icon(Icons.download_for_offline_rounded),
                           label: const Text('Atualizar agora'),

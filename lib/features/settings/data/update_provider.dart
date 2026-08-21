@@ -1,5 +1,6 @@
+import 'dart:async' show TimeoutException;
 import 'dart:convert';
-import 'dart:io' show HttpClient, X509Certificate;
+import 'dart:io' show HttpClient, SocketException, X509Certificate;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_version.dart';
 
@@ -116,7 +117,19 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
         checking: false,
       );
     } catch (e) {
-      state = UpdateState(error: e.toString(), checking: false);
+      String msg;
+      if (e is SocketException) {
+        msg = 'Sem conexao com a internet. Verifique sua rede e tente novamente.';
+      } else if (e is TimeoutException) {
+        msg = 'Tempo esgotado ao verificar atualizacoes. Tente novamente.';
+      } else if (e.toString().contains('HandshakeException')) {
+        msg = 'Erro de certificado SSL. Tente novamente em uma rede diferente.';
+      } else if (e.toString().contains('403')) {
+        msg = 'GitHub limitou as requisicoes. Aguarde alguns minutos e tente novamente.';
+      } else {
+        msg = 'Nao foi possivel verificar atualizacoes. Tente novamente.';
+      }
+      state = UpdateState(error: msg, checking: false);
     }
   }
 

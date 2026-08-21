@@ -1,2 +1,2 @@
 /// Versão exibida no app — atualizada pelo build.
-const String kAppVersionLabel = '1.0.0.66';
+const String kAppVersionLabel = '1.0.0.67';

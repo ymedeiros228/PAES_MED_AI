@@ -1,6 +1,6 @@
 // platform_io.dart — implementacao desktop/mobile (usa dart:io)
 import 'dart:async';
-import 'dart:io' show Directory, File, HttpClient, Platform, Process, ProcessStartMode, X509Certificate;
+import 'dart:io' show Directory, File, HttpClient, Platform, Process, X509Certificate, FileMode;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
@@ -29,6 +29,28 @@ bool get isWindows {
   }
 }
 
+/// Log do updater em disco para diagnostico no cliente.
+void _updaterLog(String message) {
+  debugPrint('[Updater] $message');
+  try {
+    String? logDir;
+    final dataDir = Platform.environment['PAES_DATA_DIR'] ?? '';
+    if (dataDir.isNotEmpty && Directory(dataDir).existsSync()) {
+      logDir = p.join(dataDir, 'logs');
+    } else {
+      final localAppData = Platform.environment['LOCALAPPDATA'] ?? '';
+      if (localAppData.isNotEmpty) {
+        logDir = p.join(localAppData, 'PAES_MED_AI', 'data', 'logs');
+      }
+    }
+    if (logDir == null) return;
+    Directory(logDir).createSync(recursive: true);
+    final logFile = File(p.join(logDir, 'updater.log'));
+    final ts = DateTime.now().toIso8601String();
+    logFile.writeAsStringSync('[$ts] $message\n', mode: FileMode.append);
+  } catch (_) {}
+}
+
 /// Tenta abrir uma URL no browser.
 Future<bool> _openUrl(String url) async {
   try {
@@ -45,6 +67,7 @@ Future<bool> _openUrl(String url) async {
 /// Em VMs sem certificados CA atualizados, faz fallback para HTTPS sem
 /// verificacao de certificado (necessario para baixar do GitHub).
 Future<String?> _downloadSetup(String url, void Function(int received, int total)? onProgress) async {
+  _updaterLog('Iniciando download: $url');
   Future<String?> doDownload({required bool insecure}) async {
     final client = HttpClient()
       ..userAgent = 'PAES-MED-AI-Updater'
@@ -58,7 +81,7 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
       req.headers.set('User-Agent', 'PAES-MED-AI-Updater');
       final response = await req.close();
       if (response.statusCode != 200) {
-        debugPrint('Updater: download falhou, status=${response.statusCode}');
+        _updaterLog('Download falhou: HTTP ${response.statusCode}');
         return null;
       }
 
@@ -75,6 +98,7 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
         if (onProgress != null && total > 0) onProgress(received, total);
       }
       await sink.close();
+      _updaterLog('Download concluido: $received bytes -> ${out.path}');
       return out.path;
     } finally {
       client.close();
@@ -84,35 +108,47 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
   try {
     return await doDownload(insecure: false);
   } catch (e) {
-    debugPrint('Updater: HTTPS padrao falhou ($e), tentando sem verificacao de certificado');
+    _updaterLog('HTTPS padrao falhou ($e), tentando sem verificacao de certificado');
     try {
       return await doDownload(insecure: true);
     } catch (e2) {
-      debugPrint('Updater: erro no download: $e2');
+      _updaterLog('Erro no download: $e2');
       return null;
     }
   }
 }
 
-/// Executa o instalador .exe diretamente, sem wrapper .vbs ou .bat.
-/// O Inno Setup abre em MODO WIZARD (Avancar/Instalar/Concluir).
-/// /FORCECLOSEAPPLICATIONS faz o Inno Setup fechar paes_med_ai.exe e
-/// paes_backend.exe automaticamente antes de copiar os arquivos.
-/// Nao usa /DIR= — o Inno Setup detecta o path anterior pelo registro
-/// ou usa DefaultDirName automaticamente (evita "pasta nao encontrada").
+/// Executa o instalador .exe via `cmd /c start`.
+/// Usar `cmd /c start` em vez de `Process.start` direto porque:
+/// 1. `start` respeita o manifest do exe e triggera UAC se necessario
+///    (essencial se o app esta em Program Files)
+/// 2. `Process.start` em modo detached NAO triggera UAC — o instalador
+///    silenciosamente falha ou nao abre
+/// 3. `start` abre o instalador como um processo independente do app
 Future<bool> _runInstaller(String setupPath) async {
+  _updaterLog('Executando instalador: $setupPath');
   try {
-    final r = await Process.start(
-      setupPath,
-      ['/FORCECLOSEAPPLICATIONS', '/NORESTART'],
-      mode: ProcessStartMode.detached,
+    // `cmd /c start "" "setup.exe" /FORCECLOSEAPPLICATIONS /NORESTART`
+    // As aspas vazias "" sao importantes: `start` trata o primeiro
+    // argumento entre aspas como titulo da janela, nao como comando.
+    final result = await Process.run(
+      'cmd',
+      ['/c', 'start', '""', '"$setupPath"', '/FORCECLOSEAPPLICATIONS', '/NORESTART'],
+      runInShell: true,
     );
-    if (r.pid <= 0) return false;
-    // Da um tempinho para o SO iniciar o instalador.
-    await Future.delayed(const Duration(milliseconds: 500));
+    _updaterLog('cmd start exitCode=${result.exitCode} stdout=${result.stdout} stderr=${result.stderr}');
+    // `start` retorna 0 se abriu o processo, mesmo que o instalador
+    // ainda esteja carregando. Se exitCode != 0, algo deu errado.
+    if (result.exitCode != 0) {
+      _updaterLog('Falha: cmd start retornou ${result.exitCode}');
+      return false;
+    }
+    // Da um tempinho para o instalador abrir (UAC pode demorar).
+    await Future.delayed(const Duration(seconds: 2));
+    _updaterLog('Instalador lancado com sucesso');
     return true;
   } catch (e) {
-    debugPrint('Updater: erro ao executar instalador: $e');
+    _updaterLog('Erro ao executar instalador: $e');
     return false;
   }
 }
@@ -124,19 +160,33 @@ Future<bool> _runInstaller(String setupPath) async {
 Future<(bool, String)> runNativeUpdater(String downloadUrl, {void Function(int received, int total)? onProgress}) async {
   if (!isWindows) return (false, 'Atualizacao automatica so funciona no Windows.');
 
+  _updaterLog('=== Iniciando atualizacao ===');
+  _updaterLog('URL: $downloadUrl');
+
   // 1) Download
   final path = await _downloadSetup(downloadUrl, onProgress);
   if (path == null || !File(path).existsSync()) {
-    return (false, 'Nao foi possivel baixar a nova versao. Verifique a conexao.');
+    _updaterLog('Falha: download retornou null ou arquivo nao existe');
+    return (false, 'Nao foi possivel baixar a nova versao. Verifique a conexao com a internet.');
   }
 
-  // 2) Executa o instalador
+  // 2) Verifica tamanho minimo (instalador e ~80-100MB)
+  final fileSize = File(path).lengthSync();
+  _updaterLog('Tamanho do arquivo: ${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB');
+  if (fileSize < 1000000) {
+    _updaterLog('Falha: arquivo muito pequeno ($fileSize bytes) — download incompleto?');
+    return (false, 'O download parece incompleto (${(fileSize / 1024).round()} KB). Tente novamente.');
+  }
+
+  // 3) Executa o instalador
   final ok = await _runInstaller(path);
   if (!ok) {
-    return (false, 'Falha ao iniciar o instalador.');
+    _updaterLog('Falha: instalador nao iniciou');
+    return (false, 'Falha ao iniciar o instalador. Tente baixar manualmente no GitHub.');
   }
 
-  // 3) Instalador iniciado. O app sera fechado pelo caller apos confirmar.
+  // 4) Instalador iniciado. O app sera fechado pelo caller apos confirmar.
+  _updaterLog('=== Atualizacao iniciada com sucesso ===');
   return (true, 'Instalador iniciado. O app será fechado automaticamente.');
 }
 
