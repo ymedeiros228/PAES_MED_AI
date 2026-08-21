@@ -177,8 +177,27 @@ def provider_model_candidates(provider: Provider, initial_model: str | None = No
     return result
 
 
+def _resolve_env_path() -> Path:
+    """Descobre onde escrever o .env.
+    Prioridade: PAES_DATA_DIR (gravavel) > BASE_DIR (bundle, pode ser read-only).
+    """
+    data_dir = os.getenv("PAES_DATA_DIR", "").strip().strip('"')
+    if data_dir and Path(data_dir).is_dir():
+        candidate = Path(data_dir) / ".env"
+        # Testa se consegue escrever
+        try:
+            candidate.parent.mkdir(parents=True, exist_ok=True)
+            test = candidate.parent / ".env_write_test"
+            test.write_text("ok", encoding="utf-8")
+            test.unlink(missing_ok=True)
+            return candidate
+        except Exception:
+            pass
+    return BASE_DIR / ".env"
+
+
 def _update_env_file(updates: dict[str, str]) -> None:
-    env_path = BASE_DIR / ".env"
+    env_path = _resolve_env_path()
     existing = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
     lines = existing.splitlines()
     seen: set[str] = set()
@@ -200,7 +219,7 @@ def _update_env_file(updates: dict[str, str]) -> None:
         if name not in seen:
             output.append(f"{name}={value}")
     content = "\n".join(output).rstrip("\n") + "\n"
-    fd, temp_name = tempfile.mkstemp(prefix=".env.", dir=BASE_DIR)
+    fd, temp_name = tempfile.mkstemp(prefix=".env.", dir=str(env_path.parent))
     try:
         os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
         with os.fdopen(fd, "w", encoding="utf-8") as handle:

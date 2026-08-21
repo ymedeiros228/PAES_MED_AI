@@ -848,7 +848,7 @@ class _SimpleQuickActions extends StatelessWidget {
         label: 'Materiais',
         subtitle: 'PDFs por matéria',
         color: cs.tertiary,
-        onTap: () => context.go('/materiais'),
+        onTap: () => context.go('/biblioteca'),
       ),
       _ActionItem(
         icon: Icons.play_circle_fill,

@@ -66,7 +66,6 @@ class AppShell extends ConsumerWidget {
         _NavItem('/sessao', 'Estudar', Icons.school_rounded),
         _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
         _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
-        _NavItem('/materiais', 'Materiais', Icons.picture_as_pdf_rounded),
         _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
       ]),
     ];

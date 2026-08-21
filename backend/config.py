@@ -3,12 +3,26 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
+# Em PyInstaller (frozen), sys._MEIPASS aponta para _internal/ onde o .env
+# foi copiado via spec datas. Em dev, usa o diretorio do proprio config.py.
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
+# Carrega .env do PAES_DATA_DIR (gravavel) primeiro, depois do BASE_DIR (bundle).
+# Isso permite que o usuario configure suas proprias chaves em PAES_DATA_DIR/.env
+# sem precisar escrever no bundle (que pode ser read-only em Program Files).
+_data_dir = os.getenv("PAES_DATA_DIR", "").strip().strip('"')
+if _data_dir and Path(_data_dir).is_dir():
+    load_dotenv(Path(_data_dir) / ".env", override=True)
+# Carrega o .env do bundle (chaves pre-configuradas do desenvolvedor).
+load_dotenv(BASE_DIR / ".env", override=False)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip()

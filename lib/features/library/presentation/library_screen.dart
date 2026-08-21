@@ -32,6 +32,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool busy = false;
   String? resolutionStats;
   String? lessonStats;
+  int _tabIndex = 0; // 0 = Acervo, 1 = Materiais
   final _searchCtrl = TextEditingController();
   List<Map<String, dynamic>> searchHits = [];
   String? searchNote;
@@ -47,7 +48,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Timer? _searchDebounce;
   List<Map<String, dynamic>> _studyPdfs = [];
   bool _pdfsLoaded = false;
-  String? _expandedSubject;
 
   @override
   void didChangeDependencies() {
@@ -1160,6 +1160,52 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         0;
     final cs = Theme.of(context).colorScheme;
 
+    return Column(
+      children: [
+        // Tab bar
+        Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
+              children: [
+                _LibTab(
+                  label: 'Acervo',
+                  icon: Icons.inventory_2_rounded,
+                  selected: _tabIndex == 0,
+                  onTap: () => setState(() => _tabIndex = 0),
+                ),
+                const SizedBox(width: 8),
+                _LibTab(
+                  label: 'Materiais',
+                  icon: Icons.picture_as_pdf_rounded,
+                  selected: _tabIndex == 1,
+                  onTap: () => setState(() => _tabIndex = 1),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: _tabIndex == 0
+              ? _buildAcervoTab(cs, checklist, officialN, board, hist, pending, pendingItems, pendingN, anosParciais)
+              : _buildMateriaisTab(cs),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAcervoTab(
+    ColorScheme cs,
+    Map<String, dynamic> checklist,
+    int officialN,
+    List board,
+    List hist,
+    Map<String, dynamic> pending,
+    List pendingItems,
+    int pendingN,
+    int anosParciais,
+  ) {
     return ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
@@ -1488,7 +1534,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      ready ? '${n} questões' : label,
+                                      ready ? '$n questões' : label,
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
@@ -1805,12 +1851,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     style: TextStyle(fontSize: 13, color: cs.primary),
                   ),
               ],
-
-              // === SEÇÃO: Estante de Materiais de Estudo ===
-              if (_pdfsLoaded && _studyPdfs.isNotEmpty) ...[
-                const SizedBox(height: 32),
-                _buildLibraryShelf(cs),
-              ],
             ],
           ),
         ),
@@ -1819,353 +1859,85 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   // ==========================================================
-  // Estante de Materiais — disciplinas como cards expandíveis
+  // Tab Materiais — estante enxuta de PDFs de estudo
   // ==========================================================
 
-  Widget _buildLibraryShelf(ColorScheme cs) {
-    final bySubject = <String, List<Map<String, dynamic>>>{};
-    for (final p in _studyPdfs) {
-      final subj = p['subject']?.toString() ?? 'Outros';
-      bySubject.putIfAbsent(subj, () => []).add(p);
+  Widget _buildMateriaisTab(ColorScheme cs) {
+    if (!_pdfsLoaded) {
+      return const Center(child: CircularProgressIndicator());
     }
-    final subjects = bySubject.keys.toList()..sort();
-    final totalPdfs = _studyPdfs.length;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Cabeçalho
-        Container(
-          padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                cs.primaryContainer.withOpacity(0.5),
-                cs.surfaceContainerHighest.withOpacity(0.2),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
-          ),
-          child: Row(
+    if (_studyPdfs.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: cs.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(Icons.collections_bookmark_rounded, size: 28, color: cs.primary),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Estante de Materiais',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: cs.onSurface),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$totalPdfs PDFs em ${subjects.length} disciplinas',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: cs.primary,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(
-                  '$totalPdfs',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: cs.onPrimary),
-                ),
+              Icon(Icons.picture_as_pdf_outlined, size: 56, color: cs.outline),
+              const SizedBox(height: 16),
+              Text('Nenhum PDF disponível.', style: TextStyle(color: cs.outline, fontSize: 15)),
+              const SizedBox(height: 8),
+              Text(
+                'Os materiais de estudo aparecem aqui automaticamente.',
+                style: TextStyle(color: cs.outline.withOpacity(0.6), fontSize: 13),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        // Grid de disciplinas (cards grandes, expandíveis)
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 600;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: subjects.map((subject) {
-                final items = bySubject[subject]!;
-                final meta = _subjectMeta(subject);
-                final isExpanded = _expandedSubject == subject;
-                return SizedBox(
-                  width: isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth,
-                  child: _DisciplineCard(
-                    subject: subject,
-                    items: items,
-                    icon: meta.icon,
-                    color: meta.color,
-                    gradient: meta.gradient,
-                    isExpanded: isExpanded,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() {
-                        _expandedSubject = isExpanded ? null : subject;
-                      });
-                    },
-                    onOpenPdf: (pdf) {
-                      HapticFeedback.selectionClick();
-                      context.go(Uri(path: '/estudar', queryParameters: {
-                        'pdf': pdf['filename']?.toString() ?? '',
-                        'title': pdf['title']?.toString() ?? 'Material',
-                        'subject': subject,
-                      }).toString());
-                    },
-                  ),
-                );
-              }).toList(),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  _SubjectMeta _subjectMeta(String subject) {
-    switch (subject) {
-      case 'Biologia':
-        return const _SubjectMeta(icon: Icons.biotech_rounded, color: Color(0xFF2E7D32), gradient: [Color(0xFF1B5E20), Color(0xFF4CAF50)]);
-      case 'Química':
-        return const _SubjectMeta(icon: Icons.science_rounded, color: Color(0xFFE65100), gradient: [Color(0xFFBF360C), Color(0xFFFF7043)]);
-      case 'Física':
-        return const _SubjectMeta(icon: Icons.bolt_rounded, color: Color(0xFF1565C0), gradient: [Color(0xFF0D47A1), Color(0xFF42A5F5)]);
-      case 'Matemática':
-        return const _SubjectMeta(icon: Icons.calculate_rounded, color: Color(0xFF6A1B9A), gradient: [Color(0xFF4A148C), Color(0xFFAB47BC)]);
-      case 'Geografia':
-        return const _SubjectMeta(icon: Icons.public_rounded, color: Color(0xFF00897B), gradient: [Color(0xFF004D40), Color(0xFF26A69A)]);
-      case 'História':
-        return const _SubjectMeta(icon: Icons.account_balance_rounded, color: Color(0xFF6D4C41), gradient: [Color(0xFF3E2723), Color(0xFF8D6E63)]);
-      case 'Português':
-        return const _SubjectMeta(icon: Icons.menu_book_rounded, color: Color(0xFFC62828), gradient: [Color(0xFFB71C1C), Color(0xFFEF5350)]);
-      case 'Inglês':
-        return const _SubjectMeta(icon: Icons.translate_rounded, color: Color(0xFF0277BD), gradient: [Color(0xFF01579B), Color(0xFF29B6F6)]);
-      case 'Espanhol':
-        return const _SubjectMeta(icon: Icons.language_rounded, color: Color(0xFFF57F17), gradient: [Color(0xFFF57F17), Color(0xFFFFCA28)]);
-      case 'Filosofia':
-        return const _SubjectMeta(icon: Icons.psychology_rounded, color: Color(0xFF455A64), gradient: [Color(0xFF263238), Color(0xFF607D8B)]);
-      case 'Sociologia':
-        return const _SubjectMeta(icon: Icons.groups_rounded, color: Color(0xFF5D4037), gradient: [Color(0xFF3E2723), Color(0xFF6D4C41)]);
+      );
     }
-    return const _SubjectMeta(icon: Icons.book_rounded, color: Color(0xFF607D8B), gradient: [Color(0xFF455A64), Color(0xFF90A4AE)]);
+    return _MateriaisShelf(pdfs: _studyPdfs, cs: cs);
   }
 }
 
 // ============================================================
-// _DisciplineCard — card de disciplina expandível
+// _LibTab — botão de tab customizado (Acervo / Materiais)
 // ============================================================
 
-class _DisciplineCard extends StatelessWidget {
-  const _DisciplineCard({
-    required this.subject,
-    required this.items,
+class _LibTab extends StatelessWidget {
+  const _LibTab({
+    required this.label,
     required this.icon,
-    required this.color,
-    required this.gradient,
-    required this.isExpanded,
+    required this.selected,
     required this.onTap,
-    required this.onOpenPdf,
   });
 
-  final String subject;
-  final List<Map<String, dynamic>> items;
+  final String label;
   final IconData icon;
-  final Color color;
-  final List<Color> gradient;
-  final bool isExpanded;
+  final bool selected;
   final VoidCallback onTap;
-  final ValueChanged<Map<String, dynamic>> onOpenPdf;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-      alignment: Alignment.topCenter,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: cs.surface,
-              border: Border.all(color: color.withOpacity(isExpanded ? 0.5 : 0.15), width: isExpanded ? 2 : 1),
-              boxShadow: isExpanded
-                  ? [BoxShadow(color: color.withOpacity(0.2), blurRadius: 16, offset: const Offset(0, 6))]
-                  : [BoxShadow(color: color.withOpacity(0.06), blurRadius: 6, offset: const Offset(0, 2))],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Column(
-                children: [
-                  // Cabeçalho da disciplina
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-                    decoration: BoxDecoration(
-                      gradient: isExpanded
-                          ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradient)
-                          : null,
-                      color: isExpanded ? null : color.withOpacity(0.04),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: gradient,
-                            ),
-                            borderRadius: BorderRadius.circular(11),
-                          ),
-                          child: Icon(icon, color: Colors.white, size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                subject,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: isExpanded ? Colors.white : cs.onSurface,
-                                ),
-                              ),
-                              Text(
-                                '${items.length} ${items.length == 1 ? "material" : "materiais"}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: isExpanded ? Colors.white.withOpacity(0.8) : cs.onSurface.withOpacity(0.4),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AnimatedRotation(
-                          turns: isExpanded ? 0.5 : 0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: isExpanded ? Colors.white : color,
-                            size: 24,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Lista de PDFs (expandida)
-                  if (isExpanded) ...[
-                    Container(
-                      color: cs.surface,
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < items.length; i++) ...[
-                            _PdfListTile(
-                              pdf: items[i],
-                              color: color,
-                              index: i + 1,
-                              onTap: () => onOpenPdf(items[i]),
-                            ),
-                            if (i < items.length - 1)
-                              Divider(height: 1, indent: 56, color: cs.outlineVariant.withOpacity(0.15)),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+    return GestureDetector(
+      onTap: () { HapticFeedback.selectionClick(); onTap(); },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? cs.primary : cs.surfaceContainerHighest.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? cs.primary : cs.outlineVariant.withOpacity(0.3),
+            width: 1,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _PdfListTile extends StatelessWidget {
-  const _PdfListTile({required this.pdf, required this.color, required this.index, required this.onTap});
-
-  final Map<String, dynamic> pdf;
-  final Color color;
-  final int index;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final title = pdf['title']?.toString() ?? 'Material';
-    final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
-    final sizeStr = sizeKb > 1024 ? '${(sizeKb / 1024).toStringAsFixed(1)} MB' : '${sizeKb.round()} KB';
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 28,
-              child: Text(
-                '$index',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: color.withOpacity(0.4),
-                ),
-              ),
-            ),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.picture_as_pdf_rounded, size: 18, color: color),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface,
-                  height: 1.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            Icon(icon, size: 18, color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.6)),
             const SizedBox(width: 8),
             Text(
-              sizeStr,
-              style: TextStyle(fontSize: 11, color: cs.onSurface.withOpacity(0.35)),
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
+              ),
             ),
-            const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded, size: 20, color: color.withOpacity(0.5)),
           ],
         ),
       ),
@@ -2173,9 +1945,266 @@ class _PdfListTile extends StatelessWidget {
   }
 }
 
-class _SubjectMeta {
-  const _SubjectMeta({required this.icon, required this.color, required this.gradient});
-  final IconData icon;
-  final Color color;
-  final List<Color> gradient;
+// ============================================================
+// _MateriaisShelf — estante enxuta de PDFs (tab Materiais)
+// ============================================================
+
+class _MateriaisShelf extends StatefulWidget {
+  const _MateriaisShelf({required this.pdfs, required this.cs});
+  final List<Map<String, dynamic>> pdfs;
+  final ColorScheme cs;
+
+  @override
+  State<_MateriaisShelf> createState() => _MateriaisShelfState();
+}
+
+class _MateriaisShelfState extends State<_MateriaisShelf> {
+  String? _selectedSubject;
+  String _searchQuery = '';
+  final _searchCtrl = TextEditingController();
+
+  static const _subjectIcons = {
+    'Biologia': Icons.biotech_rounded,
+    'Química': Icons.science_rounded,
+    'Física': Icons.bolt_rounded,
+    'Matemática': Icons.calculate_rounded,
+    'Português': Icons.menu_book_rounded,
+    'Inglês': Icons.language_rounded,
+    'Espanhol': Icons.translate_rounded,
+    'História': Icons.history_edu_rounded,
+    'Geografia': Icons.public_rounded,
+    'Filosofia': Icons.psychology_rounded,
+    'Sociologia': Icons.groups_rounded,
+  };
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filtered {
+    var pdfs = widget.pdfs;
+    if (_selectedSubject != null) {
+      pdfs = pdfs.where((p) => (p['subject'] ?? '') == _selectedSubject).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      pdfs = pdfs.where((p) {
+        final title = (p['title'] ?? '').toString().toLowerCase();
+        final subj = (p['subject'] ?? '').toString().toLowerCase();
+        return title.contains(q) || subj.contains(q);
+      }).toList();
+    }
+    return pdfs;
+  }
+
+  List<String> get _subjects {
+    final s = widget.pdfs.map((p) => (p['subject'] ?? 'Outros').toString()).toSet().toList();
+    s.sort();
+    return s;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = widget.cs;
+    final filtered = _filtered;
+    final totalPdfs = widget.pdfs.length;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        // Header compacto
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cs.primaryContainer.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.collections_bookmark_rounded, size: 22, color: cs.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Materiais de Estudo',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface),
+                  ),
+                  Text(
+                    '$totalPdfs PDFs em ${_subjects.length} disciplinas',
+                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Busca
+        TextField(
+          controller: _searchCtrl,
+          decoration: InputDecoration(
+            hintText: 'Buscar material...',
+            prefixIcon: const Icon(Icons.search, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, size: 20),
+                    onPressed: () { _searchCtrl.clear(); setState(() => _searchQuery = ''); },
+                  )
+                : null,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            filled: true,
+            fillColor: cs.surfaceContainerHighest.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+          onChanged: (v) => setState(() => _searchQuery = v),
+        ),
+        const SizedBox(height: 12),
+
+        // Chips de disciplina
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: FilterChip(
+                  label: const Text('Todas'),
+                  selected: _selectedSubject == null,
+                  onSelected: (_) => setState(() => _selectedSubject = null),
+                ),
+              ),
+              ..._subjects.map((s) => Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: FilterChip(
+                  label: Text(s),
+                  selected: _selectedSubject == s,
+                  avatar: Icon(_subjectIcons[s] ?? Icons.book, size: 14),
+                  onSelected: (_) => setState(() => _selectedSubject = s),
+                ),
+              )),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Lista de PDFs
+        if (filtered.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.search_off, size: 48, color: cs.outline),
+                  const SizedBox(height: 12),
+                  Text('Nenhum material encontrado.', style: TextStyle(color: cs.outline)),
+                ],
+              ),
+            ),
+          )
+        else
+          ...filtered.map((pdf) => _MateriaisPdfCard(pdf: pdf, cs: cs)),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// _MateriaisPdfCard — card compacto de PDF
+// ============================================================
+
+class _MateriaisPdfCard extends StatelessWidget {
+  const _MateriaisPdfCard({required this.pdf, required this.cs});
+  final Map<String, dynamic> pdf;
+  final ColorScheme cs;
+
+  static const _subjectIcons = {
+    'Biologia': Icons.biotech_rounded,
+    'Química': Icons.science_rounded,
+    'Física': Icons.bolt_rounded,
+    'Matemática': Icons.calculate_rounded,
+    'Português': Icons.menu_book_rounded,
+    'Inglês': Icons.language_rounded,
+    'Espanhol': Icons.translate_rounded,
+    'História': Icons.history_edu_rounded,
+    'Geografia': Icons.public_rounded,
+    'Filosofia': Icons.psychology_rounded,
+    'Sociologia': Icons.groups_rounded,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final title = pdf['title']?.toString() ?? 'Material';
+    final subject = pdf['subject']?.toString() ?? 'Outros';
+    final filename = pdf['filename']?.toString() ?? '';
+    final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
+    final sizeStr = sizeKb > 1024 ? '${(sizeKb / 1024).toStringAsFixed(1)} MB' : '${sizeKb.round()} KB';
+    final icon = _subjectIcons[subject] ?? Icons.book;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: cs.outlineVariant.withOpacity(0.2)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          context.go(Uri(path: '/estudar', queryParameters: {
+            'pdf': filename,
+            'title': title,
+            'subject': subject,
+          }).toString());
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: cs.onPrimaryContainer, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(subject, style: TextStyle(fontSize: 11, color: cs.primary, fontWeight: FontWeight.w500)),
+                        const SizedBox(width: 8),
+                        Text(sizeStr, style: TextStyle(fontSize: 11, color: cs.outline.withOpacity(0.5))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 20, color: cs.outline.withOpacity(0.4)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

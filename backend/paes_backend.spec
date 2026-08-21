@@ -17,6 +17,7 @@ definido pelo launcher Flutter ao subir o processo.
 """
 
 from PyInstaller.utils.hooks import collect_all, collect_submodules
+import os
 
 # --- Coleta completa de pacotes com modulos/imports dinamicos ---
 # uvicorn: carrega loops/protocols/lifespan dinamicamente por string.
@@ -41,6 +42,15 @@ _PACKAGES = [
 datas: list = []
 binaries: list = []
 hiddenimports: list = []
+
+# Inclui o .env com as chaves de IA no bundle para que o app funcione
+# out-of-the-box no cliente sem configuracao manual.
+_env_file = ".env"
+if os.path.isfile(_env_file):
+    datas += [(_env_file, ".")]
+    print(f"[spec] Incluindo .env no bundle PyInstaller")
+else:
+    print(f"[spec] AVISO: .env nao encontrado — IA nao funcionara no cliente")
 
 for pkg in _PACKAGES:
     d, b, h = collect_all(pkg)
