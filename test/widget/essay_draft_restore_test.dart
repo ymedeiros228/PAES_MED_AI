@@ -17,7 +17,8 @@ Widget _wrap() {
 }
 
 void main() {
-  testWidgets('restaura rascunho salvo no campo de texto ao abrir', (tester) async {
+  testWidgets('restaura rascunho salvo no campo de texto ao abrir',
+      (tester) async {
     const savedText = 'Este é o meu rascunho salvo previamente para o teste.';
     SharedPreferences.setMockInitialValues({
       'essay_draft_v1': jsonEncode({'theme': 'Tecnologia', 'text': savedText}),
@@ -39,7 +40,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // A nota padrão (não "restaurado") aparece.
-    expect(find.textContaining('Rascunho salvo automaticamente'), findsOneWidget);
+    expect(
+        find.textContaining('Rascunho salvo automaticamente'), findsOneWidget);
     expect(find.textContaining('Rascunho restaurado'), findsNothing);
   });
 }

@@ -35,7 +35,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _bgCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 20),
-    )..repeat();
+    );
+    if (WidgetsBinding.instance.runtimeType.toString() !=
+        'AutomatedTestWidgetsFlutterBinding') {
+      _bgCtrl.repeat();
+    }
     _bgAnim = CurvedAnimation(parent: _bgCtrl, curve: Curves.linear);
   }
 
@@ -104,8 +108,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   String get _dateLabel {
     if (_examDate == null) return 'Toque para escolher a data';
     const months = [
-      'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro'
     ];
     return '${_examDate!.day} de ${months[_examDate!.month - 1]} de ${_examDate!.year}';
   }
@@ -214,103 +228,119 @@ class _WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.teal, AppTheme.teal.withOpacity(0.7)],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - 48).clamp(0, double.infinity),
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Logo
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.teal,
+                            AppTheme.teal.withOpacity(0.7)
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.teal.withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.local_hospital_rounded,
+                        size: 52,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'PAES MED AI',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onSurface,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Seu caminho para Medicina UEMA',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: cs.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    // Features
+                    _FeatureItem(
+                      icon: Icons.menu_book_rounded,
+                      title: '92 materiais de estudo',
+                      subtitle: 'PDFs organizados por disciplina',
+                      cs: cs,
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureItem(
+                      icon: Icons.quiz_rounded,
+                      title: '657 questões',
+                      subtitle: 'Oficiais da UEMA + geradas',
+                      cs: cs,
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureItem(
+                      icon: Icons.smart_toy_rounded,
+                      title: 'Tutor com IA',
+                      subtitle: 'Tire dúvidas enquanto estuda',
+                      cs: cs,
+                    ),
+                    const SizedBox(height: 40),
+                    // Botão
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton(
+                        onPressed: onNext,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTheme.teal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Começar',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.teal.withOpacity(0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.local_hospital_rounded,
-                size: 52,
-                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 32),
-            Text(
-              'PAES MED AI',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: cs.onSurface,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Seu caminho para Medicina UEMA',
-              style: TextStyle(
-                fontSize: 16,
-                color: cs.onSurface.withOpacity(0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 40),
-            // Features
-            _FeatureItem(
-              icon: Icons.menu_book_rounded,
-              title: '92 materiais de estudo',
-              subtitle: 'PDFs organizados por disciplina',
-              cs: cs,
-            ),
-            const SizedBox(height: 16),
-            _FeatureItem(
-              icon: Icons.quiz_rounded,
-              title: '657 questões',
-              subtitle: 'Oficiais da UEMA + geradas',
-              cs: cs,
-            ),
-            const SizedBox(height: 16),
-            _FeatureItem(
-              icon: Icons.smart_toy_rounded,
-              title: 'Tutor com IA',
-              subtitle: 'Tire dúvidas enquanto estuda',
-              cs: cs,
-            ),
-            const SizedBox(height: 40),
-            // Botão
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: FilledButton(
-                onPressed: onNext,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Começar',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -336,143 +366,157 @@ class _DatePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.calendar_today_rounded,
-              size: 64,
-              color: AppTheme.teal,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - 48).clamp(0, double.infinity),
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Quando é a sua prova?',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Opcional — você pode mudar depois em Ajustes',
-              style: TextStyle(
-                fontSize: 14,
-                color: cs.onSurface.withOpacity(0.55),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            // Botão seletor de data
-            InkWell(
-              onTap: onPickDate,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                decoration: BoxDecoration(
-                  color: examDate != null
-                      ? AppTheme.teal.withOpacity(0.08)
-                      : cs.surfaceContainerHighest.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: examDate != null
-                        ? AppTheme.teal.withOpacity(0.4)
-                        : cs.outlineVariant,
-                    width: examDate != null ? 1.5 : 1,
-                  ),
-                ),
-                child: Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: examDate != null
-                            ? AppTheme.teal
-                            : cs.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        examDate != null
-                            ? Icons.event_available_rounded
-                            : Icons.calendar_today_rounded,
-                        color: examDate != null
-                            ? Colors.white
-                            : cs.onSurface.withOpacity(0.5),
-                        size: 22,
-                      ),
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      size: 64,
+                      color: AppTheme.teal,
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            dateLabel,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: examDate == null
-                                  ? cs.onSurface.withOpacity(0.5)
-                                  : cs.onSurface,
-                            ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Quando é a sua prova?',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Opcional — você pode mudar depois em Ajustes',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: cs.onSurface.withOpacity(0.55),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    // Botão seletor de data
+                    InkWell(
+                      onTap: onPickDate,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 18),
+                        decoration: BoxDecoration(
+                          color: examDate != null
+                              ? AppTheme.teal.withOpacity(0.08)
+                              : cs.surfaceContainerHighest.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: examDate != null
+                                ? AppTheme.teal.withOpacity(0.4)
+                                : cs.outlineVariant,
+                            width: examDate != null ? 1.5 : 1,
                           ),
-                          if (examDate != null) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              daysLeft > 0
-                                  ? '$daysLeft dias restantes'
-                                  : 'Data no passado',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: daysLeft > 0
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: examDate != null
                                     ? AppTheme.teal
-                                    : cs.error,
+                                    : cs.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                examDate != null
+                                    ? Icons.event_available_rounded
+                                    : Icons.calendar_today_rounded,
+                                color: examDate != null
+                                    ? Colors.white
+                                    : cs.onSurface.withOpacity(0.5),
+                                size: 22,
                               ),
                             ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dateLabel,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: examDate == null
+                                          ? cs.onSurface.withOpacity(0.5)
+                                          : cs.onSurface,
+                                    ),
+                                  ),
+                                  if (examDate != null) ...[
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      daysLeft > 0
+                                          ? '$daysLeft dias restantes'
+                                          : 'Data no passado',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: daysLeft > 0
+                                            ? AppTheme.teal
+                                            : cs.error,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: cs.onSurface.withOpacity(0.35),
+                            ),
                           ],
-                        ],
+                        ),
                       ),
                     ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: cs.onSurface.withOpacity(0.35),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton(
+                        onPressed: onNext,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTheme.teal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          examDate != null ? 'Próximo' : 'Pular por agora',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: FilledButton(
-                onPressed: onNext,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  examDate != null ? 'Próximo' : 'Pular por agora',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -496,113 +540,129 @@ class _ReadyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Check animado
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppTheme.teal,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.teal.withOpacity(0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                size: 56,
-                color: Colors.white,
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: (constraints.maxHeight - 48).clamp(0, double.infinity),
             ),
-            const SizedBox(height: 32),
-            Text(
-              'Tudo configurado!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: cs.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (hasDate && daysLeft > 0) ...[
-              Text(
-                '$daysLeft',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.teal,
-                  height: 1.0,
-                ),
-              ),
-              Text(
-                'dias até a prova',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: cs.onSurface.withOpacity(0.6),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ] else ...[
-              Text(
-                'Bem-vindo ao PAES MED AI',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: cs.onSurface.withOpacity(0.6),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: FilledButton(
-                onPressed: saving ? null : onFinish,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: saving
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Estudar agora',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Check animado
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: AppTheme.teal,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.teal.withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, size: 20),
                         ],
                       ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 56,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Tudo configurado!',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (hasDate && daysLeft > 0) ...[
+                      Text(
+                        '$daysLeft',
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.teal,
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        'dias até a prova',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: cs.onSurface.withOpacity(0.6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        'Bem-vindo ao PAES MED AI',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: cs.onSurface.withOpacity(0.6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton(
+                        onPressed: saving ? null : onFinish,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTheme.teal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: saving
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Estudar agora',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.arrow_forward_rounded, size: 20),
+                                  ],
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

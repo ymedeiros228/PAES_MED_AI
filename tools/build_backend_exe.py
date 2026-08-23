@@ -26,7 +26,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BACKEND = ROOT / "backend"
-VENV_PY = BACKEND / "venv" / "Scripts" / "python.exe"
+_VENV = BACKEND / "venv" / "Scripts" / "python.exe"
+VENV_PY = _VENV if _VENV.exists() else Path(sys.executable)
 DIST = BACKEND / "dist"
 BUILD = BACKEND / "build"
 SPEC = BACKEND / "paes_backend.spec"
@@ -99,8 +100,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if not VENV_PY.exists():
-        print(f"ERRO: venv nao encontrado em {VENV_PY}")
-        print("      Crie com: python -m venv backend/venv && backend/venv/Scripts/pip install -r backend/requirements.txt")
+        print(f"ERRO: Python nao encontrado em {VENV_PY}")
         return 1
     if not SPEC.exists():
         print(f"ERRO: spec nao encontrado: {SPEC}")

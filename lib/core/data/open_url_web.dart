@@ -1,4 +1,6 @@
 /// Implementação web: abre URL no browser via window.open (JS interop).
+library;
+
 import 'dart:js_interop';
 
 @JS('window.open')

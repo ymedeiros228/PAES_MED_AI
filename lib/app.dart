@@ -64,20 +64,22 @@ final appRouter = GoRouter(
           path: '/fila',
           pageBuilder: (_, __) => _fadePage(const TodayQueueScreen()),
         ),
-        GoRoute(path: '/sessao', pageBuilder: (context, state) {
-          final yearRaw = state.uri.queryParameters['year'];
-          final natRaw = state.uri.queryParameters['preferNatureza'];
-          bool? preferNatureza;
-          if (natRaw == '1' || natRaw == 'true') preferNatureza = true;
-          if (natRaw == '0' || natRaw == 'false') preferNatureza = false;
-          return _fadePage(GuidedSessionScreen(
-            examBoard: state.uri.queryParameters['examBoard'],
-            year: yearRaw == null ? null : int.tryParse(yearRaw),
-            preferNatureza: preferNatureza,
-            subject: state.uri.queryParameters['subject'],
-            topic: state.uri.queryParameters['topic'],
-          ));
-        }),
+        GoRoute(
+            path: '/sessao',
+            pageBuilder: (context, state) {
+              final yearRaw = state.uri.queryParameters['year'];
+              final natRaw = state.uri.queryParameters['preferNatureza'];
+              bool? preferNatureza;
+              if (natRaw == '1' || natRaw == 'true') preferNatureza = true;
+              if (natRaw == '0' || natRaw == 'false') preferNatureza = false;
+              return _fadePage(GuidedSessionScreen(
+                examBoard: state.uri.queryParameters['examBoard'],
+                year: yearRaw == null ? null : int.tryParse(yearRaw),
+                preferNatureza: preferNatureza,
+                subject: state.uri.queryParameters['subject'],
+                topic: state.uri.queryParameters['topic'],
+              ));
+            }),
         GoRoute(
           path: '/adaptativo',
           pageBuilder: (context, state) => _fadePage(AdaptiveTrainingScreen(
@@ -95,11 +97,18 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/questoes/:id',
-          pageBuilder: (_, state) => _fadePage(QuestionDetailScreen(questionId: state.pathParameters['id']!)),
+          pageBuilder: (_, state) => _fadePage(
+              QuestionDetailScreen(questionId: state.pathParameters['id']!)),
         ),
-        GoRoute(path: '/simulados', pageBuilder: (_, __) => _fadePage(const SimulationsScreen())),
-        GoRoute(path: '/cronograma', pageBuilder: (_, __) => _fadePage(const StudyPlanScreen())),
-        GoRoute(path: '/revisoes', pageBuilder: (_, __) => _fadePage(const RevisionsScreen())),
+        GoRoute(
+            path: '/simulados',
+            pageBuilder: (_, __) => _fadePage(const SimulationsScreen())),
+        GoRoute(
+            path: '/cronograma',
+            pageBuilder: (_, __) => _fadePage(const StudyPlanScreen())),
+        GoRoute(
+            path: '/revisoes',
+            pageBuilder: (_, __) => _fadePage(const RevisionsScreen())),
         GoRoute(
           path: '/flashcards',
           pageBuilder: (_, state) {
@@ -108,10 +117,18 @@ final appRouter = GoRouter(
             return _fadePage(FlashcardsScreen(dueOnlyInitial: dueOnly));
           },
         ),
-        GoRoute(path: '/medicina', pageBuilder: (_, __) => _fadePage(const MedicineScreen())),
-        GoRoute(path: '/progresso', pageBuilder: (_, __) => _fadePage(const ProgressScreen())),
-        GoRoute(path: '/banca', pageBuilder: (_, __) => _fadePage(const BankProfileScreen())),
-        GoRoute(path: '/biblioteca', pageBuilder: (_, __) => _fadePage(const LibraryScreen())),
+        GoRoute(
+            path: '/medicina',
+            pageBuilder: (_, __) => _fadePage(const MedicineScreen())),
+        GoRoute(
+            path: '/progresso',
+            pageBuilder: (_, __) => _fadePage(const ProgressScreen())),
+        GoRoute(
+            path: '/banca',
+            pageBuilder: (_, __) => _fadePage(const BankProfileScreen())),
+        GoRoute(
+            path: '/biblioteca',
+            pageBuilder: (_, __) => _fadePage(const LibraryScreen())),
         GoRoute(
           path: '/biblioteca/revisao',
           pageBuilder: (context, state) {
@@ -122,7 +139,9 @@ final appRouter = GoRouter(
             return _fadePage(const _RevisaoRedirect());
           },
         ),
-        GoRoute(path: '/aulas', pageBuilder: (_, __) => _fadePage(const LessonsScreen())),
+        GoRoute(
+            path: '/aulas',
+            pageBuilder: (_, __) => _fadePage(const LessonsScreen())),
         GoRoute(
           path: '/materiais',
           redirect: (_, __) => '/biblioteca',
@@ -139,9 +158,15 @@ final appRouter = GoRouter(
             ));
           },
         ),
-        GoRoute(path: '/redacao', pageBuilder: (_, __) => _fadePage(const EssayScreen())),
-        GoRoute(path: '/aprovacao', pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
-        GoRoute(path: '/conquistas', pageBuilder: (_, __) => _fadePage(const GamificationScreen())),
+        GoRoute(
+            path: '/redacao',
+            pageBuilder: (_, __) => _fadePage(const EssayScreen())),
+        GoRoute(
+            path: '/aprovacao',
+            pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
+        GoRoute(
+            path: '/conquistas',
+            pageBuilder: (_, __) => _fadePage(const GamificationScreen())),
         GoRoute(
           path: '/tutor',
           pageBuilder: (_, state) {
@@ -153,8 +178,12 @@ final appRouter = GoRouter(
             ));
           },
         ),
-        GoRoute(path: '/configuracoes', pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
-        GoRoute(path: '/atualizacoes', pageBuilder: (_, __) => _fadePage(const UpdatesScreen())),
+        GoRoute(
+            path: '/configuracoes',
+            pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
+        GoRoute(
+            path: '/atualizacoes',
+            pageBuilder: (_, __) => _fadePage(const UpdatesScreen())),
         GoRoute(
           path: '/foco',
           pageBuilder: (context, state) {
@@ -283,13 +312,14 @@ class _PaesScrollBehavior extends MaterialScrollBehavior {
   const _PaesScrollBehavior();
 
   @override
-  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
-    // Scrollbar sempre visível no desktop — descobre que há mais conteúdo.
-    return Scrollbar(
-      controller: details.controller,
-      thumbVisibility: true,
-      child: child,
-    );
+  Widget buildScrollbar(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    switch (axisDirectionToAxis(details.direction)) {
+      case Axis.horizontal:
+        return child;
+      case Axis.vertical:
+        return super.buildScrollbar(context, child, details);
+    }
   }
 
   @override
@@ -315,7 +345,9 @@ class _RevisaoRedirectState extends State<_RevisaoRedirect> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Abra Revisar a partir da Biblioteca (ano pareado).')),
+        const SnackBar(
+            content:
+                Text('Abra Revisar a partir da Biblioteca (ano pareado).')),
       );
       context.go('/biblioteca');
     });

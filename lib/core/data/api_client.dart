@@ -43,7 +43,7 @@ class ApiClient {
     }
     // Web sem API_BASE_URL: tenta o mesmo host (deploy unificado backend+front).
     if (kIsWeb) {
-      return '${windowOrigin}';
+      return windowOrigin;
     }
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8000';

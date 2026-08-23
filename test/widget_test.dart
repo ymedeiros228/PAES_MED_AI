@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:paes_med_ai/app.dart';
@@ -21,14 +20,20 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: PaesMedAiApp()));
     await tester.pump();
 
-    for (var i = 0; i < 3; i++) {
-      final continueButton = find.text('Continuar');
-      await tester.ensureVisible(continueButton);
-      await tester.tap(continueButton);
-      await tester.pump();
-    }
+    // Tela 1: Começar
+    final startButton = find.text('Começar');
+    await tester.ensureVisible(startButton);
+    await tester.tap(startButton);
+    await tester.pumpAndSettle();
 
-    final finishButton = find.text('Ir para Hoje');
+    // Tela 2: Pular por agora / Próximo
+    final dateNextButton = find.text('Pular por agora');
+    await tester.ensureVisible(dateNextButton);
+    await tester.tap(dateNextButton);
+    await tester.pumpAndSettle();
+
+    // Tela 3: Estudar agora
+    final finishButton = find.text('Estudar agora');
     await tester.ensureVisible(finishButton);
     expect(finishButton, findsOneWidget);
     expect(tester.takeException(), isNull);

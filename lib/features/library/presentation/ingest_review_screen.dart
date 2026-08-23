@@ -267,8 +267,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
   Widget build(BuildContext context) {
     final meta = widget.args.meta;
     final cs = Theme.of(context).colorScheme;
-    final needsOcr = meta['needsOcr'] == true;
-    final ocrFailed = meta['ocrFailed'] == true;
     final pair = Map<String, dynamic>.from(meta['pairValidation'] as Map? ?? {});
     final unmatchedQ = (pair['unmatchedQuestions'] as List? ?? []);
     final unmatchedA = (pair['unmatchedAnswers'] as List? ?? []);
@@ -381,7 +379,6 @@ class _IngestReviewScreenState extends ConsumerState<IngestReviewScreen> {
                             final i = visible[vi];
                             final q = questions[i];
                             final conf = (q['parseConfidence'] as num?)?.toDouble();
-                            final suspect = _isSuspect(q);
                             return ListTile(
                               selected: i == index,
                               dense: true,

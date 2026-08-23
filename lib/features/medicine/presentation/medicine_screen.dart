@@ -80,11 +80,14 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
       ),
       data: (payload) {
         final items = (payload['items'] as List? ?? []);
-        final basis = Map<String, dynamic>.from(payload['statsBasis'] as Map? ?? {});
-        final curation = Map<String, dynamic>.from(payload['curation'] as Map? ?? {});
+        final basis =
+            Map<String, dynamic>.from(payload['statsBasis'] as Map? ?? {});
+        final curation =
+            Map<String, dynamic>.from(payload['curation'] as Map? ?? {});
         final officialN = basis['officialCount'] as int? ?? 0;
         _rankItems = [
-          for (final raw in items.take(24)) Map<String, dynamic>.from(raw as Map),
+          for (final raw in items.take(24))
+            Map<String, dynamic>.from(raw as Map),
         ];
         if (selected >= _rankItems.length && _rankItems.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,7 +96,6 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         }
         final realN = curation['realCount'] as int? ?? 0;
         final realPct = curation['realPercent'];
-        final crossN = curation['crossDomainCount'] as int? ?? 0;
         final natN = curation['naturezaCount'] as int? ?? 0;
         final cs = Theme.of(context).colorScheme;
 
@@ -114,7 +116,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
 
                   if (officialN == 0)
                     QuietEmpty(
-                      message: 'Sem provas oficiais ainda — ranking usa base de treino.',
+                      message:
+                          'Sem provas oficiais ainda — ranking usa base de treino.',
                       action: TextButton(
                         onPressed: () => context.go('/biblioteca'),
                         child: const Text('Biblioteca'),
@@ -129,11 +132,17 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           Expanded(
                             child: Text(
                               'Provas UEMA na base',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer),
                             ),
                           ),
                           FilledButton.tonal(
-                            onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+                            onPressed: () => context.go(
+                                '/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
                             child: const Text('Sessão Natureza'),
                           ),
                         ],
@@ -149,7 +158,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   ),
                   if (items.isEmpty)
                     QuietEmpty(
-                      message: 'Nada ranqueado ainda — faça uma sessão primeiro.',
+                      message:
+                          'Nada ranqueado ainda — faça uma sessão primeiro.',
                       action: TextButton(
                         onPressed: () => context.go('/sessao'),
                         child: const Text('Sessão'),
@@ -165,8 +175,13 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               final item = _rankItems[i];
                               final s = item['subject']?.toString() ?? '';
                               final t = item['topic']?.toString() ?? '';
-                              final nat = const {'Biologia', 'Química', 'Física'}.contains(s);
-                              final status = item['curationStatus']?.toString() ?? '';
+                              final nat = const {
+                                'Biologia',
+                                'Química',
+                                'Física'
+                              }.contains(s);
+                              final status =
+                                  item['curationStatus']?.toString() ?? '';
                               final curated = item['curated'] == true;
                               String? badge;
                               if (curated) {
@@ -174,14 +189,15 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               } else if (status == 'natureza' || nat) {
                                 badge = 'a revisar';
                               }
-                              final nOff = item['frequency'] ?? item['realInTopic'] ?? item['n'];
+                              final nOff = item['frequency'] ??
+                                  item['realInTopic'] ??
+                                  item['n'];
                               final years = item['years'] as List? ?? const [];
                               final yearHint = years.isNotEmpty
                                   ? ' · anos ${years.take(3).join(', ')}'
                                   : '';
-                              final countHint = nOff != null
-                                  ? ' · $nOff na base'
-                                  : '';
+                              final countHint =
+                                  nOff != null ? ' · $nOff na base' : '';
                               final sessao = _sessionPath(item, officialN);
                               return PlaylistTile(
                                 title: s,
@@ -210,11 +226,13 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         color: cs.onSurface,
                       ),
                     ),
-                    subtitle: const Text('Rascunhos, assuntos duvidosos, inventário e curadoria'),
+                    subtitle: const Text(
+                        'Rascunhos, assuntos duvidosos, inventário e curadoria'),
                     children: [
                       FutureBuilder(
                         key: ValueKey('drafts-$tick'),
-                        future: apiClient.get('/api/professor/draft-queue?limit=5'),
+                        future:
+                            apiClient.get('/api/professor/draft-queue?limit=5'),
                         builder: (context, snap) {
                           if (snap.connectionState == ConnectionState.waiting) {
                             return const CompactStatus(
@@ -242,20 +260,25 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                             children: [
                               SectionLabel(
                                 'Para revisar hoje',
-                                hint: '$n rascunho(s) Natureza — Aceitar grava como revisão ok (não é texto da banca)',
+                                hint:
+                                    '$n rascunho(s) Natureza — Aceitar grava como revisão ok (não é texto da banca)',
                               ),
                               for (final raw in draftItems.take(5))
                                 Builder(
                                   builder: (context) {
-                                    final it = Map<String, dynamic>.from(raw as Map);
-                                    final id = it['questionId']?.toString() ?? '';
+                                    final it =
+                                        Map<String, dynamic>.from(raw as Map);
+                                    final id =
+                                        it['questionId']?.toString() ?? '';
                                     final ql = it['studentLabel']?.toString() ??
                                         it['resolutionQuality']?.toString() ??
                                         'rascunho';
                                     return PlaylistTile(
                                       title: '${it['subject']}',
                                       subtitle: '${it['topic']}',
-                                      badge: ql == 'template' ? 'modelo' : 'rascunho',
+                                      badge: ql == 'template'
+                                          ? 'modelo'
+                                          : 'rascunho',
                                       leadingIcon: Icons.edit_note_rounded,
                                       onPlay: () {
                                         HapticFeedback.selectionClick();
@@ -269,16 +292,21 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                                               '/api/professor/draft-accept',
                                               {'questionId': id},
                                             );
-                                            ref.read(refreshTickProvider.notifier).state++;
+                                            ref
+                                                .read(refreshTickProvider
+                                                    .notifier)
+                                                .state++;
                                             ref.invalidate(medicineProvider);
                                           } catch (e) {
                                             if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
                                                 SnackBar(
                                                   content: Text(
                                                     humanApiError(
                                                       e,
-                                                      fallback: 'Não deu para aceitar o rascunho.',
+                                                      fallback:
+                                                          'Não deu para aceitar o rascunho.',
                                                     ),
                                                   ),
                                                 ),
@@ -298,7 +326,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       FutureBuilder(
                         key: ValueKey('dirty-$tick'),
-                        future: apiClient.get('/api/curation/dirty-labels?limit=8'),
+                        future:
+                            apiClient.get('/api/curation/dirty-labels?limit=8'),
                         builder: (context, snap) {
                           if (snap.connectionState == ConnectionState.waiting) {
                             return const SizedBox.shrink();
@@ -350,7 +379,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                           onPressed: () async {
                             HapticFeedback.mediumImpact();
                             try {
-                              final data = await apiClient.post('/api/professor/batch-fill', {
+                              final data = await apiClient
+                                  .post('/api/professor/batch-fill', {
                                 'limit': 8,
                                 'preferUema': true,
                               });
@@ -363,7 +393,10 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                               ref.read(refreshTickProvider.notifier).state++;
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'))));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(humanApiError(e,
+                                      fallback:
+                                          'Não deu para concluir. Tente de novo.'))));
                             }
                           },
                           child: const Text('Gerar'),
@@ -371,23 +404,29 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Reclassificar assuntos'),
-                        subtitle: const Text('Organiza as materias automaticamente'),
+                        subtitle:
+                            const Text('Organiza as materias automaticamente'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             HapticFeedback.selectionClick();
                             try {
-                              await apiClient.post('/api/ingest/classify-pending', {});
+                              await apiClient
+                                  .post('/api/ingest/classify-pending', {});
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Materias organizadas com sucesso!'),
+                                  content:
+                                      Text('Materias organizadas com sucesso!'),
                                 ),
                               );
                               ref.invalidate(medicineProvider);
                               ref.read(refreshTickProvider.notifier).state++;
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Tente de novo.'))));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(humanApiError(e,
+                                          fallback: 'Tente de novo.'))));
                             }
                           },
                           child: const Text('Organizar'),
@@ -395,45 +434,60 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                       ListTile(
                         title: const Text('Completar explicações Natureza'),
-                        subtitle: const Text('4 eixos didáticos — modelo de apoio, não texto da banca'),
+                        subtitle: const Text(
+                            '4 eixos didáticos — modelo de apoio, não texto da banca'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             HapticFeedback.selectionClick();
                             try {
-                              final data = await apiClient.post('/api/curation/promote-natureza-real', {
+                              final data = await apiClient
+                                  .post('/api/curation/promote-natureza-real', {
                                 'limit': 8,
                               });
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Completadas: ${(data as Map)['promoted'] ?? 0}')),
+                                SnackBar(
+                                    content: Text(
+                                        'Completadas: ${(data as Map)['promoted'] ?? 0}')),
                               );
                               ref.invalidate(medicineProvider);
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'))));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(humanApiError(e,
+                                      fallback:
+                                          'Não deu para concluir. Tente de novo.'))));
                             }
                           },
                           child: const Text('Rodar'),
                         ),
                       ),
                       ListTile(
-                        title: const Text('Completar base didática (todas as áreas)'),
-                        subtitle: const Text('Não inventa frequência na prova; só preenche explicação de treino'),
+                        title: const Text(
+                            'Completar base didática (todas as áreas)'),
+                        subtitle: const Text(
+                            'Não inventa frequência na prova; só preenche explicação de treino'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             try {
-                              final data = await apiClient.post('/api/curation/promote-all-pending', {
+                              final data = await apiClient
+                                  .post('/api/curation/promote-all-pending', {
                                 'limit': 40,
                               });
                               if (!context.mounted) return;
                               final m = data as Map;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Elevados: ${m['promotedTotal'] ?? 0}')),
+                                SnackBar(
+                                    content: Text(
+                                        'Elevados: ${m['promotedTotal'] ?? 0}')),
                               );
                               ref.invalidate(medicineProvider);
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'))));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(humanApiError(e,
+                                      fallback:
+                                          'Não deu para concluir. Tente de novo.'))));
                             }
                           },
                           child: const Text('Rodar'),

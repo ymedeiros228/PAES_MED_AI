@@ -34,10 +34,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 FLUTTER = Path(r"C:\Users\Yuri\flutter\bin\flutter.bat")
 INNO = Path(r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe")
 
+_clean_path = os.environ.get("PATH", "").replace('"', '')
+os.environ["PATH"] = f"C:\\Program Files\\Git\\cmd;C:\\Program Files\\Git\\bin;C:\\Users\\Yuri\\flutter\\bin;{_clean_path}"
+
 
 def _run(cmd: list[str] | str, *, cwd: Path | None = None, check: bool = True) -> str:
     if isinstance(cmd, list):
-        cmd_str = " ".join(str(c) for c in cmd)
+        cmd_str = subprocess.list2cmdline([str(c) for c in cmd])
     else:
         cmd_str = cmd
     print(f"$ {cmd_str}")
@@ -225,12 +228,12 @@ def main() -> int:
                 raise FileNotFoundError(f"Instalador nao encontrado: {asset}")
             _create_github_release(version, asset)
 
-        print(f"\\n🎉 Release v{version} publicado com sucesso!")
+        print(f"\n[SUCESSO] Release v{version} publicado com sucesso!")
         print(f"Download: https://github.com/ymedeiros228/PAES_MED_AI/releases/tag/v{version}")
         return 0
 
     except Exception as exc:
-        print(f"\\n❌ Erro: {exc}")
+        print(f"\n[ERRO] {exc}")
         return 1
 
 
