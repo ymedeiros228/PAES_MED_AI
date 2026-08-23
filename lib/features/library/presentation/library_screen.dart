@@ -1117,6 +1117,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  /// Histórico sem repetições, mantendo a busca mais recente de cada termo.
+  List<Map<String, dynamic>> get _recentSearches {
+    final seen = <String>{};
+    final out = <Map<String, dynamic>>[];
+    for (final h in searchHistory) {
+      final q = h['q']?.toString().trim() ?? '';
+      if (q.isEmpty || !seen.add(q.toLowerCase())) continue;
+      out.add(h);
+      if (out.length == 8) break;
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (busy && library == null) {
@@ -1402,7 +1415,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           ),
                       ],
                     ),
-                    if (searchHistory.isNotEmpty) ...[
+                    if (_recentSearches.isNotEmpty) ...[
                       const SizedBox(height: kGap12),
                       Text(
                         'Buscas recentes',
@@ -1413,7 +1426,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         spacing: kGap8,
                         runSpacing: kGap8,
                         children: [
-                          for (final h in searchHistory.take(8))
+                          for (final h in _recentSearches)
                             ActionChip(
                               label: Text(
                                 h['q']?.toString() ?? '',
