@@ -119,15 +119,15 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
     } catch (e) {
       String msg;
       if (e is SocketException) {
-        msg = 'Sem conexao com a internet. Verifique sua rede e tente novamente.';
+        msg = 'Sem conexão com a internet. Verifique sua rede e tente novamente.';
       } else if (e is TimeoutException) {
-        msg = 'Tempo esgotado ao verificar atualizacoes. Tente novamente.';
+        msg = 'Tempo esgotado ao verificar atualizações. Tente novamente.';
       } else if (e.toString().contains('HandshakeException')) {
         msg = 'Erro de certificado SSL. Tente novamente em uma rede diferente.';
       } else if (e.toString().contains('403')) {
-        msg = 'GitHub limitou as requisicoes. Aguarde alguns minutos e tente novamente.';
+        msg = 'GitHub limitou as requisições. Aguarde alguns minutos e tente novamente.';
       } else {
-        msg = 'Nao foi possivel verificar atualizacoes. Tente novamente.';
+        msg = 'Não foi possível verificar atualizações. Tente novamente.';
       }
       state = UpdateState(error: msg, checking: false);
     }

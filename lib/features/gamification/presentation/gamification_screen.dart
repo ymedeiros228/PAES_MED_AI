@@ -50,7 +50,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        error = humanApiError(e, fallback: 'Nao foi possivel carregar conquistas.');
+        error = humanApiError(e, fallback: 'Não foi possível carregar conquistas.');
         loading = false;
       });
     }
@@ -173,7 +173,7 @@ class _LevelCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Nivel $level - $levelTitle',
+                        'Nível $level - $levelTitle',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,

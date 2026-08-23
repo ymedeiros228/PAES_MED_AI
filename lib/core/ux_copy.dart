@@ -6,7 +6,7 @@ const Map<String, String> kErrorTypeLabelsPt = {
   'conceito': 'Conteúdo',
   'interpretacao': 'Interpretação',
   'calculo': 'Cálculo',
-  'distracao': 'Atração',
+  'distracao': 'Distração',
   'tempo': 'Tempo',
 };
 

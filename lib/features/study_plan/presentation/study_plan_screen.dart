@@ -592,7 +592,7 @@ class _SmartPlanCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$studyDays dias de estudo + $reviewDays de revisao - $totalTopics topicos',
+                        '$studyDays dias de estudo + $reviewDays de revisão - $totalTopics tópicos',
                         style: TextStyle(
                           fontSize: 13,
                           color: cs.onPrimaryContainer.withOpacity(0.85),
@@ -635,13 +635,13 @@ class _SmartPlanCard extends StatelessWidget {
               Row(
                 children: [
                   if (todayGoals['questions'] != null)
-                    _GoalChip(icon: Icons.quiz_outlined, label: '${todayGoals['questions']} questoes'),
+                    _GoalChip(icon: Icons.quiz_outlined, label: '${todayGoals['questions']} questões'),
                   const SizedBox(width: 8),
                   if (todayGoals['flashcards'] != null)
                     _GoalChip(icon: Icons.style_outlined, label: '${todayGoals['flashcards']} cards'),
                   if (todayGoals['essay'] == true) ...[
                     const SizedBox(width: 8),
-                    _GoalChip(icon: Icons.edit_outlined, label: 'Redacao'),
+                    _GoalChip(icon: Icons.edit_outlined, label: 'Redação'),
                   ],
                 ],
               ),

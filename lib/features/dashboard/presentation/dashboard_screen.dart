@@ -46,10 +46,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         TourOverlay.maybeShow(
           context,
           key: 'tour_dashboard_v1',
-          title: 'Bem-vindo ao Inicio',
-          body: 'Aqui voce ve tudo: seu nivel de XP, streak de estudo, '
-              'topico do dia, flashcards para revisar e atalhos rapidos. '
-              'Aperte "Estudar" para comecar.',
+          title: 'Bem-vindo ao Início',
+          body: 'Aqui você vê tudo: seu nível de XP, streak de estudo, '
+              'tópico do dia, flashcards para revisar e atalhos rápidos. '
+              'Aperte "Estudar" para começar.',
           icon: Icons.home_rounded,
         );
       }
