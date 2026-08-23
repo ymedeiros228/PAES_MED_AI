@@ -92,9 +92,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           context,
           key: 'tour_estudar_v1',
           title: 'Estudar',
-          body: 'Aperte "Estudar agora" e o sistema escolhe tudo pra voce: '
-              'topico, questoes e revisao. Quer escolher? Toque em '
-              '"Personalizar sessao" abaixo.',
+          body: 'Aperte "Estudar agora" e o sistema escolhe tudo pra você: '
+              'tópico, questões e revisão. Quer escolher? Toque em '
+              '"Personalizar sessão" abaixo.',
           icon: Icons.school_rounded,
         );
       }
@@ -1645,22 +1645,22 @@ class _SessionInsightBanner extends StatelessWidget {
     if (total == 0) {
       return const SizedBox.shrink();
     } else if (acc >= 0.8) {
-      message = 'Excelente! Voce dominou $topic em $subject. '
-          'Hora de tentar um topico novo ou um simulado completo.';
+      message = 'Excelente! Você dominou $topic em $subject. '
+          'Hora de tentar um tópico novo ou um simulado completo.';
       icon = Icons.celebration_rounded;
       color = const Color(0xFF4CAF50);
     } else if (acc >= 0.6) {
       message = 'Bom ritmo em $topic! Revise os $wrongCount erro(s) e '
-          'tente novamente amanha para consolidar.';
+          'tente novamente amanhã para consolidar.';
       icon = Icons.trending_up_rounded;
       color = cs.primary;
     } else if (acc >= 0.4) {
-      message = 'Voce acertou $correctCount de $total em $topic. '
-          'Leia a teoria antes de tentar de novo - vai fazer diferenca.';
+      message = 'Você acertou $correctCount de $total em $topic. '
+          'Leia a teoria antes de tentar de novo - vai fazer diferença.';
       icon = Icons.menu_book_rounded;
       color = const Color(0xFFE8A04B);
     } else {
-      message = 'Topico dificil: $topic em $subject. Nao desanime! '
+      message = 'Tópico difícil: $topic em $subject. Não desanime! '
           'Comece pela teoria e volte com calma.';
       icon = Icons.school_rounded;
       color = cs.error;

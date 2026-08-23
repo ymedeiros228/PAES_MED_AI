@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -30,37 +32,8 @@ from routers import (
 )
 from seed import seed
 
-app = FastAPI(title="PAES MED AI API", version="1.0.0")
-# Comprime respostas JSON > 1KB — listas de questões/respostas ficam 70-80% menores.
-app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=EXTRA_ORIGINS,
-    allow_origin_regex=LOCAL_ORIGIN_REGEX,
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-for module in (
-    meta,
-    questions,
-    stats,
-    study,
-    simulations,
-    ingest,
-    library,
-    media,
-    essays,
-    flashcards,
-    materials,
-    ai,
-):
-    app.include_router(module.router)
-
-
-@app.on_event("startup")
-def on_startup() -> None:
+def _run_startup() -> None:
     for sub in ("provas", "gabaritos", "edital", "aulas", "backups", "inventory"):
         (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
     init_db()
@@ -113,6 +86,41 @@ def on_startup() -> None:
                 print(f"Backup automático falhou (não fatal): {exc}")
             except Exception:
                 pass
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    _run_startup()
+    yield
+
+
+app = FastAPI(title="PAES MED AI API", version="1.0.0", lifespan=lifespan)
+# Comprime respostas JSON > 1KB — listas de questões/respostas ficam 70-80% menores.
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=EXTRA_ORIGINS,
+    allow_origin_regex=LOCAL_ORIGIN_REGEX,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+for module in (
+    meta,
+    questions,
+    stats,
+    study,
+    simulations,
+    ingest,
+    library,
+    media,
+    essays,
+    flashcards,
+    materials,
+    ai,
+):
+    app.include_router(module.router)
 
 
 # --- Servir front web (deploy unificado) ---

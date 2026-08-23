@@ -62,7 +62,7 @@ class AppShell extends ConsumerWidget {
   List<_NavGroup> _groups({required int officialCount}) {
     return [
       const _NavGroup('Principal', [
-        _NavItem('/dashboard', 'Inicio', Icons.home_rounded),
+        _NavItem('/dashboard', 'Início', Icons.home_rounded),
         _NavItem('/sessao', 'Estudar', Icons.school_rounded),
         _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
         _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),

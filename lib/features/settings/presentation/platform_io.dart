@@ -158,7 +158,7 @@ Future<bool> _runInstaller(String setupPath) async {
 /// onProgress: (recebido, total) em bytes.
 /// Retorna (sucesso, mensagem).
 Future<(bool, String)> runNativeUpdater(String downloadUrl, {void Function(int received, int total)? onProgress}) async {
-  if (!isWindows) return (false, 'Atualizacao automatica so funciona no Windows.');
+  if (!isWindows) return (false, 'Atualização automática só funciona no Windows.');
 
   _updaterLog('=== Iniciando atualizacao ===');
   _updaterLog('URL: $downloadUrl');
@@ -167,7 +167,7 @@ Future<(bool, String)> runNativeUpdater(String downloadUrl, {void Function(int r
   final path = await _downloadSetup(downloadUrl, onProgress);
   if (path == null || !File(path).existsSync()) {
     _updaterLog('Falha: download retornou null ou arquivo nao existe');
-    return (false, 'Nao foi possivel baixar a nova versao. Verifique a conexao com a internet.');
+    return (false, 'Não foi possível baixar a nova versão. Verifique a conexão com a internet.');
   }
 
   // 2) Verifica tamanho minimo (instalador e ~80-100MB)
