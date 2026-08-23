@@ -1158,37 +1158,61 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final anosParciais = (checklist['anosParciaisCount'] as int?) ??
         (checklist['anosParciais'] as List?)?.length ??
         0;
+    final readyYears = gridAll
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .where((g) => g['uiStatus']?.toString() == 'committed' || (g['committedCount'] as int? ?? 0) > 0)
+        .length;
     final cs = Theme.of(context).colorScheme;
 
     return Column(
       children: [
-        // Tab bar
-        Material(
-          color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              children: [
-                _LibTab(
-                  label: 'Acervo',
-                  icon: Icons.inventory_2_rounded,
-                  selected: _tabIndex == 0,
-                  onTap: () => setState(() => _tabIndex = 0),
+        PageBody(
+          padding: const EdgeInsets.fromLTRB(28, 20, 28, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PageHeader(
+                eyebrow: 'Acervo UEMA',
+                title: 'Biblioteca',
+                badge: officialN > 0 ? '$officialN oficiais' : null,
+                subtitle: _tabIndex == 0
+                    ? (officialN > 0
+                        ? 'Provas oficiais prontas para estudar, organizadas por ano.'
+                        : 'Importe as provas oficiais para começar a estudar.')
+                    : (_studyPdfs.isEmpty
+                        ? 'Materiais de estudo em PDF aparecem aqui automaticamente.'
+                        : 'Materiais de estudo em PDF, filtrados por disciplina.'),
+                trailing: IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
+                  icon: busy
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.refresh_rounded),
                 ),
-                const SizedBox(width: 8),
-                _LibTab(
-                  label: 'Materiais',
-                  icon: Icons.picture_as_pdf_rounded,
-                  selected: _tabIndex == 1,
-                  onTap: () => setState(() => _tabIndex = 1),
-                ),
-              ],
-            ),
+              ),
+              _SegmentedTabs(
+                index: _tabIndex,
+                onChanged: (i) => setState(() => _tabIndex = i),
+                items: [
+                  _SegmentItem(
+                    label: 'Acervo',
+                    icon: Icons.inventory_2_rounded,
+                    hint: readyYears > 0 ? '$readyYears ${readyYears == 1 ? 'ano' : 'anos'}' : null,
+                  ),
+                  _SegmentItem(
+                    label: 'Materiais',
+                    icon: Icons.picture_as_pdf_rounded,
+                    hint: _studyPdfs.isEmpty ? null : '${_studyPdfs.length} PDFs',
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
         Expanded(
           child: _tabIndex == 0
-              ? _buildAcervoTab(cs, checklist, officialN, board, hist, pending, pendingItems, pendingN, anosParciais)
+              ? _buildAcervoTab(cs, checklist, officialN, board, hist, pending, pendingItems, pendingN,
+                  anosParciais, readyYears)
               : _buildMateriaisTab(cs),
         ),
       ],
@@ -1205,77 +1229,97 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     List pendingItems,
     int pendingN,
     int anosParciais,
+    int readyYears,
   ) {
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: EdgeInsets.zero,
       children: [
         PageBody(
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PageHeader(
-                eyebrow: 'Materiais',
-                title: 'Biblioteca',
-                subtitle: officialN > 0
-                    ? '$officialN questões oficiais disponíveis'
-                    : 'Importe as provas oficiais e comece a estudar',
-                trailing: IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
-                  icon: busy
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.refresh_rounded),
+              if (officialN > 0 || readyYears > 0 || pendingN > 0) ...[
+                StatsStrip(
+                  items: [
+                    ('$officialN', 'questões oficiais'),
+                    ('$readyYears', readyYears == 1 ? 'ano pronto' : 'anos prontos'),
+                    ('$pendingN', pendingN == 1 ? 'para revisar' : 'para revisar'),
+                  ],
                 ),
-              ),
+                const SizedBox(height: kGap16),
+              ],
 
               if (busy)
                 SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: kGap12),
                   color: cs.secondaryContainer.f45,
                   child: Row(
                     children: [
                       const SoftLoader(compact: true),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: kGap12),
                       Expanded(
                         child: Text(
                           msg ?? 'Trabalhando no acervo… pode demorar um pouco.',
-                          style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
+                          style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.f85),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-              if (showFirstRunCoach && officialN == 0) ...[
+              // Boas-vindas — só quando o acervo está vazio.
+              if (showFirstRunCoach && officialN == 0)
                 SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  key: _semana1PanelKey,
+                  margin: const EdgeInsets.only(bottom: kGap16),
                   color: cs.primaryContainer.f55,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bem-vindo — Semana 1', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
-                        'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9)),
+                      Row(
+                        children: [
+                          Icon(Icons.waving_hand_rounded, color: cs.primary, size: 22),
+                          const SizedBox(width: kGap8),
+                          Text(
+                            'Bem-vindo — Semana 1',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: cs.onPrimaryContainer,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: kGap8),
+                      Text(
+                        'Importe as provas oficiais da UEMA (2024–26) para começar a estudar. '
+                        'Sem PDFs no computador? Use Abrir provas e coloque paes_ANO.pdf na pasta.',
+                        style: TextStyle(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.f90),
+                      ),
+                      const SizedBox(height: kGap12),
                       Wrap(
-                        spacing: 8,
+                        spacing: kGap8,
+                        runSpacing: kGap8,
                         children: [
                           FilledButton.icon(
                             onPressed: busy ? null : () { HapticFeedback.mediumImpact(); unawaited(_semana1Real()); },
                             icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('Atualizar 2024–26'),
+                            label: const Text('Importar provas 2024–26'),
                           ),
-                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
+                          OutlinedButton(
+                            onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('provas'); },
+                            child: const Text('Abrir provas'),
+                          ),
+                          TextButton(
+                            onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); },
+                            child: const Text('Depois'),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-              ],
 
               if (partialLoadNote != null && error == null) ...[
                 QuietEmpty(
@@ -1285,170 +1329,172 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     child: const Text('Tentar'),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: kGap12),
               ],
 
-              const SizedBox(height: 8),
-              TextField(
-                controller: _searchCtrl,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  labelText: 'Buscar no acervo',
-                  hintText: 'ex.: genética, osmose…',
-                  suffixIcon: IconButton(
-                    tooltip: 'Buscar',
-                    onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
-                    icon: searching
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.search_rounded),
-                  ),
-                  border: const OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => _runSearch(),
-                onChanged: _onSearchChanged,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  for (final kind in const [
-                    ('todos', 'Todos'),
-                    ('oficial', 'Oficial'),
-                    ('estudo', 'Estudo'),
-                  ])
-                    ChoiceChip(
-                      label: Text(kind.$2),
-                      selected: searchSourceKind == kind.$1,
-                      onSelected: (_) {
-                        HapticFeedback.selectionClick();
-                        setState(() => searchSourceKind = kind.$1);
-                        if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
-                      },
-                    ),
-                ],
-              ),
-              if (searchHistoryNote != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  searchHistoryNote!,
-                  style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-              if (searchHistory.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+              // ---------------- Busca ----------------
+              SurfacePanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final h in searchHistory.take(8))
-                      ActionChip(
-                        label: Text(
-                          h['q']?.toString() ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    TextField(
+                      controller: _searchCtrl,
+                      textInputAction: TextInputAction.search,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar no acervo — ex.: genética, osmose…',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        suffixIcon: searching
+                            ? const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : (_searchCtrl.text.isEmpty
+                                ? null
+                                : IconButton(
+                                    tooltip: 'Limpar',
+                                    icon: const Icon(Icons.close_rounded, size: 18),
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      _searchCtrl.clear();
+                                      setState(() {
+                                        searchHits = [];
+                                        searchNote = null;
+                                      });
+                                    },
+                                  )),
+                        filled: true,
+                        fillColor: cs.surfaceContainerHighest.f50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(kRadiusButton),
+                          borderSide: BorderSide.none,
                         ),
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          final q = h['q']?.toString() ?? '';
-                          if (q.isEmpty) return;
-                          _searchCtrl.text = q;
-                          final sk = h['sourceKind']?.toString();
-                          if (sk == 'oficial' || sk == 'estudo') {
-                            searchSourceKind = sk!;
-                          } else {
-                            searchSourceKind = 'todos';
-                          }
-                          _runSearch();
-                        },
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(kRadiusButton),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: kGap16, vertical: 14),
                       ),
-                  ],
-                ),
-              ],
-              if (searchNote != null && searchHits.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: QuietEmpty(
-                    message: searchNote!,
-                    action: TextButton(
-                      onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
-                      child: const Text('Tentar'),
+                      onSubmitted: (_) => _runSearch(),
+                      onChanged: _onSearchChanged,
                     ),
-                  ),
-                ),
-              if (searchHits.isNotEmpty) ...[
-                SectionLabel('Resultados', hint: '↑/↓ J/K · Enter abre · ${searchHits.length} local'),
-                for (var i = 0; i < searchHits.take(12).length; i++)
-                  Builder(
-                    builder: (_) {
-                      final hit = searchHits[i];
-                      return PlaylistTile(
-                        title: hit['label']?.toString() ?? 'arquivo',
-                        subtitle:
-                            '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
-                        badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
-                        active: i == _hitSelected,
-                        leadingIcon: hit['kind'] == 'question'
-                            ? Icons.quiz_outlined
-                            : Icons.description_outlined,
-                        onPlay: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _hitSelected = i);
-                          _openSearchHit(hit);
-                        },
-                      );
-                    },
-                  ),
-              ],
-
-              // Painel de boas-vindas só aparece quando não há oficiais
-              if (showFirstRunCoach && officialN == 0) ...[
-                SurfacePanel(
-                  key: _semana1PanelKey,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  color: cs.primaryContainer.withOpacity(0.65),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.waving_hand_rounded, color: cs.primary, size: 24),
-                          const SizedBox(width: 8),
-                          Text('Bem-vindo!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Importe as provas oficiais da UEMA para começar a estudar. '
-                        'Toque em "Importar todos" abaixo.',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
-                            icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('Importar provas 2024–26'),
+                    const SizedBox(height: kGap12),
+                    Wrap(
+                      spacing: kGap8,
+                      runSpacing: kGap8,
+                      children: [
+                        for (final kind in const [
+                          ('todos', 'Todos'),
+                          ('oficial', 'Oficial'),
+                          ('estudo', 'Estudo'),
+                        ])
+                          ChoiceChip(
+                            label: Text(kind.$2),
+                            selected: searchSourceKind == kind.$1,
+                            onSelected: (_) {
+                              HapticFeedback.selectionClick();
+                              setState(() => searchSourceKind = kind.$1);
+                              if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
+                            },
                           ),
-                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
+                      ],
+                    ),
+                    if (searchHistory.isNotEmpty) ...[
+                      const SizedBox(height: kGap12),
+                      Text(
+                        'Buscas recentes',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f60),
+                      ),
+                      const SizedBox(height: kGap8),
+                      Wrap(
+                        spacing: kGap8,
+                        runSpacing: kGap8,
+                        children: [
+                          for (final h in searchHistory.take(8))
+                            ActionChip(
+                              label: Text(
+                                h['q']?.toString() ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                final q = h['q']?.toString() ?? '';
+                                if (q.isEmpty) return;
+                                _searchCtrl.text = q;
+                                final sk = h['sourceKind']?.toString();
+                                if (sk == 'oficial' || sk == 'estudo') {
+                                  searchSourceKind = sk!;
+                                } else {
+                                  searchSourceKind = 'todos';
+                                }
+                                _runSearch();
+                              },
+                            ),
                         ],
                       ),
                     ],
-                  ),
+                    if (searchHistoryNote != null) ...[
+                      const SizedBox(height: kGap8),
+                      Text(
+                        searchHistoryNote!,
+                        style: TextStyle(fontSize: 13, color: cs.error),
+                      ),
+                    ],
+                    if (searchNote != null && searchHits.isEmpty) ...[
+                      const SizedBox(height: kGap8),
+                      QuietEmpty(
+                        message: searchNote!,
+                        action: TextButton(
+                          onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
+                          child: const Text('Tentar'),
+                        ),
+                      ),
+                    ],
+                    if (searchHits.isNotEmpty) ...[
+                      const SizedBox(height: kGap8),
+                      SectionLabel(
+                        'Resultados',
+                        hint: '${searchHits.length} ${searchHits.length == 1 ? 'item' : 'itens'} no acervo local',
+                      ),
+                      for (var i = 0; i < searchHits.take(12).length; i++)
+                        Builder(
+                          builder: (_) {
+                            final hit = searchHits[i];
+                            return PlaylistTile(
+                              title: hit['label']?.toString() ?? 'arquivo',
+                              subtitle:
+                                  '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
+                              badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
+                              active: i == _hitSelected,
+                              leadingIcon: hit['kind'] == 'question'
+                                  ? Icons.quiz_outlined
+                                  : Icons.description_outlined,
+                              onPlay: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => _hitSelected = i);
+                                _openSearchHit(hit);
+                              },
+                            );
+                          },
+                        ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
 
-              SectionLabel('Provas recentes', hint: '2024–26'),
+              // ---------------- Provas recentes ----------------
+              const SizedBox(height: kGap8),
+              SectionLabel('Provas recentes', hint: 'PAES 2024–26'),
               if (board.isEmpty)
                 QuietEmpty(
-                  message: 'Nenhuma prova 2024–26 ainda. Toque para importar.',
+                  message: 'Nenhuma prova 2024–26 ainda. Importe para liberar as questões oficiais.',
                   action: Wrap(
-                    spacing: 8,
+                    spacing: kGap8,
+                    runSpacing: kGap8,
                     children: [
                       FilledButton(
                         onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
@@ -1466,10 +1512,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200,
-                    childAspectRatio: 1.1,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+                    maxCrossAxisExtent: 230,
+                    childAspectRatio: 1.25,
+                    crossAxisSpacing: kGap12,
+                    mainAxisSpacing: kGap12,
                   ),
                   itemCount: board.length,
                   itemBuilder: (context, i) {
@@ -1485,120 +1531,97 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     final partial = hasProva && !hasGab;
                     final ready = status == 'committed' || n > 0;
                     final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
-                    final cardColor = ready
-                        ? cs.primaryContainer
-                        : partial
-                            ? cs.tertiaryContainer
-                            : cs.surfaceContainerHigh;
-                    final iconColor = ready ? cs.primary : partial ? cs.tertiary : cs.onSurfaceVariant;
-                    final statusIcon = ready ? Icons.check_circle_rounded : partial ? Icons.warning_amber_rounded : Icons.hourglass_empty_rounded;
-                    return TapScale(
-                      child: Material(
-                        color: cardColor,
-                        borderRadius: BorderRadius.circular(20),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: busy ? null : () {
-                            HapticFeedback.selectionClick();
-                            if (ready) {
-                              _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1');
-                            } else if (partial) {
-                              _importYear(y);
-                            } else if (canFetch || diskOk) {
-                              diskOk ? _importYearSafe(y) : _bootstrapAndCommitYear(y);
-                            } else {
-                              _fetchYear(y);
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '$y',
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w800,
-                                        color: iconColor,
-                                      ),
-                                    ),
-                                    Icon(statusIcon, color: iconColor, size: 22),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ready ? '$n questões' : label,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: ready ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.85),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.withOpacity(0.6),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                    return _YearCard(
+                      year: y,
+                      ready: ready,
+                      partial: partial,
+                      headline: ready ? '$n questões' : label,
+                      hint: ready
+                          ? 'Pronto para estudar'
+                          : partial
+                              ? 'Falta o gabarito'
+                              : canFetch
+                                  ? 'Toque para importar'
+                                  : diskOk
+                                      ? 'PDFs no computador'
+                                      : 'Sem PDF ainda',
+                      onTap: busy
+                          ? null
+                          : () {
+                              HapticFeedback.selectionClick();
+                              if (ready) {
+                                _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1');
+                              } else if (partial) {
+                                _importYear(y);
+                              } else if (canFetch || diskOk) {
+                                diskOk ? _importYearSafe(y) : _bootstrapAndCommitYear(y);
+                              } else {
+                                _fetchYear(y);
+                              }
+                            },
                     );
                   },
                 ),
 
-              // Ações rápidas em linha
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  FilledButton.tonalIcon(
-                    onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
-                    icon: const Icon(Icons.library_add_check_rounded, size: 18),
-                    label: const Text('Importar todos com gabarito'),
-                  ),
-                  if (officialN > 0)
-                    FilledButton.tonal(
-                      onPressed: () { HapticFeedback.mediumImpact(); context.go(
-                        '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                      ); },
-                      child: const Text('Estudar agora'),
+              // ---------------- Ações principais ----------------
+              const SizedBox(height: kGap16),
+              SurfacePanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Wrap(
+                      spacing: kGap8,
+                      runSpacing: kGap8,
+                      children: [
+                        if (officialN > 0)
+                          FilledButton.icon(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1');
+                            },
+                            icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                            label: const Text('Estudar agora'),
+                          ),
+                        FilledButton.tonalIcon(
+                          onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
+                          icon: const Icon(Icons.library_add_check_rounded, size: 18),
+                          label: const Text('Importar todos com gabarito'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
+                          icon: const Icon(Icons.save_outlined, size: 18),
+                          label: const Text('Gravar PDFs do PC'),
+                        ),
+                      ],
                     ),
-                  OutlinedButton.icon(
-                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
-                    icon: const Icon(Icons.save_outlined, size: 18),
-                    label: const Text('Gravar PDFs do PC'),
-                  ),
-                ],
-              ),
-              if (anosParciais > 0) ...[
-                const SizedBox(height: 8),
-                Text(
-                  '$anosParciais ano(s) com prova mas sem gabarito. Coloque o gabarito na pasta para importar.',
-                  style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                    if (anosParciais > 0) ...[
+                      const SizedBox(height: kGap12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline_rounded, size: 16, color: cs.tertiary),
+                          const SizedBox(width: kGap8),
+                          Expanded(
+                            child: Text(
+                              '$anosParciais ${anosParciais == 1 ? 'ano tem prova' : 'anos têm prova'} '
+                              'sem gabarito. Coloque o gabarito na pasta para importar.',
+                              style: TextStyle(fontSize: 13, height: 1.4, color: cs.onSurface.f72),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
 
+              // ---------------- Pendências de revisão ----------------
               if (pendingN > 0) ...[
-                SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
+                const SizedBox(height: kGap8),
+                SectionLabel(
+                  'Precisa da sua revisão',
+                  hint: '$pendingN ${pendingN == 1 ? 'arquivo' : 'arquivos'} aguardando conferência',
+                ),
                 for (final raw in pendingItems.take(4))
                   Builder(
                     builder: (_) {
@@ -1615,14 +1638,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
               ],
 
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                title: Text('Provas antigas (2014–23)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: Text(
-                  anosParciais > 0
-                      ? '$anosParciais sem gabarito — coloque o arquivo na pasta'
-                      : 'Importe se tiver os PDFs no computador',
-                ),
+              // ---------------- Provas antigas ----------------
+              const SizedBox(height: kGap16),
+              _CollapsiblePanel(
+                icon: Icons.history_rounded,
+                title: 'Provas antigas',
+                subtitle: anosParciais > 0
+                    ? 'PAES 2014–23 · $anosParciais sem gabarito'
+                    : 'PAES 2014–23 · importe se tiver os PDFs',
                 children: [
                   if (hist.isEmpty)
                     QuietEmpty(
@@ -1664,6 +1687,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               hasProva: hasProva,
                               hasGab: hasGab,
                             ),
+                            leadingIcon: ready
+                                ? Icons.play_circle_outline_rounded
+                                : partial
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.description_outlined,
                             onPlay: ready
                                 ? () { HapticFeedback.mediumImpact(); _goStudy(
                                       '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
@@ -1696,122 +1724,119 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           );
                         },
                       ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
-                          child: const Text('Gravar todos do PC (só com gab)'),
-                        ),
-                        TextButton(
-                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                          child: const Text('Abrir gabaritos'),
-                        ),
-                      ],
-                    ),
+                  const SizedBox(height: kGap8),
+                  Wrap(
+                    spacing: kGap8,
+                    runSpacing: kGap8,
+                    children: [
+                      OutlinedButton(
+                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
+                        child: const Text('Gravar todos do PC (só com gabarito)'),
+                      ),
+                      TextButton(
+                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
+                        child: const Text('Abrir gabaritos'),
+                      ),
+                    ],
                   ),
                 ],
               ),
 
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                initiallyExpanded: false,
-                title: Text('Opções avançadas', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: const Text('Estatísticas, pastas, download e edital'),
+              // ---------------- Opções avançadas ----------------
+              const SizedBox(height: kGap12),
+              _CollapsiblePanel(
+                icon: Icons.tune_rounded,
+                title: 'Opções avançadas',
+                subtitle: 'Pastas, download, edital e geração com IA',
                 children: [
                   if (curation != null) ...[
-                    Text(
-                      'Questões oficiais: ${curation!['officialCount'] ?? '—'}\n'
-                      'Com gabarito oficial: ${curation!['realCount'] ?? 0}'
-                      '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
-                      'Questões interdisciplinares: ${curation!['crossDomainCount'] ?? 0}',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                    _InfoLines(
+                      lines: [
+                        'Questões oficiais: ${curation!['officialCount'] ?? '—'}',
+                        'Com gabarito oficial: ${curation!['realCount'] ?? 0}'
+                            '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}',
+                        'Questões interdisciplinares: ${curation!['crossDomainCount'] ?? 0}',
+                        if (curation!['message'] != null) curation!['message'].toString(),
+                      ],
                     ),
-                    if (curation!['message'] != null)
-                      Text(
-                        curation!['message'].toString(),
-                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                      ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: kGap12),
                   ],
+                  Text(
+                    'Pastas do acervo',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f60),
+                  ),
+                  const SizedBox(height: kGap8),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: kGap8,
+                    runSpacing: kGap8,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('provas'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Provas'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Gabaritos'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('edital'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Edital'),
-                      ),
+                      for (final folder in const [
+                        ('provas', 'Provas'),
+                        ('gabaritos', 'Gabaritos'),
+                        ('edital', 'Edital'),
+                      ])
+                        OutlinedButton.icon(
+                          onPressed: () { HapticFeedback.selectionClick(); _openFolder(folder.$1); },
+                          icon: const Icon(Icons.folder_open_rounded, size: 18),
+                          label: Text(folder.$2),
+                        ),
                     ],
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Atualizar conteúdos da prova'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _syncEdital(); }, child: const Text('Atualizar')),
+                  const SizedBox(height: kGap16),
+                  _AdvancedAction(
+                    title: 'Atualizar conteúdos da prova',
+                    actionLabel: 'Atualizar',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _syncEdital(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Organizar questões por assunto'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); }, child: const Text('Executar')),
+                  _AdvancedAction(
+                    title: 'Organizar questões por assunto',
+                    actionLabel: 'Executar',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Baixar todos os materiais'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); }, child: const Text('Baixar')),
+                  _AdvancedAction(
+                    title: 'Baixar todos os materiais',
+                    actionLabel: 'Baixar',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Importar e revisar 1º ano'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); }, child: const Text('Ir')),
+                  _AdvancedAction(
+                    title: 'Importar e revisar 1º ano',
+                    actionLabel: 'Ir',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
-                    subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); }, child: const Text('Corrigir')),
+                  _AdvancedAction(
+                    title: 'Corrigir questões',
+                    subtitle: 'Limpa artefatos, corta texto misturado e aplica gabaritos oficiais',
+                    actionLabel: 'Corrigir',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Gerar resoluções com IA'),
-                    subtitle: Text(resolutionStats ?? 'Cria resoluções didáticas (Comando, Conceito, Gabarito, Distrator)'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateResolutions(); }, child: const Text('Gerar')),
+                  _AdvancedAction(
+                    title: 'Gerar resoluções com IA',
+                    subtitle: resolutionStats ??
+                        'Cria resoluções didáticas (Comando, Conceito, Gabarito, Distrator)',
+                    actionLabel: 'Gerar',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateResolutions(); },
                   ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Gerar aulas com IA'),
-                    subtitle: Text(lessonStats ?? 'Cria aulas estruturadas para cada tópico do edital'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateLessons(); }, child: const Text('Gerar')),
+                  _AdvancedAction(
+                    title: 'Gerar aulas com IA',
+                    subtitle: lessonStats ?? 'Cria aulas estruturadas para cada tópico do edital',
+                    actionLabel: 'Gerar',
+                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateLessons(); },
                   ),
-                  if (coverage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      coverage!['message']?.toString() ?? '',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                  if (coverage != null || library?['dataDir'] != null) ...[
+                    const SizedBox(height: kGap12),
+                    _InfoLines(
+                      lines: [
+                        if (coverage?['message'] != null && coverage!['message'].toString().isNotEmpty)
+                          coverage!['message'].toString(),
+                        if (library?['dataDir'] != null) 'Pasta: ${library!['dataDir']}',
+                      ],
                     ),
                   ],
-                  if (library?['dataDir'] != null)
-                    Text(
-                      'Pasta: ${library!['dataDir']}',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                    ),
                 ],
               ),
 
               if (msg != null && !busy) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: kGap16),
                 if (msg!.contains('sumiu') ||
                     msg!.contains('não abriu') ||
                     msg!.contains('nao abriu') ||
@@ -1830,7 +1855,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   QuietEmpty(
                     message: msg!,
                     action: Wrap(
-                      spacing: 8,
+                      spacing: kGap8,
+                      runSpacing: kGap8,
                       children: [
                         FilledButton(
                           onPressed: () { HapticFeedback.mediumImpact(); _goStudy(
@@ -1846,9 +1872,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     ),
                   )
                 else
-                  Text(
-                    msg!,
-                    style: TextStyle(fontSize: 13, color: cs.primary),
+                  SurfacePanel(
+                    color: cs.secondaryContainer.f45,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle_outline_rounded, size: 18, color: cs.primary),
+                        const SizedBox(width: kGap8),
+                        Expanded(
+                          child: Text(
+                            msg!,
+                            style: TextStyle(fontSize: 13, height: 1.5, color: cs.onSurface.f85),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ],
@@ -1864,27 +1902,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Widget _buildMateriaisTab(ColorScheme cs) {
     if (!_pdfsLoaded) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(28, 16, 28, 0),
+        child: SkeletonList(count: 4, lines: 2),
+      );
     }
     if (_studyPdfs.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.picture_as_pdf_outlined, size: 56, color: cs.outline),
-              const SizedBox(height: 16),
-              Text('Nenhum PDF disponível.', style: TextStyle(color: cs.outline, fontSize: 15)),
-              const SizedBox(height: 8),
-              Text(
-                'Os materiais de estudo aparecem aqui automaticamente.',
-                style: TextStyle(color: cs.outline.withOpacity(0.6), fontSize: 13),
-                textAlign: TextAlign.center,
+      return ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          PageBody(
+            padding: const EdgeInsets.fromLTRB(28, 16, 28, 40),
+            child: EmptyState(
+              icon: Icons.picture_as_pdf_outlined,
+              title: 'Nenhum PDF disponível',
+              subtitle: 'Os materiais de estudo aparecem aqui automaticamente '
+                  'quando estiverem no acervo.',
+              action: OutlinedButton.icon(
+                onPressed: () { HapticFeedback.selectionClick(); _openFolder('aulas'); },
+                icon: const Icon(Icons.folder_open_rounded, size: 18),
+                label: const Text('Abrir pasta de materiais'),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       );
     }
     return _MateriaisShelf(pdfs: _studyPdfs, cs: cs);
@@ -1892,52 +1933,54 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 }
 
 // ============================================================
-// _LibTab — botão de tab customizado (Acervo / Materiais)
+// _SegmentedTabs — seletor Acervo / Materiais
 // ============================================================
 
-class _LibTab extends StatelessWidget {
-  const _LibTab({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
+class _SegmentItem {
+  const _SegmentItem({required this.label, required this.icon, this.hint});
   final String label;
   final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
+  final String? hint;
+}
+
+class _SegmentedTabs extends StatelessWidget {
+  const _SegmentedTabs({
+    required this.index,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final int index;
+  final List<_SegmentItem> items;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () { HapticFeedback.selectionClick(); onTap(); },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: selected ? cs.primary : cs.surfaceContainerHighest.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? cs.primary : cs.outlineVariant.withOpacity(0.3),
-            width: 1,
-          ),
+          color: cs.surfaceContainerHighest.f45,
+          borderRadius: BorderRadius.circular(kRadiusPanel),
+          border: Border.all(color: cs.outlineVariant.f45),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.6)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
+            for (var i = 0; i < items.length; i++)
+              Padding(
+                padding: EdgeInsets.only(right: i == items.length - 1 ? 0 : 4),
+                child: _SegmentButton(
+                  item: items[i],
+                  selected: index == i,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    onChanged(i);
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -1945,8 +1988,357 @@ class _LibTab extends StatelessWidget {
   }
 }
 
+class _SegmentButton extends StatelessWidget {
+  const _SegmentButton({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _SegmentItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(kRadiusButton),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(kRadiusButton),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? cs.surface : Colors.transparent,
+              borderRadius: BorderRadius.circular(kRadiusButton),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: cs.shadow.f22,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  item.icon,
+                  size: 18,
+                  color: selected ? cs.primary : cs.onSurface.f60,
+                ),
+                const SizedBox(width: kGap8),
+                Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? cs.onSurface : cs.onSurface.f72,
+                  ),
+                ),
+                if (item.hint != null) ...[
+                  const SizedBox(width: kGap8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: selected ? cs.primaryContainer.f65 : cs.surfaceContainerHighest.f65,
+                      borderRadius: BorderRadius.circular(kRadiusMicro + 4),
+                    ),
+                    child: Text(
+                      item.hint!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? cs.onPrimaryContainer : cs.onSurface.f60,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ============================================================
-// _MateriaisShelf — estante enxuta de PDFs (tab Materiais)
+// _YearCard — card de ano do acervo
+// ============================================================
+
+class _YearCard extends StatelessWidget {
+  const _YearCard({
+    required this.year,
+    required this.ready,
+    required this.partial,
+    required this.headline,
+    required this.hint,
+    required this.onTap,
+  });
+
+  final int year;
+  final bool ready;
+  final bool partial;
+  final String headline;
+  final String hint;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final accent = ready
+        ? cs.primary
+        : partial
+            ? cs.tertiary
+            : cs.onSurfaceVariant;
+    final statusIcon = ready
+        ? Icons.check_circle_rounded
+        : partial
+            ? Icons.warning_amber_rounded
+            : Icons.hourglass_empty_rounded;
+    final statusLabel = ready
+        ? 'pronto'
+        : partial
+            ? 'parcial'
+            : 'vazio';
+
+    return TapScale(
+      child: Material(
+        color: ready ? cs.primaryContainer.f45 : cs.surfaceContainerHigh.f65,
+        borderRadius: BorderRadius.circular(kRadiusHighlight),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(kRadiusHighlight),
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(kRadiusHighlight),
+              border: Border.all(color: ready ? accent.f38 : cs.outlineVariant.f45),
+            ),
+            padding: const EdgeInsets.all(kGap16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$year',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.8,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: accent.f22,
+                        borderRadius: BorderRadius.circular(kRadiusMicro + 4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 13, color: accent),
+                          const SizedBox(width: 4),
+                          Text(
+                            statusLabel,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      headline,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface.f88,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hint,
+                      style: TextStyle(fontSize: 11, color: cs.onSurface.f60),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// _CollapsiblePanel — bloco recolhível em SurfacePanel
+// ============================================================
+
+class _CollapsiblePanel extends StatelessWidget {
+  const _CollapsiblePanel({
+    required this.icon,
+    required this.title,
+    required this.children,
+    this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SurfacePanel(
+      padding: const EdgeInsets.symmetric(horizontal: kGap16, vertical: kGap4),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: kGap12),
+          expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.f55,
+              borderRadius: BorderRadius.circular(kRadiusControl),
+            ),
+            child: Icon(icon, size: 18, color: cs.primary),
+          ),
+          title: Text(
+            title,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onSurface),
+          ),
+          subtitle: subtitle == null
+              ? null
+              : Text(
+                  subtitle!,
+                  style: TextStyle(fontSize: 12, color: cs.onSurface.f60),
+                ),
+          children: children,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// _AdvancedAction — linha de ação das opções avançadas
+// ============================================================
+
+class _AdvancedAction extends StatelessWidget {
+  const _AdvancedAction({
+    required this.title,
+    required this.actionLabel,
+    required this.onPressed,
+    this.subtitle,
+  });
+
+  final String title;
+  final String? subtitle;
+  final String actionLabel;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(fontSize: 12, height: 1.4, color: cs.onSurface.f60),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: kGap12),
+          OutlinedButton(onPressed: onPressed, child: Text(actionLabel)),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// _InfoLines — bloco de informações secundárias
+// ============================================================
+
+class _InfoLines extends StatelessWidget {
+  const _InfoLines({required this.lines});
+  final List<String> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final visible = lines.where((l) => l.trim().isNotEmpty).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(kGap12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.f38,
+        borderRadius: BorderRadius.circular(kRadiusControl),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final line in visible)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text(
+                line,
+                style: TextStyle(fontSize: 13, height: 1.5, color: cs.onSurface.f72),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// _MateriaisShelf — estante de PDFs (tab Materiais)
 // ============================================================
 
 class _MateriaisShelf extends StatefulWidget {
@@ -1962,20 +2354,6 @@ class _MateriaisShelfState extends State<_MateriaisShelf> {
   String? _selectedSubject;
   String _searchQuery = '';
   final _searchCtrl = TextEditingController();
-
-  static const _subjectIcons = {
-    'Biologia': Icons.biotech_rounded,
-    'Química': Icons.science_rounded,
-    'Física': Icons.bolt_rounded,
-    'Matemática': Icons.calculate_rounded,
-    'Português': Icons.menu_book_rounded,
-    'Inglês': Icons.language_rounded,
-    'Espanhol': Icons.translate_rounded,
-    'História': Icons.history_edu_rounded,
-    'Geografia': Icons.public_rounded,
-    'Filosofia': Icons.psychology_rounded,
-    'Sociologia': Icons.groups_rounded,
-  };
 
   @override
   void dispose() {
@@ -2005,112 +2383,132 @@ class _MateriaisShelfState extends State<_MateriaisShelf> {
     return s;
   }
 
+  int _countFor(String subject) =>
+      widget.pdfs.where((p) => (p['subject'] ?? 'Outros').toString() == subject).length;
+
   @override
   Widget build(BuildContext context) {
     final cs = widget.cs;
     final filtered = _filtered;
-    final totalPdfs = widget.pdfs.length;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: EdgeInsets.zero,
       children: [
-        // Header compacto
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: cs.primaryContainer.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.collections_bookmark_rounded, size: 22, color: cs.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Materiais de Estudo',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface),
-                  ),
-                  Text(
-                    '$totalPdfs PDFs em ${_subjects.length} disciplinas',
-                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Busca
-        TextField(
-          controller: _searchCtrl,
-          decoration: InputDecoration(
-            hintText: 'Buscar material...',
-            prefixIcon: const Icon(Icons.search, size: 20),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear, size: 20),
-                    onPressed: () { _searchCtrl.clear(); setState(() => _searchQuery = ''); },
-                  )
-                : null,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            filled: true,
-            fillColor: cs.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-          onChanged: (v) => setState(() => _searchQuery = v),
-        ),
-        const SizedBox(height: 12),
-
-        // Chips de disciplina
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
+        PageBody(
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: const Text('Todas'),
-                  selected: _selectedSubject == null,
-                  onSelected: (_) => setState(() => _selectedSubject = null),
+              SurfacePanel(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _searchCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar material por título ou disciplina…',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        suffixIcon: _searchQuery.isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: 'Limpar',
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  _searchCtrl.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              ),
+                        filled: true,
+                        fillColor: cs.surfaceContainerHighest.f50,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(kRadiusButton),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(kRadiusButton),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: kGap16, vertical: 14),
+                      ),
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                    ),
+                    const SizedBox(height: kGap12),
+                    Wrap(
+                      spacing: kGap8,
+                      runSpacing: kGap8,
+                      children: [
+                        FilterChip(
+                          label: Text('Todas (${widget.pdfs.length})'),
+                          selected: _selectedSubject == null,
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _selectedSubject = null);
+                          },
+                        ),
+                        for (final s in _subjects)
+                          FilterChip(
+                            label: Text('$s (${_countFor(s)})'),
+                            selected: _selectedSubject == s,
+                            avatar: Icon(kSubjectIcons[s] ?? Icons.menu_book_rounded, size: 15),
+                            onSelected: (_) {
+                              HapticFeedback.selectionClick();
+                              setState(() => _selectedSubject = s);
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              ..._subjects.map((s) => Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(s),
-                  selected: _selectedSubject == s,
-                  avatar: Icon(_subjectIcons[s] ?? Icons.book, size: 14),
-                  onSelected: (_) => setState(() => _selectedSubject = s),
+              const SizedBox(height: kGap8),
+              SectionLabel(
+                _selectedSubject ?? 'Todos os materiais',
+                hint: '${filtered.length} ${filtered.length == 1 ? 'material' : 'materiais'}',
+              ),
+              if (filtered.isEmpty)
+                QuietEmpty(
+                  message: 'Nenhum material encontrado com esse filtro.',
+                  action: TextButton(
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      _searchCtrl.clear();
+                      setState(() {
+                        _searchQuery = '';
+                        _selectedSubject = null;
+                      });
+                    },
+                    child: const Text('Limpar filtros'),
+                  ),
+                )
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final columns = constraints.maxWidth >= 760 ? 2 : 1;
+                    if (columns == 1) {
+                      return Column(
+                        children: [
+                          for (final pdf in filtered) _MateriaisPdfCard(pdf: pdf, cs: cs),
+                        ],
+                      );
+                    }
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisExtent: 76,
+                        crossAxisSpacing: kGap12,
+                        mainAxisSpacing: 0,
+                      ),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, i) => _MateriaisPdfCard(pdf: filtered[i], cs: cs),
+                    );
+                  },
                 ),
-              )),
             ],
           ),
         ),
-        const SizedBox(height: 12),
-
-        // Lista de PDFs
-        if (filtered.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.search_off, size: 48, color: cs.outline),
-                  const SizedBox(height: 12),
-                  Text('Nenhum material encontrado.', style: TextStyle(color: cs.outline)),
-                ],
-              ),
-            ),
-          )
-        else
-          ...filtered.map((pdf) => _MateriaisPdfCard(pdf: pdf, cs: cs)),
       ],
     );
   }
@@ -2120,24 +2518,24 @@ class _MateriaisShelfState extends State<_MateriaisShelf> {
 // _MateriaisPdfCard — card compacto de PDF
 // ============================================================
 
+const Map<String, IconData> kSubjectIcons = {
+  'Biologia': Icons.biotech_rounded,
+  'Química': Icons.science_rounded,
+  'Física': Icons.bolt_rounded,
+  'Matemática': Icons.calculate_rounded,
+  'Português': Icons.menu_book_rounded,
+  'Inglês': Icons.language_rounded,
+  'Espanhol': Icons.translate_rounded,
+  'História': Icons.history_edu_rounded,
+  'Geografia': Icons.public_rounded,
+  'Filosofia': Icons.psychology_rounded,
+  'Sociologia': Icons.groups_rounded,
+};
+
 class _MateriaisPdfCard extends StatelessWidget {
   const _MateriaisPdfCard({required this.pdf, required this.cs});
   final Map<String, dynamic> pdf;
   final ColorScheme cs;
-
-  static const _subjectIcons = {
-    'Biologia': Icons.biotech_rounded,
-    'Química': Icons.science_rounded,
-    'Física': Icons.bolt_rounded,
-    'Matemática': Icons.calculate_rounded,
-    'Português': Icons.menu_book_rounded,
-    'Inglês': Icons.language_rounded,
-    'Espanhol': Icons.translate_rounded,
-    'História': Icons.history_edu_rounded,
-    'Geografia': Icons.public_rounded,
-    'Filosofia': Icons.psychology_rounded,
-    'Sociologia': Icons.groups_rounded,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -2146,62 +2544,69 @@ class _MateriaisPdfCard extends StatelessWidget {
     final filename = pdf['filename']?.toString() ?? '';
     final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
     final sizeStr = sizeKb > 1024 ? '${(sizeKb / 1024).toStringAsFixed(1)} MB' : '${sizeKb.round()} KB';
-    final icon = _subjectIcons[subject] ?? Icons.book;
+    final icon = kSubjectIcons[subject] ?? Icons.menu_book_rounded;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cs.outlineVariant.withOpacity(0.2)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          HapticFeedback.selectionClick();
-          context.go(Uri(path: '/estudar', queryParameters: {
-            'pdf': filename,
-            'title': title,
-            'subject': subject,
-          }).toString());
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: cs.onPrimaryContainer, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+    return TapScale(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: kGap8),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(kRadiusPanel),
+          border: Border.all(color: cs.outlineVariant.f45),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(kRadiusPanel),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(kRadiusPanel),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              context.go(Uri(path: '/estudar', queryParameters: {
+                'pdf': filename,
+                'title': title,
+                'subject': subject,
+              }).toString());
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer.f55,
+                      borderRadius: BorderRadius.circular(kRadiusControl),
                     ),
-                    const SizedBox(height: 3),
-                    Row(
+                    child: Icon(icon, color: cs.onPrimaryContainer, size: 20),
+                  ),
+                  const SizedBox(width: kGap12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(subject, style: TextStyle(fontSize: 11, color: cs.primary, fontWeight: FontWeight.w500)),
-                        const SizedBox(width: 8),
-                        Text(sizeStr, style: TextStyle(fontSize: 11, color: cs.outline.withOpacity(0.5))),
+                        Text(
+                          title,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '$subject · $sizeStr',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: cs.onSurface.f60),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: kGap8),
+                  Icon(Icons.chevron_right_rounded, size: 20, color: cs.onSurface.f38),
+                ],
               ),
-              Icon(Icons.chevron_right_rounded, size: 20, color: cs.outline.withOpacity(0.4)),
-            ],
+            ),
           ),
         ),
       ),
