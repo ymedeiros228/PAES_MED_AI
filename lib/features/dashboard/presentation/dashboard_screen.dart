@@ -982,7 +982,7 @@ class _SimpleRecommendationCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
-              color: cs.onSurface.f72,
+                color: cs.onSurface.f72,
               ),
             ),
           ],
@@ -1151,7 +1151,7 @@ class _CheckRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
-      borderRadius: BorderRadius.circular(kRadiusControl),
+        borderRadius: BorderRadius.circular(kRadiusControl),
         onTap: done ? null : onAction,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
