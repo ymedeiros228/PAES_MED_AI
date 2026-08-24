@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/providers.dart';
 import '../data/study_prefs_providers.dart';
 import '../data/theme_mode_provider.dart';
 import '../theme/app_theme.dart';
@@ -59,7 +58,7 @@ class AppShell extends ConsumerWidget {
     return allowed.any((p) => path == p || path.startsWith('$p/'));
   }
 
-  List<_NavGroup> _groups({required int officialCount}) {
+  List<_NavGroup> _groups() {
     return [
       const _NavGroup('Principal', [
         _NavItem('/dashboard', 'Início', Icons.home_rounded),
@@ -79,19 +78,9 @@ class AppShell extends ConsumerWidget {
     final examDays = ref.watch(examDateProvider.notifier).daysUntilExam;
     final examSyncPending = ref.watch(examDateProvider).syncError != null;
     final location = GoRouterState.of(context).uri.path;
-    final dash = ref.watch(dashboardProvider);
-    final officialCount = dash.maybeWhen(
-      data: (d) {
-        final basis = d['statsBasis'];
-        if (basis is Map) return (basis['officialCount'] as int?) ?? 0;
-        return (d['officialCount'] as int?) ?? 0;
-      },
-      orElse: () => 0,
-    );
-
     final activeGroups = focus
         ? [const _NavGroup('Foco', focusItems)]
-        : _groups(officialCount: officialCount);
+        : _groups();
 
     final items = [for (final g in activeGroups) ...g.items];
     var index = items.indexWhere((item) => location == item.path || location.startsWith('${item.path}/'));
@@ -219,27 +208,9 @@ class AppShell extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(focus ? 'PAES · Foco' : 'PAES MED AI'),
-                    if (examSyncPending)
-                      Text(
-                        'Data da prova pendente',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: cs.tertiary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                   ],
                 ),
                 actions: [
-                  if (examSyncPending)
-                    IconButton(
-                      tooltip: 'Sincronizar data da prova',
-                      onPressed: () => ref.read(examDateProvider.notifier).retrySync(),
-                      icon: Badge(
-                        smallSize: 8,
-                        child: const Icon(Icons.sync_problem_rounded),
-                      ),
-                    ),
                   IconButton(
                     tooltip: 'Tema (${themeNotifier.label}) · Ctrl+T',
                     onPressed: () => themeNotifier.cycle(),
@@ -255,82 +226,21 @@ class AppShell extends ConsumerWidget {
                     onPressed: () => context.go('/tutor'),
                     icon: const Icon(Icons.auto_awesome_rounded),
                   ),
-                  PopupMenuButton<String>(
-                    tooltip: examSyncPending ? 'Menu · data da prova pendente' : 'Menu',
-                    onSelected: context.go,
-                    icon: examSyncPending
-                        ? Badge(
-                            smallSize: 8,
-                            child: const Icon(Icons.menu_rounded),
-                          )
-                        : const Icon(Icons.menu_rounded),
-                    itemBuilder: (_) => [
-                      for (final item in items)
-                        PopupMenuItem(
-                          value: item.path,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  item.path == '/configuracoes' && examSyncPending
-                                      ? '${item.label} · data da prova pendente'
-                                      : item.label,
-                                ),
-                              ),
-                              if (item.path == '/configuracoes' && examSyncPending)
-                                Icon(Icons.circle, size: 8, color: cs.tertiary),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
                 ],
               ),
               body: body,
-              bottomNavigationBar: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (examSyncPending)
-                    Material(
-                      color: cs.tertiaryContainer.f85,
-                      child: SafeArea(
-                        top: false,
-                        child: ListTile(
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          leading: Icon(Icons.sync_problem_rounded, size: 18, color: cs.onTertiaryContainer),
-                          title: Text(
-                            'Data da prova não sincronizou',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: cs.onTertiaryContainer,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          trailing: TextButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              context.go('/configuracoes');
-                            },
-                            child: const Text('Ajustes'),
-                          ),
-                        ),
-                      ),
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: index.clamp(0, (items.length - 1).clamp(0, 4)),
+                onDestinationSelected: (value) {
+                  HapticFeedback.selectionClick();
+                  context.go(items[value.clamp(0, items.length - 1)].path);
+                },
+                destinations: [
+                  for (final item in items.take(5))
+                    NavigationDestination(
+                      icon: Icon(item.icon),
+                      label: item.label,
                     ),
-                  NavigationBar(
-                    selectedIndex: index.clamp(0, (items.length - 1).clamp(0, 4)),
-                    onDestinationSelected: (value) {
-                      HapticFeedback.selectionClick();
-                      context.go(items[value.clamp(0, items.length - 1)].path);
-                    },
-                    destinations: [
-                      for (final item in items.take(5))
-                        NavigationDestination(
-                          icon: Icon(item.icon),
-                          label: item.label,
-                        ),
-                    ],
-                  ),
                 ],
               ),
             );

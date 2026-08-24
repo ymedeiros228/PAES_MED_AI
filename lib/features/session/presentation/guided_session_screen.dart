@@ -985,24 +985,35 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           const SizedBox(height: 16),
           if (sessionComplete) ...[
             _sessionEndPanel(context),
-            TapScale(
-              child: FilledButton.tonal(
-                onPressed: () async {
-                  await _clearCheckpoint();
-                  setState(() {
-                    sessionComplete = false;
-                    phaseIndex = 0;
-                    qIndex = 0;
-                    answeredIds.clear();
-                    sessionErrors.clear();
-                    missTopics.clear();
-                    correctCount = 0;
-                    flashcardsCreated = 0;
-                    sessionQuestions = [];
-                  });
-                },
-                child: const Text('Recomeçar (mesma meta)'),
-              ),
+            Wrap(
+              spacing: kGap8,
+              runSpacing: kGap8,
+              children: [
+                TapScale(
+                  child: FilledButton.tonal(
+                    onPressed: () async {
+                      await _clearCheckpoint();
+                      setState(() {
+                        sessionComplete = false;
+                        phaseIndex = 0;
+                        qIndex = 0;
+                        answeredIds.clear();
+                        sessionErrors.clear();
+                        missTopics.clear();
+                        correctCount = 0;
+                        flashcardsCreated = 0;
+                        sessionQuestions = [];
+                      });
+                    },
+                    child: const Text('Recomeçar (mesma meta)'),
+                  ),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: _exportDay,
+                  icon: const Icon(Icons.ios_share_rounded),
+                  label: const Text('Exportar pacote do dia'),
+                ),
+              ],
             ),
           ] else if (checkpointLoadError != null && !started) ...[
             QuietEmpty(
@@ -1130,7 +1141,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                       ),
                     ),
                   ),
-                FilledButton.tonal(onPressed: _exportDay, child: const Text('Exportar pacote do dia')),
               ],
             ),
             // AnimatedSwitcher: transição suave (FadeTransition) entre fases

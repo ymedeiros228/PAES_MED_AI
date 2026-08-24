@@ -184,7 +184,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 const PageHeader(
                   eyebrow: 'Analisar',
                   title: 'Progresso',
-                  subtitle: 'Seu desempenho: pontos fortes e pontos a melhorar — prática, não % de aprovação',
+                  subtitle: 'Prática, não % de aprovação',
                 ),
                 // Abas do Progresso: Desempenho, Conquistas, Cronograma, Diagnóstico
                 Padding(
@@ -373,7 +373,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         ),
                         const SizedBox(height: 8),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(kRadiusMicro),
                           child: TweenAnimationBuilder<double>(
                             tween: Tween(begin: 0.0, end: () {
                               final r = data?['readiness'];
@@ -500,36 +500,36 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         },
                       ),
                   ],
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(
-                            data?['sessionPath']?.toString() ??
-                                '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
-                          );
-                        },
-                        child: const Text('Sessão UEMA'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(data?['essayPath']?.toString() ?? '/redacao');
-                        },
-                        child: const Text('Redação'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(data?['queuePath']?.toString() ?? '/fila');
-                        },
-                        child: const Text('Fila'),
-                      ),
-                    ],
+                  SurfacePanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SectionLabel('Próximo passo'),
+                        Wrap(
+                          spacing: kGap8,
+                          runSpacing: kGap8,
+                          children: [
+                            FilledButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go(
+                                  data?['sessionPath']?.toString() ??
+                                      '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                                );
+                              },
+                              child: const Text('Sessão UEMA'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go(data?['essayPath']?.toString() ?? '/redacao');
+                              },
+                              child: const Text('Redação'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
@@ -590,7 +590,7 @@ class _ReadableRelief extends StatelessWidget {
                 'Escala: 0–${maxScale.toStringAsFixed(0)}',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.92),
+                  color: Colors.white.f90,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -618,7 +618,7 @@ class _ReadableRelief extends StatelessWidget {
               value: _relevoValue(peak),
               max: _relevoMax(peak),
               progress: progress,
-              trackColor: Colors.white.withOpacity(0.20),
+              trackColor: Colors.white.f22,
             ),
         ],
       ),
@@ -653,7 +653,7 @@ class _ReliefLegend extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: Colors.white.withOpacity(0.78),
+            color: Colors.white.f72,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -700,7 +700,7 @@ class _ReliefRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.white.withOpacity(0.92),
+                color: Colors.white.f90,
                 fontWeight: FontWeight.w700,
               ),
             );
@@ -718,7 +718,7 @@ class _ReliefRow extends StatelessWidget {
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.92),
+                  color: Colors.white.f90,
                   fontWeight: FontWeight.w700,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
@@ -806,7 +806,7 @@ class _ReliefBar extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   width: 2,
-                  color: Colors.white.withOpacity(0.78),
+                  color: Colors.white.f72,
                 ),
               ),
             ],
@@ -875,7 +875,7 @@ class _BarChartPainter extends CustomPainter {
     }
 
     final axisPaint = Paint()
-      ..color = cs.onSurface.withOpacity(0.2)
+      ..color = cs.onSurface.f22
       ..strokeWidth = 1.5;
     canvas.drawLine(
         Offset(0, chartBottom), Offset(chartWidth, chartBottom), axisPaint);
@@ -888,7 +888,7 @@ class _BarChartPainter extends CustomPainter {
     final labelStyle = TextStyle(
       fontSize: 10,
       fontWeight: FontWeight.w600,
-      color: cs.onSurface.withOpacity(0.7),
+      color: cs.onSurface.f72,
     );
 
     for (var i = 0; i < barCount; i++) {
@@ -928,14 +928,14 @@ class _BarChartPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             baseColor,
-            baseColor.withOpacity(0.7),
+            baseColor.f72,
           ],
         ).createShader(Rect.fromLTWH(left, top, barWidth, barHeight));
       canvas.drawRRect(rect, gradientPaint);
 
       // Brilho no topo
       final highlightPaint = Paint()
-        ..color = Colors.white.withOpacity(0.25)
+        ..color = Colors.white.f22
         ..style = PaintingStyle.fill;
       final highlightRect = RRect.fromRectAndRadius(
         Rect.fromLTWH(left + 2, top + 2, barWidth - 4, (barHeight * 0.3).clamp(4, 20)),
@@ -1027,7 +1027,7 @@ class _EvolutionLineChart extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: cs.onSurface.withOpacity(0.5),
+                    color: cs.onSurface.f50,
                   ),
                 ),
               ),
@@ -1043,7 +1043,7 @@ class _EvolutionLineChart extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: cs.onSurface.withOpacity(0.5),
+                  color: cs.onSurface.f50,
                 ),
               ),
             ),
@@ -1086,7 +1086,7 @@ class _EvolutionLineChart extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  lineColor.withOpacity(0.25),
+                  lineColor.f22,
                   lineColor.withOpacity(0.02),
                 ],
               ),
@@ -1141,7 +1141,7 @@ class _ErrorTypeDonut extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             baseColor,
-            baseColor.withOpacity(0.7),
+            baseColor.f72,
           ],
         ),
         radius: 48,
@@ -1151,7 +1151,7 @@ class _ErrorTypeDonut extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: Colors.white,
           shadows: [
-            Shadow(color: Colors.black.withOpacity(0.3), blurRadius: 2),
+            Shadow(color: Colors.black.f30, blurRadius: 2),
           ],
         ),
         titlePositionPercentageOffset: 0.55,
@@ -1204,13 +1204,13 @@ class _ErrorTypeDonut extends StatelessWidget {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     colors[i % colors.length],
-                                    colors[i % colors.length].withOpacity(0.7),
+                                    colors[i % colors.length].f72,
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(kRadiusMicro),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: colors[i % colors.length].withOpacity(0.3),
+                                    color: colors[i % colors.length].f30,
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -1251,15 +1251,15 @@ class _ErrorTypeDonut extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(20),
+              color: cs.surfaceContainerHighest.f50,
+              borderRadius: BorderRadius.circular(kRadiusControl),
             ),
             child: Text(
               'Total: $total erros registrados',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: cs.onSurface.withOpacity(0.7),
+                color: cs.onSurface.f72,
               ),
             ),
           ),
@@ -1276,10 +1276,10 @@ class _WeakTopicsHeatmap extends StatelessWidget {
   final List<Map<String, dynamic>> topics;
 
   Color _colorFor(double acc, ColorScheme cs) {
-    if (acc < 0.4) return cs.error.withOpacity(0.85);
-    if (acc < 0.6) return cs.error.withOpacity(0.55);
-    if (acc < 0.8) return cs.tertiary.withOpacity(0.65);
-    return cs.primary.withOpacity(0.7);
+    if (acc < 0.4) return cs.error.f85;
+    if (acc < 0.6) return cs.error.f55;
+    if (acc < 0.8) return cs.tertiary.f65;
+    return cs.primary.f72;
   }
 
   @override
@@ -1314,13 +1314,13 @@ class _WeakTopicsHeatmap extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [
                 color,
-                color.withOpacity(0.75),
+                color.f72,
               ],
             ),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(kRadiusPanelSoft),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.f30,
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -1358,7 +1358,7 @@ class _WeakTopicsHeatmap extends StatelessWidget {
                 topic,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.f90,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1367,8 +1367,8 @@ class _WeakTopicsHeatmap extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white.f22,
+                  borderRadius: BorderRadius.circular(kRadiusControl),
                 ),
                 child: Text(
                   '${(acc * 100).toStringAsFixed(0)}% · $n resp.',
@@ -1491,8 +1491,8 @@ class _HeatmapCell extends StatelessWidget {
                     ],
                   )
                 : null,
-            color: studied ? null : cs.surfaceContainerHighest.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(6),
+            color: studied ? null : cs.surfaceContainerHighest.f40,
+            borderRadius: BorderRadius.circular(kRadiusMicro),
             boxShadow: studied
                 ? [
                     BoxShadow(
@@ -1510,7 +1510,7 @@ class _HeatmapCell extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: studied ? cs.onSurface.withOpacity(0.7) : cs.onSurface.withOpacity(0.35),
+            color: studied ? cs.onSurface.f72 : cs.onSurface.f35,
           ),
         ),
       ],
@@ -1532,16 +1532,16 @@ class _ProgressTrendChip extends StatelessWidget {
     final (icon, color) = switch (t) {
       'melhorou' => (Icons.trending_up_rounded, const Color(0xFF4CAF50)),
       'piorou' => (Icons.trending_down_rounded, cs.error),
-      'estavel' => (Icons.trending_flat_rounded, cs.onSurface.withOpacity(0.5)),
+      'estavel' => (Icons.trending_flat_rounded, cs.onSurface.f50),
       'novo' => (Icons.auto_awesome_rounded, cs.primary),
-      _ => (Icons.info_outline_rounded, cs.onSurface.withOpacity(0.4)),
+      _ => (Icons.info_outline_rounded, cs.onSurface.f40),
     };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(kRadiusControl),
       ),
       child: Row(
         children: [
@@ -1553,7 +1553,7 @@ class _ProgressTrendChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: cs.onSurface.withOpacity(0.8),
+                color: cs.onSurface.f85,
               ),
             ),
           ),
