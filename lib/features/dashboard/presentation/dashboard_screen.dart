@@ -56,11 +56,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> _loadFirstRunCoach() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -436,7 +431,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           const SizedBox(height: 20),
 
                           // Atalhos rapidos - 4 cards grandes e limpos
-                          _SimpleQuickActions(cs: cs, sessionPath: sessionPath),
+                          _SimpleQuickActions(cs: cs),
                           const SizedBox(height: 20),
 
                           // XP + Streak + Tópico do dia + Flashcards due (linha integrada)
@@ -480,7 +475,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             onCards: () => context.go('/flashcards?due=1'),
                             onRevisions: () => context.go('/fila'),
                             onCloseDay: dayClosed ? null : _closeDay,
-                            examDays: examDaysLocal,
                             dailyGoal: ref.watch(dailyGoalProvider),
                           ),
 
@@ -633,10 +627,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: cs.surfaceContainerHighest.withOpacity(0.3),
-      borderRadius: BorderRadius.circular(16),
+      color: cs.surfaceContainerHighest.f30,
+      borderRadius: BorderRadius.circular(kRadiusPanel),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(kRadiusPanel),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -646,8 +640,8 @@ class _StatCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  color: color.f22,
+                  borderRadius: BorderRadius.circular(kRadiusControl),
                 ),
                 child: Icon(icon, color: color, size: 20),
               ),
@@ -669,7 +663,7 @@ class _StatCard extends StatelessWidget {
                       label,
                       style: TextStyle(
                         fontSize: 11,
-                        color: cs.onSurface.withOpacity(0.5),
+                        color: cs.onSurface.f50,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -721,7 +715,7 @@ class _WeekMiniChart extends StatelessWidget {
     final dayLabels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
     return SurfacePanel(
-      color: cs.surfaceContainerHighest.withOpacity(0.2),
+      color: cs.surfaceContainerHighest.f22,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -755,7 +749,7 @@ class _WeekMiniChart extends StatelessWidget {
               weekLabel,
               style: TextStyle(
                 fontSize: 11,
-                color: cs.onSurface.withOpacity(0.5),
+                color: cs.onSurface.f50,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -769,7 +763,7 @@ class _WeekMiniChart extends StatelessWidget {
                     'Sem dados ainda',
                     style: TextStyle(
                       fontSize: 13,
-                      color: cs.onSurface.withOpacity(0.4),
+                      color: cs.onSurface.f40,
                     ),
                   ),
                 ),
@@ -792,11 +786,11 @@ class _WeekMiniChart extends StatelessWidget {
                                 constraints: const BoxConstraints(minHeight: 4),
                                 decoration: BoxDecoration(
                                   color: bars[i]
-                                      ? cs.primary.withOpacity(0.8)
+                                      ? cs.primary.f85
                                       : closed[i]
-                                          ? cs.primary.withOpacity(0.4)
+                                          ? cs.primary.f40
                                           : cs.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(kRadiusMicro),
                                 ),
                               ),
                             ),
@@ -805,7 +799,7 @@ class _WeekMiniChart extends StatelessWidget {
                               i < dayLabels.length ? dayLabels[i] : '',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: cs.onSurface.withOpacity(0.4),
+                                color: cs.onSurface.f40,
                               ),
                             ),
                           ],
@@ -829,47 +823,32 @@ class _WeekMiniChart extends StatelessWidget {
 
 /// 4 atalhos grandes e claros
 class _SimpleQuickActions extends StatelessWidget {
-  const _SimpleQuickActions({required this.cs, required this.sessionPath});
+  const _SimpleQuickActions({required this.cs});
   final ColorScheme cs;
-  final String sessionPath;
 
   @override
   Widget build(BuildContext context) {
     final actions = [
       _ActionItem(
-        icon: Icons.menu_book,
+        icon: Icons.menu_book_rounded,
         label: 'Biblioteca',
-        subtitle: '92 PDFs',
+        subtitle: 'Provas e materiais',
         color: cs.primary,
         onTap: () => context.go('/biblioteca'),
       ),
       _ActionItem(
-        icon: Icons.picture_as_pdf,
-        label: 'Materiais',
-        subtitle: 'PDFs por matéria',
-        color: cs.tertiary,
-        onTap: () => context.go('/biblioteca'),
+        icon: Icons.history_edu_rounded,
+        label: 'Provas oficiais',
+        subtitle: 'Questões UEMA',
+        color: cs.error,
+        onTap: () => context.go('/simulados'),
       ),
       _ActionItem(
-        icon: Icons.play_circle_fill,
-        label: 'Praticar',
-        subtitle: 'Questões',
-        color: cs.tertiary,
-        onTap: () => context.go(sessionPath),
-      ),
-      _ActionItem(
-        icon: Icons.smart_toy,
+        icon: Icons.smart_toy_rounded,
         label: 'Tutor IA',
         subtitle: 'Dúvidas',
         color: cs.secondary,
         onTap: () => context.go('/tutor'),
-      ),
-      _ActionItem(
-        icon: Icons.history_edu,
-        label: 'Provas',
-        subtitle: 'Oficiais',
-        color: cs.error,
-        onTap: () => context.go('/simulados'),
       ),
       _ActionItem(
         icon: Icons.style_rounded,
@@ -880,23 +859,28 @@ class _SimpleQuickActions extends StatelessWidget {
       ),
     ];
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.4,
-      children: actions.map((a) => _buildCard(context, a)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 700 ? 4 : 2;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: columns,
+          mainAxisSpacing: kGap12,
+          crossAxisSpacing: kGap12,
+          childAspectRatio: columns == 2 ? 1.7 : 1.25,
+          children: actions.map((a) => _buildCard(context, a)).toList(),
+        );
+      },
     );
   }
 
   Widget _buildCard(BuildContext context, _ActionItem a) {
     return Material(
-      color: cs.surfaceContainerHighest.withOpacity(0.3),
-      borderRadius: BorderRadius.circular(16),
+      color: cs.surfaceContainerHighest.f30,
+      borderRadius: BorderRadius.circular(kRadiusPanel),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(kRadiusPanel),
         onTap: a.onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -906,12 +890,12 @@ class _SimpleQuickActions extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: a.color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color: a.color.f22,
+                  borderRadius: BorderRadius.circular(kRadiusControl),
                 ),
                 child: Icon(a.icon, color: a.color, size: 24),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: kGap12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -929,7 +913,7 @@ class _SimpleQuickActions extends StatelessWidget {
                       a.subtitle,
                       style: TextStyle(
                         fontSize: 12,
-                        color: cs.onSurface.withOpacity(0.5),
+                        color: cs.onSurface.f50,
                       ),
                     ),
                   ],
@@ -970,14 +954,10 @@ class _SimpleRecommendationCard extends StatelessWidget {
     final materials = recommendations['materials'] as List? ?? [];
     final exams = recommendations['exams'] as List? ?? [];
 
-    return Container(
-      width: double.infinity,
+    return SurfacePanel(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.primary.withOpacity(0.15)),
-      ),
+      color: cs.primaryContainer.f30,
+      soft: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1002,7 +982,7 @@ class _SimpleRecommendationCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
-                color: cs.onSurface.withOpacity(0.8),
+              color: cs.onSurface.f72,
               ),
             ),
           ],
@@ -1064,7 +1044,6 @@ class _SimpleChecklist extends StatelessWidget {
     required this.onCards,
     required this.onRevisions,
     required this.onCloseDay,
-    required this.examDays,
     required this.dailyGoal,
   });
   final ColorScheme cs;
@@ -1077,18 +1056,14 @@ class _SimpleChecklist extends StatelessWidget {
   final VoidCallback onCards;
   final VoidCallback onRevisions;
   final VoidCallback? onCloseDay;
-  final int? examDays;
   final int dailyGoal;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return SurfacePanel(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
+      color: cs.surfaceContainerHighest.f30,
+      soft: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1104,16 +1079,6 @@ class _SimpleChecklist extends StatelessWidget {
                   color: cs.onSurface,
                 ),
               ),
-              const Spacer(),
-              if (examDays != null && examDays! > 0)
-                Text(
-                  '$examDays dias',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: cs.primary,
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1158,7 +1123,7 @@ class _SimpleChecklist extends StatelessWidget {
             'Meta: $dailyGoal min/dia',
             style: TextStyle(
               fontSize: 12,
-              color: cs.onSurface.withOpacity(0.4),
+              color: cs.onSurface.f40,
             ),
           ),
         ],
@@ -1186,7 +1151,7 @@ class _CheckRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(kRadiusControl),
         onTap: done ? null : onAction,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -1195,7 +1160,7 @@ class _CheckRow extends StatelessWidget {
               Icon(
                 done ? Icons.check_circle : icon,
                 size: 22,
-                color: done ? cs.primary : cs.onSurface.withOpacity(0.4),
+                color: done ? cs.primary : cs.onSurface.f40,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1204,13 +1169,13 @@ class _CheckRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: done ? FontWeight.w600 : FontWeight.w500,
-                    color: done ? cs.primary : cs.onSurface.withOpacity(0.7),
+                    color: done ? cs.primary : cs.onSurface.f72,
                     decoration: done ? TextDecoration.lineThrough : null,
                   ),
                 ),
               ),
               if (!done)
-                Icon(Icons.chevron_right, size: 20, color: cs.onSurface.withOpacity(0.3)),
+                Icon(Icons.chevron_right, size: 20, color: cs.onSurface.f30),
             ],
           ),
         ),

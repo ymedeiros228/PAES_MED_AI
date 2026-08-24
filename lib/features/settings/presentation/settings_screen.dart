@@ -382,8 +382,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const SizedBox(height: 12),
                     Builder(
                       builder: (_) {
-                        final (buildIdentity, desktopBuild) = readVersionFile();
-                        final displayIdentity = buildIdentity.isNotEmpty ? buildIdentity : kAppVersionLabel;
+                        final versionInfo = readVersionFile();
+                        final desktopBuild = versionInfo.$2;
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -394,7 +394,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Versão desktop · $displayIdentity'),
+                                label: const Text('Versão desktop'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else if (kIsWeb)
@@ -404,7 +404,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Versão web · $displayIdentity'),
+                                label: const Text('Versão web'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else
@@ -456,9 +456,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: Text(
                           () {
                             final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
-                            if (d < 0) return 'Prova: \$d dias atrás';
+                            if (d < 0) return 'Prova: $d dias atrás';
                             if (d == 0) return 'Prova: é hoje!';
-                            return 'Prova em \$d dia(s)';
+                            return 'Prova em $d dia(s)';
                           }(),
                           style: TextStyle(
                             fontSize: 13,
@@ -523,81 +523,95 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        CompactStatus(
-                          message: geminiConfigured
-                              ? 'Gemini configurado · ${aiConfig!['geminiKeyLast4'] ?? 'chave mascarada'}'
-                              : 'Gemini sem chave configurada.',
-                          icon: geminiConfigured
-                              ? Icons.check_circle_outline
-                              : Icons.radio_button_unchecked,
-                        ),
-                        CompactStatus(
-                          message: groqConfigured
-                              ? 'Groq configurado · ${aiConfig!['groqKeyLast4'] ?? 'chave mascarada'}'
-                              : 'Groq sem chave configurada.',
-                          icon: groqConfigured
-                              ? Icons.check_circle_outline
-                              : Icons.radio_button_unchecked,
-                        ),
-                        CompactStatus(
-                          message: openRouterConfigured
-                              ? 'OpenRouter configurado · ${aiConfig!['openrouterKeyLast4'] ?? 'chave mascarada'}'
-                              : 'OpenRouter sem chave configurada.',
-                          icon: openRouterConfigured
-                              ? Icons.check_circle_outline
-                              : Icons.radio_button_unchecked,
-                        ),
-                        CompactStatus(
-                          message: openAiConfigured
-                              ? 'OpenAI configurado · ${aiConfig!['openaiKeyLast4'] ?? 'chave mascarada'}'
-                              : 'OpenAI sem chave configurada.',
-                          icon: openAiConfigured
-                              ? Icons.check_circle_outline
-                              : Icons.radio_button_unchecked,
-                        ),
-                        const SizedBox(height: 8),
-                        _AiProviderEditor(
-                          name: 'Chave do Gemini',
-                          hint: 'Cole a chave do Google AI Studio',
-                          controller: geminiKeyCtrl,
-                          configured: geminiConfigured,
-                          status: aiConfig!['geminiStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('gemini'),
-                          onTest: () => _testAi('gemini'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'Chave do Groq',
-                          hint: 'Gere em console.groq.com',
-                          controller: groqKeyCtrl,
-                          configured: groqConfigured,
-                          status: aiConfig!['groqStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('groq'),
-                          onTest: () => _testAi('groq'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'Chave do OpenRouter',
-                          hint: 'Gere em openrouter.ai/settings/keys',
-                          controller: openRouterKeyCtrl,
-                          configured: openRouterConfigured,
-                          status: aiConfig!['openrouterStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('openrouter'),
-                          onTest: () => _testAi('openrouter'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'OpenAI',
-                          hint: 'Gere em platform.openai.com',
-                          controller: openAiKeyCtrl,
-                          configured: openAiConfigured,
-                          status: aiConfig!['openaiStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('openai'),
-                          onTest: () => _testAi('openai'),
+                        Builder(
+                          builder: (context) {
+                            final editors = <String, Widget>{
+                              'gemini': _AiProviderEditor(
+                                name: 'Chave do Gemini',
+                                hint: 'Cole a chave do Google AI Studio',
+                                controller: geminiKeyCtrl,
+                                configured: geminiConfigured,
+                                keyLast4: aiConfig!['geminiKeyLast4']?.toString(),
+                                status: aiConfig!['geminiStatus']?.toString(),
+                                busy: aiBusy,
+                                onSave: () => _configureAi('gemini'),
+                                onTest: () => _testAi('gemini'),
+                              ),
+                              'groq': _AiProviderEditor(
+                                name: 'Chave do Groq',
+                                hint: 'Gere em console.groq.com',
+                                controller: groqKeyCtrl,
+                                configured: groqConfigured,
+                                keyLast4: aiConfig!['groqKeyLast4']?.toString(),
+                                status: aiConfig!['groqStatus']?.toString(),
+                                busy: aiBusy,
+                                onSave: () => _configureAi('groq'),
+                                onTest: () => _testAi('groq'),
+                              ),
+                              'openrouter': _AiProviderEditor(
+                                name: 'Chave do OpenRouter',
+                                hint: 'Gere em openrouter.ai/settings/keys',
+                                controller: openRouterKeyCtrl,
+                                configured: openRouterConfigured,
+                                keyLast4: aiConfig!['openrouterKeyLast4']?.toString(),
+                                status: aiConfig!['openrouterStatus']?.toString(),
+                                busy: aiBusy,
+                                onSave: () => _configureAi('openrouter'),
+                                onTest: () => _testAi('openrouter'),
+                              ),
+                              'openai': _AiProviderEditor(
+                                name: 'OpenAI',
+                                hint: 'Gere em platform.openai.com',
+                                controller: openAiKeyCtrl,
+                                configured: openAiConfigured,
+                                keyLast4: aiConfig!['openaiKeyLast4']?.toString(),
+                                status: aiConfig!['openaiStatus']?.toString(),
+                                busy: aiBusy,
+                                onSave: () => _configureAi('openai'),
+                                onTest: () => _testAi('openai'),
+                              ),
+                            };
+                            final configured = <String, bool>{
+                              'gemini': geminiConfigured,
+                              'groq': groqConfigured,
+                              'openrouter': openRouterConfigured,
+                              'openai': openAiConfigured,
+                            };
+                            final visible = editors.keys.where(
+                              (provider) => provider == active || configured[provider] == true,
+                            );
+                            final others = editors.keys.where(
+                              (provider) => provider != active && configured[provider] != true,
+                            );
+
+                            Widget editorColumn(Iterable<String> providers) {
+                              final children = <Widget>[];
+                              for (final provider in providers) {
+                                if (children.isNotEmpty) {
+                                  children.add(const SizedBox(height: 12));
+                                }
+                                children.add(editors[provider]!);
+                              }
+                              return Column(
+                                children: children,
+                              );
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                editorColumn(visible),
+                                if (others.isNotEmpty) ...[
+                                  if (visible.isNotEmpty) const SizedBox(height: 8),
+                                  ExpansionTile(
+                                    tilePadding: EdgeInsets.zero,
+                                    title: const Text('Outros provedores de IA'),
+                                    children: [editorColumn(others)],
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -843,6 +857,7 @@ class _AiProviderEditor extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.configured,
+    required this.keyLast4,
     required this.status,
     required this.busy,
     required this.onSave,
@@ -853,27 +868,29 @@ class _AiProviderEditor extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final bool configured;
+  final String? keyLast4;
   final String? status;
   final bool busy;
   final VoidCallback onSave;
   final VoidCallback onTest;
 
   String get _statusText {
+    final keySuffix = configured ? ' · …${keyLast4 ?? 'chave mascarada'}' : '';
     switch (status) {
       case 'working':
-        return 'Funcionando';
+        return 'Funcionando$keySuffix';
       case 'quota':
-        return 'Cota esgotada';
+        return 'Cota esgotada$keySuffix';
       case 'key_rejected':
-        return 'Chave recusada';
+        return 'Chave recusada$keySuffix';
       case 'connection':
-        return 'Sem conexão com o provedor';
+        return 'Sem conexão com o provedor$keySuffix';
       case 'unavailable':
-        return 'Provedor indisponível';
+        return 'Provedor indisponível$keySuffix';
       case 'configured':
-        return 'Chave cadastrada, ainda não testada';
+        return 'Chave cadastrada$keySuffix';
       default:
-        return configured ? 'Chave cadastrada, ainda não testada' : 'Não configurada';
+        return configured ? 'Chave cadastrada$keySuffix' : 'Não configurada';
     }
   }
 
@@ -920,11 +937,12 @@ class _AiProviderEditor extends StatelessWidget {
               icon: const Icon(Icons.save_outlined),
               label: const Text('Salvar e validar'),
             ),
-            OutlinedButton.icon(
-              onPressed: busy || !configured ? null : onTest,
-              icon: const Icon(Icons.network_check_outlined),
-              label: const Text('Validar chave salva'),
-            ),
+            if (configured)
+              TextButton.icon(
+                onPressed: busy ? null : onTest,
+                icon: const Icon(Icons.network_check_outlined),
+                label: const Text('Validar chave salva'),
+              ),
           ],
         ),
       ],
