@@ -25,7 +25,7 @@ class StartupSplash extends StatefulWidget {
 class _StartupSplashState extends State<StartupSplash>
     with SingleTickerProviderStateMixin {
   static const _maxAttempts = 90; // 90s — primeira exec com banco fresh e lenta
-  static const _showContinueAfter = 15; // 15s -> botao Continuar aparece
+  static const _showContinueAfter = 10; // 10s -> botao Continuar aparece
 
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
@@ -33,6 +33,7 @@ class _StartupSplashState extends State<StartupSplash>
 
   int _attempts = 0;
   String _status = 'Iniciando...';
+  String _substatus = '';
   bool _failed = false;
   Timer? _timer;
   bool _continueVisible = false;
@@ -65,6 +66,7 @@ class _StartupSplashState extends State<StartupSplash>
       _failed = false;
       _continueVisible = false;
       _status = 'Iniciando backend...';
+      _substatus = '';
     });
     _attempts = 0;
     _tick();
@@ -76,7 +78,10 @@ class _StartupSplashState extends State<StartupSplash>
       try {
         await apiClient.get('/health');
         if (!mounted) return;
-        setState(() => _status = 'Pronto!');
+        setState(() {
+          _status = 'Pronto!';
+          _substatus = '';
+        });
         await Future.delayed(const Duration(milliseconds: 300));
         if (!mounted) return;
         widget.onReady();
@@ -88,7 +93,10 @@ class _StartupSplashState extends State<StartupSplash>
               ? 'Iniciando backend...'
               : _attempts < 15
                   ? 'Carregando dados...'
-                  : 'Quase pronto...';
+                  : _attempts < 30
+                      ? 'Preparando acervo...'
+                      : 'Quase pronto...';
+          _substatus = 'Tentativa $_attempts de $_maxAttempts';
           if (_attempts >= _showContinueAfter) {
             _continueVisible = true;
           }
@@ -101,6 +109,7 @@ class _StartupSplashState extends State<StartupSplash>
       setState(() {
         _failed = true;
         _status = 'Não foi possível iniciar o backend.';
+        _substatus = 'O app pode abrir, mas alguns recursos podem não funcionar.';
       });
     }
   }
@@ -178,20 +187,47 @@ class _StartupSplashState extends State<StartupSplash>
                     _status,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
-                      color: cs.onSurface.withOpacity(0.6),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface.withOpacity(0.8),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  if (!_failed)
-                    SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: cs.primary.withOpacity(0.7),
+                  if (_substatus.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      _substatus,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: cs.onSurface.withOpacity(0.45),
                       ),
                     ),
+                  ],
+                  const SizedBox(height: 28),
+                  if (!_failed) ...[
+                    // Barra de progresso mostra tentativas visualmente
+                    FractionallySizedBox(
+                      widthFactor: 0.6,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: (_attempts / _maxAttempts).clamp(0.0, 1.0),
+                          minHeight: 4,
+                          backgroundColor: cs.surfaceContainerHighest,
+                          color: cs.primary.withOpacity(0.7),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: cs.primary.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
                   if (_continueVisible && !_failed) ...[
                     const SizedBox(height: 24),
                     OutlinedButton.icon(
@@ -201,16 +237,24 @@ class _StartupSplashState extends State<StartupSplash>
                     ),
                   ],
                   if (_failed) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'O app pode abrir, mas alguns recursos (questões, '
-                      'redação, IA) podem não funcionar até o backend '
-                      'estar disponível.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: cs.onSurface.withOpacity(0.7),
-                        height: 1.4,
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: cs.errorContainer.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: cs.error.withOpacity(0.2)),
+                      ),
+                      child: Text(
+                        'O app pode abrir, mas alguns recursos (questões, '
+                        'redação, IA) podem não funcionar até o backend '
+                        'estar disponível.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: cs.onErrorContainer,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),

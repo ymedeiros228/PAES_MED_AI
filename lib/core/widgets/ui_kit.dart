@@ -2269,6 +2269,76 @@ class SkeletonCard extends StatelessWidget {
   }
 }
 
+/// Skeleton para telas de hero (dashboard) — imita um card grande com métrica.
+class SkeletonHeroCard extends StatelessWidget {
+  const SkeletonHeroCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const _ShimmerBox(width: 48, height: 48, radius: 12),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ShimmerBox(width: 120, height: 16, radius: 5),
+                      const SizedBox(height: 8),
+                      const _ShimmerBox(height: 12, radius: 5, width: 180),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            const _ShimmerBox(height: 28, radius: 6, width: 220),
+            const SizedBox(height: 10),
+            const _ShimmerBox(height: 14, radius: 5),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton para listas com ícone à esquerda (questões, revisões, domínio).
+class SkeletonListTile extends StatelessWidget {
+  const SkeletonListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            const _ShimmerBox(width: 36, height: 36, radius: 10),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ShimmerBox(width: 160, height: 14, radius: 5),
+                  SizedBox(height: 8),
+                  _ShimmerBox(height: 11, radius: 5, width: 100),
+                ],
+              ),
+            ),
+            _ShimmerBox(width: 50, height: 24, radius: 6),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Lista de skeleton cards para telas de listagem — substitui SoftLoader.
 class SkeletonList extends StatelessWidget {
   const SkeletonList({this.count = 5, this.lines = 2, super.key});
