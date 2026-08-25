@@ -18,7 +18,6 @@ import 'features/dashboard/presentation/dashboard_screen.dart';
 import 'features/essay/presentation/essay_screen.dart';
 import 'features/flashcards/presentation/flashcards_screen.dart';
 import 'features/focus/presentation/focus_screen.dart';
-import 'features/gamification/presentation/gamification_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
 import 'features/materials/presentation/study_reader_screen.dart';
@@ -166,7 +165,7 @@ final appRouter = GoRouter(
             pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
         GoRoute(
             path: '/conquistas',
-            pageBuilder: (_, __) => _fadePage(const GamificationScreen())),
+            redirect: (_, __) => '/progresso'),
         GoRoute(
           path: '/tutor',
           pageBuilder: (_, state) {

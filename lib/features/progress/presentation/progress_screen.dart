@@ -8,10 +8,11 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/confetti_overlay.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
 import '../../../core/widgets/ui_kit.dart';
 
-/// Progresso · Relevo do aluno (mapa de forças).
+/// Progresso · Desempenho + Conquistas unificados (2 abas).
 class ProgressScreen extends ConsumerStatefulWidget {
   const ProgressScreen({super.key});
 
@@ -22,8 +23,11 @@ class ProgressScreen extends ConsumerStatefulWidget {
 class _ProgressScreenState extends ConsumerState<ProgressScreen>
     with SingleTickerProviderStateMixin {
   Map<String, dynamic>? data;
+  Map<String, dynamic>? _gamification;
   String? error;
   bool loading = true;
+  bool _gamiLoading = true;
+  int _tabIndex = 0; // 0 = Desempenho, 1 = Conquistas
   late final AnimationController _morph;
   int? _lastStreakLevel;
 
@@ -49,14 +53,30 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
       error = null;
     });
     try {
-      final raw = await apiClient.get('/api/progress/overview');
+      final results = await Future.wait([
+        apiClient.get('/api/progress/overview'),
+        apiClient.get('/api/gamification'),
+      ]);
       if (!mounted) return;
       setState(() {
-        data = Map<String, dynamic>.from(raw as Map);
+        data = Map<String, dynamic>.from(results[0] as Map);
         loading = false;
+        _gamification = results[1] is Map<String, dynamic>
+            ? results[1] as Map<String, dynamic>
+            : (results[1] is Map ? Map<String, dynamic>.from(results[1] as Map) : null);
+        _gamiLoading = false;
       });
       _morph.forward(from: 0);
       _checkLevelUp();
+      // Confete se tem conquistas desbloqueadas
+      if (_gamification != null) {
+        final unlocked = _gamification!['unlockedCount'] ?? 0;
+        if (unlocked is int && unlocked > 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) ConfettiOverlay.show(context);
+          });
+        }
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -184,31 +204,38 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 const PageHeader(
                   eyebrow: 'Analisar',
                   title: 'Progresso',
-                  subtitle: 'Seu desempenho: pontos fortes e pontos a melhorar — prática, não % de aprovação',
+                  subtitle: 'Desempenho e conquistas — prática, não % de aprovação',
                 ),
-                // Abas do Progresso: Desempenho, Conquistas, Cronograma, Diagnóstico
+                // Abas: Desempenho | Conquistas
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ActionChip(
-                        label: const Text('Conquistas'),
-                        avatar: const Icon(Icons.emoji_events_outlined, size: 18),
-                        onPressed: () => context.go('/conquistas'),
-                      ),
-                      ActionChip(
-                        label: const Text('Cronograma'),
-                        avatar: const Icon(Icons.calendar_today_outlined, size: 18),
-                        onPressed: () => context.go('/cronograma'),
-                      ),
-                      ActionChip(
-                        label: const Text('Diagnóstico'),
-                        avatar: const Icon(Icons.medical_services_outlined, size: 18),
-                        onPressed: () => context.go('/medicina'),
-                      ),
-                    ],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: cs.outlineVariant.withOpacity(0.5)),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _TabButton(
+                            label: 'Desempenho',
+                            icon: Icons.trending_up_rounded,
+                            selected: _tabIndex == 0,
+                            onTap: () => setState(() => _tabIndex = 0),
+                          ),
+                        ),
+                        Expanded(
+                          child: _TabButton(
+                            label: 'Conquistas',
+                            icon: Icons.emoji_events_outlined,
+                            selected: _tabIndex == 1,
+                            onTap: () => setState(() => _tabIndex = 1),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (loading) ...[
@@ -249,7 +276,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ],
                     ),
                   )
-                else ...[
+                else if (_tabIndex == 0) ...[
                   HeroStudyStrip(
                     eyebrow: 'Seu desempenho',
                     title: 'Onde você vai bem e onde pode melhorar',
@@ -531,6 +558,35 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       ),
                     ],
                   ),
+                ]
+                else if (_tabIndex == 1) ...[
+                  // ABA CONQUISTAS — unificada, sem tela separada
+                  if (_gamiLoading)
+                    const SkeletonCard(lines: 3)
+                  else if (_gamification != null) ...[
+                    _LevelCard(data: _gamification!),
+                    const SizedBox(height: 20),
+                    SectionLabel(
+                      'Medalhas',
+                      hint: '${_gamification!['unlockedCount'] ?? 0} desbloqueadas de ${_gamification!['totalAchievements'] ?? 0}',
+                    ),
+                    for (final a in (_gamification!['achievements'] as List? ?? []))
+                      _AchievementCard(
+                        achievement: Map<String, dynamic>.from(a as Map),
+                      ),
+                    const SizedBox(height: 24),
+                  ]
+                  else
+                    QuietEmpty(
+                      message: 'Conquistas indisponíveis agora.',
+                      action: TextButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          _load();
+                        },
+                        child: const Text('Tentar'),
+                      ),
+                    ),
                 ],
               ],
             ),
@@ -538,6 +594,295 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
         ],
       ),
     );
+  }
+}
+
+/// Botão de aba interno (Desempenho / Conquistas).
+class _TabButton extends StatelessWidget {
+  const _TabButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? cs.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.6),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Card de nível/XP — movido de gamification_screen.
+class _LevelCard extends StatelessWidget {
+  const _LevelCard({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final level = data['level'] ?? 1;
+    final levelTitle = data['levelTitle'] ?? 'Iniciante';
+    final xp = data['xp'] ?? 0;
+    final xpInLevel = data['xpInLevel'] ?? 0;
+    final xpForNext = data['xpForNext'] ?? 500;
+    final progress = (data['levelProgress'] ?? 0.0) as double;
+
+    return SurfacePanel(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [cs.primary, cs.primaryContainer],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$level',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: cs.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nível $level · $levelTitle',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$xp XP totais',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: cs.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 10,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(cs.primary),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$xpInLevel / $xpForNext XP',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: cs.onSurface.withOpacity(0.5),
+                  ),
+                ),
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: cs.primary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Card de medalha — movido de gamification_screen.
+class _AchievementCard extends StatelessWidget {
+  const _AchievementCard({required this.achievement});
+  final Map<String, dynamic> achievement;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final unlocked = achievement['unlocked'] == true;
+    final progress = (achievement['progress'] ?? 0.0) as double;
+    final tier = achievement['tier'] ?? 'bronze';
+    final icon = _iconFor(achievement['icon'] ?? 'emoji_events');
+
+    final tierColors = {
+      'bronze': const Color(0xFFCD7F32),
+      'silver': const Color(0xFFC0C0C0),
+      'gold': const Color(0xFFFFD700),
+    };
+    final tierColor = tierColors[tier] ?? cs.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SurfacePanel(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: unlocked
+                      ? tierColor.withOpacity(0.15)
+                      : cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: unlocked
+                      ? Border.all(color: tierColor, width: 2)
+                      : null,
+                ),
+                child: Icon(
+                  icon,
+                  color: unlocked ? tierColor : cs.onSurface.withOpacity(0.3),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            achievement['title'] ?? '',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: unlocked
+                                  ? cs.onSurface
+                                  : cs.onSurface.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        if (unlocked)
+                          Icon(
+                            Icons.check_circle,
+                            color: tierColor,
+                            size: 18,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      achievement['description'] ?? '',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: cs.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    if (!unlocked && progress > 0) ...[
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress.clamp(0.0, 1.0),
+                          minHeight: 5,
+                          backgroundColor: cs.surfaceContainerHighest,
+                          valueColor:
+                              AlwaysStoppedAnimation(tierColor.withOpacity(0.6)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _iconFor(String name) {
+    const map = {
+      'play_circle': Icons.play_circle_outline,
+      'looks_one': Icons.looks_one_outlined,
+      'looks_two': Icons.looks_two_outlined,
+      'looks_3': Icons.looks_3_outlined,
+      'directions_run': Icons.directions_run,
+      'local_fire_department': Icons.local_fire_department_outlined,
+      'whatshot': Icons.whatshot,
+      'shield': Icons.shield_outlined,
+      'edit_note': Icons.edit_note,
+      'rate_review': Icons.rate_review,
+      'psychology': Icons.psychology,
+      'lightbulb': Icons.lightbulb_outline,
+      'gps_fixed': Icons.gps_fixed,
+      'schedule': Icons.schedule,
+      'hourglass_full': Icons.hourglass_full,
+      'emoji_events': Icons.emoji_events_outlined,
+    };
+    return map[name] ?? Icons.emoji_events_outlined;
   }
 }
 

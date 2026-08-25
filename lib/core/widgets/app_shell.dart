@@ -77,7 +77,6 @@ class AppShell extends ConsumerWidget {
     _NavItem('/medicina', 'Domínio', Icons.insights_rounded),
     _NavItem('/banca', 'Banca', Icons.account_balance_outlined),
     _NavItem('/cronograma', 'Cronograma', Icons.calendar_month_outlined),
-    _NavItem('/conquistas', 'Conquistas', Icons.emoji_events_outlined),
     _NavItem('/atualizacoes', 'Atualizações', Icons.system_update_rounded),
   ];
 

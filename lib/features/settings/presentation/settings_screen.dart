@@ -305,124 +305,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: 'Personalize sua experiência de estudo',
               ),
 
-              SectionLabel('Perfil'),
+              SectionLabel('Estudos'),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.f35,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.primaryContainer,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.local_hospital_rounded,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'PAES MED AI',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Theme.of(context).colorScheme.primaryContainer,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified_outlined,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                kAppVersionLabel,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Plataforma de estudos para PAES UEMA Medicina.\n'
-                      '• Funciona sem internet — dados no seu computador\n'
-                      '• Usa apenas questões oficiais reais\n'
-                      '• Tutor IA com seu material de estudo',
-                      style: TextStyle(fontSize: 14, height: 1.5),
-                    ),
-                    const SizedBox(height: 12),
-                    Builder(
-                      builder: (_) {
-                        final (buildIdentity, desktopBuild) = readVersionFile();
-                        final displayIdentity = buildIdentity.isNotEmpty ? buildIdentity : kAppVersionLabel;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (desktopBuild)
-                              Chip(
-                                avatar: Icon(
-                                  Icons.desktop_windows_outlined,
-                                  size: 16,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                label: Text('Versão desktop · $displayIdentity'),
-                                visualDensity: VisualDensity.compact,
-                              )
-                            else if (kIsWeb)
-                              Chip(
-                                avatar: Icon(
-                                  Icons.language_outlined,
-                                  size: 16,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                                label: Text('Versão web · $displayIdentity'),
-                                visualDensity: VisualDensity.compact,
-                              )
-                            else
-                              Text(
-                                defaultTargetPlatform == TargetPlatform.windows
-                                    ? 'Versão Windows · modo desenvolvimento'
-                                    : 'Versão de estudo',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface.f72,
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                    const Divider(height: 20),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       secondary: Icon(Icons.center_focus_strong_rounded, color: Theme.of(context).colorScheme.primary),
@@ -556,53 +444,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               : Icons.radio_button_unchecked,
                         ),
                         const SizedBox(height: 8),
-                        _AiProviderEditor(
-                          name: 'Chave do Gemini',
-                          hint: 'Cole a chave do Google AI Studio',
-                          controller: geminiKeyCtrl,
-                          configured: geminiConfigured,
-                          status: aiConfig!['geminiStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('gemini'),
-                          onTest: () => _testAi('gemini'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'Chave do Groq',
-                          hint: 'Gere em console.groq.com',
-                          controller: groqKeyCtrl,
-                          configured: groqConfigured,
-                          status: aiConfig!['groqStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('groq'),
-                          onTest: () => _testAi('groq'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'Chave do OpenRouter',
-                          hint: 'Gere em openrouter.ai/settings/keys',
-                          controller: openRouterKeyCtrl,
-                          configured: openRouterConfigured,
-                          status: aiConfig!['openrouterStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('openrouter'),
-                          onTest: () => _testAi('openrouter'),
-                        ),
-                        const SizedBox(height: 12),
-                        _AiProviderEditor(
-                          name: 'OpenAI',
-                          hint: 'Gere em platform.openai.com',
-                          controller: openAiKeyCtrl,
-                          configured: openAiConfigured,
-                          status: aiConfig!['openaiStatus']?.toString(),
-                          busy: aiBusy,
-                          onSave: () => _configureAi('openai'),
-                          onTest: () => _testAi('openai'),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'As chaves ficam somente neste computador, fora das cópias de segurança e do repositório.',
-                          style: TextStyle(fontSize: 13, height: 1.5),
+                        ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          dense: true,
+                          title: Text('Gerenciar chaves', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          subtitle: const Text('Gemini, Groq, OpenRouter, OpenAI'),
+                          children: [
+                            _AiProviderEditor(
+                              name: 'Chave do Gemini',
+                              hint: 'Cole a chave do Google AI Studio',
+                              controller: geminiKeyCtrl,
+                              configured: geminiConfigured,
+                              status: aiConfig!['geminiStatus']?.toString(),
+                              busy: aiBusy,
+                              onSave: () => _configureAi('gemini'),
+                              onTest: () => _testAi('gemini'),
+                            ),
+                            const SizedBox(height: 12),
+                            _AiProviderEditor(
+                              name: 'Chave do Groq',
+                              hint: 'Gere em console.groq.com',
+                              controller: groqKeyCtrl,
+                              configured: groqConfigured,
+                              status: aiConfig!['groqStatus']?.toString(),
+                              busy: aiBusy,
+                              onSave: () => _configureAi('groq'),
+                              onTest: () => _testAi('groq'),
+                            ),
+                            const SizedBox(height: 12),
+                            _AiProviderEditor(
+                              name: 'Chave do OpenRouter',
+                              hint: 'Gere em openrouter.ai/settings/keys',
+                              controller: openRouterKeyCtrl,
+                              configured: openRouterConfigured,
+                              status: aiConfig!['openrouterStatus']?.toString(),
+                              busy: aiBusy,
+                              onSave: () => _configureAi('openrouter'),
+                              onTest: () => _testAi('openrouter'),
+                            ),
+                            const SizedBox(height: 12),
+                            _AiProviderEditor(
+                              name: 'OpenAI',
+                              hint: 'Gere em platform.openai.com',
+                              controller: openAiKeyCtrl,
+                              configured: openAiConfigured,
+                              status: aiConfig!['openaiStatus']?.toString(),
+                              busy: aiBusy,
+                              onSave: () => _configureAi('openai'),
+                              onTest: () => _testAi('openai'),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'As chaves ficam somente neste computador, fora das cópias de segurança e do repositório.',
+                              style: TextStyle(fontSize: 13, height: 1.5),
+                            ),
+                          ],
                         ),
                         if (aiBusy)
                           const CompactStatus(
@@ -620,13 +516,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
 
-              const SizedBox(height: 8),
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                title: Text('Avançado', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Backup, atualização, ferramentas e pastas'),
-                children: [
-                  SectionLabel('Backup e dados'),
+              const SizedBox(height: 16),
+              SectionLabel('Backup e atualização'),
+              SurfacePanel(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(online ? Icons.check_circle : Icons.error_outline, color: online ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error),
@@ -703,7 +599,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                   ],
-                  SectionLabel('Ferramentas', hint: 'PDF, questões e índices'),
+                  ],
+                ),
+              ),
+
+              // Ferramentas avançadas — separado, colapsado
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: Text('Ferramentas avançadas', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                subtitle: const Text('PDF, questões, índices e pastas'),
+                children: [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.picture_as_pdf_outlined, color: Theme.of(context).colorScheme.primary),
@@ -776,6 +681,129 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                 ],
+              ),
+
+              // Sobre — no final, discreto
+              const SizedBox(height: 24),
+              SectionLabel('Sobre'),
+              SurfacePanel(
+                margin: const EdgeInsets.only(bottom: 16),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.f35,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.primaryContainer,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.local_hospital_rounded,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'PAES MED AI',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.verified_outlined,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                kAppVersionLabel,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Plataforma de estudos para PAES UEMA Medicina.\n'
+                      '• Funciona sem internet — dados no seu computador\n'
+                      '• Usa apenas questões oficiais reais\n'
+                      '• Tutor IA com seu material de estudo',
+                      style: TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 12),
+                    Builder(
+                      builder: (_) {
+                        final (buildIdentity, desktopBuild) = readVersionFile();
+                        final displayIdentity = buildIdentity.isNotEmpty ? buildIdentity : kAppVersionLabel;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (desktopBuild)
+                              Chip(
+                                avatar: Icon(
+                                  Icons.desktop_windows_outlined,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                label: Text('Versão desktop · $displayIdentity'),
+                                visualDensity: VisualDensity.compact,
+                              )
+                            else if (kIsWeb)
+                              Chip(
+                                avatar: Icon(
+                                  Icons.language_outlined,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                label: Text('Versão web · $displayIdentity'),
+                                visualDensity: VisualDensity.compact,
+                              )
+                            else
+                              Text(
+                                defaultTargetPlatform == TargetPlatform.windows
+                                    ? 'Versão Windows · modo desenvolvimento'
+                                    : 'Versão de estudo',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.onSurface.f72,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
               if (msg != null) ...[
                 const SizedBox(height: 12),

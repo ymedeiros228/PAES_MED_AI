@@ -436,7 +436,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           const SizedBox(height: 20),
 
                           // Atalhos rapidos - 4 cards grandes e limpos
-                          _SimpleQuickActions(cs: cs, sessionPath: sessionPath),
+                          _SimpleQuickActions(
+                            cs: cs,
+                            sessionPath: sessionPath,
+                            officialN: officialN,
+                            flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                          ),
                           const SizedBox(height: 20),
 
                           // XP + Streak + Tópico do dia + Flashcards due (linha integrada)
@@ -827,66 +832,59 @@ class _WeekMiniChart extends StatelessWidget {
 // Widgets simplificados para o dashboard limpo
 // ---------------------------------------------------------------------------
 
-/// 4 atalhos grandes e claros
+/// 4 atalhos grandes e claros — sem redundância com o hero.
 class _SimpleQuickActions extends StatelessWidget {
-  const _SimpleQuickActions({required this.cs, required this.sessionPath});
+  const _SimpleQuickActions({
+    required this.cs,
+    required this.sessionPath,
+    required this.officialN,
+    required this.flashcardsDue,
+  });
   final ColorScheme cs;
   final String sessionPath;
+  final int officialN;
+  final int flashcardsDue;
 
   @override
   Widget build(BuildContext context) {
     final actions = [
       _ActionItem(
-        icon: Icons.menu_book,
+        icon: Icons.menu_book_rounded,
         label: 'Biblioteca',
-        subtitle: '92 PDFs',
+        subtitle: officialN > 0 ? '$officialN questões' : 'Importar provas',
         color: cs.primary,
         onTap: () => context.go('/biblioteca'),
       ),
       _ActionItem(
-        icon: Icons.picture_as_pdf,
-        label: 'Materiais',
-        subtitle: 'PDFs por matéria',
-        color: cs.tertiary,
-        onTap: () => context.go('/biblioteca'),
-      ),
-      _ActionItem(
-        icon: Icons.play_circle_fill,
-        label: 'Praticar',
-        subtitle: 'Questões',
-        color: cs.tertiary,
-        onTap: () => context.go(sessionPath),
-      ),
-      _ActionItem(
-        icon: Icons.smart_toy,
+        icon: Icons.smart_toy_rounded,
         label: 'Tutor IA',
-        subtitle: 'Dúvidas',
+        subtitle: 'Tirar dúvidas',
         color: cs.secondary,
         onTap: () => context.go('/tutor'),
       ),
       _ActionItem(
-        icon: Icons.history_edu,
-        label: 'Provas',
-        subtitle: 'Oficiais',
-        color: cs.error,
-        onTap: () => context.go('/simulados'),
-      ),
-      _ActionItem(
         icon: Icons.style_rounded,
         label: 'Flashcards',
-        subtitle: 'Revisar',
-        color: cs.primary,
+        subtitle: flashcardsDue > 0 ? '$flashcardsDue para revisar' : 'Em dia',
+        color: cs.tertiary,
         onTap: () => context.go('/flashcards?due=1'),
+      ),
+      _ActionItem(
+        icon: Icons.history_edu_rounded,
+        label: 'Simulados',
+        subtitle: 'Provas oficiais',
+        color: cs.error,
+        onTap: () => context.go('/simulados'),
       ),
     ];
 
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
+      crossAxisCount: 2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.4,
+      childAspectRatio: 2.2,
       children: actions.map((a) => _buildCard(context, a)).toList(),
     );
   }

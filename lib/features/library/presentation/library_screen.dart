@@ -1248,6 +1248,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
               if (showFirstRunCoach && officialN == 0) ...[
                 SurfacePanel(
+                  key: _semana1PanelKey,
                   margin: const EdgeInsets.only(bottom: 12),
                   color: cs.primaryContainer.f55,
                   child: Column(
@@ -1405,44 +1406,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ],
 
               // Painel de boas-vindas só aparece quando não há oficiais
-              if (showFirstRunCoach && officialN == 0) ...[
-                SurfacePanel(
-                  key: _semana1PanelKey,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  color: cs.primaryContainer.withOpacity(0.65),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.waving_hand_rounded, color: cs.primary, size: 24),
-                          const SizedBox(width: 8),
-                          Text('Bem-vindo!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onPrimaryContainer)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Importe as provas oficiais da UEMA para começar a estudar. '
-                        'Toque em "Importar todos" abaixo.',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
-                            icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('Importar provas 2024–26'),
-                          ),
-                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
               SectionLabel('Provas recentes', hint: '2024–26'),
               if (board.isEmpty)
                 QuietEmpty(
