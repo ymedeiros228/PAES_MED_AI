@@ -216,15 +216,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _professorBatch() async {
-    try {
-      final data = await apiClient.post('/api/professor/batch-fill', {'limit': 40});
-      setState(() => msg = 'Rascunhos: ${(data as Map)['updated'] ?? 0}');
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Falha no lote de rascunhos.'));
-    }
-  }
-
   Future<void> _reprocess() async {
     try {
       final data = await apiClient.post('/api/library/reprocess', {});
@@ -647,12 +638,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             onPressed: () => context.go('/aprovacao'),
                             child: const Text('Abrir'),
                           ),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.edit_document, color: Theme.of(context).colorScheme.primary),
-                    title: const Text('Gerar questões automaticamente'),
-                    trailing: FilledButton.tonal(onPressed: _professorBatch, child: const Text('Executar')),
                   ),
                   SectionLabel('Índices', hint: 'Busca e estatísticas'),
                   ListTile(

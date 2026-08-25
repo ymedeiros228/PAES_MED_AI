@@ -565,7 +565,12 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     const SkeletonCard(lines: 3)
                   else if (_gamification != null) ...[
                     _LevelCard(data: _gamification!),
+                    const SizedBox(height: 16),
+                    // Resumo de progresso — barras visuais
+                    _AchievementSummary(data: _gamification!),
                     const SizedBox(height: 20),
+                    // Próxima conquista destacada
+                    ..._buildNextAchievement(_gamification!),
                     SectionLabel(
                       'Medalhas',
                       hint: '${_gamification!['unlockedCount'] ?? 0} desbloqueadas de ${_gamification!['totalAchievements'] ?? 0}',
@@ -594,6 +599,93 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
         ],
       ),
     );
+  }
+
+  /// Destaca a próxima conquista não desbloqueada com progresso > 0.
+  List<Widget> _buildNextAchievement(Map<String, dynamic> gami) {
+    final achievements = (gami['achievements'] as List? ?? []);
+    Map<String, dynamic>? next;
+    for (final raw in achievements) {
+      final a = Map<String, dynamic>.from(raw as Map);
+      if (a['unlocked'] != true && (a['progress'] ?? 0.0) > 0) {
+        next = a;
+        break;
+      }
+    }
+    if (next == null) return [const SizedBox.shrink()];
+    final cs = Theme.of(context).colorScheme;
+    final progress = (next['progress'] ?? 0.0) as double;
+    final pct = (progress * 100).clamp(0, 100).round();
+    return [
+      SurfacePanel(
+        margin: const EdgeInsets.only(bottom: 16),
+        color: cs.primaryContainer.withOpacity(0.3),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.flag_rounded, color: cs.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Próxima conquista',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                next['title']?.toString() ?? '',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                next['description']?.toString() ?? '',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: cs.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        minHeight: 8,
+                        backgroundColor: cs.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(cs.primary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '$pct%',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 }
 
@@ -652,6 +744,95 @@ class _TabButton extends StatelessWidget {
 }
 
 /// Card de nível/XP — movido de gamification_screen.
+/// Resumo visual de progresso das conquistas — 3 métricas em linha.
+class _AchievementSummary extends StatelessWidget {
+  const _AchievementSummary({required this.data});
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final unlocked = data['unlockedCount'] as int? ?? 0;
+    final total = data['totalAchievements'] as int? ?? 0;
+    final xp = data['xp'] as int? ?? 0;
+    final streak = data['streakDays'] as int? ?? 0;
+
+    final items = [
+      _SummaryItem(
+        icon: Icons.emoji_events_outlined,
+        value: '$unlocked/$total',
+        label: 'medalhas',
+        color: cs.primary,
+      ),
+      _SummaryItem(
+        icon: Icons.bolt_rounded,
+        value: '$xp',
+        label: 'XP total',
+        color: cs.tertiary,
+      ),
+      _SummaryItem(
+        icon: Icons.local_fire_department_rounded,
+        value: '$streak',
+        label: 'dias seguidos',
+        color: cs.error,
+      ),
+    ];
+
+    return Row(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: 12),
+          Expanded(child: _buildItem(context, items[i], cs)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildItem(BuildContext context, _SummaryItem item, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Icon(item.icon, color: item.color, size: 22),
+          const SizedBox(height: 8),
+          Text(
+            item.value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: cs.onSurface,
+            ),
+          ),
+          Text(
+            item.label,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryItem {
+  const _SummaryItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+}
+
 class _LevelCard extends StatelessWidget {
   const _LevelCard({required this.data});
   final Map<String, dynamic> data;

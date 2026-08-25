@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
@@ -30,8 +29,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String? msg;
   String? partialLoadNote;
   bool busy = false;
-  String? resolutionStats;
-  String? lessonStats;
   int _tabIndex = 0; // 0 = Acervo, 1 = Materiais
   final _searchCtrl = TextEditingController();
   List<Map<String, dynamic>> searchHits = [];
@@ -132,99 +129,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         partialLoadNote = partialNote;
       });
       _scheduleSemana1Scroll();
-      unawaited(_loadResolutionStats());
-      unawaited(_loadLessonStats());
       unawaited(_loadStudyPdfs());
     } catch (e) {
       setState(() => error = humanApiError(e, fallback: 'Não deu para carregar a Biblioteca. Tente de novo.'));
     } finally {
       setState(() => busy = false);
-    }
-  }
-
-  Future<void> _bootstrapFirstYear() async {
-    setState(() {
-      busy = true;
-      msg = 'Baixando…';
-    });
-    try {
-      final data = await apiClient.post('/api/acervo/bootstrap-year', {
-        'dryRun': false,
-        'overwrite': false,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      final skipped = map['skippedFetch'] == true;
-      final count = map['count'] ?? (map['questions'] as List?)?.length ?? 0;
-      if (map['ok'] == false) {
-        final portal = map['portal']?.toString();
-        setState(() {
-          msg = [
-            map['message']?.toString() ?? map['error']?.toString() ?? 'A preparação do acervo falhou.',
-            if (portal != null && portal.isNotEmpty) 'Portal: $portal',
-            'Use a Biblioteca para abrir as provas.',
-          ].join(' ');
-        });
-        return;
-      }
-      setState(() {
-        msg = skipped
-            ? 'PDFs no disco — Extraindo… Abrindo revisão ($count questões).'
-            : 'Extraindo… Abrindo revisão ($count questões).';
-      });
-      final year = map['year'] as int? ?? 0;
-      final previewId = map['previewId']?.toString();
-      if (previewId != null && year > 0 && mounted) {
-        final questions = List<Map<String, dynamic>>.from(
-          (map['questions'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
-        );
-        context.push(
-          '/biblioteca/revisao',
-          extra: IngestReviewArgs(
-            year: year,
-            previewId: previewId,
-            questions: questions,
-            meta: {
-              ...map,
-              'fromBootstrap': true,
-            },
-          ),
-        );
-      }
-      ref.read(refreshTickProvider.notifier).state++;
-      await _load();
-    } catch (e) {
-      setState(() {
-        msg = humanApiError(
-          e,
-          fallback:
-              'Falha de rede/download — confira o portal na lista de materiais ou use Biblioteca → Manual / Abrir provas.',
-        );
-      });
-    } finally {
-      setState(() => busy = false);
-    }
-  }
-
-  Future<void> _professorBatchUema() async {
-    setState(() {
-      busy = true;
-      msg = 'Gerando rascunhos professor (oficiais)…';
-    });
-    try {
-      final data = await apiClient.post('/api/professor/batch-fill', {
-        'limit': 30,
-        'preferUema': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      setState(() {
-        msg =
-            'Professor: ${map['updated'] ?? 0} rascunhos. ${map['note'] ?? 'Revise — não é oficial da banca.'}';
-      });
-      ref.read(refreshTickProvider.notifier).state++;
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
-    } finally {
-      if (mounted) setState(() => busy = false);
     }
   }
 
@@ -267,10 +176,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         title: Text(title),
         content: Text('$body$packLine'),
         actions: [
-          TextButton(
-            onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'professor'); },
-            child: const Text('Rascunhos professor'),
-          ),
           TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'later'); }, child: const Text('Depois')),
           FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
         ],
@@ -279,18 +184,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     if (!mounted) return;
     if (choice == 'study') {
       await _goStudy(sessaoPath, yearHealth: yearHealth);
-    } else if (choice == 'professor') {
-      if (professor != null && (professor['updated'] as int? ?? 0) > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Já gerados: ${professor['updated']} rascunhos (não oficiais da banca).')),
-        );
-      } else {
-        await _professorBatchUema();
-      }
-      if (mounted) {
-        final focus = ref.read(focusModeProvider);
-        context.go(focus ? '/sessao' : '/medicina');
-      }
     }
   }
 
@@ -932,41 +825,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  Future<void> _fetchAvailable() async {
-    setState(() {
-      busy = true;
-      msg = 'Baixando todos os oficiais disponíveis...';
-    });
-    try {
-      final data = await apiClient.post('/api/acervo/fetch-available', {
-        'dryRun': false,
-        'overwrite': false,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
-      setState(() => msg = map['message']?.toString() ?? '$map');
-      await _load();
-      final next = map['nextReviewYear'];
-      if (next is int && mounted) {
-        final go = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Revisar PAES $next'),
-            content: const Text('Anos baixados. Abrir revisão do próximo ano completo?'),
-            actions: [
-              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('Depois')),
-              FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); }, child: const Text('Revisar')),
-            ],
-          ),
-        );
-        if (go == true) await _importYear(next);
-      }
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
-    } finally {
-      setState(() => busy = false);
-    }
-  }
-
   Future<void> _fetchYear(int year) async {
     setState(() {
       busy = true;
@@ -1060,48 +918,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     } finally {
       setState(() => busy = false);
     }
-  }
-
-  Future<void> _generateResolutions() async {
-    setState(() { busy = true; msg = 'Gerando resoluções com IA... isso pode levar alguns minutos.'; });
-    try {
-      final data = await apiClient.post('/api/ai/generate-resolutions', {'limit': 20});
-      final msgStr = data is Map ? (data['message']?.toString() ?? 'Resoluções geradas') : 'Resoluções geradas';
-      setState(() => msg = msgStr);
-      await _loadResolutionStats();
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para gerar resoluções agora. Tente de novo.'));
-    } finally {
-      setState(() => busy = false);
-    }
-  }
-
-  Future<void> _generateLessons() async {
-    setState(() { busy = true; msg = 'Gerando aulas com IA... isso pode levar alguns minutos.'; });
-    try {
-      final data = await apiClient.post('/api/ai/generate-lessons', {'limit': 10});
-      final msgStr = data is Map ? (data['message']?.toString() ?? 'Aulas geradas') : 'Aulas geradas';
-      setState(() => msg = msgStr);
-      await _loadLessonStats();
-    } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Não deu para gerar aulas agora. Tente de novo.'));
-    } finally {
-      setState(() => busy = false);
-    }
-  }
-
-  Future<void> _loadResolutionStats() async {
-    try {
-      final data = await apiClient.get('/api/ai/resolution-stats');
-      if (data is Map) setState(() => resolutionStats = data['message']?.toString());
-    } catch (_) {}
-  }
-
-  Future<void> _loadLessonStats() async {
-    try {
-      final data = await apiClient.get('/api/ai/lesson-stats');
-      if (data is Map) setState(() => lessonStats = data['message']?.toString());
-    } catch (_) {}
   }
 
   Future<void> _loadStudyPdfs() async {
@@ -1527,31 +1343,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   },
                 ),
 
-              // Ações rápidas em linha
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  FilledButton.tonalIcon(
+              // Ação principal — apenas uma, clara
+              const SizedBox(height: 16),
+              if (officialN > 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1');
+                    },
+                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                    label: const Text('Estudar agora'),
+                  ),
+                )
+              else if (!showFirstRunCoach)
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
                     onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
-                    icon: const Icon(Icons.library_add_check_rounded, size: 18),
-                    label: const Text('Importar todos com gabarito'),
+                    icon: const Icon(Icons.download_rounded, size: 20),
+                    label: const Text('Importar provas'),
                   ),
-                  if (officialN > 0)
-                    FilledButton.tonal(
-                      onPressed: () { HapticFeedback.mediumImpact(); context.go(
-                        '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                      ); },
-                      child: const Text('Estudar agora'),
-                    ),
-                  OutlinedButton.icon(
-                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
-                    icon: const Icon(Icons.save_outlined, size: 18),
-                    label: const Text('Gravar PDFs do PC'),
-                  ),
-                ],
-              ),
+                ),
               if (anosParciais > 0) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -1659,22 +1473,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           );
                         },
                       ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _commitOnDisk(); },
-                          child: const Text('Gravar todos do PC (só com gab)'),
-                        ),
-                        TextButton(
-                          onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                          child: const Text('Abrir gabaritos'),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
 
@@ -1732,31 +1530,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Baixar todos os materiais'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fetchAvailable(); }, child: const Text('Baixar')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Importar e revisar 1º ano'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _bootstrapFirstYear(); }, child: const Text('Ir')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
                     title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
                     subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
                     trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); }, child: const Text('Corrigir')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Gerar resoluções com IA'),
-                    subtitle: Text(resolutionStats ?? 'Cria resoluções didáticas (Comando, Conceito, Gabarito, Distrator)'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateResolutions(); }, child: const Text('Gerar')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Gerar aulas com IA'),
-                    subtitle: Text(lessonStats ?? 'Cria aulas estruturadas para cada tópico do edital'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _generateLessons(); }, child: const Text('Gerar')),
                   ),
                   if (coverage != null) ...[
                     const SizedBox(height: 8),
