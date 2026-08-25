@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -1302,18 +1303,48 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ],
               ),
               if (revealed) ...[
-                Text(
-                  selected == ((sessionQuestions[qIndex]['correctIndex'] as int?) ?? sessionQuestions[qIndex]['correct_index'])
-                      ? 'Correto.'
-                      : 'Incorreto. Gabarito: ${'ABCDE'[((sessionQuestions[qIndex]['correctIndex'] as int?) ?? 0).clamp(0, 4)]}',
-                  style: TextStyle(
-                    color: selected ==
-                            ((sessionQuestions[qIndex]['correctIndex'] as int?) ?? sessionQuestions[qIndex]['correct_index'])
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.tertiary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                // Card de feedback — acerto/erro com cor e icone
+                Builder(builder: (_) {
+                  final correctIdx = (sessionQuestions[qIndex]['correctIndex'] as int?) ??
+                      (sessionQuestions[qIndex]['correct_index'] as int?);
+                  final isCorrect = selected == correctIdx;
+                  final cs = Theme.of(context).colorScheme;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isCorrect ? cs.primaryContainer.f45 : cs.errorContainer.f40,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isCorrect ? cs.primary.f45 : cs.error.f40,
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                          color: isCorrect ? cs.primary : cs.error,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isCorrect
+                                ? 'Correto!'
+                                : 'Incorreto. Gabarito: ${'ABCDE'[(correctIdx ?? 0).clamp(0, 4)]}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isCorrect ? cs.onPrimaryContainer : cs.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 if (pendingErrorPick) ...[
                   const SizedBox(height: 8),
                   const Text('Tipo de erro:'),

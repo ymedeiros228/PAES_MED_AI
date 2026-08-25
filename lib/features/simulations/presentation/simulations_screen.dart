@@ -57,12 +57,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   int keyboardQi = 0;
 
   static const _modes = <(String, String, String, IconData)>[
-    ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
     ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
-    ('prova_completa', 'Prova completa', 'Treino com o recorte usual da prova', Icons.assignment_outlined),
-    ('medicina', 'Medicina', 'Foco em Natureza e raciocínio biomédico', Icons.biotech_outlined),
+    ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
     ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
-    ('incidencia', 'Por incidência', 'Tópicos que mais caem (quando houver base)', Icons.insights_outlined),
     ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
   ];
 
@@ -723,7 +720,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     areaKey: 'simulados',
                   ),
                 )
-              else if (!inSession && (mode == 'dia_prova' || mode == 'medicina'))
+              else if (!inSession && mode == 'dia_prova')
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: TrainingBasisBanner(

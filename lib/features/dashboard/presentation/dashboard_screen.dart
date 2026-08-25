@@ -252,9 +252,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             // Hero compacto: gradient + countdown + CTA principal
             SliverToBoxAdapter(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                 decoration: BoxDecoration(
                   gradient: AppTheme.heroGradient(Theme.of(context).brightness),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,61 +439,66 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           const UpdateBanner(),
                           const SizedBox(height: 20),
 
-                          // Atalhos rapidos - 4 cards grandes e limpos
-                          _SimpleQuickActions(
-                            cs: cs,
-                            sessionPath: sessionPath,
-                            officialN: officialN,
-                            flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
-                          ),
-                          const SizedBox(height: 20),
+                          // Conteudo com entrada suave (staggered fade-in)
+                          StaggeredFadeIn(
+                            children: [
+                              // Atalhos rapidos - 4 cards grandes e limpos
+                              _SimpleQuickActions(
+                                cs: cs,
+                                sessionPath: sessionPath,
+                                officialN: officialN,
+                                flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                              ),
+                              const SizedBox(height: 20),
 
-                          // XP + Streak + Tópico do dia + Flashcards due (linha integrada)
-                          _DashboardStatsRow(
-                            cs: cs,
-                            streakDays: data['streakDays'] as int? ?? 0,
-                            studyToday: data['studyToday'] as Map?,
-                            flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
-                            sessionPath: sessionPath,
-                          ),
-                          const SizedBox(height: 20),
+                              // XP + Streak + Tópico do dia + Flashcards due (linha integrada)
+                              _DashboardStatsRow(
+                                cs: cs,
+                                streakDays: data['streakDays'] as int? ?? 0,
+                                studyToday: data['studyToday'] as Map?,
+                                flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                                sessionPath: sessionPath,
+                              ),
+                              const SizedBox(height: 20),
 
-                          // Mini-gráfico de evolução da semana (7 barras)
-                          _WeekMiniChart(
-                            cs: cs,
-                            weekProgress: data['weekProgress'] as Map?,
-                            studyCalendar: (data['studyCalendar'] as Map?)?['items'] as List?,
-                          ),
-                          const SizedBox(height: 20),
+                              // Mini-gráfico de evolução da semana (7 barras)
+                              _WeekMiniChart(
+                                cs: cs,
+                                weekProgress: data['weekProgress'] as Map?,
+                                studyCalendar: (data['studyCalendar'] as Map?)?['items'] as List?,
+                              ),
+                              const SizedBox(height: 20),
 
-                          // Recomendacao do dia - um card simples
-                          FutureBuilder(
-                            future: _recommendationsFuture,
-                            builder: (context, snap) {
-                              if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
-                              final recs = Map<String, dynamic>.from(snap.data as Map);
-                              return _SimpleRecommendationCard(recommendations: recs, cs: cs);
-                            },
-                          ),
-                          const SizedBox(height: 20),
+                              // Recomendacao do dia - um card simples
+                              FutureBuilder(
+                                future: _recommendationsFuture,
+                                builder: (context, snap) {
+                                  if (!snap.hasData || snap.data is! Map) return const SizedBox.shrink();
+                                  final recs = Map<String, dynamic>.from(snap.data as Map);
+                                  return _SimpleRecommendationCard(recommendations: recs, cs: cs);
+                                },
+                              ),
+                              const SizedBox(height: 20),
 
-                          // Checklist simples do dia
-                          _SimpleChecklist(
-                            cs: cs,
-                            sessionDone: checklist['session'] == true,
-                            cardsDone: checklist['cards'] == true,
-                            revisionsDone: checklist['revisions'] == true,
-                            dayClosed: dayClosed,
-                            gapN: gapN,
-                            onSession: () => context.go(sessionPath),
-                            onCards: () => context.go('/flashcards?due=1'),
-                            onRevisions: () => context.go('/fila'),
-                            onCloseDay: dayClosed ? null : _closeDay,
-                            examDays: examDaysLocal,
-                            dailyGoal: ref.watch(dailyGoalProvider),
-                          ),
+                              // Checklist simples do dia
+                              _SimpleChecklist(
+                                cs: cs,
+                                sessionDone: checklist['session'] == true,
+                                cardsDone: checklist['cards'] == true,
+                                revisionsDone: checklist['revisions'] == true,
+                                dayClosed: dayClosed,
+                                gapN: gapN,
+                                onSession: () => context.go(sessionPath),
+                                onCards: () => context.go('/flashcards?due=1'),
+                                onRevisions: () => context.go('/fila'),
+                                onCloseDay: dayClosed ? null : _closeDay,
+                                examDays: examDaysLocal,
+                                dailyGoal: ref.watch(dailyGoalProvider),
+                              ),
 
-                          const SizedBox(height: 32),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
                         ],
                       ),
                     ),

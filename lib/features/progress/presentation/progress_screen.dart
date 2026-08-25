@@ -355,81 +355,10 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       onCta: () => context.go('/redacao'),
                     ),
                   ],
-                  if ((essay['count'] as int? ?? 0) > 0) ...[
-                    SectionLabel(
-                      'Quinteto da redação',
-                      hint: essay['disclaimer']?.toString() ?? 'eixos 0–10',
-                    ),
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: EssayRoseChart(
-                        key: const ValueKey('progress_radar'),
-                        axes: axes,
-                        averages: avg,
-                        labels: labels,
-                      ),
-                    ),
-                  ],
-                  // Constelação de Conhecimento — gamificação do progresso
-                  const SectionLabel('Sua constelação', hint: 'cada estrela = um dia de estudo'),
-                  // RepaintBoundary isola as animações da constelação do resto da tela
-                  RepaintBoundary(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: ConstellationMap(
-                        activeDays: _extractActiveDays(data),
-                        streakDays: (data?['streakDays'] as num?)?.toInt() ?? 0,
-                        totalDays: 28,
-                        accuracy: ((data?['accuracy'] as num?) ?? 0).toDouble(),
-                      ),
-                    ),
-                  ),
-                  // Ritmo de treino (mantido abaixo, mais compacto)
-                  SurfacePanel(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ritmo ${data?['readiness'] ?? '—'}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0.0, end: () {
-                              final r = data?['readiness'];
-                              if (r is! num) return 0.0;
-                              final v = r.toDouble();
-                              return (v > 1 ? v / 100.0 : v).clamp(0.0, 1.0);
-                            }()),
-                            duration: const Duration(milliseconds: 800),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, _) => LinearProgressIndicator(
-                              value: value,
-                              minHeight: 6,
-                              backgroundColor: cs.surfaceContainerHighest,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Consistência de prática — não é % de aprovação.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: cs.onSurface.f72,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // === SECOES PRINCIPAIS (5) ===
                   StaggeredFadeIn(
                     children: [
+                      // 1. Evolucao temporal
                       if (evolutionCurve.length >= 2) ...[
                         const SectionLabel('Evolução temporal', hint: 'acerto acumulado ao longo do tempo'),
                         SurfacePanel(
@@ -454,6 +383,97 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                           ),
                         ),
                       ],
+                      // 2. Mapa de pontos fracos
+                      if (errorHotTopics.isNotEmpty) ...[
+                        const SectionLabel('Mapa de pontos fracos', hint: 'tópicos com menor acerto'),
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: _WeakTopicsHeatmap(topics: errorHotTopics),
+                        ),
+                      ],
+                    ],
+                  ),
+                  // === ANALISE DETALHADA (colapsada) ===
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    initiallyExpanded: false,
+                    title: Text('Análise detalhada', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                    subtitle: const Text('Redação, constelação, ritmo, áreas e tipos de erro'),
+                    children: [
+                      const SizedBox(height: 8),
+                      if ((essay['count'] as int? ?? 0) > 0) ...[
+                        SectionLabel(
+                          'Quinteto da redação',
+                          hint: essay['disclaimer']?.toString() ?? 'eixos 0–10',
+                        ),
+                        SurfacePanel(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: EssayRoseChart(
+                            key: const ValueKey('progress_radar'),
+                            axes: axes,
+                            averages: avg,
+                            labels: labels,
+                          ),
+                        ),
+                      ],
+                      // Constelação de Conhecimento
+                      const SectionLabel('Sua constelação', hint: 'cada estrela = um dia de estudo'),
+                      RepaintBoundary(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: ConstellationMap(
+                            activeDays: _extractActiveDays(data),
+                            streakDays: (data?['streakDays'] as num?)?.toInt() ?? 0,
+                            totalDays: 28,
+                            accuracy: ((data?['accuracy'] as num?) ?? 0).toDouble(),
+                          ),
+                        ),
+                      ),
+                      // Ritmo de treino
+                      SurfacePanel(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ritmo ${data?['readiness'] ?? '—'}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: cs.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0.0, end: () {
+                                  final r = data?['readiness'];
+                                  if (r is! num) return 0.0;
+                                  final v = r.toDouble();
+                                  return (v > 1 ? v / 100.0 : v).clamp(0.0, 1.0);
+                                }()),
+                                duration: const Duration(milliseconds: 800),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, _) => LinearProgressIndicator(
+                                  value: value,
+                                  minHeight: 6,
+                                  backgroundColor: cs.surfaceContainerHighest,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Consistência de prática — não é % de aprovação.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: cs.onSurface.f72,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Desempenho por área
                       if (subjectAccScores.isNotEmpty)
                         SurfacePanel(
                           margin: const EdgeInsets.only(bottom: 16),
@@ -476,13 +496,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                             ],
                           ),
                         ),
-                      if (errorHotTopics.isNotEmpty) ...[
-                        const SectionLabel('Mapa de pontos fracos', hint: 'tópicos com menor acerto'),
-                        SurfacePanel(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: _WeakTopicsHeatmap(topics: errorHotTopics),
-                        ),
-                      ],
+                      // Tipos de erro
                       if (errorTypesMap.isNotEmpty) ...[
                         const SectionLabel('Tipos de erro', hint: 'onde você mais erra'),
                         SurfacePanel(
@@ -490,6 +504,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                           child: _ErrorTypeDonut(errorTypes: errorTypesMap),
                         ),
                       ],
+                      const SizedBox(height: 8),
                     ],
                   ),
                   if (gaps.isNotEmpty) ...[
@@ -527,36 +542,21 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         },
                       ),
                   ],
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(
-                            data?['sessionPath']?.toString() ??
-                                '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
-                          );
-                        },
-                        child: const Text('Sessão UEMA'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(data?['essayPath']?.toString() ?? '/redacao');
-                        },
-                        child: const Text('Redação'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          context.go(data?['queuePath']?.toString() ?? '/fila');
-                        },
-                        child: const Text('Fila'),
-                      ),
-                    ],
+                  const SizedBox(height: 16),
+                  // CTA unico — continuar estudando
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go(
+                          data?['sessionPath']?.toString() ??
+                              '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                        );
+                      },
+                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                      label: const Text('Continuar estudando'),
+                    ),
                   ),
                 ]
                 else if (_tabIndex == 1) ...[

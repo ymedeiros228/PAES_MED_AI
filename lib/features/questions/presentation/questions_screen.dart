@@ -113,10 +113,6 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   eyebrow: 'Banco',
                   title: 'Questões',
                   subtitle: 'Filtre e abra o que quiser treinar com calma',
-                  trailing: FilledButton.tonal(
-                    onPressed: () => context.go('/sessao'),
-                    child: const Text('Sessão'),
-                  ),
                 ),
                 Wrap(
                   spacing: 8,

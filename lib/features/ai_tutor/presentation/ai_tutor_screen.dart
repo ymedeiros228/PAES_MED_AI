@@ -298,28 +298,6 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                     },
                   ),
           ),
-          // Botão de recarregar conversa (limpa e reinicia)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                tooltip: 'Recarregar conversa',
-                onPressed: state.isLoading
-                    ? null
-                    : () {
-                        HapticFeedback.selectionClick();
-                        ref
-                            .read(aiTutorControllerProvider.notifier)
-                            .clearConversation();
-                      },
-                icon: const Icon(Icons.refresh_rounded, size: 20),
-                style: IconButton.styleFrom(
-                  foregroundColor: cs.onSurface.f55,
-                ),
-              ),
-            ),
-          ),
           Material(
             elevation: 6,
             color: cs.surface,
