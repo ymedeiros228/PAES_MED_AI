@@ -299,7 +299,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         'Medicina · UEMA',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.f72,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -343,7 +343,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                              side: BorderSide(color: Colors.white.f40),
                             ),
                             child: const Text('Recomeçar'),
                           ),
@@ -413,7 +413,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       height: 1.5,
-                                      color: cs.onPrimaryContainer.withOpacity(0.9),
+                                      color: cs.onPrimaryContainer.f90,
                                     ),
                                   ),
                                   const SizedBox(height: 12),

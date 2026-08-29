@@ -257,13 +257,13 @@ class SurfacePanel extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? cs.surface.withOpacity(isDark ? 0.94 : 0.98),
+        color: color ?? (isDark ? cs.surface.f90 : cs.surface.withOpacity(0.98)),
         borderRadius: BorderRadius.circular(soft ? kRadiusPanelSoft : kRadiusPanel),
-        border: Border.all(color: cs.outlineVariant.withOpacity(soft ? 0.5 : 0.85)),
+        border: Border.all(color: soft ? cs.outlineVariant.f50 : cs.outlineVariant.f85),
         boxShadow: soft && !isDark
             ? [
                 BoxShadow(
-                  color: const Color(0xFF0A1628).withOpacity(0.06),
+                  color: const Color(0xFF0A1628).f10,
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -381,10 +381,7 @@ class _PlaylistTileState extends State<PlaylistTile> {
                                     widget.subtitle!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: cs.onSurface.withOpacity(0.72),
-                                    ),
+                                    style: TextStyle(fontSize: 12, color: cs.onSurface.f72),
                                   ),
                               ],
                             ),
@@ -451,7 +448,7 @@ class StatsStrip extends StatelessWidget {
           children: [
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
-                Container(width: 1, height: 36, color: cs.outlineVariant.withOpacity(0.4)),
+                Container(width: 1, height: 36, color: cs.outlineVariant.f40),
               Expanded(
                 child: Column(
                   children: [

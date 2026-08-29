@@ -223,12 +223,12 @@ final appRouter = GoRouter(
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.5,
-                    color: cs.onSurface.withOpacity(0.65),
+                    color: cs.onSurface.f65,
                   ),
                 ),
                 const SizedBox(height: 20),
                 FilledButton(
-                  onPressed: () => GoRouter.of(ctx).go('/hoje'),
+                  onPressed: () => GoRouter.of(ctx).go('/dashboard'),
                   child: const Text('Ir para Hoje'),
                 ),
               ],

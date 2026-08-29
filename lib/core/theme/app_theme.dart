@@ -467,4 +467,7 @@ extension FadeColor on Color {
   Color get f50 => _f(128); // 0.50
   Color get f40 => _f(102); // 0.40
   Color get f30 => _f(77);  // 0.30
+  Color get f20 => _f(51);  // 0.20
+  Color get f10 => _f(26);  // 0.10
+  Color get f98 => _f(250); // 0.98
 }
