@@ -1,13 +1,13 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/data/api_client.dart';
+import '../data/library_api.dart';
+import '../data/library_formatters.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
@@ -109,18 +109,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       partialLoadNote = null;
     });
     try {
-      final data = await apiClient.get('/api/library');
+      final data = await LibraryApi.fetchLibrary();
       Map<String, dynamic>? cov;
       Map<String, dynamic>? cur;
       String? partialNote;
       try {
-        final c = await apiClient.get('/api/edital/coverage');
+        final c = await LibraryApi.fetchCoverage();
         cov = Map<String, dynamic>.from(c as Map);
       } catch (e) {
         partialNote = humanApiError(e, fallback: 'Cobertura do edital indisponível.');
       }
       try {
-        final inv = await apiClient.get('/api/curation/inventory');
+        final inv = await LibraryApi.fetchCurationInventory();
         cur = Map<String, dynamic>.from(inv as Map);
       } catch (e) {
         partialNote ??= humanApiError(e, fallback: 'Inventário de curadoria indisponível.');
@@ -140,28 +140,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  String _healthLine(Map<String, dynamic> map, {Object? inserted}) {
-    final health = Map<String, dynamic>.from(map['yearHealth'] as Map? ?? {});
-    if (health.isEmpty && map['years'] is List) {
-      // lote: soma natureza dos yearHealth
-      var bio = 0, qui = 0, fis = 0, total = 0;
-      for (final raw in (map['years'] as List)) {
-        final y = Map<String, dynamic>.from(raw as Map);
-        final h = Map<String, dynamic>.from(y['yearHealth'] as Map? ?? {});
-        final nat = Map<String, dynamic>.from(h['natureza'] as Map? ?? {});
-        bio += (nat['Biologia'] as int?) ?? 0;
-        qui += (nat['Química'] as int?) ?? 0;
-        fis += (nat['Física'] as int?) ?? 0;
-        total += (h['total'] as int?) ?? (y['inserted'] as int?) ?? 0;
-      }
-      if (total == 0 && inserted != null) total = int.tryParse('$inserted') ?? 0;
-      return total > 0 ? ' · lote: $total questões · Bio $bio/Qui $qui/Fis $fis' : '';
-    }
-    final nat = Map<String, dynamic>.from(health['natureza'] as Map? ?? {});
-    if (health.isEmpty) return '';
-    return ' · lote: ${health['total'] ?? inserted ?? '—'} questões · gabarito ${health['gabaritoPct'] ?? '—'}%'
-        ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}';
-  }
+  String _healthLine(Map<String, dynamic> map, {Object? inserted}) =>
+      libraryHealthLine(map, inserted: inserted);
+
+  String _semana1HealthBody(Map<String, dynamic> map) => librarySemana1HealthBody(map);
+
+  String _naturezaPackLine(Map<String, dynamic>? pack) => libraryNaturezaPackLine(pack);
 
   Future<void> _showPostCommitCta({
     required String title,
@@ -235,8 +219,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Future<void> _openPortal(String portal) async {
     try {
-      final data = await apiClient.post('/api/library/open-url', {'url': portal});
-      setState(() => msg = 'Portal aberto no navegador: ${(data as Map)['url'] ?? portal}');
+      final data = await LibraryApi.openUrl(portal);
+      setState(() => msg = 'Portal aberto no navegador: ${data['url'] ?? portal}');
     } catch (e) {
       setState(() => msg = humanApiError(
             e,
@@ -246,40 +230,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  String _semana1HealthBody(Map<String, dynamic> map) {
-    final buf = StringBuffer();
-    buf.writeln(map['message']?.toString() ?? '');
-    final years = map['years'] as List? ?? const [];
-    for (final raw in years) {
-      final y = Map<String, dynamic>.from(raw as Map);
-      final h = Map<String, dynamic>.from(y['yearHealth'] as Map? ?? {});
-      final nat = Map<String, dynamic>.from(h['natureza'] as Map? ?? {});
-      buf.writeln(
-        '· ${y['year']}: +${y['inserted'] ?? 0}'
-        '${y['skipped'] == true ? ' (já commitado)' : ''}'
-        '${h.isNotEmpty ? ' · Bio ${nat['Biologia'] ?? 0}/Qui ${nat['Química'] ?? 0}/Fis ${nat['Física'] ?? 0}' : ''}',
-      );
-    }
-    buf.write(_naturezaPackLine(
-      map['naturezaPack'] is Map ? Map<String, dynamic>.from(map['naturezaPack'] as Map) : null,
-    ));
-    return buf.toString().trim();
-  }
-
   Future<void> _semana1Real() async {
     setState(() {
       busy = true;
       msg = 'Semana 1: atualizando 2024–26…';
     });
     try {
-      final data = await apiClient.post('/api/acervo/bootstrap-and-commit-available', {
-        'dryRun': false,
-        'overwrite': false,
-        'minConfidence': 0.55,
-        'skipCommitted': true,
-        'autoProfessor': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final data = await LibraryApi.semana1Bootstrap();
+      final map = data;
       final inserted = map['insertedTotal'] as int? ?? 0;
       final empty = map['emptyDisk'] == true || inserted == 0;
       final pack = map['naturezaPack'] is Map ? Map<String, dynamic>.from(map['naturezaPack'] as Map) : null;
@@ -322,7 +280,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       );
       // Ciclo I: reclassificar Natureza 1x após commit
       try {
-        await apiClient.post('/api/ingest/classify-pending', {});
+        await LibraryApi.classifyPending();
       } catch (e) {
         if (mounted) {
           final note = humanApiError(e, fallback: 'Reclassificação Natureza não rodou.');
@@ -352,13 +310,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Gravando PDFs no acervo…';
     });
     try {
-      final data = await apiClient.post('/api/acervo/commit-on-disk', {
-        'dryRun': false,
-        'minConfidence': 0.55,
-        'skipCommitted': true,
-        'autoProfessor': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.commitOnDisk();
       final inserted = map['insertedTotal'] ?? 0;
       final n = map['officialCount'] ?? 0;
       final healthLine = _healthLine(map, inserted: inserted);
@@ -396,12 +348,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Importando todos os pares com gabarito…';
     });
     try {
-      final data = await apiClient.post('/api/acervo/import-all-complete', {
-        'minConfidence': 0.55,
-        'skipIfCommitted': false,
-        'classifyAfter': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.importAllComplete();
       final inserted = map['insertedTotal'] ?? 0;
       final n = map['officialCount'] ?? 0;
       final years = (map['years'] as List?) ?? const [];
@@ -488,13 +435,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Importando do PC · PAES $year…';
     });
     try {
-      final data = await apiClient.post('/api/acervo/import-year-safe', {
-        'year': year,
-        'commit': true,
-        'minConfidence': 0.55,
-        'skipIfCommitted': false,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.importYearSafe(year);
       if (map['needsGabarito'] == true) {
         setState(() => msg = map['message']?.toString() ?? 'Falta gabarito.');
         if (!mounted) return;
@@ -560,25 +501,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  String _naturezaPackLine(Map<String, dynamic>? pack) {
-    if (pack == null) return '';
-    final n = pack['cardsCreated'] as int? ?? 0;
-    final d = pack['drafts'] as int? ?? 0;
-    if (n <= 0 && d <= 0) return '';
-    return '\nPacote Natureza: $n cartões para revisar amanhã'
-        '${d > 0 ? ' · $d com rascunho professor' : ''}.';
-  }
-
   Future<bool> _confirmStudyDespiteParse({
     Map<String, dynamic>? yearHealth,
     Map<String, dynamic>? pending,
   }) async {
     try {
-      final data = await apiClient.post('/api/acervo/parse-gate', {
-        if (yearHealth != null) 'yearHealth': yearHealth,
-        if (pending != null) 'pending': pending,
-      });
-      final gate = Map<String, dynamic>.from(data as Map);
+      final gate = await LibraryApi.parseGate(
+        yearHealth: yearHealth,
+        pending: pending,
+      );
       if (gate['warn'] != true) return true;
       if (!mounted) return false;
       final choice = await showDialog<String>(
@@ -631,14 +562,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Gravando PAES $year no acervo…';
     });
     try {
-      final data = await apiClient.post('/api/acervo/bootstrap-and-commit', {
-        'dryRun': false,
-        'overwrite': false,
-        'year': year,
-        'minConfidence': 0.55,
-        'autoProfessor': true,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.bootstrapAndCommitYear(year);
       final inserted = map['inserted'] ?? 0;
       final n = map['officialCount'] ?? 0;
       final healthLine = _healthLine(map, inserted: inserted);
@@ -671,8 +595,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Importando $year para revisão...';
     });
     try {
-      final data = await apiClient.post('/api/ingest/import-year', {'year': year, 'commit': false});
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.importYearPreview(year);
       setState(() => msg = map['message']?.toString() ?? '$map');
       if (map['previewId'] != null && map['ok'] != false) {
         if (!mounted) return;
@@ -700,7 +623,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Future<void> _openFolder(String folder) async {
     try {
-      final data = await apiClient.post('/api/library/open-folder', {'folder': folder});
+      final data = await LibraryApi.openFolder(folder);
       final path = (data as Map)['path']?.toString() ?? folder;
       setState(() => msg = 'Pasta aberta: $path');
     } catch (e) {
@@ -710,8 +633,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Future<void> _loadSearchHistory() async {
     try {
-      final data = await apiClient.get('/api/library/search-history', {'limit': '12'});
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.fetchSearchHistory();
       if (!mounted) return;
       setState(() {
         searchHistory = (map['items'] as List? ?? [])
@@ -748,17 +670,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     setState(() => searching = true);
     try {
-      final params = <String, String>{
-        'q': q,
-        'limit': '30',
-      };
-      if (searchSourceKind == 'oficial') {
-        params['sourceKind'] = 'oficial';
-      } else if (searchSourceKind == 'estudo') {
-        params['sourceKind'] = 'estudo';
-      }
-      final data = await apiClient.get('/api/library/search', params);
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.search(query: q, sourceKind: searchSourceKind);
       setState(() {
         searchHits = (map['items'] as List? ?? [])
             .whereType<Map>()
@@ -787,7 +699,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
     if (path.isNotEmpty) {
       try {
-        await apiClient.openPath(path);
+        await LibraryApi.openPath(path);
         setState(() => msg = 'Abrindo ${hit['label'] ?? path}');
       } catch (e) {
         setState(
@@ -806,12 +718,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       msg = 'Baixando oficiais PAES $year...';
     });
     try {
-      final data = await apiClient.post('/api/acervo/fetch-year', {
-        'year': year,
-        'dryRun': false,
-        'overwrite': false,
-      });
-      final map = Map<String, dynamic>.from(data as Map);
+      final map = await LibraryApi.fetchYear(year);
       setState(() => msg = map['message']?.toString() ?? '$map');
       await _load();
       final local = map['local'] as Map?;
@@ -858,8 +765,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _classify() async {
     setState(() => busy = true);
     try {
-      final data = await apiClient.post('/api/ingest/classify-pending', {});
-      setState(() => msg = 'Classificação: $data');
+      await LibraryApi.classifyPending();
+      setState(() => msg = 'Classificação concluída');
       await _load();
     } catch (e) {
       setState(() => msg = humanApiError(e, fallback: 'Não deu para concluir. Tente de novo.'));
@@ -871,7 +778,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _syncEdital() async {
     setState(() => busy = true);
     try {
-      final data = await apiClient.post('/api/edital/sync-syllabus', {});
+      final data = await LibraryApi.syncEdital();
       setState(() => msg = 'Syllabus: $data');
       await _load();
     } catch (e) {
@@ -884,7 +791,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Future<void> _fixQuestions() async {
     setState(() => busy = true);
     try {
-      final data = await apiClient.post('/api/library/fix-questions', {});
+      final data = await LibraryApi.fixQuestions();
       final msgStr = data is Map ? (data['message']?.toString() ?? 'Correção concluída') : 'Correção concluída';
       setState(() => msg = msgStr);
       await _load();
@@ -897,8 +804,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Future<void> _loadStudyPdfs() async {
     try {
-      final res = await apiClient.get('/api/materials/pdf-list');
-      final list = (res as List).cast<Map<String, dynamic>>();
+      final list = await LibraryApi.fetchPdfList();
       setState(() {
         _studyPdfs = list;
         _pdfsLoaded = true;

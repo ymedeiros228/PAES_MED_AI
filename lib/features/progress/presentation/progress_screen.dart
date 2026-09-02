@@ -204,7 +204,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 const PageHeader(
                   eyebrow: 'Analisar',
                   title: 'Progresso',
-                  subtitle: 'Desempenho e conquistas — prática, não % de aprovação',
+                  subtitle: 'Evolução, pontos fracos e medalhas — prática, não nota de corte',
                 ),
                 // Abas: Desempenho | Conquistas
                 Padding(
@@ -281,7 +281,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     eyebrow: 'Seu desempenho',
                     title: 'Onde você vai bem e onde pode melhorar',
                     subtitle: data?['disclaimer']?.toString() ??
-                        'Seu progresso de estudo',
+                        'Faça sessões e redações para ver onde você vai bem',
                     trailing: HonestBadge(
                       label: essay['levelLabel']?.toString() ?? 'prática',
                     ),

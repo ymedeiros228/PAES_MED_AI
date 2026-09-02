@@ -813,7 +813,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                       ],
                     ),
                   ),
-                SectionLabel('Simulado do dia', hint: 'Caminho principal · cronômetro · gabarito no fim'),
+                SectionLabel('Simulado do dia', hint: 'Recomendado · como no dia da prova'),
                 _ModeCard(
                   selected: mode == 'dia_prova',
                   icon: Icons.timer_outlined,
