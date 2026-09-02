@@ -13,6 +13,8 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
+import 'widgets/library_materiais_tab.dart';
+import 'widgets/library_tab_bar.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -985,14 +987,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Row(
               children: [
-                _LibTab(
+                LibraryTab(
                   label: 'Acervo',
                   icon: Icons.inventory_2_rounded,
                   selected: _tabIndex == 0,
                   onTap: () => setState(() => _tabIndex = 0),
                 ),
                 const SizedBox(width: 8),
-                _LibTab(
+                LibraryTab(
                   label: 'Materiais',
                   icon: Icons.picture_as_pdf_rounded,
                   selected: _tabIndex == 1,
@@ -1005,7 +1007,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         Expanded(
           child: _tabIndex == 0
               ? _buildAcervoTab(cs, checklist, officialN, board, hist, pending, pendingItems, pendingN, anosParciais)
-              : _buildMateriaisTab(cs),
+              : LibraryMateriaisTab(pdfsLoaded: _pdfsLoaded, pdfs: _studyPdfs),
         ),
       ],
     );
@@ -1197,7 +1199,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
               if (searchHits.isNotEmpty) ...[
-                SectionLabel('Resultados', hint: '↑/↓ J/K · Enter abre · ${searchHits.length} local'),
+                SectionLabel('Resultados', hint: '${searchHits.length} resultado(s) · toque para abrir'),
                 for (var i = 0; i < searchHits.take(12).length; i++)
                   Builder(
                     builder: (_) {
@@ -1594,356 +1596,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  // ==========================================================
-  // Tab Materiais — estante enxuta de PDFs de estudo
-  // ==========================================================
-
-  Widget _buildMateriaisTab(ColorScheme cs) {
-    if (!_pdfsLoaded) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_studyPdfs.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.picture_as_pdf_outlined, size: 56, color: cs.outline),
-              const SizedBox(height: 16),
-              Text('Nenhum PDF disponível.', style: TextStyle(color: cs.outline, fontSize: 15)),
-              const SizedBox(height: 8),
-              Text(
-                'Os materiais de estudo aparecem aqui automaticamente.',
-                style: TextStyle(color: cs.outline.withOpacity(0.6), fontSize: 13),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return _MateriaisShelf(pdfs: _studyPdfs, cs: cs);
-  }
-}
-
-// ============================================================
-// _LibTab — botão de tab customizado (Acervo / Materiais)
-// ============================================================
-
-class _LibTab extends StatelessWidget {
-  const _LibTab({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () { HapticFeedback.selectionClick(); onTap(); },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? cs.primary : cs.surfaceContainerHighest.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? cs.primary : cs.outlineVariant.withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.6)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: selected ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ============================================================
-// _MateriaisShelf — estante enxuta de PDFs (tab Materiais)
-// ============================================================
-
-class _MateriaisShelf extends StatefulWidget {
-  const _MateriaisShelf({required this.pdfs, required this.cs});
-  final List<Map<String, dynamic>> pdfs;
-  final ColorScheme cs;
-
-  @override
-  State<_MateriaisShelf> createState() => _MateriaisShelfState();
-}
-
-class _MateriaisShelfState extends State<_MateriaisShelf> {
-  String? _selectedSubject;
-  String _searchQuery = '';
-  final _searchCtrl = TextEditingController();
-
-  static const _subjectIcons = {
-    'Biologia': Icons.biotech_rounded,
-    'Química': Icons.science_rounded,
-    'Física': Icons.bolt_rounded,
-    'Matemática': Icons.calculate_rounded,
-    'Português': Icons.menu_book_rounded,
-    'Inglês': Icons.language_rounded,
-    'Espanhol': Icons.translate_rounded,
-    'História': Icons.history_edu_rounded,
-    'Geografia': Icons.public_rounded,
-    'Filosofia': Icons.psychology_rounded,
-    'Sociologia': Icons.groups_rounded,
-  };
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  List<Map<String, dynamic>> get _filtered {
-    var pdfs = widget.pdfs;
-    if (_selectedSubject != null) {
-      pdfs = pdfs.where((p) => (p['subject'] ?? '') == _selectedSubject).toList();
-    }
-    if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
-      pdfs = pdfs.where((p) {
-        final title = (p['title'] ?? '').toString().toLowerCase();
-        final subj = (p['subject'] ?? '').toString().toLowerCase();
-        return title.contains(q) || subj.contains(q);
-      }).toList();
-    }
-    return pdfs;
-  }
-
-  List<String> get _subjects {
-    final s = widget.pdfs.map((p) => (p['subject'] ?? 'Outros').toString()).toSet().toList();
-    s.sort();
-    return s;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = widget.cs;
-    final filtered = _filtered;
-    final totalPdfs = widget.pdfs.length;
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      children: [
-        // Header compacto
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: cs.primaryContainer.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.collections_bookmark_rounded, size: 22, color: cs.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Materiais de Estudo',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface),
-                  ),
-                  Text(
-                    '$totalPdfs PDFs em ${_subjects.length} disciplinas',
-                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Busca
-        TextField(
-          controller: _searchCtrl,
-          decoration: InputDecoration(
-            hintText: 'Buscar material...',
-            prefixIcon: const Icon(Icons.search, size: 20),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear, size: 20),
-                    onPressed: () { _searchCtrl.clear(); setState(() => _searchQuery = ''); },
-                  )
-                : null,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            filled: true,
-            fillColor: cs.surfaceContainerHighest.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-          onChanged: (v) => setState(() => _searchQuery = v),
-        ),
-        const SizedBox(height: 12),
-
-        // Chips de disciplina
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: const Text('Todas'),
-                  selected: _selectedSubject == null,
-                  onSelected: (_) => setState(() => _selectedSubject = null),
-                ),
-              ),
-              ..._subjects.map((s) => Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(s),
-                  selected: _selectedSubject == s,
-                  avatar: Icon(_subjectIcons[s] ?? Icons.book, size: 14),
-                  onSelected: (_) => setState(() => _selectedSubject = s),
-                ),
-              )),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Lista de PDFs
-        if (filtered.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.search_off, size: 48, color: cs.outline),
-                  const SizedBox(height: 12),
-                  Text('Nenhum material encontrado.', style: TextStyle(color: cs.outline)),
-                ],
-              ),
-            ),
-          )
-        else
-          ...filtered.map((pdf) => _MateriaisPdfCard(pdf: pdf, cs: cs)),
-      ],
-    );
-  }
-}
-
-// ============================================================
-// _MateriaisPdfCard — card compacto de PDF
-// ============================================================
-
-class _MateriaisPdfCard extends StatelessWidget {
-  const _MateriaisPdfCard({required this.pdf, required this.cs});
-  final Map<String, dynamic> pdf;
-  final ColorScheme cs;
-
-  static const _subjectIcons = {
-    'Biologia': Icons.biotech_rounded,
-    'Química': Icons.science_rounded,
-    'Física': Icons.bolt_rounded,
-    'Matemática': Icons.calculate_rounded,
-    'Português': Icons.menu_book_rounded,
-    'Inglês': Icons.language_rounded,
-    'Espanhol': Icons.translate_rounded,
-    'História': Icons.history_edu_rounded,
-    'Geografia': Icons.public_rounded,
-    'Filosofia': Icons.psychology_rounded,
-    'Sociologia': Icons.groups_rounded,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final title = pdf['title']?.toString() ?? 'Material';
-    final subject = pdf['subject']?.toString() ?? 'Outros';
-    final filename = pdf['filename']?.toString() ?? '';
-    final sizeKb = (pdf['size_kb'] as num?)?.toDouble() ?? 0;
-    final sizeStr = sizeKb > 1024 ? '${(sizeKb / 1024).toStringAsFixed(1)} MB' : '${sizeKb.round()} KB';
-    final icon = _subjectIcons[subject] ?? Icons.book;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cs.outlineVariant.withOpacity(0.2)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          HapticFeedback.selectionClick();
-          context.go(Uri(path: '/estudar', queryParameters: {
-            'pdf': filename,
-            'title': title,
-            'subject': subject,
-          }).toString());
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: cs.onPrimaryContainer, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Text(subject, style: TextStyle(fontSize: 11, color: cs.primary, fontWeight: FontWeight.w500)),
-                        const SizedBox(width: 8),
-                        Text(sizeStr, style: TextStyle(fontSize: 11, color: cs.outline.withOpacity(0.5))),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, size: 20, color: cs.outline.withOpacity(0.4)),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
