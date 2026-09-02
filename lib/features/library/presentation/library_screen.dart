@@ -13,6 +13,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
+import 'widgets/library_acervo_tab.dart';
 import 'widgets/library_materiais_tab.dart';
 import 'widgets/library_tab_bar.dart';
 
@@ -481,34 +482,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
-  String _uiStatusLabel(String? s) {
-    switch (s) {
-      case 'committed':
-        return 'No acervo';
-      case 'onDisk':
-        return 'Par com gabarito · pode gravar';
-      case 'partial':
-        return 'Parcial · sem gabarito';
-      case 'partialGab':
-        return 'Só gabarito · falta prova';
-      case 'preview':
-        return 'Precisa revisar';
-      case 'found':
-        return 'Pode baixar';
-      case 'needs_manual':
-        return 'Baixar à mão';
-      default:
-        return 'Vazio';
-    }
-  }
-
-  String _uiBadge(String? status, {required bool ready, required bool diskOk, required bool hasProva, required bool hasGab}) {
-    if (ready) return 'pronto';
-    if (status == 'partial' || (hasProva && !hasGab)) return 'parcial';
-    if (diskOk) return 'prova + gabarito';
-    return status ?? '';
-  }
-
   Future<void> _importYearSafe(int year) async {
     setState(() {
       busy = true;
@@ -935,6 +908,43 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
   }
 
+  LibraryAcervoActions _acervoActions() {
+    return LibraryAcervoActions(
+      onRefresh: _load,
+      onDismissFirstRunCoach: _dismissFirstRunCoach,
+      onSemana1: () => unawaited(_semana1Real()),
+      onRunSearch: _runSearch,
+      onSearchChanged: _onSearchChanged,
+      onSearchSourceKindChanged: (kind) {
+        setState(() => searchSourceKind = kind);
+        if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
+      },
+      onApplySearchHistory: (q, sk) {
+        _searchCtrl.text = q;
+        setState(() {
+          if (sk == 'oficial' || sk == 'estudo') {
+            searchSourceKind = sk!;
+          } else {
+            searchSourceKind = 'todos';
+          }
+        });
+        _runSearch();
+      },
+      onHitSelected: (i) => setState(() => _hitSelected = i),
+      onOpenSearchHit: _openSearchHit,
+      onGoStudy: (path) => unawaited(_goStudy(path)),
+      onImportYear: (y) => unawaited(_importYear(y)),
+      onImportYearSafe: (y) => unawaited(_importYearSafe(y)),
+      onBootstrapYear: (y) => unawaited(_bootstrapAndCommitYear(y)),
+      onFetchYear: (y) => unawaited(_fetchYear(y)),
+      onImportAllComplete: () => unawaited(_importAllComplete()),
+      onOpenFolder: (folder) => unawaited(_openFolder(folder)),
+      onSyncEdital: () => unawaited(_syncEdital()),
+      onClassify: () => unawaited(_classify()),
+      onFixQuestions: () => unawaited(_fixQuestions()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (busy && library == null) {
@@ -976,7 +986,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final anosParciais = (checklist['anosParciaisCount'] as int?) ??
         (checklist['anosParciais'] as List?)?.length ??
         0;
-    final cs = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -1006,596 +1015,36 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
         Expanded(
           child: _tabIndex == 0
-              ? _buildAcervoTab(cs, checklist, officialN, board, hist, pending, pendingItems, pendingN, anosParciais)
+              ? LibraryAcervoTab(
+                  searchController: _searchCtrl,
+                  actions: _acervoActions(),
+                  busy: busy,
+                  msg: msg,
+                  showFirstRunCoach: showFirstRunCoach,
+                  officialN: officialN,
+                  partialLoadNote: partialLoadNote,
+                  error: error,
+                  searching: searching,
+                  searchHits: searchHits,
+                  searchNote: searchNote,
+                  searchHistory: searchHistory,
+                  searchHistoryNote: searchHistoryNote,
+                  searchSourceKind: searchSourceKind,
+                  hitSelected: _hitSelected,
+                  board: board,
+                  hist: hist,
+                  pendingItems: pendingItems,
+                  pendingN: pendingN,
+                  anosParciais: anosParciais,
+                  curation: curation,
+                  coverage: coverage,
+                  showLocalDataHint: library?['dataDir'] != null,
+                  semana1PanelKey: _semana1PanelKey,
+                )
               : LibraryMateriaisTab(pdfsLoaded: _pdfsLoaded, pdfs: _studyPdfs),
         ),
       ],
     );
   }
 
-  Widget _buildAcervoTab(
-    ColorScheme cs,
-    Map<String, dynamic> checklist,
-    int officialN,
-    List board,
-    List hist,
-    Map<String, dynamic> pending,
-    List pendingItems,
-    int pendingN,
-    int anosParciais,
-  ) {
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
-      children: [
-        PageBody(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PageHeader(
-                eyebrow: 'Materiais',
-                title: 'Biblioteca',
-                subtitle: officialN > 0
-                    ? '$officialN questões oficiais disponíveis'
-                    : 'Importe as provas oficiais e comece a estudar',
-                trailing: IconButton(
-                  tooltip: 'Atualizar',
-                  onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
-                  icon: busy
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.refresh_rounded),
-                ),
-              ),
-
-              if (busy)
-                SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.secondaryContainer.f45,
-                  child: Row(
-                    children: [
-                      const SoftLoader(compact: true),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          msg ?? 'Trabalhando no acervo… pode demorar um pouco.',
-                          style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.85)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              if (showFirstRunCoach && officialN == 0) ...[
-                SurfacePanel(
-                  key: _semana1PanelKey,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.f55,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Bem-vindo — Semana 1', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Toque em Atualizar 2024–26 abaixo para importar provas UEMA. '
-                        'Sem PDFs no PC? Use Abrir provas e coloque paes_YYYY.pdf na pasta.',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9)),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: busy ? null : () { HapticFeedback.mediumImpact(); unawaited(_semana1Real()); },
-                            icon: const Icon(Icons.download_rounded, size: 18),
-                            label: const Text('Atualizar 2024–26'),
-                          ),
-                          TextButton(onPressed: () { HapticFeedback.selectionClick(); _dismissFirstRunCoach(); }, child: const Text('Depois')),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              if (partialLoadNote != null && error == null) ...[
-                QuietEmpty(
-                  message: partialLoadNote!,
-                  action: TextButton(
-                    onPressed: busy ? null : () { HapticFeedback.selectionClick(); _load(); },
-                    child: const Text('Tentar'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-
-              const SizedBox(height: 8),
-              TextField(
-                controller: _searchCtrl,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  labelText: 'Buscar no acervo',
-                  hintText: 'ex.: genética, osmose…',
-                  suffixIcon: IconButton(
-                    tooltip: 'Buscar',
-                    onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
-                    icon: searching
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.search_rounded),
-                  ),
-                  border: const OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => _runSearch(),
-                onChanged: _onSearchChanged,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  for (final kind in const [
-                    ('todos', 'Todos'),
-                    ('oficial', 'Oficial'),
-                    ('estudo', 'Estudo'),
-                  ])
-                    ChoiceChip(
-                      label: Text(kind.$2),
-                      selected: searchSourceKind == kind.$1,
-                      onSelected: (_) {
-                        HapticFeedback.selectionClick();
-                        setState(() => searchSourceKind = kind.$1);
-                        if (_searchCtrl.text.trim().isNotEmpty) _runSearch();
-                      },
-                    ),
-                ],
-              ),
-              if (searchHistoryNote != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  searchHistoryNote!,
-                  style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-              if (searchHistory.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final h in searchHistory.take(8))
-                      ActionChip(
-                        label: Text(
-                          h['q']?.toString() ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          final q = h['q']?.toString() ?? '';
-                          if (q.isEmpty) return;
-                          _searchCtrl.text = q;
-                          final sk = h['sourceKind']?.toString();
-                          if (sk == 'oficial' || sk == 'estudo') {
-                            searchSourceKind = sk!;
-                          } else {
-                            searchSourceKind = 'todos';
-                          }
-                          _runSearch();
-                        },
-                      ),
-                  ],
-                ),
-              ],
-              if (searchNote != null && searchHits.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: QuietEmpty(
-                    message: searchNote!,
-                    action: TextButton(
-                      onPressed: searching ? null : () { HapticFeedback.selectionClick(); _runSearch(); },
-                      child: const Text('Tentar'),
-                    ),
-                  ),
-                ),
-              if (searchHits.isNotEmpty) ...[
-                SectionLabel('Resultados', hint: '${searchHits.length} resultado(s) · toque para abrir'),
-                for (var i = 0; i < searchHits.take(12).length; i++)
-                  Builder(
-                    builder: (_) {
-                      final hit = searchHits[i];
-                      return PlaylistTile(
-                        title: hit['label']?.toString() ?? 'arquivo',
-                        subtitle:
-                            '${hit['sourceKind'] ?? hit['kind'] ?? ''}${hit['year'] != null ? ' · ${hit['year']}' : ''}',
-                        badge: hit['sourceKind']?.toString() == 'oficial' ? 'oficial' : 'local',
-                        active: i == _hitSelected,
-                        leadingIcon: hit['kind'] == 'question'
-                            ? Icons.quiz_outlined
-                            : Icons.description_outlined,
-                        onPlay: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _hitSelected = i);
-                          _openSearchHit(hit);
-                        },
-                      );
-                    },
-                  ),
-              ],
-
-              // Painel de boas-vindas só aparece quando não há oficiais
-              SectionLabel('Provas recentes', hint: '2024–26'),
-              if (board.isEmpty)
-                QuietEmpty(
-                  message: 'Nenhuma prova 2024–26 ainda. Toque para importar.',
-                  action: Wrap(
-                    spacing: 8,
-                    children: [
-                      FilledButton(
-                        onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _semana1Real(); },
-                        child: const Text('Importar provas'),
-                      ),
-                      TextButton(
-                        onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'); },
-                        child: const Text('Ir para Sessão'),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200,
-                    childAspectRatio: 1.1,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: board.length,
-                  itemBuilder: (context, i) {
-                    final g = board[i];
-                    final y = g['year'] as int? ?? 0;
-                    final status = g['uiStatus']?.toString() ?? 'empty';
-                    final n = g['committedCount'] as int? ?? 0;
-                    final canFetch = g['canFetch'] == true;
-                    final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                    final hasProva = onDisk['hasProva'] == true;
-                    final hasGab = onDisk['hasGabarito'] == true;
-                    final diskOk = hasProva && hasGab;
-                    final partial = hasProva && !hasGab;
-                    final ready = status == 'committed' || n > 0;
-                    final label = g['labelHint']?.toString() ?? _uiStatusLabel(status);
-                    final cardColor = ready
-                        ? cs.primaryContainer
-                        : partial
-                            ? cs.tertiaryContainer
-                            : cs.surfaceContainerHigh;
-                    final iconColor = ready ? cs.primary : partial ? cs.tertiary : cs.onSurfaceVariant;
-                    final statusIcon = ready ? Icons.check_circle_rounded : partial ? Icons.warning_amber_rounded : Icons.hourglass_empty_rounded;
-                    return TapScale(
-                      child: Material(
-                        color: cardColor,
-                        borderRadius: BorderRadius.circular(20),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: busy ? null : () {
-                            HapticFeedback.selectionClick();
-                            if (ready) {
-                              _goStudy('/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1');
-                            } else if (partial) {
-                              _importYear(y);
-                            } else if (canFetch || diskOk) {
-                              diskOk ? _importYearSafe(y) : _bootstrapAndCommitYear(y);
-                            } else {
-                              _fetchYear(y);
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '$y',
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w800,
-                                        color: iconColor,
-                                      ),
-                                    ),
-                                    Icon(statusIcon, color: iconColor, size: 22),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ready ? '$n questões' : label,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: ready ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.85),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.withOpacity(0.6),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-              // Ação principal — apenas uma, clara
-              const SizedBox(height: 16),
-              if (officialN > 0)
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1');
-                    },
-                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                    label: const Text('Estudar agora'),
-                  ),
-                )
-              else if (!showFirstRunCoach)
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: busy ? null : () { HapticFeedback.mediumImpact(); _importAllComplete(); },
-                    icon: const Icon(Icons.download_rounded, size: 20),
-                    label: const Text('Importar provas'),
-                  ),
-                ),
-              if (anosParciais > 0) ...[
-                const SizedBox(height: 8),
-                Text(
-                  '$anosParciais ano(s) com prova mas sem gabarito. Coloque o gabarito na pasta para importar.',
-                  style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                ),
-              ],
-
-              if (pendingN > 0) ...[
-                SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
-                for (final raw in pendingItems.take(4))
-                  Builder(
-                    builder: (_) {
-                      final it = Map<String, dynamic>.from(raw as Map);
-                      final y = it['year'];
-                      return PlaylistTile(
-                        title: it['filename']?.toString() ?? 'Preview',
-                        subtitle: '${it['count'] ?? 0} questões',
-                        badge: 'revisar',
-                        leadingIcon: Icons.preview_rounded,
-                        onPlay: y is int ? () { HapticFeedback.selectionClick(); _importYear(y); } : null,
-                      );
-                    },
-                  ),
-              ],
-
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                title: Text('Provas antigas (2014–23)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: Text(
-                  anosParciais > 0
-                      ? '$anosParciais sem gabarito — coloque o arquivo na pasta'
-                      : 'Importe se tiver os PDFs no computador',
-                ),
-                children: [
-                  if (hist.isEmpty)
-                    QuietEmpty(
-                      message:
-                          'Nenhuma prova 2014–23 no computador. Coloque os PDFs nas pastas Provas e Gabaritos para importar.',
-                      action: TextButton(
-                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importAllComplete(); },
-                        child: const Text('Importar todos com gabarito'),
-                      ),
-                    )
-                  else
-                    for (final g in hist)
-                      Builder(
-                        builder: (_) {
-                          final y = g['year'] as int? ?? 0;
-                          final status = g['uiStatus']?.toString() ?? 'empty';
-                          final n = g['committedCount'] as int? ?? 0;
-                          final onDisk = Map<String, dynamic>.from(g['onDisk'] as Map? ?? {});
-                          final hasProva = onDisk['hasProva'] == true;
-                          final hasGab = onDisk['hasGabarito'] == true;
-                          final diskOk = hasProva && hasGab;
-                          final partial = hasProva && !hasGab || status == 'partial';
-                          final ready = status == 'committed' || n > 0;
-                          final label = g['labelHint']?.toString() ??
-                              (!diskOk && !ready && !partial
-                                  ? 'Falta o PDF deste ano'
-                                  : _uiStatusLabel(status));
-                          return PlaylistTile(
-                            title: 'PAES $y',
-                            subtitle: partial
-                                ? 'Sem gabarito — coloque o arquivo'
-                                : ready
-                                    ? 'Pronto ($n questões)'
-                                    : label,
-                            badge: _uiBadge(
-                              status,
-                              ready: ready,
-                              diskOk: diskOk,
-                              hasProva: hasProva,
-                              hasGab: hasGab,
-                            ),
-                            onPlay: ready
-                                ? () { HapticFeedback.mediumImpact(); _goStudy(
-                                      '/sessao?examBoard=UEMA_PAES&year=$y&preferNatureza=1',
-                                    ); }
-                                : partial
-                                    ? () { HapticFeedback.selectionClick(); _importYear(y); }
-                                    : diskOk
-                                        ? () { HapticFeedback.selectionClick(); _importYearSafe(y); }
-                                        : null,
-                            secondary: partial
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextButton(
-                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                                        child: const Text('Gabaritos'),
-                                      ),
-                                      TextButton(
-                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYear(y); },
-                                        child: const Text('Preview'),
-                                      ),
-                                    ],
-                                  )
-                                : !ready && diskOk
-                                    ? TextButton(
-                                        onPressed: busy ? null : () { HapticFeedback.selectionClick(); _importYearSafe(y); },
-                                        child: const Text('Importar do PC'),
-                                      )
-                                    : null,
-                          );
-                        },
-                      ),
-                ],
-              ),
-
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                initiallyExpanded: false,
-                title: Text('Opções avançadas', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                subtitle: const Text('Estatísticas, pastas, download e edital'),
-                children: [
-                  if (curation != null) ...[
-                    Text(
-                      'Questões oficiais: ${curation!['officialCount'] ?? '—'}\n'
-                      'Com gabarito validado: ${curation!['realCount'] ?? 0}'
-                      '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
-                      'Questões que misturam matérias: ${curation!['crossDomainCount'] ?? 0}',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                    ),
-                    if (curation!['message'] != null)
-                      Text(
-                        curation!['message'].toString(),
-                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                      ),
-                    const SizedBox(height: 8),
-                  ],
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('provas'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Provas'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('gabaritos'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Gabaritos'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); _openFolder('edital'); },
-                        icon: const Icon(Icons.folder_open_rounded, size: 18),
-                        label: const Text('Edital'),
-                      ),
-                    ],
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Atualizar conteúdos da prova'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _syncEdital(); }, child: const Text('Atualizar')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Organizar questões por assunto'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _classify(); }, child: const Text('Executar')),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
-                    subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
-                    trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); _fixQuestions(); }, child: const Text('Corrigir')),
-                  ),
-                  if (coverage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      coverage!['message']?.toString() ?? '',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                    ),
-                  ],
-                  if (library?['dataDir'] != null)
-                    Text(
-                      'Conteúdo salvo no seu computador',
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                    ),
-                ],
-              ),
-
-              if (msg != null && !busy) ...[
-                const SizedBox(height: 12),
-                if (msg!.contains('sumiu') ||
-                    msg!.contains('não abriu') ||
-                    msg!.contains('nao abriu') ||
-                    msg!.contains('Sem PDF'))
-                  QuietEmpty(
-                    message: msg!,
-                    action: FilledButton.tonal(
-                      onPressed: () { HapticFeedback.selectionClick(); unawaited(_openFolder('provas')); },
-                      child: const Text('Abrir provas'),
-                    ),
-                  )
-                else if (msg!.toLowerCase().contains('oficiais') ||
-                    msg!.toLowerCase().contains('grav') ||
-                    msg!.toLowerCase().contains('import') ||
-                    msg!.toLowerCase().contains('base'))
-                  QuietEmpty(
-                    message: msg!,
-                    action: Wrap(
-                      spacing: 8,
-                      children: [
-                        FilledButton(
-                          onPressed: () { HapticFeedback.mediumImpact(); _goStudy(
-                            '/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1',
-                          ); },
-                          child: const Text('Estudar agora'),
-                        ),
-                        TextButton(
-                          onPressed: () { HapticFeedback.selectionClick(); context.go('/fila'); },
-                          child: const Text('Abrir fila'),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Text(
-                    msg!,
-                    style: TextStyle(fontSize: 13, color: cs.primary),
-                  ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }

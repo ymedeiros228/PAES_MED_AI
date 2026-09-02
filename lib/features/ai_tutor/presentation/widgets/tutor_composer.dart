@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/widgets/keyboard_shortcuts.dart';
 import '../../../../core/widgets/ui/layout_tokens.dart';
 import 'tutor_model_selector.dart';
 
-class TutorSendIntent extends Intent {
-  const TutorSendIntent();
-}
-
-/// Composer fixo na base — modelo à esquerda, envio à direita, Ctrl+Enter envia.
 class TutorComposer extends StatelessWidget {
   const TutorComposer({
     required this.controller,
@@ -32,21 +28,10 @@ class TutorComposer extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Shortcuts(
-      shortcuts: const {
-        SingleActivator(LogicalKeyboardKey.enter, control: true):
-            TutorSendIntent(),
-      },
-      child: Actions(
-        actions: {
-          TutorSendIntent: CallbackAction<TutorSendIntent>(
-            onInvoke: (_) {
-              if (!isLoading) onSend();
-              return null;
-            },
-          ),
-        },
-        child: Material(
+    return CtrlEnterScope(
+      enabled: !isLoading,
+      onSubmit: onSend,
+      child: Material(
           elevation: 6,
           color: cs.surface,
           child: Padding(
@@ -122,7 +107,6 @@ class TutorComposer extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -11,6 +11,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
+import '../../../core/widgets/keyboard_shortcuts.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../essay_draft.dart';
 
@@ -355,7 +356,10 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
     final count = progress?['count'] as int? ?? 0;
     final streak = progress?['streakDays'] as int? ?? 0;
 
-    return ListView(
+    return CtrlEnterScope(
+      enabled: !busy && textCtrl.text.trim().length >= 50,
+      onSubmit: _grade,
+      child: ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -583,7 +587,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
                         )
                       : const Icon(Icons.rate_review_outlined),
-                  label: Text(busy ? 'Corrigindo…' : 'Corrigir (Ctrl+Enter)'),
+                  label: Text(busy ? 'Corrigindo…' : 'Corrigir redação'),
                 ),
               ),
               Padding(
@@ -878,6 +882,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 }
