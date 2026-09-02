@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Historia — batch 2 (topicos 8.4 a 8.6)."""
 
-from pdf_base import generate_educational_pdf
 from historia_real_images import REAL_IMAGES
+from pdf_base import generate_educational_pdf
 
 # ============================================================
 # 8.4 Idade Contemporanea

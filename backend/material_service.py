@@ -10,7 +10,6 @@ Para cada tópico do edital:
 from __future__ import annotations
 
 import json
-import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -73,7 +72,7 @@ def _parse_ai_json(raw: str) -> dict[str, Any]:
     if text.startswith("```"):
         lines = text.split("\n")
         # Remove primeira e última linha (```json e ```)
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         text = "\n".join(lines)
     # Tenta encontrar o JSON
     start = text.find("{")

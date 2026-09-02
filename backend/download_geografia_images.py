@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 """Baixa imagens reais da Wikipédia (Português do Brasil) para topicos de Geografia."""
 
 from __future__ import annotations
 
 import asyncio
-import urllib.parse
 import re
 from pathlib import Path
+
 import httpx
 from PIL import Image as PILImage
 
@@ -67,7 +66,7 @@ async def get_page_images(client: httpx.AsyncClient, title: str, max_imgs: int =
         resp.raise_for_status()
         data = resp.json()
         pages = data.get("query", {}).get("pages", {})
-        for page_id, page_data in pages.items():
+        for _page_id, page_data in pages.items():
             imgs = page_data.get("images", [])
             for img_info in imgs:
                 filename = img_info.get("title", "")
@@ -91,7 +90,7 @@ async def get_image_url(client: httpx.AsyncClient, filename: str) -> dict | None
         resp.raise_for_status()
         data = resp.json()
         pages = data.get("query", {}).get("pages", {})
-        for page_id, page_data in pages.items():
+        for _page_id, page_data in pages.items():
             info_list = page_data.get("imageinfo", [])
             if info_list:
                 info = info_list[0]
@@ -125,12 +124,12 @@ async def fetch_topic(client, query, prefix, max_imgs=2):
     print(f"  Buscando: {query}")
     title = await search_article(client, query)
     if not title:
-        print(f"    Nao encontrado")
+        print("    Nao encontrado")
         return []
     print(f"    Artigo: {title}")
     page_images = await get_page_images(client, title, max_imgs=max_imgs * 5)
     if not page_images:
-        print(f"    Sem imagens")
+        print("    Sem imagens")
         return []
     print(f"    {len(page_images)} candidatas")
     result = []

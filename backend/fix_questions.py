@@ -19,13 +19,12 @@ import json
 import re
 from typing import Any
 
-from db import DATA_DIR, db
+from db import db
 from ingest_pdf import (
     clean_question_statement,
     extract_pdf_text,
-    list_pdf_inventory,
-    parse_gabarito,
     pair_prova_gabarito,
+    parse_gabarito,
 )
 
 # Caracteres de artefato de PDF (apenas caracteres estranhos, não – e — que são legítimos)
@@ -289,7 +288,7 @@ def fix_question_data(*, delete_unrecoverable: bool = True) -> dict[str, int]:
             score = _quality_score(r)
             opts = json.loads(r["options_json"]) if r["options_json"] else []
             original_stmt = str(r["statement"] or "")
-            original_opts = list(opts)
+            list(opts)
 
             # Deletar irrecuperáveis
             if delete_unrecoverable and score < 20:

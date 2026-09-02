@@ -9,8 +9,8 @@ import uuid
 sys.path.insert(0, '.')
 
 from db import db
+from generate_lessons import _LESSON_PROMPT, _ask_ai, _parse_lesson_response
 from timeutil import now_iso
-from generate_lessons import _ask_ai, _LESSON_PROMPT, _parse_lesson_response
 
 
 def add_new_topics_and_generate_lessons() -> dict:

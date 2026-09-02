@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """Utilitarios de normalizacao de texto para PDFs PAES MED AI."""
 
 from __future__ import annotations
 
 from typing import Any
-
 
 _UNICODE_SUBS = [
     # Subscritos -> digitos normais

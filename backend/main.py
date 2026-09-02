@@ -11,8 +11,8 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from config import EXTRA_ORIGINS, LOCAL_ORIGIN_REGEX
 from db import DATA_DIR, init_db
@@ -61,7 +61,6 @@ def _run_startup() -> None:
     if os.getenv("PAES_AUTO_BACKUP", "1").strip().lower() in ("1", "true", "yes"):
         try:
             from services_extra import create_backup, last_backup_status
-            from timeutil import now_iso
 
             bk = last_backup_status()
             needs_backup = True

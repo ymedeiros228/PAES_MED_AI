@@ -1,10 +1,10 @@
 """Baixa imagens da Wikipédia (Português do Brasil) para o tópico de Membrana Plasmática e salva localmente."""
 
 import asyncio
-import os
 import sys
-import httpx
 from pathlib import Path
+
+import httpx
 
 sys.path.insert(0, str(Path(__file__).parent))
 from wiki_images import fetch_images_for_topic
@@ -36,12 +36,12 @@ async def download_image(url: str, filename: str) -> str | None:
 async def main():
     print("Buscando imagens na Wikipédia (Português do Brasil) para 'Membrana plasmática'...")
     data = await fetch_images_for_topic("Membrana plasmática", "Biologia", max_images=8)
-    
+
     print(f"\nArtigo: {data.get('article_title')}")
     print(f"URL: {data.get('article_url')}")
     print(f"Resumo: {(data.get('summary') or '')[:200]}...")
     print(f"\nImagens encontradas: {len(data.get('images', []))}")
-    
+
     downloaded = []
     for i, img in enumerate(data.get("images", [])):
         url = img.get("url") or img.get("thumb")
@@ -63,9 +63,9 @@ async def main():
                 "source": img.get("source", "wikipedia-pt"),
                 "url": url,
             })
-    
+
     print(f"\n{len(downloaded)} imagens baixadas em {OUT_DIR}")
-    
+
     # Também busca imagens de "Célula" para complementar
     print("\nBuscando imagens complementares de 'Célula'...")
     data2 = await fetch_images_for_topic("Célula", "Biologia", max_images=5)
@@ -87,7 +87,7 @@ async def main():
                 "source": img.get("source", "wikipedia-pt"),
                 "url": url,
             })
-    
+
     print(f"\nTotal: {len(downloaded)} imagens baixadas")
     return downloaded
 

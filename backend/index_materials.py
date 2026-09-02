@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Indexa todos os 92 PDFs no banco de dados (tabela materials).
 
 Extrai o CONTENT de cada gerador de PDF e insere no banco para que
@@ -7,13 +6,12 @@ o frontend possa mostrar "Abrir" em vez de "Gerar" para cada topico.
 
 from __future__ import annotations
 
-import sys
-import io
-import os
-import json
 import importlib
 import inspect
+import io
+import json
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -121,7 +119,7 @@ def _material_id(subject: str, topic: str, subtopic: str | None) -> str:
 def _find_content_vars(module) -> list[dict]:
     """Encontra todas as variaveis CONTENT/dicts com estrutura de material em um modulo."""
     contents = []
-    src = inspect.getsource(module)
+    inspect.getsource(module)
     # Procura variaveis que sao dicts com 'titulo' e 'secoes'
     for name, val in vars(module).items():
         if name.startswith("_"):

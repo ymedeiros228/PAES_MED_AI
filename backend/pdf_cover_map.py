@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Mapeia nomes de PDFs aos prefixos das imagens de capa."""
 
 PDF_TO_COVER = {

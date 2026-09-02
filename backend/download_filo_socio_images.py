@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 """Baixa imagens reais da Wikipédia (Português do Brasil) para Filosofia e Sociologia."""
 
 from __future__ import annotations
 
 import asyncio
-import urllib.parse
 import re
 from pathlib import Path
+
 import httpx
 from PIL import Image as PILImage
 
@@ -42,7 +41,7 @@ async def search_article(client, query):
         r.raise_for_status()
         res = r.json().get("query", {}).get("search", [])
         return res[0]["title"] if res else None
-    except:
+    except Exception:
         return None
 
 async def get_page_images(client, title, max_imgs=10):
@@ -58,7 +57,7 @@ async def get_page_images(client, title, max_imgs=10):
                 fn = ii.get("title", "")
                 if is_useful(fn):
                     imgs.append({"filename": fn})
-    except:
+    except Exception:
         pass
     return imgs
 
@@ -74,7 +73,7 @@ async def get_image_url(client, filename):
             if il:
                 i = il[0]
                 return {"url": i.get("url", ""), "thumburl": i.get("thumburl", "")}
-    except:
+    except Exception:
         pass
     return None
 
@@ -87,21 +86,21 @@ async def download_image(client, url, filepath):
         try:
             PILImage.open(filepath).verify()
             return True
-        except:
+        except Exception:
             return False
-    except:
+    except Exception:
         return False
 
 async def fetch_topic(client, query, prefix, max_imgs=2):
     print(f"  Buscando: {query}")
     title = await search_article(client, query)
     if not title:
-        print(f"    Nao encontrado")
+        print("    Nao encontrado")
         return []
     print(f"    Artigo: {title}")
     pimgs = await get_page_images(client, title, max_imgs=max_imgs*5)
     if not pimgs:
-        print(f"    Sem imagens")
+        print("    Sem imagens")
         return []
     print(f"    {len(pimgs)} candidatas")
     result = []

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDF profissional ABNT do material de Biologia - Ecologia.
 
 Texto 100% PT-BR (Português Brasileiro) com acentuação correta.
@@ -9,17 +8,15 @@ Referências em formato ABNT.
 import os
 from pathlib import Path
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
+from PIL import Image as PILImage
 from reportlab.lib.colors import HexColor
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Image, HRFlowable, PageBreak
-)
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from PIL import Image as PILImage
+from reportlab.platypus import HRFlowable, Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
 ROOT = Path(__file__).resolve().parent.parent
 LOGO_PATH = ROOT / "assets" / "branding" / "paes_med_ai_icon_source.png"

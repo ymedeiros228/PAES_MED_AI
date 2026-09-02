@@ -1,10 +1,14 @@
-# -*- coding: utf-8 -*-
 """Baixa as 13 capas que faltam - versao sincrona com httpx.get."""
 
 from __future__ import annotations
-import re, json, sys, io
+
+import io
+import re
+import sys
+
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 from pathlib import Path
+
 import httpx
 from PIL import Image as PILImage
 
@@ -74,12 +78,12 @@ def fetch_cover(query, prefix):
     print(f"  {query} -> {prefix}", flush=True)
     title = search_article(query)
     if not title:
-        print(f"    Artigo nao encontrado", flush=True)
+        print("    Artigo nao encontrado", flush=True)
         return None
     print(f"    Artigo: {title}", flush=True)
     imgs = get_page_images(title, 30)
     if not imgs:
-        print(f"    Sem imagens", flush=True)
+        print("    Sem imagens", flush=True)
         return None
     print(f"    {len(imgs)} candidatas", flush=True)
     for fn in imgs[:8]:
@@ -100,7 +104,7 @@ def fetch_cover(query, prefix):
             clean = fn.replace("Ficheiro:","").replace("File:","")
             clean = re.sub(r'\.(jpg|jpeg|png|gif|webp|svg)$','',clean,flags=re.I).replace('_',' ')[:100]
             return {"file":out,"caption":clean,"source":"Wikipédia (Português do Brasil)","source_url":info["url"]}
-    print(f"    Nenhuma adequada", flush=True)
+    print("    Nenhuma adequada", flush=True)
     return None
 
 MISSING = [

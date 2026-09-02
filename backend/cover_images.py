@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Imagens de capa da Wikipédia (Português do Brasil) para todos os PDFs."""
 
 COVER_IMAGES = {

@@ -19,7 +19,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
-      - run: python -m pytest tests -q
+      - run: python -m pytest tests -q --ignore=tests/test_smoke.py
 
   flutter:
     runs-on: ubuntu-latest

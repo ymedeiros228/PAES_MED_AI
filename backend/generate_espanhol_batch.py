@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Lingua Espanhola — topicos 7.1 a 7.3."""
 
 from pdf_base import generate_educational_pdf

@@ -18,8 +18,8 @@ from timeutil import now_iso
 
 def _ask_ai(instructions: str, content: str) -> str:
     """Chama o provedor de IA configurado (Gemini primeiro, Groq fallback)."""
-    from api_helpers import _ask_gemini, _ask_groq
     from ai_state import provider_configured
+    from api_helpers import _ask_gemini, _ask_groq
 
     if provider_configured("gemini"):
         try:

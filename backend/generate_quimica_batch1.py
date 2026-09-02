@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera todos os 12 PDFs de Química restantes de uma vez.
 
 Usa pdf_base.py como template reutilizável.

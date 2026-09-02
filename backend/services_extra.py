@@ -2003,21 +2003,21 @@ def gamification_overview() -> dict[str, Any]:
     from services_core import dashboard_stats, stats_basis
 
     dash = dashboard_stats()
-    basis = stats_basis()
+    stats_basis()
 
     total_answered = int(dash.get("totalAnswered") or 0)
     accuracy = float(dash.get("accuracy") or 0)
     streak = int(dash.get("streakDays") or 0)
     study_minutes_week = float(dash.get("studyMinutesWeek") or 0)
-    study_minutes_today = float(dash.get("studyMinutesToday") or 0)
+    float(dash.get("studyMinutesToday") or 0)
 
     with db() as conn:
         essays_count = conn.execute("SELECT COUNT(*) FROM essays").fetchone()[0]
-        flashcards_count = conn.execute("SELECT COUNT(*) FROM flashcards").fetchone()[0]
+        conn.execute("SELECT COUNT(*) FROM flashcards").fetchone()[0]
         flashcards_reviewed = conn.execute(
             "SELECT COUNT(*) FROM flashcards WHERE reviews > 0"
         ).fetchone()[0]
-        simulations_graded = conn.execute(
+        conn.execute(
             "SELECT COUNT(DISTINCT date(answered_at)) FROM answers"
         ).fetchone()[0]
 

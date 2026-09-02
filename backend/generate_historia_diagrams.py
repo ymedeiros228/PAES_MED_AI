@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas RICOS para Historia — topicos 8.1 a 8.6.
 
 Cada diagrama tem 1000x700 pixels com multiplos elementos visuais:
@@ -8,6 +7,7 @@ mapas, linhas do tempo, piramides sociais, fluxogramas e cronologias.
 from __future__ import annotations
 
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"

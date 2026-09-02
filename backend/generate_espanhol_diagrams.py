@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas para Lingua Espanhola — topicos 7.1 a 7.3."""
 
 from __future__ import annotations
 
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"
@@ -72,7 +72,7 @@ def draw_gramatica(d):
     ]
     y = 120
     colors = ["#2196F3", "#FF9800", "#4CAF50"]
-    for (m, desc), c in zip(modos, colors):
+    for (m, desc), c in zip(modos, colors, strict=False):
         d.rectangle([(100, y), (700, y+70)], fill="#E0F2F1", outline=c, width=3)
         d.text((110, y+15), m, fill=c, font=font(22, bold=True))
         d.text((400, y+20), desc, fill="#1A1A2E", font=font(18))

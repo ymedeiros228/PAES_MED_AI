@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Lingua Portuguesa — batch 2 (topicos 5.5 a 5.7)."""
 
 from pdf_base import generate_educational_pdf

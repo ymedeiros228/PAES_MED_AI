@@ -13,3 +13,6 @@ ignore = [
 [lint.per-file-ignores]
 "tests/*" = ["E402"]      # sys.path e ajustado antes dos imports locais
 "smoke_test.py" = ["E402"]
+"download_*.py" = ["E402", "E701", "E702"]  # scripts utilitarios com stdout/one-liners
+"generate_*.py" = ["E402", "E722", "E741"]  # scripts de geracao offline
+"index_materials.py" = ["E402"]

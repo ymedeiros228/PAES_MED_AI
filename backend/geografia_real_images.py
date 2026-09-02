@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Imagens reais da Wikipédia (Português do Brasil) para Geografia."""
 
 REAL_IMAGES = {

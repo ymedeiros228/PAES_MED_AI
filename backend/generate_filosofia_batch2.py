@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Filosofia — batch 2 (topicos 10.5 a 10.7)."""
 
-from pdf_base import generate_educational_pdf
 from filosofia_real_images import REAL_IMAGES
+from pdf_base import generate_educational_pdf
 
 # ============================================================
 # 10.5 Estetica

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas para Lingua Portuguesa — topicos 5.1 a 5.4."""
 
 from __future__ import annotations
 
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"

@@ -41,8 +41,8 @@ def bootstrap_production() -> dict:
     _restore_seed_data()
 
     from db import DB_PATH, init_db
-    from seed import seed
     from ingest_pdf import import_and_commit_year, pair_prova_gabarito, sanitize_question_statements
+    from seed import seed
     from services_advanced import index_all_questions
 
     init_db()

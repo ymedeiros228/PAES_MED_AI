@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Historia — batch 1 (topicos 8.1 a 8.3)."""
 
-from pdf_base import generate_educational_pdf
 from historia_real_images import REAL_IMAGES
+from pdf_base import generate_educational_pdf
 
 # ============================================================
 # 8.1 Mundo Antigo

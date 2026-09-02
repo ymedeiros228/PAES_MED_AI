@@ -33,11 +33,9 @@ def test_openrouter_tenta_modelos_gratuitos_e_memoriza_o_primeiro_ok(
             return "resposta gratuita"
 
         monkeypatch.setattr(api_helpers, "_compatible_provider_request", fake_request)
+        candidates = list(ai_state.OPENROUTER_MODEL_CANDIDATES)
         assert api_helpers._ask_openrouter("instruções", "pergunta") == "resposta gratuita"
-        assert attempts == [
-            "deepseek/deepseek-r1:free",
-            "meta-llama/llama-3.3-70b-instruct:free",
-        ]
+        assert attempts == candidates[:2]
         assert ai_state.provider_model("openrouter") == attempts[-1]
     finally:
         ai_state._values["openrouter"] = original

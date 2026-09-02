@@ -136,9 +136,9 @@ async def generate_material_route(req: GenerateRequest) -> dict[str, Any]:
         )
         return result
     except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar material: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar material: {e}") from e
 
 
 @router.delete("/{material_id}")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera questões inéditas de Química com IA para o banco PAES MED AI.
 
 Cobre tópicos sub-representados:
@@ -38,8 +37,8 @@ init_db()
 # ---------------------------------------------------------------------------
 
 def _ask_ai(instructions: str, content: str) -> str:
-    from api_helpers import _ask_gemini, _ask_groq
     from ai_state import provider_configured
+    from api_helpers import _ask_gemini, _ask_groq
 
     if provider_configured("gemini"):
         try:
@@ -319,9 +318,9 @@ def main():
     print("=" * 60)
 
     # Lote 1: Química
-    quimica_items = [(t[0], t[1], a, d) for (t, a, d) in [(x, x[1], x[2]) for x in []]]
+    [(t[0], t[1], a, d) for (t, a, d) in [(x, x[1], x[2]) for x in []]]
     # Reformular
-    quimica_items = [(topic, topic, year, diff) for (topic, year, diff) in QUIMICA_TOPICS]
+    [(topic, topic, year, diff) for (topic, year, diff) in QUIMICA_TOPICS]
     # Ajustar: subject=Química, topic=topic
     quimica_batch = [("Química", topic, year, diff) for (topic, year, diff) in QUIMICA_TOPICS]
 

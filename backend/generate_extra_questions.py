@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera questoes ineditas de qualidade para Sociologia, Geografia e Filosofia.
 
 Baseado nos topicos do syllabus PAES/UEMA, com 5 alternativas,
@@ -7,11 +6,9 @@ gabarito, resolucao, macete e pegadinha — estilo banca UEMA.
 
 from __future__ import annotations
 
-import sys
 import io
 import json
-import uuid
-from datetime import datetime
+import sys
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))

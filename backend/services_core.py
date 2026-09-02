@@ -2037,7 +2037,8 @@ def build_smart_study_plan(exam_date: str | None = None) -> dict[str, Any]:
     (max 2 topicos da mesma materia por dia) e reservando os ultimos 7 dias
     para revisao geral + simulado.
     """
-    from datetime import date as date_cls, timedelta as td
+    from datetime import date as date_cls
+    from datetime import timedelta as td
 
     # Determinar dias restantes
     today = time_today()
@@ -2058,7 +2059,7 @@ def build_smart_study_plan(exam_date: str | None = None) -> dict[str, Any]:
     # Agrupar por dia com balanceamento
     # Ultimos 7 dias: revisao geral + simulado
     study_days = max(1, days_left - 7)
-    review_days = min(7, days_left - 1)
+    min(7, days_left - 1)
 
     # Distribuir topicos pelos dias de estudo (max 2 topicos/dia)
     topics_per_day: list[list[dict[str, Any]]] = []
@@ -2397,8 +2398,8 @@ def build_smart_insights() -> dict[str, Any]:
     hot = dash.get("errorHotTopics", [])
     study_today = dash.get("studyToday")
     due_cards = dash.get("flashcardsDueCount", 0)
-    study_min_today = dash.get("studyMinutesToday", 0)
-    study_min_week = dash.get("studyMinutesWeek", 0)
+    dash.get("studyMinutesToday", 0)
+    dash.get("studyMinutesWeek", 0)
     exam_countdown = dash.get("examCountdown", {})
     days_left = exam_countdown.get("daysLeft") if isinstance(exam_countdown, dict) else None
 
@@ -2472,7 +2473,8 @@ def build_smart_insights() -> dict[str, Any]:
             "SELECT correct, answered_at FROM answers ORDER BY answered_at"
         ).fetchall()
 
-    from datetime import datetime as _dt, timedelta as _td
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
     today = time_today()
     week_ago = today - _td(days=7)
     two_weeks_ago = today - _td(days=14)
