@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -21,6 +20,7 @@ class ProgressReadableRelief extends StatelessWidget {
   const ProgressReadableRelief({
     required this.peaks,
     required this.progress,
+    super.key,
   });
 
   final List<Map<String, dynamic>> peaks;
@@ -290,7 +290,7 @@ class _ReliefBar extends StatelessWidget {
 }
 
 class ProgressSubjectBarChart extends StatelessWidget {
-  const ProgressSubjectBarChart({required this.scores});
+  const ProgressSubjectBarChart({required this.scores, super.key});
 
   final Map<String, double> scores;
 
@@ -441,7 +441,7 @@ class _BarChartPainter extends CustomPainter {
 
 /// Grafico de linha: evolucao do acerto acumulado ao longo do tempo.
 class ProgressEvolutionLineChart extends StatelessWidget {
-  const ProgressEvolutionLineChart({required this.points});
+  const ProgressEvolutionLineChart({required this.points, super.key});
 
   final List<Map<String, dynamic>> points;
 
@@ -564,7 +564,7 @@ class ProgressEvolutionLineChart extends StatelessWidget {
 
 /// Donut chart: distribuicao dos tipos de erro.
 class ProgressErrorTypeDonut extends StatelessWidget {
-  const ProgressErrorTypeDonut({required this.errorTypes});
+  const ProgressErrorTypeDonut({required this.errorTypes, super.key});
 
   final Map<String, dynamic> errorTypes;
 
@@ -735,7 +735,7 @@ class ProgressErrorTypeDonut extends StatelessWidget {
 
 /// Mapa de calor: tópicos com menor acerto destacados por cor.
 class ProgressWeakTopicsHeatmap extends StatelessWidget {
-  const ProgressWeakTopicsHeatmap({required this.topics});
+  const ProgressWeakTopicsHeatmap({required this.topics, super.key});
 
   final List<Map<String, dynamic>> topics;
 
@@ -853,7 +853,7 @@ class ProgressWeakTopicsHeatmap extends StatelessWidget {
 
 
 class ProgressStudyHeatmapCard extends StatelessWidget {
-  const ProgressStudyHeatmapCard({required this.insights});
+  const ProgressStudyHeatmapCard({required this.insights, super.key});
   final Map<String, dynamic> insights;
 
   @override

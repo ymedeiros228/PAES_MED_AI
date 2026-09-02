@@ -8,7 +8,7 @@ import '../../../../core/widgets/ui_kit.dart';
 /// Pulsar suave (opacity 0.6 ↔ 1.0) indica que está pausado mas ativo.
 /// Pulse (AnimatedScale) no último minuto da fase avisa que o tempo está acabando.
 class SessionBreathingClock extends StatefulWidget {
-  const SessionBreathingClock({required this.paused, required this.clock, this.pulse = false});
+  const SessionBreathingClock({required this.paused, required this.clock, this.pulse = false, super.key});
   final bool paused;
   final String clock;
   /// Pulse sutil quando faltam ≤ 60s na fase atual.
@@ -139,6 +139,7 @@ class SessionInsightBanner extends StatelessWidget {
     required this.total,
     required this.subject,
     required this.topic,
+    super.key,
   });
 
   final int correctCount;
@@ -212,7 +213,7 @@ class SessionInsightBanner extends StatelessWidget {
 
 /// Cartao de inicio da sessao: resumo, 1 botao, personalizacao escondida.
 class SessionStartCard extends StatelessWidget {
-  const SessionStartCard({required this.plan, required this.onStart});
+  const SessionStartCard({required this.plan, required this.onStart, super.key});
   final Map<String, dynamic>? plan;
   final VoidCallback onStart;
 

@@ -1,4 +1,4 @@
-/// Textos derivados de respostas do acervo (health lines, pacote Natureza, etc.).
+// Textos derivados de respostas do acervo (health lines, pacote Natureza, etc.).
 
 String libraryHealthLine(Map<String, dynamic> map, {Object? inserted}) {
   final health = Map<String, dynamic>.from(map['yearHealth'] as Map? ?? {});

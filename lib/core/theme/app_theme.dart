@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// Identidade PAES MED AI: teal clínico + navy.
@@ -175,7 +176,7 @@ class AppTheme {
           color: scheme.onSurface,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: dark ? 0 : 1,
         color: scheme.surface.withOpacity(dark ? 0.92 : 0.96),
         margin: EdgeInsets.zero,
@@ -335,7 +336,7 @@ class AppTheme {
         showDuration: const Duration(milliseconds: 2000),
         preferBelow: true,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: scheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
