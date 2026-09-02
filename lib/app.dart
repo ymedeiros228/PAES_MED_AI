@@ -277,6 +277,11 @@ class PaesMedAiApp extends ConsumerStatefulWidget {
 class _PaesMedAiAppState extends ConsumerState<PaesMedAiApp> {
   bool _backendReady = false;
 
+  bool get _showStartupSplash =>
+      !_backendReady &&
+      !kIsWeb &&
+      defaultTargetPlatform == TargetPlatform.windows;
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
@@ -287,21 +292,52 @@ class _PaesMedAiAppState extends ConsumerState<PaesMedAiApp> {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: appRouter,
-      // Scrollbars sempre visíveis no desktop — descobre que há mais conteúdo
       builder: (context, child) {
-        // No desktop, mostra splash ate o backend ficar pronto
-        if (!_backendReady &&
-            !kIsWeb &&
-            defaultTargetPlatform == TargetPlatform.windows) {
-          return StartupSplash(
-            onReady: () => setState(() => _backendReady = true),
-          );
-        }
-        return ScrollConfiguration(
+        final brightness = Theme.of(context).brightness;
+        final content = ScrollConfiguration(
           behavior: const _PaesScrollBehavior(),
-          child: child ?? const SizedBox.shrink(),
+          child: child ?? _AppBootPlaceholder(brightness: brightness),
+        );
+
+        if (!_showStartupSplash) return content;
+
+        // Overlay: router monta por baixo; splash não substitui a árvore (evita tela preta).
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            content,
+            StartupSplash(
+              onReady: () {
+                if (!mounted) return;
+                setState(() => _backendReady = true);
+              },
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+/// Placeholder enquanto o GoRouter monta — nunca deixa a janela nativa preta.
+class _AppBootPlaceholder extends StatelessWidget {
+  const _AppBootPlaceholder({required this.brightness});
+
+  final Brightness brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: AppTheme.scaffoldGradientFor(brightness),
+      ),
+      child: const Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+      ),
     );
   }
 }

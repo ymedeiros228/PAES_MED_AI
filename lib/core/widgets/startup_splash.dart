@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
 import '../data/api_client.dart';
 
 /// Tela de inicializacao que espera o backend ficar pronto.
@@ -25,7 +26,7 @@ class StartupSplash extends StatefulWidget {
 class _StartupSplashState extends State<StartupSplash>
     with SingleTickerProviderStateMixin {
   static const _maxAttempts = 90; // 90s — primeira exec com banco fresh e lenta
-  static const _showContinueAfter = 10; // 10s -> botao Continuar aparece
+  static const _showContinueAfter = 5; // 5s -> botao Continuar aparece
 
   late final AnimationController _ctrl;
   late final Animation<double> _fade;
@@ -127,26 +128,30 @@ class _StartupSplashState extends State<StartupSplash>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              cs.primaryContainer.withOpacity(0.3),
-              cs.surface,
-            ],
+    final bright = Theme.of(context).brightness;
+    return Material(
+      color: bright == Brightness.dark ? AppTheme.ink : AppTheme.sand,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cs.primaryContainer.withOpacity(0.3),
+                cs.surface,
+              ],
+            ),
           ),
-        ),
-        child: Center(
-          child: FadeTransition(
-            opacity: _fade,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+          child: Center(
+            child: FadeTransition(
+              opacity: _fade,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   ScaleTransition(
                     scale: _scale,
                     child: Container(
@@ -275,7 +280,8 @@ class _StartupSplashState extends State<StartupSplash>
                       ],
                     ),
                   ],
-                ],
+                  ],
+                ),
               ),
             ),
           ),
