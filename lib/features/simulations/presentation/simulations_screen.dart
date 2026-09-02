@@ -667,10 +667,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 title: 'Simulados',
                 subtitle: inSession
                     ? (report != null
-                        ? 'Enter Hoje · 1 Natureza · 2 Fila · 3 Redação · E export · N novo'
+                        ? 'Veja o resultado e escolha o próximo passo'
                         : examLocked
-                            ? 'Simulado do dia · restam $_timeRemainingLabel · 1–5 · Enter avança · gabarito no fim'
-                            : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
+                            ? 'Simulado do dia · tempo restante $_timeRemainingLabel'
+                            : 'Responda questão a questão · gabarito só no final')
                     : 'Escolha um modo e faça um bloco como no dia da prova',
                 trailing: inSession && report == null
                     ? SurfacePanel(
@@ -987,8 +987,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         children: [
                           Text(
                             'Questão ${qi + 1} de ${questions.length}'
-                            '${year != null ? ' · $year' : ''}'
-                            '${kbActive ? ' · teclado' : ''}',
+                            '${year != null ? ' · $year' : ''}',
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
                           ),
                           const SizedBox(height: 4),

@@ -756,22 +756,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     if (last) await _nextPhase();
   }
 
-  String _keyboardHintForPhase(String phaseName) {
-    if (!started || sessionComplete) return '';
-    final isRevPhase =
-        phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
-    if (phaseName == 'theory') return ' · Enter avança';
-    if (isRevPhase && !revisionUsingQuestions) {
-      return ' · Espaço vira o cartão';
-    }
-    if (pendingErrorPick) return ' · Escolha o tipo de erro';
-    if (revealed) return ' · Enter próxima';
-    if (phaseName == 'questions' || (isRevPhase && revisionUsingQuestions)) {
-      return ' · 1–5 escolhe · Enter confirma';
-    }
-    return '';
-  }
-
   Future<void> _exportDay() async {
     final study = plan?['studyToday'] as Map<String, dynamic>?;
     final buf = StringBuffer('# Pacote do dia — PAES MED AI\n\n');
@@ -963,7 +947,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Sessão completa — próximos passos'
                 : study == null
                     ? 'Inicie a sessão para montar o plano de estudo de hoje.'
-                    : 'Meta: ${study['subject']} · ${study['topic']}${started ? _keyboardHintForPhase(phaseName) : ''}',
+                    : 'Meta: ${study['subject']} · ${study['topic']}',
             trailing: started
                 ? _BreathingClock(
                     paused: paused,

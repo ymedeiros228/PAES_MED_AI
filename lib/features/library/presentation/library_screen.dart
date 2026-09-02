@@ -1485,9 +1485,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   if (curation != null) ...[
                     Text(
                       'Questões oficiais: ${curation!['officialCount'] ?? '—'}\n'
-                      'Com gabarito oficial: ${curation!['realCount'] ?? 0}'
+                      'Com gabarito validado: ${curation!['realCount'] ?? 0}'
                       '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
-                      'Questões interdisciplinares: ${curation!['crossDomainCount'] ?? 0}',
+                      'Questões que misturam matérias: ${curation!['crossDomainCount'] ?? 0}',
                       style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                     if (curation!['message'] != null)
@@ -1543,7 +1543,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ],
                   if (library?['dataDir'] != null)
                     Text(
-                      'Pasta: ${library!['dataDir']}',
+                      'Conteúdo salvo no seu computador',
                       style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                     ),
                 ],

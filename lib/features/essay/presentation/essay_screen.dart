@@ -372,7 +372,9 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 title: count > 0
                     ? 'Nível ${progress?['levelLabel'] ?? 'treino'} · média ${progress?['meanScore'] ?? '—'}'
                     : 'Primeira correção desbloqueia o relevo',
-                subtitle: 'Ctrl+Enter corrige · missões sobem o eixo mais fraco',
+                subtitle: count > 0
+                    ? 'Corrija seu texto e acompanhe os eixos que mais precisam de atenção'
+                    : 'Corrija seu texto para ver seu nível e os eixos a melhorar',
                 trailing: const HonestBadge(),
               ),
               if (setupError != null) ...[

@@ -752,14 +752,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                           TextButton(onPressed: () => context.go('/medicina'), child: const Text('Domínio')),
                         ],
                         TextButton(onPressed: () => context.go('/adaptativo'), child: const Text('Treino livre')),
-                        if (focus)
-                          Text(
-                            'Modo foco: Plano/Domínio escondidos (F desliga)',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Theme.of(ctx).colorScheme.onSurface.f72,
-                            ),
-                          ),
                       ],
                     );
                   },
