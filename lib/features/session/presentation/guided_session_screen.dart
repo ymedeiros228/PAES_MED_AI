@@ -10,7 +10,6 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
@@ -19,6 +18,7 @@ import '../../../core/ux_copy.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'widgets/session_end_panel.dart';
+import 'widgets/session_phase_widgets.dart';
 import 'widgets/session_widgets.dart';
 
 const _errorTypes = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
@@ -1017,94 +1017,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (isTheory) ...[
-                      const Divider(height: 24),
-                      Row(
-                        children: [
-                          Text(
-                            'Teoria do edital',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: cs.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 0.45),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: value,
-                    minHeight: 4,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (snippets.isEmpty)
-                QuietEmpty(
-                  message:
-                      'Sem teoria do edital para o assunto de hoje. Atualize o edital na Biblioteca.',
-                  action: FilledButton.tonal(
-                    onPressed: () => context.go('/biblioteca'),
-                    child: const Text('Abrir Biblioteca'),
-                  ),
-                )
-              else ...[
-                StaggeredFadeIn(
-                  key: const ValueKey('theory_snippets'),
-                  children: [
-                    for (var si = 0; si < (snippets.length > 10 ? 10 : snippets.length); si++)
-                      SurfacePanel(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: cs.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.center,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 760),
-                                child: SelectableText(snippets[si].toString()),
-                              ),
-                            ),
-                          ],
-                        ),
+                    if (isTheory)
+                      SessionTheoryPanel(
+                        snippets: snippets,
+                        subject: study?['subject']?.toString() ?? '',
+                        topic: study?['topic']?.toString() ?? '',
                       ),
-                  ],
-                ),
-              ],
-              const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
-              if (study != null)
-                MediaReinforcement(
-                  subject: study['subject']?.toString() ?? '',
-                  topic: study['topic']?.toString() ?? '',
-                  compact: true,
-                ),
-            ],
             if ((isQuestions || (isRevisions && revisionUsingQuestions)) && sessionQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
               SurfacePanel(
@@ -1318,54 +1236,21 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   child: const Text('Carregar questões'),
                 ),
               ),
-            if (isRevisions && !revisionUsingQuestions) ...[
-              const Divider(height: 24),
-              const SectionLabel('Revisão prática'),
-              if (sessionCards.isEmpty)
-                QuietEmpty(
-                  message:
-                      'Nenhum cartão para revisar agora (${((plan?['revisions'] as List?) ?? []).length} '
-                      'assunto(s) na fila). Carregue revisões para praticar com questões.',
-                  action: FilledButton.tonal(
-                    onPressed: () => unawaited(_enterRevisionsPhase()),
-                    child: const Text('Carregar revisões'),
-                  ),
-                )
-              else ...[
-                Text('Cartão ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
-                const SizedBox(height: 8),
-                SurfacePanel(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    title: Text(sessionCards[cardIndex]['front']?.toString() ?? ''),
-                    subtitle: cardFlipped
-                        ? Text(sessionCards[cardIndex]['back']?.toString() ?? '')
-                        : const Text('Toque para revelar'),
-                    onTap: () => setState(() => cardFlipped = !cardFlipped),
-                  ),
-                ),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    FilledButton.tonal(onPressed: () => setState(() => cardFlipped = true), child: const Text('Revelar (Space)')),
-                    TapScale(
-                      child: FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei (L)')),
-                    ),
-                    OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci (E)')),
-                  ],
-                ),
-                if (cardReviewError != null) ...[
-                  const SizedBox(height: 8),
-                  QuietEmpty(
-                    message: cardReviewError!,
-                    action: TextButton(
-                      onPressed: () => setState(() => cardReviewError = null),
-                      child: const Text('Tentar de novo'),
-                    ),
-                  ),
-                ],
-              ],
-            ],
+            if (isRevisions && !revisionUsingQuestions)
+              SessionRevisionsPanel(
+                sessionCards: sessionCards,
+                cardIndex: cardIndex,
+                cardsDone: cardsDone,
+                cardFlipped: cardFlipped,
+                revisionQueueLength: ((plan?['revisions'] as List?) ?? []).length,
+                cardReviewError: cardReviewError,
+                onToggleFlip: () => setState(() => cardFlipped = !cardFlipped),
+                onReveal: () => setState(() => cardFlipped = true),
+                onRemembered: () => _reviewCard(remembered: true),
+                onForgot: () => _reviewCard(remembered: false),
+                onLoadRevisions: () => unawaited(_enterRevisionsPhase()),
+                onDismissReviewError: () => setState(() => cardReviewError = null),
+              ),
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)
               QuietEmpty(
                 message: 'Sem questões carregadas para revisar. Toque para buscar questões dos tópicos.',
