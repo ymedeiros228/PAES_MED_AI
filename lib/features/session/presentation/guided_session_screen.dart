@@ -18,6 +18,7 @@ import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/session_end_panel.dart';
 import 'widgets/session_widgets.dart';
 
 const _errorTypes = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
@@ -519,125 +520,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     }
   }
 
-  Widget _sessionEndPanel(BuildContext context) {
-    final gaps = _sessionGaps;
-    final total = answeredIds.length;
-    final wrong = (total - correctCount).clamp(0, total);
-    final cs = Theme.of(context).colorScheme;
-    final study = plan?['studyToday'] as Map? ?? {};
-    final subj = study['subject']?.toString() ?? '';
-    final top = study['topic']?.toString() ?? '';
-    final pct = total > 0 ? (correctCount / total * 100).round() : 0;
-    return SurfacePanel(
-      margin: const EdgeInsets.only(bottom: 16),
-      color: cs.primaryContainer.withOpacity(0.4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  pct >= 70 ? 'Bom trabalho!' : 'Bloco encerrado',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: cs.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              if (total > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$pct%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            total > 0
-                ? '$correctCount acerto${correctCount == 1 ? '' : 's'} · $wrong erro${wrong == 1 ? '' : 's'} · $total questão${total == 1 ? '' : 'ês'}'
-                : 'Sessão encerrada.',
-            style: TextStyle(
-              fontSize: 13,
-              color: cs.onPrimaryContainer.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 14),
-          SessionInsightBanner(
-            correctCount: correctCount,
-            wrongCount: wrong,
-            total: total,
-            subject: subj,
-            topic: top,
-          ),
-          if (gaps.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              'Revisar agora',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final g in gaps.take(3))
-                  ActionChip(
-                    label: Text('${g['subject']} · ${g['topic']}'),
-                    onPressed: () {
-                      final s = Uri.encodeComponent(g['subject'] ?? '');
-                      final t = Uri.encodeComponent(g['topic'] ?? '');
-                      context.go('/adaptativo?subject=$s&topic=$t');
-                    },
-                  ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 20),
-          TapScale(
-            child: FilledButton.icon(
-              onPressed: () => context.go('/fila'),
-              icon: const Icon(Icons.playlist_play_rounded),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              label: const Text('Continuar na Fila', style: TextStyle(fontSize: 15)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: _closeStudyDay,
-                child: const Text('Encerrar dia'),
-              ),
-              const SizedBox(width: 16),
-              TextButton(
-                onPressed: () => context.go('/inicio'),
-                child: const Text('Voltar ao Início'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _submitAnswer() async {
     if (sessionQuestions.isEmpty || selected == null || revealed) return;
     final q = sessionQuestions[qIndex];
@@ -970,7 +852,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const SizedBox.shrink(),
           const SizedBox(height: 16),
           if (sessionComplete) ...[
-            _sessionEndPanel(context),
+            SessionEndPanel(
+              correctCount: correctCount,
+              totalAnswered: answeredIds.length,
+              gaps: _sessionGaps,
+              subject: (plan?['studyToday'] as Map? ?? {})['subject']?.toString() ?? '',
+              topic: (plan?['studyToday'] as Map? ?? {})['topic']?.toString() ?? '',
+              onCloseStudyDay: _closeStudyDay,
+            ),
             TapScale(
               child: FilledButton.tonal(
                 onPressed: () async {

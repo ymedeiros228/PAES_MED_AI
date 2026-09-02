@@ -13,6 +13,15 @@ const simulationModes = <(String, String, String, IconData)>[
   ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
 ];
 
+/// Rótulos humanos para tipos de erro no simulado.
+const simulationErrorLabels = {
+  'conceito': 'Conceito',
+  'interpretacao': 'Interpretação',
+  'calculo': 'Cálculo',
+  'distracao': 'Distração',
+  'tempo': 'Tempo',
+};
+
 /// Painel de configuração antes de iniciar um simulado.
 class SimulationSetupPanel extends StatelessWidget {
   const SimulationSetupPanel({

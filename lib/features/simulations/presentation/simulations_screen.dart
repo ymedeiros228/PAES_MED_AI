@@ -12,9 +12,9 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/simulation_exam_panel.dart';
 import 'widgets/simulation_report_panel.dart';
 import 'widgets/simulation_setup_panel.dart';
-import 'widgets/simulation_widgets.dart';
 
 class SimulationsScreen extends ConsumerStatefulWidget {
   const SimulationsScreen({super.key});
@@ -56,14 +56,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   /// Erros ao carregar explicação pós-sim por questão.
   final Map<String, String> debriefErrors = {};
   int keyboardQi = 0;
-
-  static const _errorLabels = {
-    'conceito': 'Conceito',
-    'interpretacao': 'Interpretação',
-    'calculo': 'Cálculo',
-    'distracao': 'Distração',
-    'tempo': 'Tempo',
-  };
 
   @override
   void initState() {
@@ -746,173 +738,33 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   onClearCheckpoint: _clearSimCheckpoint,
                 ),
 
-              if (running && checkpointSaveError != null) ...[
-                QuietEmpty(
-                  message: checkpointSaveError!,
-                  action: TextButton(
-                    onPressed: () {
-                      HapticFeedback.selectionClick();
-                      _saveSimCheckpoint();
-                    },
-                    child: const Text('Tentar'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-
-              if (running && report == null && !examLocked) ...[
-                SectionLabel('Se errar, marque o tipo', hint: 'Padrão para o bloco inteiro'),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final e in _errorLabels.entries)
-                      ChoiceChip(
-                        label: Text(e.value),
-                        selected: defaultErrorType == e.key,
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          setState(() => defaultErrorType = e.key);
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              if (examLocked && report == null)
-                SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.tertiaryContainer.f45,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SimulationCircularTimer(
-                        remainingSeconds: diaProvaHardCap != null
-                            ? (diaProvaHardCap!.inSeconds - elapsed.inSeconds).clamp(0, diaProvaHardCap!.inSeconds)
-                            : 0,
-                        totalSeconds: diaProvaHardCap?.inSeconds ?? 0,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Simulado do dia em andamento',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Respostas: ${answers.length}/${questions.length} · tempo $_clock'
-                              '${diaProvaHardCap != null ? ' · restam $_timeRemainingLabel' : ''}',
-                              style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
-                              style: TextStyle(fontSize: 13, color: cs.onSurface.f65),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              for (var qi = 0; qi < questions.length; qi++)
-                Builder(
-                  builder: (context) {
-                    final q = Map<String, dynamic>.from(questions[qi] as Map);
-                    final id = q['id'] as String;
-                    final opts = (q['options'] as List).map((e) => e.toString()).toList();
-                    final year = q['year'];
-                    final kbActive = running && report == null && qi == keyboardQi;
-                    return SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      color: kbActive ? cs.primaryContainer.withOpacity(0.28) : null,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Questão ${qi + 1} de ${questions.length}'
-                            '${year != null ? ' · $year' : ''}',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: kbActive ? cs.onPrimaryContainer : cs.onSurface),
-                          ),
-                          const SizedBox(height: 8),
-                          StatementView(
-                            key: ValueKey('sim_stmt_$id'),
-                            text: q['statement']?.toString() ?? '',
-                          ),
-                          const SizedBox(height: 8),
-                          for (var i = 0; i < opts.length; i++)
-                            ChoiceOptionTile(
-                              key: ValueKey('sim_opt_${id}_$i'),
-                              index: i,
-                              label: opts[i].toString(),
-                              selected: answers[id] == i,
-                              enabled: report == null,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  answers[id] = i;
-                                  keyboardQi = qi;
-                                });
-                                unawaited(_saveSimCheckpoint());
-                              },
-                            ),
-                          if (report == null && answers.containsKey(id) && !examLocked)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: DropdownButton<String>(
-                                value: errorTypes[id] ?? defaultErrorType,
-                                hint: const Text('Tipo de erro se miss'),
-                                items: [
-                                  for (final e in _errorLabels.entries)
-                                    DropdownMenuItem(value: e.key, child: Text(e.value)),
-                                ],
-                                onChanged: (v) {
-                                  if (v == null) return;
-                                  HapticFeedback.selectionClick();
-                                  setState(() => errorTypes[id] = v);
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
+              if (report == null && questions.isNotEmpty)
+                SimulationExamPanel(
+                  running: running,
+                  examLocked: examLocked,
+                  checkpointSaveError: checkpointSaveError,
+                  defaultErrorType: defaultErrorType,
+                  diaProvaHardCap: diaProvaHardCap,
+                  elapsedSeconds: elapsed.inSeconds,
+                  clock: _clock,
+                  timeRemainingLabel: _timeRemainingLabel,
+                  questions: questions,
+                  answers: answers,
+                  errorTypes: errorTypes,
+                  keyboardQuestionIndex: keyboardQi,
+                  grading: grading,
+                  onRetryCheckpointSave: _saveSimCheckpoint,
+                  onDefaultErrorTypeChanged: (v) => setState(() => defaultErrorType = v),
+                  onSelectAnswer: (qi, id, i) {
+                    setState(() {
+                      answers[id] = i;
+                      keyboardQi = qi;
+                    });
+                    unawaited(_saveSimCheckpoint());
                   },
+                  onErrorTypeForQuestion: (id, v) => setState(() => errorTypes[id] = v),
+                  onGrade: _grade,
                 ),
-
-              if (questions.isNotEmpty && report == null) ...[
-                const SizedBox(height: 4),
-                FilledButton.tonal(
-                  onPressed: (answers.length < questions.length || grading) ? null : _grade,
-                  child: grading
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('Corrigindo ${answers.length} questões…'),
-                          ],
-                        )
-                      : Text(
-                          answers.length < questions.length
-                              ? 'Responda todas (${answers.length}/${questions.length})'
-                              : 'Finalizar e corrigir',
-                        ),
-                ),
-              ],
 
               if (report != null)
                 SimulationReportPanel(
