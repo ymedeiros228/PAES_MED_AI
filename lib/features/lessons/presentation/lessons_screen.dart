@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
+import '../../../core/widgets/keyboard_shortcuts.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
@@ -115,7 +116,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     final lessons = ref.watch(lessonsProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
+    return CtrlEnterScope(
+      enabled: !busy && transcriptCtrl.text.trim().length >= 80,
+      onSubmit: _submitText,
+      child: ListView(
       padding: const EdgeInsets.only(bottom: 24),
       children: [
         PageBody(
@@ -176,7 +180,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.auto_awesome_rounded),
-                          label: Text(busy ? 'Processando…' : 'Estruturar legenda (Ctrl+Enter)'),
+                          label: Text(busy ? 'Processando…' : 'Estruturar legenda'),
                         ),
                         OutlinedButton.icon(
                           onPressed: busy ? null : () {
@@ -303,6 +307,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -10,10 +9,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/simulation_exam_panel.dart';
+import 'widgets/simulation_report_panel.dart';
+import 'widgets/simulation_setup_panel.dart';
 
 class SimulationsScreen extends ConsumerStatefulWidget {
   const SimulationsScreen({super.key});
@@ -55,21 +56,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   /// Erros ao carregar explicação pós-sim por questão.
   final Map<String, String> debriefErrors = {};
   int keyboardQi = 0;
-
-  static const _modes = <(String, String, String, IconData)>[
-    ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
-    ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
-    ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
-    ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
-  ];
-
-  static const _errorLabels = {
-    'conceito': 'Conceito',
-    'interpretacao': 'Interpretação',
-    'calculo': 'Cálculo',
-    'distracao': 'Distração',
-    'tempo': 'Tempo',
-  };
 
   @override
   void initState() {
@@ -667,10 +653,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 title: 'Simulados',
                 subtitle: inSession
                     ? (report != null
-                        ? 'Enter Hoje · 1 Natureza · 2 Fila · 3 Redação · E export · N novo'
+                        ? 'Veja o resultado e escolha o próximo passo'
                         : examLocked
-                            ? 'Simulado do dia · restam $_timeRemainingLabel · 1–5 · Enter avança · gabarito no fim'
-                            : '1–5 opção · Enter próxima · Space avança (sem gabarito)')
+                            ? 'Simulado do dia · tempo restante $_timeRemainingLabel'
+                            : 'Responda questão a questão · gabarito só no final')
                     : 'Escolha um modo e faça um bloco como no dia da prova',
                 trailing: inSession && report == null
                     ? SurfacePanel(
@@ -731,584 +717,65 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   ),
                 ),
 
-              if (!inSession) ...[
-                if (checkpointLoadError != null)
-                  QuietEmpty(
-                    message: checkpointLoadError!,
-                    action: TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        _loadSimCheckpoint();
-                      },
-                      child: const Text('Tentar'),
-                    ),
-                  ),
-                if (startError != null)
-                  QuietEmpty(
-                    message: startError!,
-                    action: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            setState(() => startError = null);
-                          },
-                          child: const Text('Ok'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/biblioteca');
-                          },
-                          child: const Text('Biblioteca'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-                          },
-                          child: const Text('Sessão'),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (pendingSimCheckpoint != null)
-                  SurfacePanel(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    color: cs.tertiaryContainer.withOpacity(0.4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Simulado em andamento',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Modo ${pendingSimCheckpoint!['mode'] ?? '—'} · '
-                          '${(pendingSimCheckpoint!['answers'] as Map? ?? {}).length} respondida(s)',
-                          style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            FilledButton(
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _restoreSimCheckpoint();
-                              },
-                              child: const Text('Continuar'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () async {
-                                HapticFeedback.selectionClick();
-                                await _clearSimCheckpoint();
-                              },
-                              child: const Text('Descartar'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                SectionLabel('Simulado do dia', hint: 'Caminho principal · cronômetro · gabarito no fim'),
-                _ModeCard(
-                  selected: mode == 'dia_prova',
-                  icon: Icons.timer_outlined,
-                  title: 'Simulado do dia',
-                  subtitle: 'Cronômetro ligado, gabarito no final',
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => mode = 'dia_prova');
+              if (!inSession)
+                SimulationSetupPanel(
+                  mode: mode,
+                  subject: subject,
+                  limit: limit,
+                  starting: starting,
+                  showOtherModes: showOtherModes,
+                  checkpointLoadError: checkpointLoadError,
+                  startError: startError,
+                  pendingCheckpoint: pendingSimCheckpoint,
+                  onModeChanged: (m) => setState(() => mode = m),
+                  onSubjectChanged: (v) => setState(() => subject = v),
+                  onLimitChanged: (v) => setState(() => limit = v),
+                  onShowOtherModesChanged: (v) => setState(() => showOtherModes = v),
+                  onStart: _start,
+                  onReloadCheckpoint: _loadSimCheckpoint,
+                  onDismissStartError: () => setState(() => startError = null),
+                  onRestoreCheckpoint: _restoreSimCheckpoint,
+                  onClearCheckpoint: _clearSimCheckpoint,
+                ),
+
+              if (report == null && questions.isNotEmpty)
+                SimulationExamPanel(
+                  running: running,
+                  examLocked: examLocked,
+                  checkpointSaveError: checkpointSaveError,
+                  defaultErrorType: defaultErrorType,
+                  diaProvaHardCap: diaProvaHardCap,
+                  elapsedSeconds: elapsed.inSeconds,
+                  clock: _clock,
+                  timeRemainingLabel: _timeRemainingLabel,
+                  questions: questions,
+                  answers: answers,
+                  errorTypes: errorTypes,
+                  keyboardQuestionIndex: keyboardQi,
+                  grading: grading,
+                  onRetryCheckpointSave: _saveSimCheckpoint,
+                  onDefaultErrorTypeChanged: (v) => setState(() => defaultErrorType = v),
+                  onSelectAnswer: (qi, id, i) {
+                    setState(() {
+                      answers[id] = i;
+                      keyboardQi = qi;
+                    });
+                    unawaited(_saveSimCheckpoint());
                   },
-                ),
-                const SizedBox(height: 4),
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  initiallyExpanded: showOtherModes || mode != 'dia_prova',
-                  onExpansionChanged: (v) => setState(() => showOtherModes = v),
-                  title: Text('Outros modos', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                  children: [
-                    for (final m in _modes.where((e) => e.$1 != 'dia_prova'))
-                      _ModeCard(
-                        selected: mode == m.$1,
-                        icon: m.$4,
-                        title: m.$2,
-                        subtitle: m.$3,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => mode = m.$1);
-                        },
-                      ),
-                  ],
-                ),
-                if (mode == 'disciplina') ...[
-                  const SizedBox(height: 8),
-                  DropdownMenu<String>(
-                    label: const Text('Disciplina'),
-                    onSelected: (v) => setState(() => subject = v),
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
-                      DropdownMenuEntry(value: 'Química', label: 'Química'),
-                      DropdownMenuEntry(value: 'Física', label: 'Física'),
-                      DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
-                      DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
-                    ],
-                  ),
-                ],
-                if (mode == 'disciplina' && (subject == null || subject!.isEmpty))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Escolha a disciplina antes de iniciar.',
-                      style: TextStyle(fontSize: 13, color: cs.error),
-                    ),
-                  ),
-                const SizedBox(height: 12),
-                SectionLabel('Quantidade', hint: '$limit questões'),
-                Slider(
-                  value: limit.toDouble(),
-                  min: 5,
-                  max: 30,
-                  divisions: 5,
-                  label: '$limit',
-                  onChanged: (v) => setState(() => limit = v.round()),
-                ),
-                const SizedBox(height: 8),
-                FilledButton.icon(
-                  onPressed: starting ||
-                          (mode == 'disciplina' && (subject == null || subject!.isEmpty))
-                      ? null
-                      : _start,
-                  icon: starting
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
-                        )
-                      : const Icon(Icons.play_arrow_rounded),
-                  label: Text(starting
-                      ? 'Carregando questões…'
-                      : mode == 'dia_prova'
-                          ? 'Começar simulado do dia'
-                          : 'Iniciar simulado'),
-                ),
-              ],
-
-              if (running && checkpointSaveError != null) ...[
-                QuietEmpty(
-                  message: checkpointSaveError!,
-                  action: TextButton(
-                    onPressed: () {
-                      HapticFeedback.selectionClick();
-                      _saveSimCheckpoint();
-                    },
-                    child: const Text('Tentar'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-
-              if (running && report == null && !examLocked) ...[
-                SectionLabel('Se errar, marque o tipo', hint: 'Padrão para o bloco inteiro'),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final e in _errorLabels.entries)
-                      ChoiceChip(
-                        label: Text(e.value),
-                        selected: defaultErrorType == e.key,
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          setState(() => defaultErrorType = e.key);
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              if (examLocked && report == null)
-                SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.tertiaryContainer.f45,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _CircularTimer(
-                        remainingSeconds: diaProvaHardCap != null
-                            ? (diaProvaHardCap!.inSeconds - elapsed.inSeconds).clamp(0, diaProvaHardCap!.inSeconds)
-                            : 0,
-                        totalSeconds: diaProvaHardCap?.inSeconds ?? 0,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Simulado do dia em andamento',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Respostas: ${answers.length}/${questions.length} · tempo $_clock'
-                              '${diaProvaHardCap != null ? ' · restam $_timeRemainingLabel' : ''}',
-                              style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
-                              style: TextStyle(fontSize: 13, color: cs.onSurface.f65),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  onErrorTypeForQuestion: (id, v) => setState(() => errorTypes[id] = v),
+                  onGrade: _grade,
                 ),
 
-              for (var qi = 0; qi < questions.length; qi++)
-                Builder(
-                  builder: (context) {
-                    final q = Map<String, dynamic>.from(questions[qi] as Map);
-                    final id = q['id'] as String;
-                    final opts = (q['options'] as List).map((e) => e.toString()).toList();
-                    final year = q['year'];
-                    final kbActive = running && report == null && qi == keyboardQi;
-                    return SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      color: kbActive ? cs.primaryContainer.withOpacity(0.28) : null,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Questão ${qi + 1} de ${questions.length}'
-                            '${year != null ? ' · $year' : ''}'
-                            '${kbActive ? ' · teclado' : ''}',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: kbActive ? cs.onPrimaryContainer : cs.onSurface),
-                          ),
-                          const SizedBox(height: 8),
-                          StatementView(
-                            key: ValueKey('sim_stmt_$id'),
-                            text: q['statement']?.toString() ?? '',
-                          ),
-                          const SizedBox(height: 8),
-                          for (var i = 0; i < opts.length; i++)
-                            ChoiceOptionTile(
-                              key: ValueKey('sim_opt_${id}_$i'),
-                              index: i,
-                              label: opts[i].toString(),
-                              selected: answers[id] == i,
-                              enabled: report == null,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  answers[id] = i;
-                                  keyboardQi = qi;
-                                });
-                                unawaited(_saveSimCheckpoint());
-                              },
-                            ),
-                          if (report == null && answers.containsKey(id) && !examLocked)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: DropdownButton<String>(
-                                value: errorTypes[id] ?? defaultErrorType,
-                                hint: const Text('Tipo de erro se miss'),
-                                items: [
-                                  for (final e in _errorLabels.entries)
-                                    DropdownMenuItem(value: e.key, child: Text(e.value)),
-                                ],
-                                onChanged: (v) {
-                                  if (v == null) return;
-                                  HapticFeedback.selectionClick();
-                                  setState(() => errorTypes[id] = v);
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
+              if (report != null)
+                SimulationReportPanel(
+                  report: report!,
+                  clock: _clock,
+                  wrongResults: wrongResults.cast<Map<String, dynamic>>(),
+                  debriefBuilder: _debriefBlock,
+                  onRemediateGaps: _remediateGaps,
+                  onExportReport: _exportReport,
+                  onResetSim: _resetSim,
                 ),
-
-              if (questions.isNotEmpty && report == null) ...[
-                const SizedBox(height: 4),
-                FilledButton.tonal(
-                  onPressed: (answers.length < questions.length || grading) ? null : _grade,
-                  child: grading
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('Corrigindo ${answers.length} questões…'),
-                          ],
-                        )
-                      : Text(
-                          answers.length < questions.length
-                              ? 'Responda todas (${answers.length}/${questions.length})'
-                              : 'Finalizar e corrigir',
-                        ),
-                ),
-              ],
-
-              if (report != null) ...[
-                SectionLabel('Resultado'),
-                SurfacePanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: cs.primaryContainer.f35,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Anima o número de 0 até a porcentagem final
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: ((report!['accuracy'] as num) * 100).toDouble()),
-                        duration: const Duration(milliseconds: 900),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, _) {
-                          final pct = value.toStringAsFixed(0);
-                          // Cor muda conforme acerto: vermelho <40, laranja <70, verde >=70
-                          final color = value >= 70
-                              ? cs.primary
-                              : value >= 40
-                                  ? cs.tertiary
-                                  : cs.error;
-                          return Text(
-                            '$pct% de acerto',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
-                          );
-                        },
-                      ),
-                      Text(
-                        '${report!['correct']}/${report!['total']} corretas · tempo $_clock',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
-                      ),
-                      if (report!['estimatedScore'] != null) ...[
-                        const SizedBox(height: 6),
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.0, end: ((report!['estimatedScore'] as num)).toDouble()),
-                          duration: const Duration(milliseconds: 900),
-                          curve: Curves.easeOutCubic,
-                          builder: (context, value, _) {
-                            return Text(
-                              'Nota estimada: ${value.toStringAsFixed(0)}/1000',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: cs.primary,
-                              ),
-                            );
-                          },
-                        ),
-                        Text(
-                          'Estimativa local — não é nota oficial UEMA.',
-                          style: TextStyle(fontSize: 12, color: cs.onSurface.withOpacity(0.6)),
-                        ),
-                      ],
-                      if (report!['avgTimeMs'] != null)
-                        Text(
-                          'Média ${((report!['avgTimeMs'] as num) / 1000).toStringAsFixed(1)}s por item',
-                          style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                        ),
-                      if (report!['warning'] != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          '${report!['warning']}',
-                          style: TextStyle(color: cs.error),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                if ((report!['subjectBreakdown'] as List? ?? []).isNotEmpty) ...[
-                  SectionLabel('Por disciplina'),
-                  for (final s in (report!['subjectBreakdown'] as List).take(8))
-                    PlaylistTile(
-                      title: (s as Map)['subject']?.toString() ?? '—',
-                      subtitle:
-                          '${s['correct']}/${s['total']} · ${(((s['accuracy'] as num?) ?? 0) * 100).toStringAsFixed(0)}%',
-                      leadingIcon: Icons.school_outlined,
-                    ),
-                ],
-
-                if ((report!['gaps'] as List? ?? []).isNotEmpty) ...[
-                  SectionLabel('Tópicos para revisar'),
-                  for (final g in (report!['gaps'] as List).take(6))
-                    PlaylistTile(
-                      title: '${(g as Map)['subject']} · ${g['topic']}',
-                      subtitle: '${g['wrong']} erro(s)',
-                      leadingIcon: Icons.flag_outlined,
-                      onPlay: () => context.go(
-                        '/adaptativo?subject=${Uri.encodeComponent(g['subject']?.toString() ?? '')}'
-                        '&topic=${Uri.encodeComponent(g['topic']?.toString() ?? '')}',
-                      ),
-                    ),
-                  Builder(
-                    builder: (_) {
-                      final gaps = (report!['gaps'] as List).whereType<Map>().toList();
-                      if (gaps.isEmpty) return const SizedBox.shrink();
-                      final g0 = Map<String, dynamic>.from(gaps.first);
-                      final s = g0['subject']?.toString() ?? '';
-                      final t = g0['topic']?.toString() ?? '';
-                      if (s.isEmpty || t.isEmpty) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
-                        child: MediaReinforcement(
-                          subject: s,
-                          topic: t,
-                          compact: true,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-
-                if (wrongResults.isNotEmpty) ...[
-                  SectionLabel('Erros — debrief', hint: '4 eixos quando a resolução for real'),
-                  for (final r in wrongResults.take(8))
-                    SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${r['subject'] ?? ''} · ${r['topic'] ?? ''}',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: cs.onSurface),
-                          ),
-                          _debriefBlock(
-                            r['questionId']?.toString() ?? '',
-                            r['subject']?.toString() ?? '',
-                            r['topic']?.toString() ?? '',
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: (report!['gaps'] as List? ?? []).isNotEmpty
-                          ? () {
-                              HapticFeedback.selectionClick();
-                              _remediateGaps();
-                            }
-                          : () {
-                              HapticFeedback.selectionClick();
-                              context.go('/fila');
-                            },
-                      icon: const Icon(Icons.playlist_play_rounded),
-                      label: Text(
-                        (report!['gaps'] as List? ?? []).isNotEmpty
-                            ? 'Mandar tópicos para revisar para a Fila'
-                            : 'Continuar na Fila',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.tonal(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-                      },
-                      child: const Text('Sessão Natureza'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        context.go('/redacao');
-                      },
-                      child: const Text('Redação'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        context.go('/dashboard');
-                      },
-                      child: const Text('Hoje'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        _exportReport();
-                      },
-                      child: const Text('Exportar resumo'),
-                    ),
-                    OutlinedButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        _resetSim();
-                      },
-                      child: const Text('Novo simulado'),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  title: Text('Detalhe das respostas', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                  children: [
-                    for (final r in (report!['results'] as List? ?? []))
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          (r as Map)['correct'] == true ? Icons.check_circle : Icons.cancel,
-                          color: r['correct'] == true ? cs.primary : cs.error,
-                        ),
-                        title: Text('${r['subject']} · ${r['topic']}'),
-                        trailing: TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/questoes/${r['questionId']}');
-                          },
-                          child: const Text('Ver'),
-                        ),
-                      ),
-                    if ((report!['professorHints'] as List? ?? []).isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text('Macete dos erros', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                      for (final h in (report!['professorHints'] as List).take(5))
-                        ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text('${(h as Map)['topic']}'),
-                          subtitle: Text(h['macete']?.toString() ?? ''),
-                          trailing: TextButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              context.go('/questoes/${h['questionId']}');
-                            },
-                            child: const Text('Abrir'),
-                          ),
-                        ),
-                    ],
-                  ],
-                ),
-              ],
             ],
           ),
         ),
@@ -1317,161 +784,4 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
 
     return body;
   }
-}
-
-class _ModeCard extends StatelessWidget {
-  const _ModeCard({
-    required this.selected,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TapScale(
-        child: GestureDetector(
-          onTap: onTap,
-          child: SurfacePanel(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            color: selected ? cs.primaryContainer.f55 : cs.surface.withOpacity(0.9),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(kRadiusPanel),
-                border: Border.all(
-                  color: selected ? cs.primary : cs.outlineVariant.f85,
-                  width: selected ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, color: selected ? cs.primary : cs.onSurface.withOpacity(0.7)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? cs.onPrimaryContainer : cs.onSurface)),
-                        Text(
-                          subtitle,
-                          style: TextStyle(fontSize: 13, color: selected ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.f72),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (selected) Icon(Icons.check_circle_rounded, color: cs.primary, size: 22),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircularTimer extends StatelessWidget {
-  const _CircularTimer({required this.remainingSeconds, required this.totalSeconds});
-
-  final int remainingSeconds;
-  final int totalSeconds;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final progress = totalSeconds > 0
-        ? (remainingSeconds / totalSeconds).clamp(0.0, 1.0)
-        : 0.0;
-    final mins = (remainingSeconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (remainingSeconds % 60).toString().padLeft(2, '0');
-    final progressColor = progress > 0.5
-        ? cs.primary
-        : progress > 0.25
-            ? Colors.amber
-            : cs.error;
-    return SizedBox(
-      width: 120,
-      height: 120,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size(120, 120),
-            painter: _TimerPainter(
-              progress: progress,
-              trackColor: cs.surfaceContainerHighest,
-              progressColor: progressColor,
-            ),
-          ),
-          Text(
-            '$mins:$secs',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimerPainter extends CustomPainter {
-  const _TimerPainter({
-    required this.progress,
-    required this.trackColor,
-    required this.progressColor,
-  });
-
-  final double progress;
-  final Color trackColor;
-  final Color progressColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 8) / 2;
-    const strokeWidth = 8.0;
-
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, trackPaint);
-
-    if (progress <= 0) return;
-
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    final sweepAngle = 2 * pi * progress;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      sweepAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_TimerPainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.trackColor != trackColor ||
-      oldDelegate.progressColor != progressColor;
 }

@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Geografia — topicos 9.1 a 9.4."""
 
-from pdf_base import generate_educational_pdf
 from geografia_real_images import REAL_IMAGES
+from pdf_base import generate_educational_pdf
 
 # ============================================================
 # 9.1 Geografia Fisica

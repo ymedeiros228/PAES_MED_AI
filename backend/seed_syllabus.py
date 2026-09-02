@@ -6,8 +6,6 @@ Cobertura: 11 disciplinas, ~415 subtópicos.
 
 from __future__ import annotations
 
-import uuid
-
 from db import db
 
 # Pesos estimados para Medicina (Biologia/Química/Física pesam mais)

@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas matematicos para os topicos 4.1 a 4.5."""
 
 from __future__ import annotations
 
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
-import math
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"
 IMG_DIR.mkdir(parents=True, exist_ok=True)

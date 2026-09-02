@@ -17,8 +17,8 @@ from services_core import resolution_quality
 
 def _ask_ai(instructions: str, content: str) -> str:
     """Chama o provedor de IA configurado (Gemini primeiro, Groq fallback)."""
-    from api_helpers import _ask_gemini, _ask_groq
     from ai_state import provider_configured
+    from api_helpers import _ask_gemini, _ask_groq
 
     if provider_configured("gemini"):
         try:
@@ -118,7 +118,7 @@ def generate_resolutions(
     # Filtrar só questões com resolução template
     template_questions = []
     for r in rows:
-        res = r["statement"]  # placeholder
+        r["statement"]  # placeholder
         # Buscar resolução real
         with db() as conn:
             row = conn.execute(

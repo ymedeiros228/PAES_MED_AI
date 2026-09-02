@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas educacionais simples para os PDFs de Fisica.
 
 Usa PIL para criar PNGs claros, sem pessoas, focados em conceitos.
@@ -7,6 +6,7 @@ Usa PIL para criar PNGs claros, sem pessoas, focados em conceitos.
 from __future__ import annotations
 
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"

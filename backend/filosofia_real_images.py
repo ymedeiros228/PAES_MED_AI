@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Imagens reais da Wikipédia (Português do Brasil) para Filosofia."""
 
 REAL_IMAGES = {

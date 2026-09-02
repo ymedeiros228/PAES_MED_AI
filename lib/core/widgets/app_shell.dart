@@ -21,16 +21,7 @@ class AppShell extends ConsumerWidget {
     _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
   ];
 
-  /// Rotas avançadas: em modo foco redirecionam ao Hoje.
-  static const _focusHostile = <String>{
-    '/aprovacao',
-    '/banca',
-    '/aulas',
-    '/cronograma',
-    '/medicina',
-  };
-
-  /// Rotas de estudo permitidas no foco (além da rail).
+  /// Rotas permitidas no modo foco (estudo + essenciais; sem plano/domínio/banca).
   static bool _focusAllowed(String path) {
     const allowed = <String>[
       '/dashboard',
@@ -47,12 +38,7 @@ class AppShell extends ConsumerWidget {
       '/redacao',
       '/progresso',
       '/conquistas',
-      '/cronograma',
-      '/aulas',
       '/materiais',
-      '/medicina',
-      '/banca',
-      '/aprovacao',
       '/onboarding',
     ];
     return allowed.any((p) => path == p || path.startsWith('$p/'));
@@ -93,13 +79,13 @@ class AppShell extends ConsumerWidget {
 
     final focusNavItems = focus ? focusItems : mainItems;
     final allNavItems = focus ? focusItems : _allItems();
-    var index = allNavItems.indexWhere((item) => location == item.path || location.startsWith('${item.path}/'));
-    if (index < 0) index = 0;
     final moreActive = moreItems.any((item) => location == item.path || location.startsWith('${item.path}/'));
+    var bottomNavIndex = focusNavItems.indexWhere(
+      (item) => location == item.path || location.startsWith('${item.path}/'),
+    );
+    if (bottomNavIndex < 0) bottomNavIndex = 0;
 
-    if (focus &&
-        (_focusHostile.any((p) => location == p || location.startsWith('$p/')) ||
-            !_focusAllowed(location))) {
+    if (focus && !_focusAllowed(location)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) context.go('/dashboard');
       });
@@ -331,10 +317,10 @@ class AppShell extends ConsumerWidget {
                       ),
                     ),
                   NavigationBar(
-                    selectedIndex: index.clamp(0, (allNavItems.length - 1).clamp(0, 4)),
+                    selectedIndex: bottomNavIndex.clamp(0, focusNavItems.length - 1),
                     onDestinationSelected: (value) {
                       HapticFeedback.selectionClick();
-                      context.go(allNavItems[value.clamp(0, allNavItems.length - 1)].path);
+                      context.go(focusNavItems[value.clamp(0, focusNavItems.length - 1)].path);
                     },
                     destinations: [
                       for (final item in focusNavItems.take(5))

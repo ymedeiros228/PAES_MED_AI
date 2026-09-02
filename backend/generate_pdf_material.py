@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDF profissional ABNT do material de Biologia - Membrana Plasmatica.
 
 Melhorias v2:
@@ -10,24 +9,26 @@ Melhorias v2:
 """
 
 import os
-import sys
 import re
-import httpx
 from pathlib import Path
 
+import httpx
+from PIL import Image as PILImage
+from reportlab.lib.colors import HexColor
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm, mm
-from reportlab.lib.colors import HexColor, white, black
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle,
-    PageBreak, KeepTogether, HRFlowable
-)
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
-from PIL import Image as PILImage
+from reportlab.platypus import (
+    HRFlowable,
+    Image,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+)
 
 # Diretorios
 ROOT = Path(__file__).resolve().parent.parent
@@ -74,7 +75,7 @@ def _register_fonts():
                 registered[name] = False
         else:
             registered[name] = False
-    
+
     # Mapear familias
     if all(registered.values()):
         from reportlab.pdfbase.pdfmetrics import registerFontFamily
@@ -100,7 +101,7 @@ _FONT_BOLD_ITALIC = "BoldItalic" if _HAS_TTF else "Helvetica-BoldOblique"
 
 def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
     """Busca imagens no Wikimedia Commons - APENAS em portugues (PT-BR).
-    
+
     Regras estritas:
     - Diagramas SVG: so aceitar se tiver 'pt' no nome (textos traduzidos para PT)
     - Fotos/micrografias (JPG/PNG): aceitar independente do nome (nao tem texto)
@@ -109,12 +110,12 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
     results = []
     seen_urls = set()
     seen_titles = set()
-    
+
     # Indicadores PT no nome do arquivo
     pt_indicators = (" pt.", " pt_", " pt-br", "ptbr", "portugues", "portugue",
                      "-pt.", "-pt_", "_pt.svg", "-pt.svg", " pt.svg",
                      " pt.png", " pt.jpg")
-    
+
     # Palavras PT em nomes de arquivo (especificas, nao podem match outros idiomas)
     pt_words = ("fagocitose", "endocitose", "endocitosis",  # PT/ES proximo
                 "osmose", "difusao",
@@ -126,7 +127,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                 "scheme facilitated diffusion in cell membrane-pt",
                 "lipid unsaturation effect pt",
                 "phospholipid", "lipid bilayer", "tipos de endocitosis")
-    
+
     # Rejeitar sempre
     always_reject = ("commons-logo", "wiki", "icon", "favicon", "banner",
                      "logo_", "_logo", "question_book", "disambig",
@@ -162,20 +163,20 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                      "-gu.svg", "-gu.", "-ur.svg", "-ur.", "-ps.svg", "-ps.",
                      "-sd.svg", "-sd.", "-kn.svg", "-kn.", "-ml.svg", "-ml.",
                      "-or.svg", "-or.", "-sa.svg", "-sa.", "-as.svg", "-as.")
-    
+
     def _is_acceptable(title: str, mime: str, from_wikipedia_pt: bool = False) -> bool:
         """Decide se a imagem e aceitavel.
-        
+
         - SVG: so aceitar se for PT (textos traduzidos)
         - JPG/PNG: so aceitar se vier da Wikipédia (Português do Brasil) (relevantes ao topico)
         """
         t = title.lower()
-        
+
         # 1. Rejeitar sempre
         for r in always_reject:
             if r in t:
                 return False
-        
+
         # 2. Se e SVG (diagrama com texto), so aceitar se for PT
         if "svg" in mime:
             for pw in pt_indicators:
@@ -185,7 +186,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                 if pw in t:
                     return True
             return False  # SVG sem indicador PT = provavelmente em ingles
-        
+
         # 3. Se e JPG/PNG (foto/micrografia):
         #    So aceitar se vier da Wikipédia (Português do Brasil) (Strategy 2)
         #    Fotos do Commons search (Strategy 1) sao rejeitadas (irrelevantes)
@@ -193,9 +194,9 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
             if from_wikipedia_pt:
                 return True
             return False  # Fotos do Commons search = irrelevantes
-        
+
         return False
-    
+
     def _is_pt_diagram(title: str, mime: str) -> bool:
         """Verifica se e um diagrama explicitamente PT."""
         if "svg" not in mime:
@@ -208,7 +209,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
             if pw in t:
                 return True
         return False
-    
+
     # Estrategia 1: buscar no Commons com filtro PT
     pt_queries = [
         f"{query} pt",
@@ -217,7 +218,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
         f"{query} diagrama",  # palavra PT no nome
         f"{query} esquema",   # palavra PT no nome
     ]
-    
+
     for q in pt_queries:
         if len(results) >= limit:
             break
@@ -251,24 +252,24 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                 url = orig or thumb
                 if not url or url in seen_urls:
                     continue
-                
+
                 title = page.get("title", "").replace("File:", "").replace("Ficheiro:", "")
-                
+
                 if not _is_acceptable(title, mime, from_wikipedia_pt=False):
                     continue
-                
+
                 if title in seen_titles:
                     continue
                 seen_urls.add(url)
                 seen_titles.add(title)
-                
+
                 meta = info.get("extmetadata", {})
                 caption = ""
                 cap_data = meta.get("ImageDescription", {})
                 caption = cap_data.get("value", "") if cap_data else ""
                 if caption and "<" in caption:
                     caption = re.sub(r"<[^>]+>", "", caption).strip()[:200]
-                
+
                 results.append({
                     "url": url,
                     "title": title,
@@ -280,11 +281,11 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                 })
         except Exception as e:
             print(f"  Erro buscando Commons PT: {e}")
-    
+
     # Estrategia 2: Wikipédia (Português do Brasil) - artigos relacionados
     if len(results) < limit:
         print(f"  Apenas {len(results)} imagens no Commons. Buscando artigos Wikipédia (Português do Brasil)...")
-        
+
         artigos_pt = [
             "Membrana plasmatica", "Celula", "Transporte passivo",
             "Osmose", "Fagocitose", "Endocitose", "Fosfolipidio",
@@ -292,7 +293,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
             "Juncao comunicante", "Glicocalix", "Bomba sodio potassio",
             "Difusao facilitada", "Transporte ativo",
         ]
-        
+
         for artigo in artigos_pt:
             if len(results) >= limit:
                 break
@@ -311,7 +312,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                 if not search_results:
                     continue
                 pageid = search_results[0]["pageid"]
-                
+
                 # Buscar imagens do artigo
                 params = {
                     "action": "query",
@@ -324,7 +325,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                               params=params, headers=HEADERS, timeout=10)
                 pages = r.json().get("query", {}).get("pages", {})
                 imgs = pages.get(str(pageid), {}).get("images", [])
-                
+
                 for img_meta in imgs:
                     if len(results) >= limit:
                         break
@@ -332,7 +333,7 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                     # Converter "Ficheiro:" para "File:" (Commons usa File:)
                     if file_title.startswith("Ficheiro:"):
                         file_title = "File:" + file_title[len("Ficheiro:"):]
-                    
+
                     # Buscar info da imagem no Commons
                     params2 = {
                         "action": "query",
@@ -356,23 +357,23 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                         url = orig or thumb
                         if not url or url in seen_urls:
                             continue
-                        
+
                         title = file_title.replace("File:", "").replace("Ficheiro:", "")
-                        
+
                         if not _is_acceptable(title, mime, from_wikipedia_pt=True):
                             continue
                         if title in seen_titles:
                             continue
                         seen_urls.add(url)
                         seen_titles.add(title)
-                        
+
                         meta = info.get("extmetadata", {})
                         caption = ""
                         cap_data = meta.get("ImageDescription", {})
                         caption = cap_data.get("value", "") if cap_data else ""
                         if caption and "<" in caption:
                             caption = re.sub(r"<[^>]+>", "", caption).strip()[:200]
-                        
+
                         results.append({
                             "url": url,
                             "title": title,
@@ -382,17 +383,17 @@ def search_commons_images_pt(query: str, limit: int = 10) -> list[dict]:
                             "source_url": info.get("descriptionurl", ""),
                             "is_pt": _is_pt_diagram(title, mime),
                         })
-            except Exception as e:
+            except Exception:
                 pass
-    
+
     # Priorizar diagramas PT primeiro, depois fotos
     results.sort(key=lambda x: (not x["is_pt"],))
-    
+
     print(f"  Total de imagens encontradas: {len(results)}")
     for r in results:
         tag = "[PT diagrama]" if r["is_pt"] else "[foto/micrografia]"
         print(f"  {tag} {r['title'][:60]}")
-    
+
     return results[:limit]
 
 
@@ -492,19 +493,18 @@ REJECT_TERMS = {
 
 def fix_svg_to_ptbr(svg_url: str, output_path: Path) -> Path | None:
     """Baixa um SVG, substitui termos PT-PT/ES por PT-BR, converte para PNG.
-    
+
     Usa Chrome headless para renderizar o SVG corrigido.
     """
     import subprocess
-    import tempfile
-    
+
     try:
         r = httpx.get(svg_url, headers=HEADERS, timeout=30, follow_redirects=True)
         if r.status_code != 200 or not r.content:
             return None
-        
+
         svg_content = r.text
-        
+
         # Aplicar substituicoes PT-PT -> PT-BR
         changes = 0
         for pt_pt, pt_br in PT_PT_TO_BR.items():
@@ -513,18 +513,18 @@ def fix_svg_to_ptbr(svg_url: str, output_path: Path) -> Path | None:
             if pt_pt in svg_content:
                 svg_content = svg_content.replace(pt_pt, pt_br)
                 changes += 1
-        
+
         if changes > 0:
             print(f"    {changes} termos corrigidos PT-PT/ES -> PT-BR")
         else:
-            print(f"    Nenhum termo PT-PT/ES encontrado (ja e PT-BR)")
-        
+            print("    Nenhum termo PT-PT/ES encontrado (ja e PT-BR)")
+
         # Salvar SVG corrigido
         svg_path = output_path.with_suffix(".svg")
         svg_path.write_text(svg_content, encoding="utf-8")
-        
+
         png_path = output_path.with_suffix(".png")
-        
+
         # Criar HTML wrapper para renderizar o SVG em tamanho grande
         html_content = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -534,27 +534,27 @@ svg {{ display:block; }}
 </style></head><body>
 {svg_content}
 </body></html>"""
-        
+
         html_path = output_path.with_suffix(".html")
         html_path.write_text(html_content, encoding="utf-8")
-        
+
         # Usar Chrome headless para renderizar
         chrome_paths = [
             "C:/Program Files/Google/Chrome/Application/chrome.exe",
             "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
         ]
-        
+
         chrome_exe = None
         for cp in chrome_paths:
             if os.path.exists(cp):
                 chrome_exe = cp
                 break
-        
+
         if chrome_exe:
             # Converter para file:// URL
             file_url = html_path.as_uri()
-            
+
             cmd = [
                 chrome_exe,
                 "--headless",
@@ -565,19 +565,19 @@ svg {{ display:block; }}
                 "--default-background-color=00000000",
                 file_url,
             ]
-            
+
             result = subprocess.run(cmd, capture_output=True, timeout=30, text=True)
-            
+
             if png_path.exists() and png_path.stat().st_size > 1000:
-                print(f"    SVG renderizado para PNG (Chrome headless)")
+                print("    SVG renderizado para PNG (Chrome headless)")
                 # Limpar HTML
                 html_path.unlink(missing_ok=True)
                 return png_path
             else:
                 print(f"    Chrome nao gerou PNG: {result.stderr[:100]}")
-        
+
         # Fallback: usar thumburl do Commons (sem correcao)
-        print(f"    Aviso: usando PNG do Commons (sem correcao de texto)")
+        print("    Aviso: usando PNG do Commons (sem correcao de texto)")
         # Extrair nome do arquivo da URL
         fname = svg_url.split("/")[-1].split("?")[0]
         params = {
@@ -599,7 +599,7 @@ svg {{ display:block; }}
                 if r3.status_code == 200:
                     png_path.write_bytes(r3.content)
                     return png_path
-        
+
         return None
     except Exception as e:
         print(f"    Erro corrigindo SVG: {e}")
@@ -883,7 +883,7 @@ def _header_footer(canvas_obj, doc):
     """Header e footer de cada pagina."""
     canvas_obj.saveState()
     width, height = A4
-    
+
     # Header: logo + titulo
     if LOGO_PATH.exists():
         canvas_obj.drawImage(
@@ -896,27 +896,27 @@ def _header_footer(canvas_obj, doc):
     canvas_obj.setFont(_FONT_NORMAL, 7)
     canvas_obj.setFillColor(TEXT_LIGHT)
     canvas_obj.drawString(3*cm, height - 1.6*cm, "Biologia — Citologia — Membrana Plasmática")
-    
+
     # Linha header
     canvas_obj.setStrokeColor(PRIMARY)
     canvas_obj.setLineWidth(0.5)
     canvas_obj.line(1.5*cm, height - 2*cm, width - 1.5*cm, height - 2*cm)
-    
+
     # Footer
     canvas_obj.setFont(_FONT_NORMAL, 7)
     canvas_obj.setFillColor(TEXT_LIGHT)
     canvas_obj.drawCentredString(width/2, 1*cm, f"PAES MED AI - Material de Estudo  |  Pagina {doc.page}")
-    
+
     canvas_obj.restoreState()
 
 
 def generate_pdf():
     """Gera o PDF completo do material."""
     pdf_path = PDF_DIR / "BI_CITOLOGIA_MEMBRANA_PLASMATICA_v13.pdf"
-    
+
     # Usar imagens reais de sites educacionais brasileiros (100% PT-BR)
     print("Carregando imagens de sites educacionais brasileiros...")
-    
+
     images_data = [
         {
             "file": "br_brasilescola_estrutura.jpg",
@@ -949,7 +949,7 @@ def generate_pdf():
             "source_url": "https://mundoeducacao.uol.com.br/biologia/osmose.htm",
         },
     ]
-    
+
     downloaded_images = []
     for img_data in images_data:
         path = IMG_DIR / img_data["file"]
@@ -964,12 +964,12 @@ def generate_pdf():
             print(f"  OK: {img_data['file']}")
         else:
             print(f"  FALTANDO: {img_data['file']}")
-    
+
     print(f"\n{len(downloaded_images)} imagens baixadas. Gerando PDF...")
-    
+
     # Estilos - SEM emojis, com fontes TTF
     styles = getSampleStyleSheet()
-    
+
     style_title = ParagraphStyle(
         'CustomTitle', parent=styles['Title'],
         fontSize=26, textColor=PRIMARY_DARK, spaceAfter=6,
@@ -1027,7 +1027,7 @@ def generate_pdf():
         fontSize=14, textColor=PRIMARY_DARK, spaceBefore=16, spaceAfter=6,
         fontName=_FONT_BOLD, leading=18
     )
-    
+
     # Construir documento
     doc = SimpleDocTemplate(
         str(pdf_path), pagesize=A4,
@@ -1036,15 +1036,15 @@ def generate_pdf():
         title="Membrana Plasmatica - PAES MED AI",
         author="PAES MED AI",
     )
-    
+
     story = []
-    
+
     # === CAPA ===
     story.append(Spacer(1, 3*cm))
-    
+
     if LOGO_PATH.exists():
         story.append(Image(str(LOGO_PATH), width=3*cm, height=3*cm, hAlign='CENTER'))
-    
+
     story.append(Spacer(1, 1*cm))
     story.append(Paragraph("PAES MED AI", ParagraphStyle(
         'BrandTitle', fontSize=16, textColor=PRIMARY, alignment=TA_CENTER,
@@ -1066,18 +1066,18 @@ def generate_pdf():
         "Com imagens cientificas do Wikimedia Commons e referencias bibliograficas em formato ABNT",
         ParagraphStyle('CoverSub', fontSize=10, textColor=TEXT_LIGHT, alignment=TA_CENTER,
         fontName=_FONT_ITALIC, leading=14)))
-    
+
     story.append(PageBreak())
-    
+
     # === INTRODUCAO ===
     story.append(Paragraph("Introducao", style_h2))
-    
+
     # Dividir introducao em paragrafos
     for p in CONTENT["introducao"].split("\n\n"):
         story.append(Paragraph(p, style_body))
-    
+
     story.append(Spacer(1, 0.5*cm))
-    
+
     # Imagem principal
     if downloaded_images:
         img_data = downloaded_images[0]
@@ -1089,7 +1089,7 @@ def generate_pdf():
             ratio = min(max_w/w, max_h/h)
             img_w = w * ratio
             img_h = h * ratio
-            
+
             story.append(Image(img_data["path"], width=img_w, height=img_h, hAlign='CENTER'))
             caption_text = img_data["caption"][:180]
             story.append(Paragraph(
@@ -1098,25 +1098,25 @@ def generate_pdf():
             ))
         except Exception as e:
             print(f"Erro ao inserir imagem: {e}")
-    
+
     # === SECOES ===
     for sec_idx, sec in enumerate(CONTENT["secoes"]):
         story.append(Paragraph(sec["titulo"], style_h2))
-        
+
         # Conteudo - dividir em paragrafos
         paragraphs = sec["conteudo"].split("\n\n")
         for p in paragraphs:
             # Converter quebras de linha simples em <br/>
             p_html = p.replace("\n", "<br/>")
             story.append(Paragraph(p_html, style_body))
-        
+
         # Exemplo
         if sec.get("exemplo"):
             story.append(Paragraph(
                 f'<b>Exemplo pratico:</b> {sec["exemplo"]}',
                 style_example
             ))
-        
+
         # Imagem adicional (intercalada, sem repetir a primeira)
         img_idx = sec_idx + 1
         if downloaded_images and img_idx < len(downloaded_images):
@@ -1136,7 +1136,7 @@ def generate_pdf():
                 ))
             except Exception as e:
                 print(f"Erro imagem sec: {e}")
-    
+
     # === RESUMO ===
     story.append(Spacer(1, 0.5*cm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=PRIMARY))
@@ -1144,19 +1144,19 @@ def generate_pdf():
     story.append(Paragraph("Resumo - Pontos-Chave", style_section_label))
     resumo_html = CONTENT["resumo"].replace("\n", "<br/>")
     story.append(Paragraph(resumo_html, style_resumo))
-    
+
     # === DICAS ===
     story.append(Spacer(1, 0.4*cm))
     story.append(Paragraph("Dicas para a Prova", style_section_label))
     for dica in CONTENT["dicas"]:
         story.append(Paragraph(f"-> {dica}", style_dica))
-    
+
     # === PEGADINHAS ===
     story.append(Spacer(1, 0.4*cm))
     story.append(Paragraph("Pegadinhas Comuns", style_section_label))
     for peg in CONTENT["pegadinhas"]:
         story.append(Paragraph(f"! {peg}", style_peg))
-    
+
     # === REFERENCIAS ABNT ===
     story.append(Spacer(1, 0.5*cm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=PRIMARY))
@@ -1164,7 +1164,7 @@ def generate_pdf():
     story.append(Paragraph("Referencias Bibliograficas (ABNT)", style_section_label))
     for ref in CONTENT["referencias"]:
         story.append(Paragraph(ref, style_ref))
-    
+
     # === FONTES DAS IMAGENS ===
     if downloaded_images:
         story.append(Spacer(1, 0.3*cm))
@@ -1172,7 +1172,7 @@ def generate_pdf():
         for img in downloaded_images:
             ref_text = f'{img["caption"][:100]} - {img["source"]}'
             story.append(Paragraph(ref_text, style_ref))
-    
+
     # Gerar
     doc.build(story, onFirstPage=_header_footer, onLaterPages=_header_footer)
     print(f"\nPDF gerado: {pdf_path}")

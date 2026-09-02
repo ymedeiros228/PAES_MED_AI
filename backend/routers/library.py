@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from db import DATA_DIR, db
+from fix_questions import diagnose_questions, fix_all
 from ingest_pdf import (
     compute_year_statuses,
     list_pdf_inventory,
@@ -18,7 +19,6 @@ from ingest_pdf import (
     sanitize_question_statements,
     sanitize_questions_full,
 )
-from fix_questions import diagnose_questions, fix_all
 from schemas import (
     OpenFolderRequest,
     OpenPathRequest,
@@ -262,7 +262,7 @@ def api_library_serve_file(folder: str, filename: str) -> FileResponse:
     allowed_folders = {"provas", "gabaritos", "edital", "aulas"}
     if folder not in allowed_folders:
         raise HTTPException(403, "Pasta não permitida")
-    # Sanitiza filename: só basename, sem barras/.. 
+    # Sanitiza filename: só basename, sem barras/..
     safe_name = Path(filename).name
     if safe_name != filename or ".." in filename:
         raise HTTPException(400, "Nome de arquivo inválido")

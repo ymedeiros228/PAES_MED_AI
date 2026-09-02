@@ -16,6 +16,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/data/theme_mode_provider.dart';
+import '../../../core/widgets/app_nav_map.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../library/presentation/ingest_review_screen.dart';
 
@@ -295,6 +296,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: 'Ajustes',
                 subtitle: 'Personalize sua experiência de estudo',
               ),
+
+              const AppNavMapPanel(),
 
               SectionLabel('Estudos'),
               SurfacePanel(

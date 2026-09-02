@@ -1,7 +1,10 @@
-# -*- coding: utf-8 -*-
 """Regera todos os 92 PDFs com as novas capas da Wikipedia."""
 
-import sys, io, runpy, traceback
+import io
+import runpy
+import sys
+import traceback
+
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 GENERATORS = [

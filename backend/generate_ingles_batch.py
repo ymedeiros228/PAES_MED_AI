@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Lingua Inglesa — topicos 6.1 a 6.3."""
 
 from pdf_base import generate_educational_pdf

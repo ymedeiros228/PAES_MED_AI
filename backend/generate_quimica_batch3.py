@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Química — batch 3 (tópicos 10-13)."""
 
 from pdf_base import generate_educational_pdf

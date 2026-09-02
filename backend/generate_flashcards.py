@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+
 sys.path.insert(0, '.')
 
 from db import db

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Sociologia — batch 2 (topicos 11.4 a 11.6)."""
 
 from pdf_base import generate_educational_pdf

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Fisica — batch 2 (topicos 3.5 a 3.8)."""
 
 from pdf_base import generate_educational_pdf

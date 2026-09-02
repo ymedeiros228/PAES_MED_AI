@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Matematica — batch 1 (topicos 4.1 a 4.5)."""
 
 from pdf_base import generate_educational_pdf

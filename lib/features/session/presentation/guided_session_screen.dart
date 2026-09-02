@@ -10,7 +10,6 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
@@ -18,6 +17,9 @@ import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/session_end_panel.dart';
+import 'widgets/session_phase_widgets.dart';
+import 'widgets/session_widgets.dart';
 
 const _errorTypes = ['conceito', 'interpretacao', 'calculo', 'distracao', 'tempo'];
 
@@ -518,125 +520,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     }
   }
 
-  Widget _sessionEndPanel(BuildContext context) {
-    final gaps = _sessionGaps;
-    final total = answeredIds.length;
-    final wrong = (total - correctCount).clamp(0, total);
-    final cs = Theme.of(context).colorScheme;
-    final study = plan?['studyToday'] as Map? ?? {};
-    final subj = study['subject']?.toString() ?? '';
-    final top = study['topic']?.toString() ?? '';
-    final pct = total > 0 ? (correctCount / total * 100).round() : 0;
-    return SurfacePanel(
-      margin: const EdgeInsets.only(bottom: 16),
-      color: cs.primaryContainer.withOpacity(0.4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  pct >= 70 ? 'Bom trabalho!' : 'Bloco encerrado',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: cs.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              if (total > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$pct%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            total > 0
-                ? '$correctCount acerto${correctCount == 1 ? '' : 's'} · $wrong erro${wrong == 1 ? '' : 's'} · $total questão${total == 1 ? '' : 'ês'}'
-                : 'Sessão encerrada.',
-            style: TextStyle(
-              fontSize: 13,
-              color: cs.onPrimaryContainer.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 14),
-          _SessionInsightBanner(
-            correctCount: correctCount,
-            wrongCount: wrong,
-            total: total,
-            subject: subj,
-            topic: top,
-          ),
-          if (gaps.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(
-              'Revisar agora',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final g in gaps.take(3))
-                  ActionChip(
-                    label: Text('${g['subject']} · ${g['topic']}'),
-                    onPressed: () {
-                      final s = Uri.encodeComponent(g['subject'] ?? '');
-                      final t = Uri.encodeComponent(g['topic'] ?? '');
-                      context.go('/adaptativo?subject=$s&topic=$t');
-                    },
-                  ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 20),
-          TapScale(
-            child: FilledButton.icon(
-              onPressed: () => context.go('/fila'),
-              icon: const Icon(Icons.playlist_play_rounded),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              label: const Text('Continuar na Fila', style: TextStyle(fontSize: 15)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: _closeStudyDay,
-                child: const Text('Encerrar dia'),
-              ),
-              const SizedBox(width: 16),
-              TextButton(
-                onPressed: () => context.go('/inicio'),
-                child: const Text('Voltar ao Início'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _submitAnswer() async {
     if (sessionQuestions.isEmpty || selected == null || revealed) return;
     final q = sessionQuestions[qIndex];
@@ -754,22 +637,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     });
     // Ciclo G: último card avança sozinho para a próxima fase
     if (last) await _nextPhase();
-  }
-
-  String _keyboardHintForPhase(String phaseName) {
-    if (!started || sessionComplete) return '';
-    final isRevPhase =
-        phaseName == 'revisions' || phaseName == 'review' || phaseName == 'cards';
-    if (phaseName == 'theory') return ' · Enter avança';
-    if (isRevPhase && !revisionUsingQuestions) {
-      return ' · Espaço vira o cartão';
-    }
-    if (pendingErrorPick) return ' · Escolha o tipo de erro';
-    if (revealed) return ' · Enter próxima';
-    if (phaseName == 'questions' || (isRevPhase && revisionUsingQuestions)) {
-      return ' · 1–5 escolhe · Enter confirma';
-    }
-    return '';
   }
 
   Future<void> _exportDay() async {
@@ -963,9 +830,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ? 'Sessão completa — próximos passos'
                 : study == null
                     ? 'Inicie a sessão para montar o plano de estudo de hoje.'
-                    : 'Meta: ${study['subject']} · ${study['topic']}${started ? _keyboardHintForPhase(phaseName) : ''}',
+                    : 'Meta: ${study['subject']} · ${study['topic']}',
             trailing: started
-                ? _BreathingClock(
+                ? SessionBreathingClock(
                     paused: paused,
                     clock: clock,
                     pulse: lastMinute,
@@ -985,7 +852,14 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             const SizedBox.shrink(),
           const SizedBox(height: 16),
           if (sessionComplete) ...[
-            _sessionEndPanel(context),
+            SessionEndPanel(
+              correctCount: correctCount,
+              totalAnswered: answeredIds.length,
+              gaps: _sessionGaps,
+              subject: (plan?['studyToday'] as Map? ?? {})['subject']?.toString() ?? '',
+              topic: (plan?['studyToday'] as Map? ?? {})['topic']?.toString() ?? '',
+              onCloseStudyDay: _closeStudyDay,
+            ),
             TapScale(
               child: FilledButton.tonal(
                 onPressed: () async {
@@ -1099,7 +973,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ),
             )
           else
-            _SessionStartCard(
+            SessionStartCard(
               plan: plan,
               onStart: _start,
             ),
@@ -1143,94 +1017,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (isTheory) ...[
-                      const Divider(height: 24),
-                      Row(
-                        children: [
-                          Text(
-                            'Teoria do edital',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: cs.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 0.45),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: value,
-                    minHeight: 4,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (snippets.isEmpty)
-                QuietEmpty(
-                  message:
-                      'Sem teoria do edital para o assunto de hoje. Atualize o edital na Biblioteca.',
-                  action: FilledButton.tonal(
-                    onPressed: () => context.go('/biblioteca'),
-                    child: const Text('Abrir Biblioteca'),
-                  ),
-                )
-              else ...[
-                StaggeredFadeIn(
-                  key: const ValueKey('theory_snippets'),
-                  children: [
-                    for (var si = 0; si < (snippets.length > 10 ? 10 : snippets.length); si++)
-                      SurfacePanel(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${si + 1} de ${snippets.length > 10 ? 10 : snippets.length}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: cs.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.center,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 760),
-                                child: SelectableText(snippets[si].toString()),
-                              ),
-                            ),
-                          ],
-                        ),
+                    if (isTheory)
+                      SessionTheoryPanel(
+                        snippets: snippets,
+                        subject: study?['subject']?.toString() ?? '',
+                        topic: study?['topic']?.toString() ?? '',
                       ),
-                  ],
-                ),
-              ],
-              const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
-              if (study != null)
-                MediaReinforcement(
-                  subject: study['subject']?.toString() ?? '',
-                  topic: study['topic']?.toString() ?? '',
-                  compact: true,
-                ),
-            ],
             if ((isQuestions || (isRevisions && revisionUsingQuestions)) && sessionQuestions.isNotEmpty) ...[
               const SizedBox(height: 16),
               SurfacePanel(
@@ -1444,54 +1236,21 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   child: const Text('Carregar questões'),
                 ),
               ),
-            if (isRevisions && !revisionUsingQuestions) ...[
-              const Divider(height: 24),
-              const SectionLabel('Revisão prática'),
-              if (sessionCards.isEmpty)
-                QuietEmpty(
-                  message:
-                      'Nenhum cartão para revisar agora (${((plan?['revisions'] as List?) ?? []).length} '
-                      'assunto(s) na fila). Carregue revisões para praticar com questões.',
-                  action: FilledButton.tonal(
-                    onPressed: () => unawaited(_enterRevisionsPhase()),
-                    child: const Text('Carregar revisões'),
-                  ),
-                )
-              else ...[
-                Text('Cartão ${cardIndex + 1}/${sessionCards.length} · feitos $cardsDone'),
-                const SizedBox(height: 8),
-                SurfacePanel(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    title: Text(sessionCards[cardIndex]['front']?.toString() ?? ''),
-                    subtitle: cardFlipped
-                        ? Text(sessionCards[cardIndex]['back']?.toString() ?? '')
-                        : const Text('Toque para revelar'),
-                    onTap: () => setState(() => cardFlipped = !cardFlipped),
-                  ),
-                ),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    FilledButton.tonal(onPressed: () => setState(() => cardFlipped = true), child: const Text('Revelar (Space)')),
-                    TapScale(
-                      child: FilledButton(onPressed: () => _reviewCard(remembered: true), child: const Text('Lembrei (L)')),
-                    ),
-                    OutlinedButton(onPressed: () => _reviewCard(remembered: false), child: const Text('Esqueci (E)')),
-                  ],
-                ),
-                if (cardReviewError != null) ...[
-                  const SizedBox(height: 8),
-                  QuietEmpty(
-                    message: cardReviewError!,
-                    action: TextButton(
-                      onPressed: () => setState(() => cardReviewError = null),
-                      child: const Text('Tentar de novo'),
-                    ),
-                  ),
-                ],
-              ],
-            ],
+            if (isRevisions && !revisionUsingQuestions)
+              SessionRevisionsPanel(
+                sessionCards: sessionCards,
+                cardIndex: cardIndex,
+                cardsDone: cardsDone,
+                cardFlipped: cardFlipped,
+                revisionQueueLength: ((plan?['revisions'] as List?) ?? []).length,
+                cardReviewError: cardReviewError,
+                onToggleFlip: () => setState(() => cardFlipped = !cardFlipped),
+                onReveal: () => setState(() => cardFlipped = true),
+                onRemembered: () => _reviewCard(remembered: true),
+                onForgot: () => _reviewCard(remembered: false),
+                onLoadRevisions: () => unawaited(_enterRevisionsPhase()),
+                onDismissReviewError: () => setState(() => cardReviewError = null),
+              ),
             if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty)
               QuietEmpty(
                 message: 'Sem questões carregadas para revisar. Toque para buscar questões dos tópicos.',
@@ -1517,408 +1276,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
           ],
         ],
-    );
-  }
-}
-
-/// Relógio da sessão com efeito de "breathing" quando pausado.
-/// Pulsar suave (opacity 0.6 ↔ 1.0) indica que está pausado mas ativo.
-/// Pulse (AnimatedScale) no último minuto da fase avisa que o tempo está acabando.
-class _BreathingClock extends StatefulWidget {
-  const _BreathingClock({required this.paused, required this.clock, this.pulse = false});
-  final bool paused;
-  final String clock;
-  /// Pulse sutil quando faltam ≤ 60s na fase atual.
-  final bool pulse;
-
-  @override
-  State<_BreathingClock> createState() => _BreathingClockState();
-}
-
-class _BreathingClockState extends State<_BreathingClock>
-    with TickerProviderStateMixin {
-  late final AnimationController _breath;
-  late final AnimationController _pulse;
-
-  @override
-  void initState() {
-    super.initState();
-    _breath = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    );
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    if (widget.paused) _breath.repeat(reverse: true);
-    if (widget.pulse && !widget.paused) _pulse.repeat(reverse: true);
-  }
-
-  @override
-  void didUpdateWidget(_BreathingClock oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.paused != widget.paused) {
-      if (widget.paused) {
-        _breath.repeat(reverse: true);
-      } else {
-        _breath.stop();
-        _breath.value = 1.0;
-      }
-    }
-    if (oldWidget.pulse != widget.pulse) {
-      if (widget.pulse && !widget.paused) {
-        _pulse.repeat(reverse: true);
-      } else {
-        _pulse.stop();
-        _pulse.value = 0.0;
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _breath.dispose();
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final label = widget.paused ? 'Pausado ${widget.clock}' : widget.clock;
-    final color = widget.paused ? cs.tertiary : (widget.pulse ? cs.tertiary : cs.primary);
-    final icon = widget.paused
-        ? Icons.pause_circle_outline_rounded
-        : (widget.pulse ? Icons.timer_3_outlined : Icons.timer_outlined);
-
-    Widget content(Color c) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: c),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: c,
-                fontFeatures: const [FontFeature.tabularFigures()],
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
-        );
-
-    if (!widget.paused && !widget.pulse) {
-      return SurfacePanel(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: content(color),
-      );
-    }
-
-    if (widget.pulse && !widget.paused) {
-      // Pulse sutil (scale 1.0 ↔ 1.06) no último minuto da fase
-      return AnimatedBuilder(
-        animation: _pulse,
-        builder: (context, _) {
-          final t = Curves.easeInOut.transform(_pulse.value);
-          return SurfacePanel(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: AnimatedScale(
-              scale: 1.0 + t * 0.06,
-              duration: const Duration(milliseconds: 450),
-              curve: Curves.easeInOut,
-              child: content(color.withOpacity(0.7 + t * 0.3)),
-            ),
-          );
-        },
-      );
-    }
-
-    return AnimatedBuilder(
-      animation: _breath,
-      builder: (context, _) {
-        final t = Curves.easeInOut.transform(_breath.value);
-        return SurfacePanel(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: content(color.withOpacity(0.6 + t * 0.4)),
-        );
-      },
-    );
-  }
-}
-
-class _SessionInsightBanner extends StatelessWidget {
-  const _SessionInsightBanner({
-    required this.correctCount,
-    required this.wrongCount,
-    required this.total,
-    required this.subject,
-    required this.topic,
-  });
-
-  final int correctCount;
-  final int wrongCount;
-  final int total;
-  final String subject;
-  final String topic;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final acc = total > 0 ? correctCount / total : 0.0;
-
-    String message;
-    IconData icon;
-    Color color;
-
-    if (total == 0) {
-      return const SizedBox.shrink();
-    } else if (acc >= 0.8) {
-      message = 'Excelente! Você dominou $topic em $subject. '
-          'Hora de tentar um tópico novo ou um simulado completo.';
-      icon = Icons.celebration_rounded;
-      color = const Color(0xFF4CAF50);
-    } else if (acc >= 0.6) {
-      message = 'Bom ritmo em $topic! Revise os $wrongCount erro(s) e '
-          'tente novamente amanhã para consolidar.';
-      icon = Icons.trending_up_rounded;
-      color = cs.primary;
-    } else if (acc >= 0.4) {
-      message = 'Você acertou $correctCount de $total em $topic. '
-          'Leia a teoria antes de tentar de novo - vai fazer diferença.';
-      icon = Icons.menu_book_rounded;
-      color = const Color(0xFFE8A04B);
-    } else {
-      message = 'Tópico difícil: $topic em $subject. Não desanime! '
-          'Comece pela teoria e volte com calma.';
-      icon = Icons.school_rounded;
-      color = cs.error;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-/// Cartao de inicio da sessao: resumo, 1 botao, personalizacao escondida.
-class _SessionStartCard extends StatelessWidget {
-  const _SessionStartCard({required this.plan, required this.onStart});
-  final Map<String, dynamic>? plan;
-  final VoidCallback onStart;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final study = plan?['studyToday'] as Map? ?? {};
-    final subj = study['subject']?.toString() ?? 'do seu plano';
-    final top = study['topic']?.toString() ?? 'Tema do dia';
-    final phases = (plan?['sessionPlan'] as List? ?? [
-      {'phase': 'questions', 'minutes': 40, 'title': 'Estudar'},
-      {'phase': 'revisions', 'minutes': 10, 'title': 'Debrief'},
-    ]);
-    final totalMin = phases.fold<int>(0, (s, p) => s + ((p as Map)['minutes'] as num? ?? 0).toInt());
-    final questionCount = (plan?['questionCount'] as int?) ?? (phases.firstWhere(
-          (p) => (p as Map)['phase'] == 'questions',
-      orElse: () => {'count': 8},
-    ) as Map)['count'] ?? 8;
-
-    return SurfacePanel(
-      color: cs.primaryContainer.withOpacity(0.25),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Pronto para estudar',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: cs.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: cs.primaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$subj · $top',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: cs.onPrimaryContainer,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _Metric(icon: Icons.quiz_outlined, value: '$questionCount', label: 'questões'),
-                      const SizedBox(width: 24),
-                      _Metric(icon: Icons.timer_outlined, value: '$totalMin', label: 'minutos'),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  TapScale(
-                    child: FilledButton.icon(
-                      onPressed: onStart,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                      label: Text(
-                        'Estudar agora',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            ExpansionTile(
-              tilePadding: const EdgeInsets.symmetric(horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              collapsedBackgroundColor: cs.surfaceContainerHighest.withOpacity(0.2),
-              backgroundColor: cs.surfaceContainerHighest.withOpacity(0.2),
-              title: Text(
-                'Personalizar sessão',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface.withOpacity(0.7),
-                ),
-              ),
-              subtitle: Text(
-                'Escolha outro modo de estudo',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: cs.onSurface.withOpacity(0.4),
-                ),
-              ),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _ShortcutChip(label: 'Questões', icon: Icons.quiz_outlined, path: '/questoes'),
-                      _ShortcutChip(label: 'Flashcards', icon: Icons.style_outlined, path: '/flashcards'),
-                      _ShortcutChip(label: 'Tutor IA', icon: Icons.auto_awesome_outlined, path: '/tutor'),
-                      _ShortcutChip(label: 'Simulado', icon: Icons.bolt_outlined, path: '/simulados'),
-                      _ShortcutChip(label: 'Redação', icon: Icons.edit_note_outlined, path: '/redacao'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.icon, required this.value, required this.label});
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Icon(icon, color: cs.primary, size: 22),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: cs.onSurface,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: cs.onSurface.withOpacity(0.5),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-
-class _ShortcutChip extends StatelessWidget {
-  const _ShortcutChip({required this.label, required this.icon, required this.path});
-  final String label;
-  final IconData icon;
-  final String path;
-
-  @override
-  Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-      onPressed: () {
-        HapticFeedback.selectionClick();
-        context.go(path);
-      },
     );
   }
 }

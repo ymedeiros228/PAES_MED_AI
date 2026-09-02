@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 """Gera diagramas para Filosofia — topicos 10.1 a 10.7."""
 
 from __future__ import annotations
+
 from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFont
 
 IMG_DIR = Path(__file__).resolve().parent.parent / "data" / "materiais" / "imagens"

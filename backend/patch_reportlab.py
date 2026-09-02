@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Patch do Paragraph do ReportLab para normalizar Unicode globalmente.
 
 Carregue este modulo ANTES de qualquer gerador de PDF, ex:

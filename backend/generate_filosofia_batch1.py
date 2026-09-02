@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """Gera PDFs de Filosofia — batch 1 (topicos 10.1 a 10.4)."""
 
-from pdf_base import generate_educational_pdf
 from filosofia_real_images import REAL_IMAGES
+from pdf_base import generate_educational_pdf
 
 # ============================================================
 # 10.1 Cultura
