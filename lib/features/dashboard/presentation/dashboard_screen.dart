@@ -444,6 +444,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 streakDays: data['streakDays'] as int? ?? 0,
                                 studyToday: data['studyToday'] as Map?,
                                 flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                                accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0,
+                                totalAnswered: data['totalAnswered'] as int? ?? 0,
                                 sessionPath: sessionPath,
                               ),
                               const SizedBox(height: 20),
@@ -462,6 +464,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 examDays: examDaysLocal,
                                 dailyGoal: ref.watch(dailyGoalProvider),
                               ),
+
+                              const SizedBox(height: 20),
+
+                              _QuickActions(cs: cs),
 
                               const SizedBox(height: 32),
                             ],
@@ -491,12 +497,16 @@ class _DashboardStatsRow extends StatelessWidget {
     required this.streakDays,
     required this.studyToday,
     required this.flashcardsDue,
+    required this.accuracy,
+    required this.totalAnswered,
     required this.sessionPath,
   });
   final ColorScheme cs;
   final int streakDays;
   final Map? studyToday;
   final int flashcardsDue;
+  final double accuracy;
+  final int totalAnswered;
   final String sessionPath;
 
   @override
@@ -505,91 +515,149 @@ class _DashboardStatsRow extends StatelessWidget {
     final subj = study?['subject']?.toString() ?? '';
     final topic = study?['topic']?.toString() ?? '';
     final hasTopic = subj.isNotEmpty && topic.isNotEmpty;
+    final accuracyLabel = totalAnswered > 0 ? '${(accuracy * 100).round()}%' : '—';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Linha 1: Streak + Flashcards due
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                cs: cs,
-                icon: Icons.local_fire_department_rounded,
-                value: '$streakDays',
-                label: 'dias seguidos',
-                color: cs.error,
+        // Linha de métricas: streak · flashcards · acerto (3 cards densos)
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatCard(
+                  cs: cs,
+                  icon: Icons.local_fire_department_rounded,
+                  value: '$streakDays',
+                  label: 'dias seguidos',
+                  color: cs.error,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                cs: cs,
-                icon: Icons.style_rounded,
-                value: '$flashcardsDue',
-                label: 'flashcards hoje',
-                color: cs.tertiary,
-                onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  cs: cs,
+                  icon: Icons.style_rounded,
+                  value: '$flashcardsDue',
+                  label: 'flashcards hoje',
+                  color: cs.tertiary,
+                  onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  cs: cs,
+                  icon: Icons.track_changes_rounded,
+                  value: accuracyLabel,
+                  label: 'de acerto',
+                  color: cs.primary,
+                ),
+              ),
+            ],
+          ),
         ),
         if (hasTopic) ...[
           const SizedBox(height: 12),
-          // Tópico do dia
-          Material(
-            color: cs.primaryContainer.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => context.go(sessionPath),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: cs.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.today_rounded, color: Colors.white, size: 22),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tópico do dia',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: cs.onSurface.withOpacity(0.5),
-                            ),
-                          ),
-                          Text(
-                            '$subj · $topic',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.play_arrow_rounded, color: cs.primary),
-                  ],
+          // Tópico do dia — cartão de destaque com CTA de sessão
+          _PanelCard(
+            onTap: () => context.go(sessionPath),
+            color: cs.primaryContainer.f45,
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.today_rounded, color: Colors.white, size: 22),
                 ),
-              ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tópico do dia',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: cs.onSurface.f60,
+                        ),
+                      ),
+                      Text(
+                        '$subj · $topic',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: cs.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.play_arrow_rounded, color: cs.primary),
+              ],
             ),
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Cartão do design system com borda + sombra suave (igual ao SurfacePanel),
+/// porém com toque opcional e ripple corretamente recortado.
+class _PanelCard extends StatelessWidget {
+  const _PanelCard({
+    required this.child,
+    this.onTap,
+    this.padding = const EdgeInsets.all(16),
+    this.color,
+  });
+  final Widget child;
+  final VoidCallback? onTap;
+  final EdgeInsets padding;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final deco = BoxDecoration(
+      color: color ?? (isDark ? cs.surface.f90 : cs.surface.f98),
+      borderRadius: BorderRadius.circular(kRadiusPanelSoft),
+      border: Border.all(color: cs.outlineVariant.f50),
+      boxShadow: isDark
+          ? null
+          : [
+              BoxShadow(
+                color: const Color(0xFF0A1628).f10,
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+    );
+    if (onTap == null) {
+      return Container(decoration: deco, padding: padding, child: child);
+    }
+    return TapScale(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(kRadiusPanelSoft),
+          child: Ink(
+            decoration: deco,
+            child: Padding(padding: padding, child: child),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -613,54 +681,45 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: cs.surfaceContainerHighest.withOpacity(0.3),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: cs.onSurface,
-                        height: 1.0,
-                      ),
-                    ),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: cs.onSurface.withOpacity(0.5),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return _PanelCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, color: color, size: 20),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: cs.onSurface,
+              height: 1.0,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: cs.onSurface.f60,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -697,13 +756,8 @@ class _SimpleChecklist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return SurfacePanel(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -830,6 +884,86 @@ class _CheckRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Atalhos rápidos para as atividades de estudo fora da barra lateral enxuta.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions({required this.cs});
+  final ColorScheme cs;
+
+  static const _items = <(String, String, IconData, Color)>[
+    ('/questoes', 'Questões', Icons.quiz_rounded, Color(0xFF42A5F5)),
+    ('/simulados', 'Simulados', Icons.bolt_rounded, Color(0xFFEF6C00)),
+    ('/redacao', 'Redação', Icons.edit_note_rounded, Color(0xFFEC407A)),
+    ('/tutor', 'Tutor', Icons.auto_awesome_rounded, AppTheme.teal),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.grid_view_rounded, color: cs.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Atalhos',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, c) {
+            final cols = c.maxWidth >= 560 ? 4 : 2;
+            const gap = 12.0;
+            final w = (c.maxWidth - gap * (cols - 1)) / cols;
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final it in _items)
+                  SizedBox(
+                    width: w,
+                    child: _PanelCard(
+                      onTap: () => context.go(it.$1),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: it.$4.withOpacity(0.14),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(it.$3, color: it.$4, size: 22),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            it.$2,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 }
