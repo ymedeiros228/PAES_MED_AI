@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,6 +13,7 @@ import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/simulation_widgets.dart';
 
 class SimulationsScreen extends ConsumerStatefulWidget {
   const SimulationsScreen({super.key});
@@ -814,7 +814,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     ),
                   ),
                 SectionLabel('Simulado do dia', hint: 'Recomendado · como no dia da prova'),
-                _ModeCard(
+                SimulationModeCard(
                   selected: mode == 'dia_prova',
                   icon: Icons.timer_outlined,
                   title: 'Simulado do dia',
@@ -832,7 +832,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   title: Text('Outros modos', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
                   children: [
                     for (final m in _modes.where((e) => e.$1 != 'dia_prova'))
-                      _ModeCard(
+                      SimulationModeCard(
                         selected: mode == m.$1,
                         icon: m.$4,
                         title: m.$2,
@@ -938,7 +938,7 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _CircularTimer(
+                      SimulationCircularTimer(
                         remainingSeconds: diaProvaHardCap != null
                             ? (diaProvaHardCap!.inSeconds - elapsed.inSeconds).clamp(0, diaProvaHardCap!.inSeconds)
                             : 0,
@@ -1316,161 +1316,4 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
 
     return body;
   }
-}
-
-class _ModeCard extends StatelessWidget {
-  const _ModeCard({
-    required this.selected,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TapScale(
-        child: GestureDetector(
-          onTap: onTap,
-          child: SurfacePanel(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            color: selected ? cs.primaryContainer.f55 : cs.surface.withOpacity(0.9),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(kRadiusPanel),
-                border: Border.all(
-                  color: selected ? cs.primary : cs.outlineVariant.f85,
-                  width: selected ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, color: selected ? cs.primary : cs.onSurface.withOpacity(0.7)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? cs.onPrimaryContainer : cs.onSurface)),
-                        Text(
-                          subtitle,
-                          style: TextStyle(fontSize: 13, color: selected ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.f72),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (selected) Icon(Icons.check_circle_rounded, color: cs.primary, size: 22),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircularTimer extends StatelessWidget {
-  const _CircularTimer({required this.remainingSeconds, required this.totalSeconds});
-
-  final int remainingSeconds;
-  final int totalSeconds;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final progress = totalSeconds > 0
-        ? (remainingSeconds / totalSeconds).clamp(0.0, 1.0)
-        : 0.0;
-    final mins = (remainingSeconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (remainingSeconds % 60).toString().padLeft(2, '0');
-    final progressColor = progress > 0.5
-        ? cs.primary
-        : progress > 0.25
-            ? Colors.amber
-            : cs.error;
-    return SizedBox(
-      width: 120,
-      height: 120,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size(120, 120),
-            painter: _TimerPainter(
-              progress: progress,
-              trackColor: cs.surfaceContainerHighest,
-              progressColor: progressColor,
-            ),
-          ),
-          Text(
-            '$mins:$secs',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimerPainter extends CustomPainter {
-  const _TimerPainter({
-    required this.progress,
-    required this.trackColor,
-    required this.progressColor,
-  });
-
-  final double progress;
-  final Color trackColor;
-  final Color progressColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 8) / 2;
-    const strokeWidth = 8.0;
-
-    final trackPaint = Paint()
-      ..color = trackColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, trackPaint);
-
-    if (progress <= 0) return;
-
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    final sweepAngle = 2 * pi * progress;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      sweepAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_TimerPainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.trackColor != trackColor ||
-      oldDelegate.progressColor != progressColor;
 }

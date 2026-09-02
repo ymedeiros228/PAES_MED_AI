@@ -13,6 +13,7 @@ import '../../../core/data/providers.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
+import 'library_dialogs.dart';
 import 'widgets/library_acervo_tab.dart';
 import 'widgets/library_materiais_tab.dart';
 import 'widgets/library_tab_bar.dart';
@@ -157,16 +158,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }) async {
     if (!mounted) return;
     final packLine = _naturezaPackLine(naturezaPack);
-    final choice = await showDialog<String>(
+    final choice = await LibraryDialogs.postCommitCta(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text('$body$packLine'),
-        actions: [
-          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'later'); }, child: const Text('Depois')),
-          FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
-        ],
-      ),
+      title: title,
+      body: '$body$packLine',
     );
     if (!mounted) return;
     if (choice == 'study') {
@@ -182,30 +177,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     bool canCommitDisk = false,
   }) async {
     if (!mounted) return;
-    final choice = await showDialog<String>(
+    final choice = await LibraryDialogs.fetchPlaybook(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          if (canCommitDisk)
-            FilledButton(
-              onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'disk'); },
-              child: const Text('Gravar PDFs do PC'),
-            )
-          else
-            FilledButton(
-              onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'provas'); },
-              child: const Text('Abrir provas'),
-            ),
-          if (portal != null && portal.isNotEmpty)
-            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'portal'); }, child: const Text('Portal')),
-          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'gabaritos'); }, child: const Text('Abrir gabaritos')),
-          if (year != null)
-            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'retry'); }, child: const Text('Tentar de novo')),
-          TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, 'ok'); }, child: const Text('Fechar')),
-        ],
-      ),
+      title: title,
+      body: body,
+      canCommitDisk: canCommitDisk,
+      showPortal: portal != null && portal.isNotEmpty,
+      showRetry: year != null,
     );
     if (!mounted) return;
     if (choice == 'provas') await _openFolder('provas');
@@ -386,37 +364,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           duration: const Duration(seconds: 7),
         ),
       );
-      await showDialog<void>(
+      await LibraryDialogs.importAllComplete(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Importar todos com gabarito'),
-          content: SingleChildScrollView(
-            child: Text(
-              '${map['message'] ?? ''}\n\n$perYear$waitLine\n\n'
-              'Base oficial: $n. Abrir sessão só com oficiais com gabarito?',
-            ),
-          ),
-          actions: [
-            if (waiting.isNotEmpty)
-              TextButton(
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  Navigator.pop(ctx);
-                  _openFolder('gabaritos');
-                },
-                child: const Text('Abrir pasta Gabaritos'),
-              ),
-            TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx); }, child: const Text('Fechar')),
-            FilledButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                Navigator.pop(ctx);
-                _goStudy(sessao);
-              },
-              child: const Text('Estudar'),
-            ),
-          ],
-        ),
+        message: map['message']?.toString() ?? '',
+        perYear: perYear,
+        waitLine: waitLine,
+        officialN: n,
+        hasWaitingYears: waiting.isNotEmpty,
+        onOpenGabaritos: () => unawaited(_openFolder('gabaritos')),
+        onStudy: () => unawaited(_goStudy(sessao)),
       );
       ref.read(refreshTickProvider.notifier).state++;
       await _load();
@@ -439,27 +395,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       if (map['needsGabarito'] == true) {
         setState(() => msg = map['message']?.toString() ?? 'Falta gabarito.');
         if (!mounted) return;
-        final open = await showDialog<bool>(
+        final open = await LibraryDialogs.importYearMissingGabarito(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('PAES $year · sem gabarito'),
-            content: Text(
-              map['message']?.toString() ??
-                  'Coloque gabarito_$year.pdf em data/gabaritos. Preview pronto: ${map['count'] ?? 0} questões.',
-            ),
-            actions: [
-              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('OK')),
-              FilledButton(
-                onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); },
-                child: const Text('Abrir gabaritos'),
-              ),
-              if (map['previewId'] != null)
-                TextButton(
-                  onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, null); },
-                  child: const Text('Ver preview'),
-                ),
-            ],
-          ),
+          year: year,
+          message: map['message']?.toString() ??
+              'Coloque gabarito_$year.pdf em data/gabaritos. Preview pronto: ${map['count'] ?? 0} questões.',
+          hasPreview: map['previewId'] != null,
         );
         if (open == true) {
           await _openFolder('gabaritos');
@@ -512,19 +453,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       );
       if (gate['warn'] != true) return true;
       if (!mounted) return false;
-      final choice = await showDialog<String>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Tudo pronto para estudar'),
-          content: const Text(
-            'As questões foram importadas e estão prontas para uso.\n'
-            'Bons estudos!',
-          ),
-          actions: [
-            FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, 'study'); }, child: const Text('Estudar agora')),
-          ],
-        ),
-      );
+      final choice = await LibraryDialogs.confirmStudyReady(context: context);
       return choice == 'study';
     } catch (e) {
       if (mounted) {
@@ -723,17 +652,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await _load();
       final local = map['local'] as Map?;
       if (local != null && local['hasProva'] == true && local['hasGabarito'] == true && mounted) {
-        final go = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('PAES $year baixado'),
-            content: const Text('PDFs na pasta. Abrir revisão agora?'),
-            actions: [
-              TextButton(onPressed: () { HapticFeedback.selectionClick(); Navigator.pop(ctx, false); }, child: const Text('Depois')),
-              FilledButton(onPressed: () { HapticFeedback.mediumImpact(); Navigator.pop(ctx, true); }, child: const Text('Revisar')),
-            ],
-          ),
-        );
+        final go = await LibraryDialogs.fetchYearDownloaded(context: context, year: year);
         if (go == true) await _importYear(year);
       } else if (map['fetchFailed'] == true || map['ok'] != true) {
         if (!mounted) return;
