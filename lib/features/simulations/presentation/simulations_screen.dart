@@ -13,6 +13,7 @@ import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/widgets/ui_kit.dart';
+import 'widgets/simulation_setup_panel.dart';
 import 'widgets/simulation_widgets.dart';
 
 class SimulationsScreen extends ConsumerStatefulWidget {
@@ -55,13 +56,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
   /// Erros ao carregar explicação pós-sim por questão.
   final Map<String, String> debriefErrors = {};
   int keyboardQi = 0;
-
-  static const _modes = <(String, String, String, IconData)>[
-    ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
-    ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
-    ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
-    ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
-  ];
 
   static const _errorLabels = {
     'conceito': 'Conceito',
@@ -731,171 +725,26 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                   ),
                 ),
 
-              if (!inSession) ...[
-                if (checkpointLoadError != null)
-                  QuietEmpty(
-                    message: checkpointLoadError!,
-                    action: TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        _loadSimCheckpoint();
-                      },
-                      child: const Text('Tentar'),
-                    ),
-                  ),
-                if (startError != null)
-                  QuietEmpty(
-                    message: startError!,
-                    action: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            setState(() => startError = null);
-                          },
-                          child: const Text('Ok'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/biblioteca');
-                          },
-                          child: const Text('Biblioteca'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-                          },
-                          child: const Text('Sessão'),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (pendingSimCheckpoint != null)
-                  SurfacePanel(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    color: cs.tertiaryContainer.withOpacity(0.4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Simulado em andamento',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cs.onSurface),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Modo ${pendingSimCheckpoint!['mode'] ?? '—'} · '
-                          '${(pendingSimCheckpoint!['answers'] as Map? ?? {}).length} respondida(s)',
-                          style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            FilledButton(
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _restoreSimCheckpoint();
-                              },
-                              child: const Text('Continuar'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () async {
-                                HapticFeedback.selectionClick();
-                                await _clearSimCheckpoint();
-                              },
-                              child: const Text('Descartar'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                SectionLabel('Simulado do dia', hint: 'Recomendado · como no dia da prova'),
-                SimulationModeCard(
-                  selected: mode == 'dia_prova',
-                  icon: Icons.timer_outlined,
-                  title: 'Simulado do dia',
-                  subtitle: 'Cronômetro ligado, gabarito no final',
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => mode = 'dia_prova');
-                  },
+              if (!inSession)
+                SimulationSetupPanel(
+                  mode: mode,
+                  subject: subject,
+                  limit: limit,
+                  starting: starting,
+                  showOtherModes: showOtherModes,
+                  checkpointLoadError: checkpointLoadError,
+                  startError: startError,
+                  pendingCheckpoint: pendingSimCheckpoint,
+                  onModeChanged: (m) => setState(() => mode = m),
+                  onSubjectChanged: (v) => setState(() => subject = v),
+                  onLimitChanged: (v) => setState(() => limit = v),
+                  onShowOtherModesChanged: (v) => setState(() => showOtherModes = v),
+                  onStart: _start,
+                  onReloadCheckpoint: _loadSimCheckpoint,
+                  onDismissStartError: () => setState(() => startError = null),
+                  onRestoreCheckpoint: _restoreSimCheckpoint,
+                  onClearCheckpoint: _clearSimCheckpoint,
                 ),
-                const SizedBox(height: 4),
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  initiallyExpanded: showOtherModes || mode != 'dia_prova',
-                  onExpansionChanged: (v) => setState(() => showOtherModes = v),
-                  title: Text('Outros modos', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
-                  children: [
-                    for (final m in _modes.where((e) => e.$1 != 'dia_prova'))
-                      SimulationModeCard(
-                        selected: mode == m.$1,
-                        icon: m.$4,
-                        title: m.$2,
-                        subtitle: m.$3,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => mode = m.$1);
-                        },
-                      ),
-                  ],
-                ),
-                if (mode == 'disciplina') ...[
-                  const SizedBox(height: 8),
-                  DropdownMenu<String>(
-                    label: const Text('Disciplina'),
-                    onSelected: (v) => setState(() => subject = v),
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
-                      DropdownMenuEntry(value: 'Química', label: 'Química'),
-                      DropdownMenuEntry(value: 'Física', label: 'Física'),
-                      DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
-                      DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
-                    ],
-                  ),
-                ],
-                if (mode == 'disciplina' && (subject == null || subject!.isEmpty))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Escolha a disciplina antes de iniciar.',
-                      style: TextStyle(fontSize: 13, color: cs.error),
-                    ),
-                  ),
-                const SizedBox(height: 12),
-                SectionLabel('Quantidade', hint: '$limit questões'),
-                Slider(
-                  value: limit.toDouble(),
-                  min: 5,
-                  max: 30,
-                  divisions: 5,
-                  label: '$limit',
-                  onChanged: (v) => setState(() => limit = v.round()),
-                ),
-                const SizedBox(height: 8),
-                FilledButton.icon(
-                  onPressed: starting ||
-                          (mode == 'disciplina' && (subject == null || subject!.isEmpty))
-                      ? null
-                      : _start,
-                  icon: starting
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
-                        )
-                      : const Icon(Icons.play_arrow_rounded),
-                  label: Text(starting
-                      ? 'Carregando questões…'
-                      : mode == 'dia_prova'
-                          ? 'Começar simulado do dia'
-                          : 'Iniciar simulado'),
-                ),
-              ],
 
               if (running && checkpointSaveError != null) ...[
                 QuietEmpty(
