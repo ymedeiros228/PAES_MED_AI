@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_theme.dart';
-
 class AnimatedCounter extends StatefulWidget {
   const AnimatedCounter({
     required this.value,

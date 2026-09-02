@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:paes_med_ai/features/ai_tutor/application/ai_tutor_controller.dart';
 
 import '../../../core/data/api_client.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'widgets/tutor_composer.dart';
 import 'widgets/tutor_message_bubble.dart';

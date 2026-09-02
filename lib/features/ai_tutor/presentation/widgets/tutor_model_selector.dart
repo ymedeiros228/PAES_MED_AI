@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/theme/app_theme.dart';
-
 /// Botão compacto que abre seletor de modelo de IA.
 class TutorModelSelectorButton extends StatelessWidget {
   const TutorModelSelectorButton({

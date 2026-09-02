@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
-import 'surface_panel.dart';
 
 class PlaylistTile extends StatefulWidget {
   const PlaylistTile({

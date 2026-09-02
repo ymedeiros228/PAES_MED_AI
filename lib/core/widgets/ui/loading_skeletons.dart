@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'layout_tokens.dart';
 import 'surface_panel.dart';
 
 /// Loading calmo (mint/teal) — evita spinner cru centralizado.
