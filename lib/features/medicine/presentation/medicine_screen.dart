@@ -204,7 +204,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                                 subtitle: '$t$countHint$yearHint',
                                 badge: badge,
                                 active: i == selected,
-                                leadingIcon: Icons.play_circle_outline_rounded,
+                                leading: _RankBadge(rank: i + 1),
                                 onPlay: () {
                                   setState(() => selected = i);
                                   context.go(sessao);
@@ -501,6 +501,37 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Número de prioridade de estudo (1 = estude primeiro). Top 3 em destaque.
+class _RankBadge extends StatelessWidget {
+  const _RankBadge({required this.rank});
+
+  final int rank;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final top = rank <= 3;
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: top ? cs.primary : cs.surfaceContainerHighest,
+        shape: BoxShape.circle,
+        border: top ? null : Border.all(color: cs.outlineVariant.withOpacity(0.6)),
+      ),
+      child: Text(
+        '$rank',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          color: top ? cs.onPrimary : cs.onSurface.withOpacity(0.7),
+        ),
+      ),
     );
   }
 }

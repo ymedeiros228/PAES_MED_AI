@@ -10,6 +10,7 @@ class PlaylistTile extends StatefulWidget {
     this.badge,
     this.badgeColor,
     this.leadingIcon = Icons.play_circle_outline_rounded,
+    this.leading,
     this.onPlay,
     this.secondary,
     this.active = false,
@@ -22,6 +23,8 @@ class PlaylistTile extends StatefulWidget {
   /// Cor do fundo do badge (ex.: tertiary / primary) — status sem depender só do texto.
   final Color? badgeColor;
   final IconData leadingIcon;
+  /// Widget opcional no lugar do ícone (ex.: número de rank/prioridade).
+  final Widget? leading;
   final VoidCallback? onPlay;
   final Widget? secondary;
   final bool active;
@@ -83,11 +86,14 @@ class _PlaylistTileState extends State<PlaylistTile> {
                       padding: const EdgeInsets.fromLTRB(kGap8, kGap12, kGap12, kGap12),
                       child: Row(
                         children: [
-                          Icon(
-                            widget.leadingIcon,
-                            color: widget.active ? cs.primary : cs.onSurface.f45,
-                            size: 26,
-                          ),
+                          widget.leading ??
+                              Icon(
+                                widget.leadingIcon,
+                                color: widget.active
+                                    ? cs.primary
+                                    : cs.onSurface.f45,
+                                size: 26,
+                              ),
                           const SizedBox(width: kGap12),
                           Expanded(
                             child: Column(
