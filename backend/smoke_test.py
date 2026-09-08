@@ -3437,7 +3437,7 @@ def run_checks() -> list[Check]:
     )
     ok(
         "ciclo_bz_plan_export_label",
-        "Exportar plano (semana)" in plan_bz and "Exportar plano (mês)" in plan_bz,
+        "Exportar semana" in plan_bz and "Exportar mês" in plan_bz,
         "plan labels != week-close",
     )
     ok(
