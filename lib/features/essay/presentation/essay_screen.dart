@@ -428,27 +428,22 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     onCta: () => _startMissionRewrite(history),
                   ),
                 ],
+                StatsStrip(
+                  items: [
+                    ('${progress!['meanScore'] ?? '—'}', 'média'),
+                    ('$count', count == 1 ? 'redação' : 'redações'),
+                    if (streak > 0)
+                      ('$streak', streak == 1 ? 'dia seguido' : 'dias seguidos'),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 SurfacePanel(
                   margin: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const HonestBadge(),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${progress!['count']} redação(ões) · média ${progress!['meanScore'] ?? '—'}'
-                        '${streak > 0 ? ' · sequência $streak dia(s)' : ''}'
-                        '${progress!['levelLabel'] != null ? ' · ${progress!['levelLabel']}' : ''}',
-                        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
-                      ),
-                      const SizedBox(height: 12),
-                      EssayRoseChart(
-                        key: const ValueKey('essay_radar'),
-                        axes: axes,
-                        averages: avg,
-                        labels: labels,
-                      ),
-                    ],
+                  child: EssayRoseChart(
+                    key: const ValueKey('essay_radar'),
+                    axes: axes,
+                    averages: avg,
+                    labels: labels,
                   ),
                 ),
               ] else if (progress != null) ...[
