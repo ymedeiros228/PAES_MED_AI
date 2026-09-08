@@ -491,7 +491,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                               ),
                               const SizedBox(height: 16),
                               SizedBox(
-                                height: 220,
+                                height: 256,
                                 child: ProgressSubjectBarChart(scores: subjectAccScores),
                               ),
                             ],
