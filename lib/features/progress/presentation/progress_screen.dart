@@ -8,6 +8,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/confetti_overlay.dart';
+import '../achievement_celebration.dart';
 import '../../../core/widgets/essay_rose_chart.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'widgets/progress_achievements_widgets.dart';
@@ -69,13 +70,17 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
       });
       _morph.forward(from: 0);
       _checkLevelUp();
-      // Confete se tem conquistas desbloqueadas
+      // Confete só quando há um desbloqueio NOVO — não a cada visita.
       if (_gamification != null) {
-        final unlocked = _gamification!['unlockedCount'] ?? 0;
-        if (unlocked is int && unlocked > 0) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) ConfettiOverlay.show(context);
-          });
+        final unlocked = _gamification!['unlockedCount'];
+        if (unlocked is int) {
+          final seen = await lastCelebratedUnlocks();
+          if (shouldCelebrateUnlocks(unlocked, seen)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) ConfettiOverlay.show(context);
+            });
+          }
+          await markCelebratedUnlocks(unlocked);
         }
       }
     } catch (e) {
