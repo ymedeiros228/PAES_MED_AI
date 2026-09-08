@@ -284,6 +284,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     subtitle: data?['disclaimer']?.toString() ??
                         'Faça sessões e redações para ver onde você vai bem',
                     trailing: HonestBadge(
+                      icon: Icons.workspace_premium_outlined,
                       label: essay['levelLabel']?.toString() ?? 'prática',
                     ),
                   ),
