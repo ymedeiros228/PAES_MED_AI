@@ -66,20 +66,23 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       if (until != null && until > 0 && until < 180) {
         days = until;
       }
-      // Carregar cronograma inteligente em paralelo
-      final results = await Future.wait([
-        regenerate
-            ? apiClient.post('/api/plans/generate', {
-                'days': days,
-                'examDate': exam.isEmpty ? null : exam,
-              })
-            : apiClient.get('/api/plans/$days'),
-        apiClient.get('/api/plans/smart${exam.isEmpty ? '' : '?examDate=$exam'}'),
-      ]);
-      plan = results[0] as List<dynamic>;
-      smartPlan = results[1] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(results[1] as Map)
-          : null;
+      // Plano principal é crítico; falha aqui vira estado de erro.
+      final planData = regenerate
+          ? await apiClient.post('/api/plans/generate', {
+              'days': days,
+              'examDate': exam.isEmpty ? null : exam,
+            })
+          : await apiClient.get('/api/plans/$days');
+      plan = planData as List<dynamic>;
+      // Cronograma inteligente é opcional: uma falha aqui não pode
+      // derrubar o plano principal (antes o Future.wait zerava tudo).
+      try {
+        final smart = await apiClient
+            .get('/api/plans/smart${exam.isEmpty ? '' : '?examDate=$exam'}');
+        smartPlan = smart is Map ? Map<String, dynamic>.from(smart) : null;
+      } catch (_) {
+        smartPlan = null;
+      }
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
       error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
