@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/ui_kit.dart';
 
 /// Tab Materiais — estante enxuta de PDFs de estudo.
 class LibraryMateriaisTab extends StatelessWidget {
@@ -19,7 +20,20 @@ class LibraryMateriaisTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     if (!pdfsLoaded) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: const [
+          SkeletonListTile(),
+          SizedBox(height: 8),
+          SkeletonListTile(),
+          SizedBox(height: 8),
+          SkeletonListTile(),
+          SizedBox(height: 8),
+          SkeletonListTile(),
+          SizedBox(height: 8),
+          SkeletonListTile(),
+        ],
+      );
     }
     if (pdfs.isEmpty) {
       return Center(

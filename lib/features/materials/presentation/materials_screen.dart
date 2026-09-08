@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
+import '../../../core/widgets/ui_kit.dart';
 
 // ---------------------------------------------------------------------------
 // Modelo
@@ -196,7 +197,21 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
           // Conteudo
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? ListView(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    children: const [
+                      SkeletonListTile(),
+                      SizedBox(height: 8),
+                      SkeletonListTile(),
+                      SizedBox(height: 8),
+                      SkeletonListTile(),
+                      SizedBox(height: 8),
+                      SkeletonListTile(),
+                      SizedBox(height: 8),
+                      SkeletonListTile(),
+                    ],
+                  )
                 : _error != null
                     ? _ErrorView(error: _error!, onRetry: _loadPdfs)
                     : _filteredPdfs.isEmpty
