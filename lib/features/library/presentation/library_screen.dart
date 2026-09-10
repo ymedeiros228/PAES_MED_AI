@@ -533,6 +533,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       onSyncEdital: () => unawaited(_ctrl.syncEdital()),
       onClassify: () => unawaited(_ctrl.classifyPending()),
       onFixQuestions: () => unawaited(_ctrl.fixQuestions()),
+      onReviewSuspects: () => context.push('/biblioteca/suspeitas'),
     );
   }
 

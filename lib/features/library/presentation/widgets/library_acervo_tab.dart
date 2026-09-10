@@ -28,6 +28,7 @@ class LibraryAcervoActions {
     required this.onSyncEdital,
     required this.onClassify,
     required this.onFixQuestions,
+    required this.onReviewSuspects,
   });
 
   final VoidCallback onRefresh;
@@ -49,6 +50,7 @@ class LibraryAcervoActions {
   final VoidCallback onSyncEdital;
   final VoidCallback onClassify;
   final VoidCallback onFixQuestions;
+  final VoidCallback onReviewSuspects;
 }
 
 class LibraryAcervoTab extends StatelessWidget {
@@ -612,6 +614,20 @@ class LibraryAcervoTab extends StatelessWidget {
                   title: const Text('Corrigir questões (enunciados, alternativas e gabaritos)'),
                   subtitle: const Text('Limpa artefatos, corta texto misturado e aplica gabaritos oficiais'),
                   trailing: OutlinedButton(onPressed: busy ? null : () { HapticFeedback.selectionClick(); actions.onFixQuestions(); }, child: const Text('Corrigir')),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Revisar suspeitas'),
+                  subtitle: const Text('Fila para editar enunciado e alternativas A–E à mão'),
+                  trailing: OutlinedButton(
+                    onPressed: busy
+                        ? null
+                        : () {
+                            HapticFeedback.selectionClick();
+                            actions.onReviewSuspects();
+                          },
+                    child: const Text('Abrir'),
+                  ),
                 ),
                 if (coverage != null) ...[
                   const SizedBox(height: 8),

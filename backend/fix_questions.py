@@ -131,8 +131,41 @@ def _quality_score(row: sqlite3_Row_like) -> int:
     return max(0, score)
 
 
-def diagnose_questions() -> dict[str, Any]:
+_REVIEWED_SETTINGS_KEY = "curation_reviewed_ids"
+
+
+def get_curation_reviewed_ids() -> set[str]:
+    """IDs marcados como 'ok' na fila de curadoria (settings JSON)."""
+    from services_core import _settings_get
+
+    raw = _settings_get(_REVIEWED_SETTINGS_KEY, []) or []
+    if not isinstance(raw, list):
+        return set()
+    return {str(x) for x in raw if x}
+
+
+def mark_question_reviewed(question_id: str) -> dict[str, Any]:
+    """Tira a questão da fila sem apagar o conteúdo."""
+    from services_core import _settings_get, _settings_set
+
+    qid = (question_id or "").strip()
+    if not qid:
+        return {"ok": False, "message": "questionId vazio"}
+    with db() as conn:
+        row = conn.execute("SELECT id FROM questions WHERE id=?", (qid,)).fetchone()
+        if not row:
+            return {"ok": False, "message": "Questão não encontrada"}
+    raw = _settings_get(_REVIEWED_SETTINGS_KEY, []) or []
+    ids = [str(x) for x in raw] if isinstance(raw, list) else []
+    if qid not in ids:
+        ids.append(qid)
+        _settings_set(_REVIEWED_SETTINGS_KEY, ids)
+    return {"ok": True, "questionId": qid, "reviewedCount": len(ids)}
+
+
+def diagnose_questions(*, exclude_reviewed: bool = False) -> dict[str, Any]:
     """Lista todas as questões com problemas e seus scores."""
+    reviewed = get_curation_reviewed_ids() if exclude_reviewed else set()
     with db() as conn:
         rows = conn.execute(
             "SELECT id, year, subject, topic, statement, options_json, correct_index, source, exam_board FROM questions"
@@ -149,9 +182,13 @@ def diagnose_questions() -> dict[str, Any]:
         "badCorrectIndex": 0,
         "unrecoverable": 0,
         "noGabarito": 0,
+        "reviewedSkipped": 0,
     }
 
     for r in rows:
+        if exclude_reviewed and str(r["id"]) in reviewed:
+            stats["reviewedSkipped"] += 1
+            continue
         score = _quality_score(r)
         opts = json.loads(r["options_json"]) if r["options_json"] else []
         stmt = str(r["statement"] or "")
@@ -165,6 +202,9 @@ def diagnose_questions() -> dict[str, Any]:
         if empty > 0:
             issues.append(f"alternativas_vazias({empty})")
             stats["emptyOptions"] += 1
+        # Placeholder do parser
+        if any("(revisar)" in (o or "").lower() for o in opts):
+            issues.append("alternativa_revisar")
         lower = [o.strip().lower() for o in opts]
         if len(set(lower)) < len(lower):
             if not all(_is_numeric_option(o) for o in opts):
@@ -177,6 +217,10 @@ def diagnose_questions() -> dict[str, Any]:
         if _PDF_ARTIFACT_CHARS.search(stmt):
             issues.append("artefatos_pdf")
             stats["pdfArtifacts"] += 1
+        # Rodapé residual clássico
+        blob = " ".join([stmt] + [str(o) for o in opts])
+        if re.search(r"(?i)processo\s+seletivo|docv/prog|p\s*[áa]\s*g\s*i\s*n\s*a", blob):
+            issues.append("lixo_pdf_residual")
         if ci < 0 or ci >= len(opts):
             issues.append("correct_index_invalido")
             stats["badCorrectIndex"] += 1
@@ -192,6 +236,7 @@ def diagnose_questions() -> dict[str, Any]:
                     "id": r["id"],
                     "year": r["year"],
                     "subject": r["subject"],
+                    "topic": r["topic"],
                     "score": score,
                     "issues": issues,
                     "statementPreview": stmt[:120],
@@ -201,7 +246,24 @@ def diagnose_questions() -> dict[str, Any]:
             )
 
     problems.sort(key=lambda x: x["score"])
-    return {"stats": stats, "problems": problems}
+    return {"stats": stats, "problems": problems, "reviewedCount": len(reviewed)}
+
+
+def review_queue(*, limit: int = 200) -> dict[str, Any]:
+    """Fila de curadoria: problemas menos reviewed, ordenados pelo pior score."""
+    diag = diagnose_questions(exclude_reviewed=True)
+    problems = list(diag.get("problems") or [])[: max(1, min(limit, 500))]
+    return {
+        "ok": True,
+        "count": len(problems),
+        "stats": diag.get("stats"),
+        "reviewedCount": diag.get("reviewedCount", 0),
+        "problems": problems,
+        "message": (
+            f"{len(problems)} suspeita(s) na fila"
+            + (f" ({diag.get('reviewedCount', 0)} já marcadas ok)." if diag.get("reviewedCount") else ".")
+        ),
+    }
 
 
 def _clean_artifacts(text: str) -> str:

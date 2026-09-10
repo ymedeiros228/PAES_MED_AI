@@ -89,6 +89,22 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> patch(String path, Map<String, dynamic> body) async {
+    final uri = Uri.parse('$baseUrl$path');
+    try {
+      final response = await _client
+          .patch(
+            uri,
+            headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+            body: jsonEncode(body),
+          )
+          .timeout(_postTimeout);
+      return _decode(response);
+    } on TimeoutException {
+      throw const ApiTimeoutException('Tempo esgotado. Tente de novo.');
+    }
+  }
+
   Future<dynamic> delete(String path) async {
     final uri = Uri.parse('$baseUrl$path');
     try {

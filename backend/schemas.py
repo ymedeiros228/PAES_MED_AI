@@ -93,6 +93,21 @@ class ApprovalRequest(BaseModel):
     questionId: str
     approve: bool = True
 
+
+class UpdateQuestionRequest(BaseModel):
+    """Edição manual de curadoria (enunciado / A–E / gabarito / meta)."""
+
+    statement: str | None = Field(default=None, min_length=5, max_length=8000)
+    options: list[str] | None = Field(default=None, min_length=5, max_length=5)
+    correctIndex: int | None = Field(default=None, ge=0, le=4)
+    subject: str | None = Field(default=None, min_length=1, max_length=120)
+    topic: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class MarkReviewedRequest(BaseModel):
+    questionId: str = Field(min_length=1, max_length=120)
+
+
 class CurationPromoteRequest(BaseModel):
     limit: int = Field(default=8, ge=1, le=40)
 

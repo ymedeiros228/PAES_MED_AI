@@ -146,6 +146,18 @@ class LibraryApi {
     return apiClient.post('/api/library/fix-questions', {});
   }
 
+  static Future<Map<String, dynamic>> reviewQueue({int limit = 200}) async {
+    final data = await apiClient.get('/api/library/review-queue', {'limit': '$limit'});
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  static Future<Map<String, dynamic>> markReviewed(String questionId) async {
+    final data = await apiClient.post('/api/library/questions/mark-reviewed', {
+      'questionId': questionId,
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   static Future<void> openPath(String path) async {
     await apiClient.openPath(path);
   }

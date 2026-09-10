@@ -10,7 +10,18 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from db import DATA_DIR, db
-from fix_questions import diagnose_questions, fix_all
+from fix_questions import (
+    diagnose_questions,
+    fix_all,
+    mark_question_reviewed,
+    review_queue,
+)
+from schemas import (
+    MarkReviewedRequest,
+    OpenFolderRequest,
+    OpenPathRequest,
+    OpenUrlRequest,
+)
 from ingest_pdf import (
     compute_year_statuses,
     list_pdf_inventory,
@@ -18,11 +29,6 @@ from ingest_pdf import (
     reimport_weak_years,
     sanitize_question_statements,
     sanitize_questions_full,
-)
-from schemas import (
-    OpenFolderRequest,
-    OpenPathRequest,
-    OpenUrlRequest,
 )
 from services_advanced import index_all_questions
 from services_core import (
@@ -534,9 +540,24 @@ def api_library_fix_questions() -> dict[str, Any]:
 
 
 @router.get("/api/library/diagnose-questions")
-def api_library_diagnose_questions() -> dict[str, Any]:
+def api_library_diagnose_questions(excludeReviewed: bool = False) -> dict[str, Any]:
     """Diagnóstico de qualidade das questões (read-only)."""
-    return diagnose_questions()
+    return diagnose_questions(exclude_reviewed=excludeReviewed)
+
+
+@router.get("/api/library/review-queue")
+def api_library_review_queue(limit: int = 200) -> dict[str, Any]:
+    """Fila de curadoria: suspeitas ainda não marcadas como ok."""
+    return review_queue(limit=limit)
+
+
+@router.post("/api/library/questions/mark-reviewed")
+def api_library_mark_reviewed(payload: MarkReviewedRequest) -> dict[str, Any]:
+    """Remove a questão da fila de suspeitas (não apaga o conteúdo)."""
+    result = mark_question_reviewed(payload.questionId)
+    if not result.get("ok"):
+        raise HTTPException(status_code=404, detail=result.get("message") or "Falha")
+    return result
 
 @router.get("/api/backups")
 def api_list_backups() -> list[dict[str, str]]:

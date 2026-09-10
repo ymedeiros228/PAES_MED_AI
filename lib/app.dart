@@ -19,6 +19,7 @@ import 'features/essay/presentation/essay_screen.dart';
 import 'features/flashcards/presentation/flashcards_screen.dart';
 import 'features/focus/presentation/focus_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
+import 'features/library/presentation/curation_review_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
 import 'features/materials/presentation/study_reader_screen.dart';
 import 'features/library/presentation/library_screen.dart';
@@ -137,6 +138,10 @@ final appRouter = GoRouter(
             }
             return _fadePage(const _RevisaoRedirect());
           },
+        ),
+        GoRoute(
+          path: '/biblioteca/suspeitas',
+          pageBuilder: (_, __) => _fadePage(const CurationReviewScreen()),
         ),
         GoRoute(
             path: '/aulas',
