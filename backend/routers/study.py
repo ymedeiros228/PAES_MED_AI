@@ -121,15 +121,17 @@ def api_plans_generate(payload: PlanRequest) -> list[dict[str, Any]]:
     days = payload.days if payload.days in (30, 60, 90) else max(7, min(payload.days, 180))
     return build_study_plan(days, payload.examDate)
 
-@router.get("/api/plans/{days}")
-def api_plans_get(days: int) -> list[dict[str, Any]]:
-    return get_study_plan(days)
-
-
+# Rota literal deve vir ANTES de "/api/plans/{days}", senão "smart" é
+# capturado como {days} e a validação int falha com 422.
 @router.get("/api/plans/smart")
 def api_plans_smart(examDate: str | None = None) -> dict[str, Any]:
     """Cronograma inteligente com countdown, metas diarias e balanceamento."""
     return build_smart_study_plan(exam_date=examDate)
+
+
+@router.get("/api/plans/{days}")
+def api_plans_get(days: int) -> list[dict[str, Any]]:
+    return get_study_plan(days)
 
 @router.post("/api/training/adaptive")
 def api_adaptive(payload: AdaptiveRequest) -> dict[str, Any]:

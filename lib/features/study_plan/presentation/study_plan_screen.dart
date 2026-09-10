@@ -66,20 +66,23 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
       if (until != null && until > 0 && until < 180) {
         days = until;
       }
-      // Carregar cronograma inteligente em paralelo
-      final results = await Future.wait([
-        regenerate
-            ? apiClient.post('/api/plans/generate', {
-                'days': days,
-                'examDate': exam.isEmpty ? null : exam,
-              })
-            : apiClient.get('/api/plans/$days'),
-        apiClient.get('/api/plans/smart${exam.isEmpty ? '' : '?examDate=$exam'}'),
-      ]);
-      plan = results[0] as List<dynamic>;
-      smartPlan = results[1] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(results[1] as Map)
-          : null;
+      // Plano principal é crítico; falha aqui vira estado de erro.
+      final planData = regenerate
+          ? await apiClient.post('/api/plans/generate', {
+              'days': days,
+              'examDate': exam.isEmpty ? null : exam,
+            })
+          : await apiClient.get('/api/plans/$days');
+      plan = planData as List<dynamic>;
+      // Cronograma inteligente é opcional: uma falha aqui não pode
+      // derrubar o plano principal (antes o Future.wait zerava tudo).
+      try {
+        final smart = await apiClient
+            .get('/api/plans/smart${exam.isEmpty ? '' : '?examDate=$exam'}');
+        smartPlan = smart is Map ? Map<String, dynamic>.from(smart) : null;
+      } catch (_) {
+        smartPlan = null;
+      }
       ref.read(refreshTickProvider.notifier).state++;
     } catch (e) {
       error = humanApiError(e, fallback: 'Não deu para carregar o plano. Tente de novo.');
@@ -266,6 +269,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 ),
               ),
 
+              const SectionLabel('Horizonte', hint: 'período e visão do plano'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -305,13 +309,22 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                       });
                     },
                   ),
-                  OutlinedButton(
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
                     onPressed: plan.isEmpty ? null : () { HapticFeedback.selectionClick(); _exportWeek(); },
-                    child: const Text('Exportar plano (semana) (E)'),
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Exportar semana (E)'),
                   ),
-                  OutlinedButton(
+                  OutlinedButton.icon(
                     onPressed: plan.isEmpty ? null : () { HapticFeedback.selectionClick(); _exportMonth(); },
-                    child: const Text('Exportar plano (mês)'),
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Exportar mês'),
                   ),
                 ],
               ),
@@ -443,7 +456,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     final subject = item['subject']?.toString() ?? '';
                     final topic = item['topic']?.toString() ?? '';
                     return SurfacePanel(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 10),
                       color: active
                           ? cs.primaryContainer.f55
                           : done
@@ -451,7 +464,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                           : fromErrors
                               ? cs.tertiaryContainer.withOpacity(0.4)
                               : null,
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                       child: Row(
                         children: [
                           Checkbox(
@@ -632,17 +645,16 @@ class _SmartPlanCard extends StatelessWidget {
             ],
             if (todayGoals != null) ...[
               const SizedBox(height: 12),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   if (todayGoals['questions'] != null)
                     _GoalChip(icon: Icons.quiz_outlined, label: '${todayGoals['questions']} questões'),
-                  const SizedBox(width: 8),
                   if (todayGoals['flashcards'] != null)
                     _GoalChip(icon: Icons.style_outlined, label: '${todayGoals['flashcards']} cards'),
-                  if (todayGoals['essay'] == true) ...[
-                    const SizedBox(width: 8),
+                  if (todayGoals['essay'] == true)
                     _GoalChip(icon: Icons.edit_outlined, label: 'Redação'),
-                  ],
                 ],
               ),
             ],
