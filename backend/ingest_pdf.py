@@ -8,6 +8,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from clean_options import clean_option
 from db import DATA_DIR, db
 from timeutil import now, now_iso
 
@@ -414,6 +415,13 @@ def heuristic_parse_questions(text: str, default_year: int = 2024, subject: str 
                 opts_by_letter[letter] = value[:800]
         # Sempre A–E em ordem de índice (gabarito A=0)
         opts = [opts_by_letter.get(chr(65 + i), "") for i in range(5)]
+        # Corta rodapé/cabeçalho PDF e cola da próxima questão nas alternativas
+        cleaned_parse_opts: list[str] = []
+        for i, raw_opt in enumerate(opts):
+            siblings = [opts[j] for j in range(len(opts)) if j != i]
+            cleaned_opt, _kind, _removed = clean_option(raw_opt, sibling_opts=siblings)
+            cleaned_parse_opts.append(cleaned_opt)
+        opts = cleaned_parse_opts
         statement = body[: by_pos[0][0]].strip() if by_pos else body
         statement = clean_question_statement(statement)[:1200]
         if not statement:
@@ -1532,16 +1540,22 @@ def sanitize_questions_full() -> dict[str, int]:
             ).strip()
 
             # 4. Limpa opções contaminadas
+            # Ordem: clean_option (rodapé/cabeçalho) ANTES de clean_question_statement,
+            # senão "Processo Seletivo" some e o lixo DOCV/Página sobra.
             opts_changed = False
             try:
                 opts = _json.loads(row["options_json"]) if row["options_json"] else []
             except Exception:
                 opts = []
             cleaned_opts = []
-            # Primeiro passa clean_question_statement em todas
-            pre_cleaned = [clean_question_statement(str(opt) if opt else "") for opt in opts]
+            junk_first: list[str] = []
+            for i, opt in enumerate(opts):
+                raw = str(opt) if opt else ""
+                siblings = [str(opts[j]) if opts[j] else "" for j in range(len(opts)) if j != i]
+                cut, _kind, _rm = clean_option(raw, sibling_opts=siblings)
+                junk_first.append(cut)
+            pre_cleaned = [clean_question_statement(o) for o in junk_first]
             for i, opt_str in enumerate(pre_cleaned):
-                # Passa as outras opções como referência para detectar contaminação
                 other_opts = [pre_cleaned[j] for j in range(len(pre_cleaned)) if j != i]
                 cleaned_opt = _clean_option_contamination(opt_str, other_opts)
                 original_opt = str(opts[i]) if i < len(opts) else ""

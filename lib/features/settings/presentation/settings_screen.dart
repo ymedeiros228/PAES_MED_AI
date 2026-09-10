@@ -652,8 +652,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: Icon(Icons.analytics_outlined, color: Theme.of(context).colorScheme.primary),
-                    title: const Text('Recalcular estatísticas'),
-                    subtitle: const Text('Frequência e perfil das questões'),
+                    title: const Text('Reprocessar base'),
+                    subtitle: const Text(
+                      'Sanea enunciados/opções (lixo de PDF), recalcula índices e busca',
+                    ),
                     trailing: FilledButton.tonal(onPressed: _reprocess, child: const Text('Executar')),
                   ),
                   SectionLabel('Pastas', hint: 'Onde ficam os dados'),
