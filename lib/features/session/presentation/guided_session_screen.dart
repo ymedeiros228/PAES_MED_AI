@@ -1052,17 +1052,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.center,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
-                  child: StatementView(
-                    key: ValueKey('statement_$qIndex'),
-                    text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
-                  ),
-                ),
+              StatementView(
+                key: ValueKey('statement_$qIndex'),
+                text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               StaggeredFadeIn(
                 key: ValueKey('options_$qIndex'),
                 children: [
