@@ -795,7 +795,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
               ],
               SectionLabel('Histórico'),
               history.when(
-                loading: () => const LinearProgressIndicator(),
+                loading: () => const SkeletonList(count: 2, lines: 2),
                 error: (e, _) => QuietEmpty(
                   message: humanApiError(e, fallback: 'Histórico indisponível.'),
                   action: TextButton(
