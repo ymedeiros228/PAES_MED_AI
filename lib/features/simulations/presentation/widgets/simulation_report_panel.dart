@@ -101,14 +101,17 @@ class SimulationReportPanel extends StatelessWidget {
           ),
         ),
         if ((report['subjectBreakdown'] as List? ?? []).isNotEmpty) ...[
-          const SectionLabel('Por disciplina'),
-          for (final s in (report['subjectBreakdown'] as List).take(8))
-            PlaylistTile(
-              title: (s as Map)['subject']?.toString() ?? '—',
-              subtitle:
-                  '${s['correct']}/${s['total']} · ${(((s['accuracy'] as num?) ?? 0) * 100).toStringAsFixed(0)}%',
-              leadingIcon: Icons.school_outlined,
+          const SectionLabel('Por disciplina', hint: 'acerto por matéria'),
+          SurfacePanel(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final s in (report['subjectBreakdown'] as List).take(8))
+                  _SubjectAccuracyRow(data: Map<String, dynamic>.from(s as Map)),
+              ],
             ),
+          ),
         ],
         if (gaps.isNotEmpty) ...[
           const SectionLabel('Tópicos para revisar'),
@@ -272,6 +275,80 @@ class SimulationReportPanel extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Linha de acerto por disciplina: nome, fração/percentual e barra colorida
+/// pelo mesmo código de cores do resto do app (forte/em progresso/frágil).
+class _SubjectAccuracyRow extends StatelessWidget {
+  const _SubjectAccuracyRow({required this.data});
+
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final subject = data['subject']?.toString() ?? '—';
+    final correct = (data['correct'] as num?)?.toInt() ?? 0;
+    final total = (data['total'] as num?)?.toInt() ?? 0;
+    final acc = (data['accuracy'] as num?)?.toDouble() ??
+        (total > 0 ? correct / total : 0.0);
+    final clamped = acc.clamp(0.0, 1.0);
+    final pct = (clamped * 100).toStringAsFixed(0);
+    final color = clamped >= 0.7
+        ? cs.primary
+        : clamped >= 0.5
+            ? cs.tertiary
+            : cs.error;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  subject,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$correct/$total · $pct%',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: clamped),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, v, _) => LinearProgressIndicator(
+                value: v,
+                minHeight: 8,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
