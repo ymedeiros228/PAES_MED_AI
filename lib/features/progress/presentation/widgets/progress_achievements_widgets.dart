@@ -252,12 +252,14 @@ class ProgressLevelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final level = data['level'] ?? 1;
+    final level = (data['level'] as num?)?.toInt() ?? 1;
     final levelTitle = data['levelTitle'] ?? 'Iniciante';
     final xp = data['xp'] ?? 0;
-    final xpInLevel = data['xpInLevel'] ?? 0;
-    final xpForNext = data['xpForNext'] ?? 500;
+    final xpInLevel = (data['xpInLevel'] as num?)?.toInt() ?? 0;
+    final xpForNext = (data['xpForNext'] as num?)?.toInt() ?? 500;
     final progress = (data['levelProgress'] ?? 0.0) as double;
+    final xpRemaining = (xpForNext - xpInLevel).clamp(0, xpForNext);
+    final isMaxed = progress >= 1.0 || xpRemaining <= 0;
 
     return SurfacePanel(
       child: Padding(
@@ -342,6 +344,29 @@ class ProgressLevelCard extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: cs.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  isMaxed ? Icons.workspace_premium_rounded : Icons.arrow_upward_rounded,
+                  size: 15,
+                  color: cs.primary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    isMaxed
+                        ? 'Nível máximo por enquanto — continue somando XP'
+                        : 'Faltam $xpRemaining XP para o nível ${level + 1}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface.withOpacity(0.8),
+                    ),
                   ),
                 ),
               ],

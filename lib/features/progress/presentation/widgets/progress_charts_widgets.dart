@@ -297,9 +297,72 @@ class ProgressSubjectBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _BarChartPainter(scores: scores, cs: cs),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: _BarChartPainter(scores: scores, cs: cs),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _SubjectBarLegend(cs: cs),
+      ],
+    );
+  }
+}
+
+/// Legenda que explica o código de cores das barras de desempenho por área.
+class _SubjectBarLegend extends StatelessWidget {
+  const _SubjectBarLegend({required this.cs});
+
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 6,
+      children: [
+        _LegendDot(color: cs.primary, label: '70%+ · forte'),
+        _LegendDot(color: cs.tertiary, label: '50–69% · em progresso'),
+        _LegendDot(color: cs.error, label: '< 50% · frágil'),
+      ],
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: cs.onSurface.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -373,39 +436,17 @@ class _BarChartPainter extends CustomPainter {
         const Radius.circular(8),
       );
 
-      // Sombra suave
-      final shadowPaint = Paint()
-        ..color = baseColor.withOpacity(0.15)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(left + 1, top + 2, barWidth, barHeight),
-          const Radius.circular(8),
-        ),
-        shadowPaint,
-      );
-
-      // Barra com gradiente vertical
+      // Barra chapada com leve gradiente vertical — sem sombra colorida nem brilho.
       final gradientPaint = Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
             baseColor,
-            baseColor.withOpacity(0.7),
+            baseColor.withOpacity(0.82),
           ],
         ).createShader(Rect.fromLTWH(left, top, barWidth, barHeight));
       canvas.drawRRect(rect, gradientPaint);
-
-      // Brilho no topo
-      final highlightPaint = Paint()
-        ..color = Colors.white.withOpacity(0.25)
-        ..style = PaintingStyle.fill;
-      final highlightRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(left + 2, top + 2, barWidth - 4, (barHeight * 0.3).clamp(4, 20)),
-        const Radius.circular(6),
-      );
-      canvas.drawRRect(highlightRect, highlightPaint);
 
       final tpValue = TextPainter(
         text: TextSpan(text: '${value.toStringAsFixed(0)}%', style: valueStyle),
@@ -663,22 +704,8 @@ class ProgressErrorTypeDonut extends StatelessWidget {
                               width: 14,
                               height: 14,
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    colors[i % colors.length],
-                                    colors[i % colors.length].withOpacity(0.7),
-                                  ],
-                                ),
+                                color: colors[i % colors.length],
                                 borderRadius: BorderRadius.circular(4),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colors[i % colors.length].withOpacity(0.3),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -773,22 +800,8 @@ class ProgressWeakTopicsHeatmap extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color,
-                color.withOpacity(0.75),
-              ],
-            ),
+            color: color,
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           constraints: const BoxConstraints(maxWidth: 200),
           child: Column(
