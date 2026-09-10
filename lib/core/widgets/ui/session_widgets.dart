@@ -512,19 +512,48 @@ class DeltaChip extends StatelessWidget {
   }
 }
 
+/// Selo consistente de "prática local" usado em Redação e Progresso.
+///
+/// Antes era só um texto solto em cor primária, que se repetia sem peso
+/// visual claro. Agora é um pill discreto (ícone + rótulo) com a mesma
+/// identidade em todos os lugares — reconhecível como token, e suave o
+/// bastante para conviver com repetições na mesma tela.
 class HonestBadge extends StatelessWidget {
-  const HonestBadge({this.label = 'treino local · não banca', super.key});
+  const HonestBadge({
+    this.label = 'treino local · não banca',
+    this.icon = Icons.info_outline_rounded,
+    super.key,
+  });
+
   final String label;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 12,
-        color: cs.primary,
-        fontWeight: FontWeight.w600,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: cs.primary.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: cs.primary.withOpacity(0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: cs.primary),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.5,
+              height: 1.0,
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.1,
+            ),
+          ),
+        ],
       ),
     );
   }
