@@ -138,7 +138,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: dark ? ink : sand,
       canvasColor: scheme.surface,
       dividerColor: scheme.outlineVariant,
       textTheme: TextTheme(
