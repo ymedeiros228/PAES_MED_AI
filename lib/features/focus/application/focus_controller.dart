@@ -78,11 +78,12 @@ class FocusState {
     int? questionStartSeconds,
     bool? finished,
     bool clearError = false,
+    bool clearSelected = false,
   }) {
     return FocusState(
       questions: questions ?? this.questions,
       currentIndex: currentIndex ?? this.currentIndex,
-      selectedIndex: selectedIndex ?? this.selectedIndex,
+      selectedIndex: clearSelected ? null : (selectedIndex ?? this.selectedIndex),
       revealed: revealed ?? this.revealed,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
@@ -103,8 +104,12 @@ final focusControllerProvider =
 });
 
 class FocusController extends StateNotifier<FocusState> {
-  FocusController() : super(const FocusState());
+  /// [api] permite injetar um ApiClient de teste; por padrão usa o global.
+  FocusController({ApiClient? api})
+      : _api = api ?? apiClient,
+        super(const FocusState());
 
+  final ApiClient _api;
   Timer? _ticker;
 
   void configure({String? subject, int? year}) {
@@ -122,7 +127,7 @@ class FocusController extends StateNotifier<FocusState> {
         params['year'] = state.year.toString();
       }
       final qs = params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&');
-      final data = await apiClient.get('/api/questions?$qs');
+      final data = await _api.get('/api/questions?$qs');
       final list = data is List ? data : ((data as Map)['items'] as List? ?? []);
       final questions = <FocusQuestion>[];
       for (final item in list) {
@@ -191,7 +196,7 @@ class FocusController extends StateNotifier<FocusState> {
     }
     state = state.copyWith(
       currentIndex: state.currentIndex + 1,
-      selectedIndex: null,
+      clearSelected: true,
       revealed: false,
       questionStartSeconds: 0,
     );
