@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/data/api_client.dart';
@@ -81,6 +82,11 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
     return '$base/api/materials/pdf/${widget.pdfFilename}';
   }
 
+  String get _coverUrl {
+    final base = apiClient.baseUrl;
+    return '$base/api/materials/pdf/${Uri.encodeComponent(widget.pdfFilename)}/cover';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -88,11 +94,33 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 36,
+                height: 48,
+                child: Image.network(
+                  _coverUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => ColoredBox(
+                    color: cs.primaryContainer,
+                    child: Icon(Icons.menu_book_rounded, size: 20, color: cs.onPrimaryContainer),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                widget.title,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
         actions: [
           Chip(
@@ -112,10 +140,25 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
             onSelected: (v) {
               if (v == 'download') {
                 _openExternal();
+              } else if (v == 'flashcards') {
+                context.go('/flashcards?due=0');
+              } else if (v == 'session') {
+                final q = <String, String>{
+                  'examBoard': 'UEMA_PAES',
+                  'preferNatureza': '1',
+                  if (widget.subject.isNotEmpty) 'subject': widget.subject,
+                  if (widget.topic.isNotEmpty) 'topic': widget.topic,
+                };
+                final qs = q.entries
+                    .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+                    .join('&');
+                context.go('/sessao?$qs');
               }
             },
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'download', child: Text('Baixar PDF')),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'session', child: Text('Treinar na sessão')),
+              PopupMenuItem(value: 'flashcards', child: Text('Abrir flashcards')),
+              PopupMenuItem(value: 'download', child: Text('Baixar PDF')),
             ],
           ),
         ],

@@ -54,3 +54,16 @@ def test_pdf_list_inclui_cover_url(client: TestClient) -> None:
     cover = client.get(with_cover[0]["coverUrl"])
     assert cover.status_code == 200
     assert cover.headers["content-type"].startswith("image/")
+
+
+def test_pdf_cover_route(client: TestClient) -> None:
+    r = client.get("/api/materials/pdf-list")
+    assert r.status_code == 200
+    data = r.json()
+    with_cover = [p for p in data if p.get("coverUrl")]
+    if not with_cover:
+        pytest.skip("sem PDF com capa")
+    name = with_cover[0]["filename"]
+    cover = client.get(f"/api/materials/pdf/{name}/cover")
+    assert cover.status_code == 200
+    assert cover.headers["content-type"].startswith("image/")

@@ -40,6 +40,17 @@ class GenerateRequest(BaseModel):
     force: bool = False
 
 
+def _cover_for_stem(stem: str) -> str | None:
+    """Resolve filename de capa a partir do stem do PDF (ex.: BI_GENETICA)."""
+    from pdf_cover_map import PDF_TO_COVER
+
+    prefix = PDF_TO_COVER.get(stem.upper())
+    if not prefix or not _IMG_DIR.exists():
+        return None
+    matches = sorted(p for p in _IMG_DIR.glob(f"{prefix}*") if p.suffix.lower() in _IMG_EXT)
+    return matches[0].name if matches else None
+
+
 @router.get("/syllabus")
 async def get_syllabus(subject: str | None = Query(None)) -> list[dict[str, Any]]:
     """Lista o conteúdo programático com status de material gerado."""
@@ -57,17 +68,6 @@ async def list_pdfs() -> list[dict[str, Any]]:
     """Lista todos os PDFs disponíveis na pasta de materiais."""
     if not _PDF_DIR.exists():
         return []
-    from pdf_cover_map import PDF_TO_COVER
-
-    def _cover_for_stem(stem: str) -> str | None:
-        prefix = PDF_TO_COVER.get(stem.upper())
-        if not prefix or not _IMG_DIR.exists():
-            return None
-        matches = sorted(
-            p for p in _IMG_DIR.glob(f"{prefix}*") if p.suffix.lower() in _IMG_EXT
-        )
-        return matches[0].name if matches else None
-
     pdfs = []
     for f in sorted(_PDF_DIR.glob("*.pdf")):
         # Decodificar nome: BI_CITOLOGIA_MEMBRANA_PLASMATICA.pdf
@@ -91,6 +91,30 @@ async def list_pdfs() -> list[dict[str, Any]]:
             "coverFilename": cover,
         })
     return pdfs
+
+
+@router.get("/pdf/{filename}/cover")
+async def pdf_cover_image(filename: str):
+    """Serve a capa associada a um PDF (mesmo mapa das imagens de materiais)."""
+    safe = Path(filename).name
+    if not safe.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
+    cover = _cover_for_stem(Path(safe).stem)
+    if not cover:
+        raise HTTPException(status_code=404, detail="Capa não encontrada.")
+    img_path = (_IMG_DIR / cover).resolve()
+    try:
+        img_path.relative_to(_IMG_DIR.resolve())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Caminho inválido.") from exc
+    if not img_path.is_file():
+        raise HTTPException(status_code=404, detail="Capa não encontrada.")
+    suffix = img_path.suffix.lower()
+    return FileResponse(
+        str(img_path),
+        media_type=_IMG_MEDIA.get(suffix, "application/octet-stream"),
+        filename=cover,
+    )
 
 
 @router.get("/pdf/{filename}")
