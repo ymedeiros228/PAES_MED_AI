@@ -71,7 +71,8 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               PageHeader(
                 eyebrow: 'Analisar',
                 title: 'Banca',
-                subtitle: 'Estimativa baseada no seu material',
+                subtitle: 'O que a banca pede — com base no seu material local',
+                icon: Icons.account_balance_rounded,
                 trailing: IconButton(
                   tooltip: 'Atualizar',
                   onPressed: () {
@@ -134,51 +135,85 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                       SurfacePanel(
                         margin: const EdgeInsets.only(bottom: 12),
                         color: cs.primaryContainer.f35,
-                        child: Row(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.insights_rounded,
-                              size: 28,
-                              color: cs.primary,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    total != null ? '$total questões na análise' : 'Perfil local',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: cs.onPrimaryContainer,
-                                    ),
-                                  ),
-                                  if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2),
-                                      child: Text(
-                                        'Tamanho médio do enunciado: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.insights_rounded,
+                                  size: 28,
+                                  color: cs.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'O que a banca pede',
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          color: cs.onPrimaryContainer.withOpacity(0.85),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: cs.onPrimaryContainer,
                                         ),
                                       ),
-                                    ),
-                                ],
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        total != null
+                                            ? '$total questões na análise local'
+                                            : 'Perfil estimado a partir do seu acervo',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: cs.onPrimaryContainer.withOpacity(0.9),
+                                        ),
+                                      ),
+                                      if (data['avgStatementLength'] != null || data['avgStatementLen'] != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'Enunciado médio: ${data['avgStatementLength'] ?? data['avgStatementLen']} chars',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: cs.onPrimaryContainer.withOpacity(0.85),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton.icon(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                if (ctas.isNotEmpty) {
+                                  final c = Map<String, dynamic>.from(ctas.first as Map);
+                                  context.go(c['path']?.toString() ?? '/sessao');
+                                } else {
+                                  context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                                }
+                              },
+                              icon: const Icon(Icons.play_arrow_rounded),
+                              label: Text(
+                                ctas.isNotEmpty
+                                    ? (Map<String, dynamic>.from(ctas.first as Map)['label']?.toString() ??
+                                        'Treinar pela banca')
+                                    : 'Abrir sessão',
                               ),
                             ),
                           ],
                         ),
                       ),
-                      if (ctas.isNotEmpty) ...[
-                        SectionLabel('Estudar a partir da banca'),
+                      if (ctas.length > 1) ...[
+                        SectionLabel('Mais atalhos da banca'),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            for (var i = 0; i < ctas.length && i < 6; i++)
+                            for (var i = 1; i < ctas.length && i < 6; i++)
                               Builder(
                                 builder: (_) {
                                   final c = Map<String, dynamic>.from(ctas[i] as Map);
@@ -194,6 +229,15 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ],
                         ),
                       ],
+                      ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        initiallyExpanded: false,
+                        title: Text(
+                          'Mapa e correlações',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                        ),
+                        subtitle: const Text('Disciplina × ano e tópicos que saem juntos'),
+                        children: [
                       if (yearList.isNotEmpty) ...[
                         SectionLabel('Disciplina × ano'),
                         SingleChildScrollView(
@@ -284,6 +328,8 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                           ],
                         ),
                       ],
+                        ],
+                      ),
                       ExpansionTile(
                         tilePadding: EdgeInsets.zero,
                         title: Text('Detalhes e export', style: TextStyle(

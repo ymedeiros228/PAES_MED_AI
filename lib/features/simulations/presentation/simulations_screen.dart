@@ -659,7 +659,8 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                         : examLocked
                             ? 'Simulado do dia · tempo restante $_timeRemainingLabel'
                             : 'Responda questão a questão · gabarito só no final')
-                    : 'Escolha um modo e faça um bloco como no dia da prova',
+                    : 'Um modo recomendado — ou escolha outro abaixo',
+                icon: Icons.timer_outlined,
                 trailing: inSession && report == null
                     ? SurfacePanel(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

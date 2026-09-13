@@ -198,11 +198,12 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
             children: [
               PageHeader(
                 eyebrow: 'Planejar',
-                title: 'Plano de estudos',
+                title: 'Cronograma',
                 subtitle: until == null
                     ? 'Defina a data da prova em Ajustes'
-                    : 'Faltam $until dias${exam.isEmpty ? '' : ' · $exam'}',
-                trailing: FilledButton.tonal(
+                    : 'Próximos dias · faltam $until para${exam.isEmpty ? ' a prova' : ' $exam'}',
+                icon: Icons.calendar_month_rounded,
+                trailing: TextButton(
                   onPressed: loading ? null : () { HapticFeedback.selectionClick(); _load(regenerate: true); },
                   child: const Text('Regenerar'),
                 ),
@@ -269,7 +270,15 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 ),
               ),
 
-              const SectionLabel('Horizonte', hint: 'período e visão do plano'),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                initiallyExpanded: false,
+                title: Text(
+                  'Horizonte e export',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                ),
+                subtitle: const Text('Período do plano e downloads'),
+                children: [
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -332,6 +341,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                 const SizedBox(height: 8),
                 Text(exportMsg!, style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.primary)),
               ],
+                ],
+              ),
               if (loading) ...[
                 const SizedBox(height: 12),
                 const SkeletonList(count: 3, lines: 2),
@@ -432,8 +443,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ),
 
               SectionLabel(
-                weekOnly ? 'Próximos 7 dias' : 'Cronograma ($days dias)',
-                hint: '↑/↓ J/K · Enter sessão · Espaço marca feito · Play no ícone',
+                weekOnly ? 'Próximos 7 dias' : 'Próximos dias',
+                hint: 'Toque em estudar · marque feito quando terminar',
               ),
 
               if (!loading && plan.isEmpty)

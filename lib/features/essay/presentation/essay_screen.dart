@@ -366,20 +366,11 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const PageHeader(
-                eyebrow: 'Conteúdo',
+              PageHeader(
+                eyebrow: 'Escrever',
                 title: 'Redação',
-                subtitle: 'Escreva com calma, corrija por eixos e feche missões — prática de redação',
-              ),
-              HeroStudyStrip(
-                eyebrow: 'Loop de treino',
-                title: count > 0
-                    ? 'Nível ${progress?['levelLabel'] ?? 'treino'} · média ${progress?['meanScore'] ?? '—'}'
-                    : 'Primeira correção desbloqueia o relevo',
-                subtitle: count > 0
-                    ? 'Corrija seu texto e acompanhe os eixos que mais precisam de atenção'
-                    : 'Corrija seu texto para ver seu nível e os eixos a melhorar',
-                trailing: const HonestBadge(),
+                subtitle: 'Escolha o tema, escreva e corrija — um fluxo linear',
+                icon: Icons.edit_note_rounded,
               ),
               if (setupError != null) ...[
                 QuietEmpty(
@@ -406,6 +397,135 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (themes.isNotEmpty)
+                DropdownMenu<String>(
+                  initialSelection: theme,
+                  label: const Text('1 · Tema'),
+                  width: double.infinity,
+                  onSelected: (v) {
+                    HapticFeedback.selectionClick();
+                    setState(() => theme = v);
+                    _scheduleDraftSave();
+                  },
+                  dropdownMenuEntries: [
+                    for (final t in themes) DropdownMenuEntry(value: t, label: t),
+                  ],
+                ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: textCtrl,
+                minLines: 12,
+                maxLines: 20,
+                onChanged: (_) {
+                  setState(() {});
+                  _scheduleDraftSave();
+                },
+                decoration: const InputDecoration(
+                  labelText: '2 · Sua redação',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f72),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: (textCtrl.text.trim().length / 50).clamp(0.0, 1.0),
+                          minHeight: 4,
+                          backgroundColor: cs.surfaceContainerHigh,
+                          color: textCtrl.text.trim().length >= 50
+                              ? cs.primary
+                              : cs.tertiary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      textCtrl.text.trim().length >= 50
+                          ? 'pronto para corrigir'
+                          : '${50 - textCtrl.text.trim().length} chars',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: textCtrl.text.trim().length >= 50
+                            ? cs.primary
+                            : cs.onSurface.f55,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TapScale(
+                child: FilledButton.icon(
+                  onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
+                  icon: busy
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
+                        )
+                      : const Icon(Icons.rate_review_outlined),
+                  label: Text(busy ? 'Corrigindo…' : '3 · Corrigir redação'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      _draftRestored ? Icons.history_rounded : Icons.save_outlined,
+                      size: 14,
+                      color: cs.onSurface.f55,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SelectableText(
+                        _draftRestored
+                            ? 'Rascunho restaurado · salvo automaticamente no seu PC'
+                            : 'Rascunho salvo automaticamente no seu PC',
+                        style: TextStyle(fontSize: 13, color: cs.onSurface.f55),
+                      ),
+                    ),
+                    if (textCtrl.text.trim().isNotEmpty)
+                      TextButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _clearDraft(clearEditor: true);
+                        },
+                        child: const Text('Limpar rascunho'),
+                      ),
+                  ],
+                ),
+              ),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                initiallyExpanded: false,
+                title: Text(
+                  'Progresso e mentores',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                ),
+                subtitle: const Text('Missões, eixos e mentores — secundário'),
+                children: [
+              HeroStudyStrip(
+                eyebrow: 'Loop de treino',
+                title: count > 0
+                    ? 'Nível ${progress?['levelLabel'] ?? 'treino'} · média ${progress?['meanScore'] ?? '—'}'
+                    : 'Primeira correção desbloqueia o relevo',
+                subtitle: count > 0
+                    ? 'Corrija seu texto e acompanhe os eixos que mais precisam de atenção'
+                    : 'Corrija seu texto para ver seu nível e os eixos a melhorar',
+                trailing: const HonestBadge(),
+              ),
               if (progress != null && count > 0) ...[
                 SectionLabel(
                   'Progresso local',
@@ -503,116 +623,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ],
                 const SizedBox(height: 12),
               ],
-              if (themes.isNotEmpty)
-                DropdownMenu<String>(
-                  initialSelection: theme,
-                  label: const Text('Tema'),
-                  width: double.infinity,
-                  onSelected: (v) {
-                    HapticFeedback.selectionClick();
-                    setState(() => theme = v);
-                    _scheduleDraftSave();
-                  },
-                  dropdownMenuEntries: [
-                    for (final t in themes) DropdownMenuEntry(value: t, label: t),
-                  ],
-                ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: textCtrl,
-                minLines: 12,
-                maxLines: 20,
-                onChanged: (_) {
-                  setState(() {});
-                  _scheduleDraftSave();
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Sua redação',
-                  alignLabelWithHint: true,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 4),
-                child: Row(
-                  children: [
-                    Text(
-                      '${RegExp(r"\S+").allMatches(textCtrl.text.trim()).length} palavras',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface.f72),
-                    ),
-                    const SizedBox(width: 8),
-                    // Barra de progresso visual para mínimo de caracteres
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
-                        child: LinearProgressIndicator(
-                          value: (textCtrl.text.trim().length / 50).clamp(0.0, 1.0),
-                          minHeight: 4,
-                          backgroundColor: cs.surfaceContainerHigh,
-                          color: textCtrl.text.trim().length >= 50
-                              ? cs.primary
-                              : cs.tertiary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      textCtrl.text.trim().length >= 50
-                          ? 'pronto para corrigir'
-                          : '${50 - textCtrl.text.trim().length} chars',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: textCtrl.text.trim().length >= 50
-                            ? cs.primary
-                            : cs.onSurface.f55,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              TapScale(
-                child: FilledButton.icon(
-                  onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
-                  icon: busy
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
-                        )
-                      : const Icon(Icons.rate_review_outlined),
-                  label: Text(busy ? 'Corrigindo…' : 'Corrigir redação'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      _draftRestored ? Icons.history_rounded : Icons.save_outlined,
-                      size: 14,
-                      color: cs.onSurface.f55,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: SelectableText(
-                        _draftRestored
-                            ? 'Rascunho restaurado · salvo automaticamente no seu PC'
-                            : 'Rascunho salvo automaticamente no seu PC',
-                        style: TextStyle(fontSize: 13, color: cs.onSurface.f55),
-                      ),
-                    ),
-                    if (textCtrl.text.trim().isNotEmpty)
-                      TextButton(
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _clearDraft(clearEditor: true);
-                        },
-                        child: const Text('Limpar rascunho'),
-                      ),
-                  ],
-                ),
+                ],
               ),
               if (last != null) ...[
                 SectionLabel('Resultado'),
@@ -788,7 +799,15 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                   ),
                 ),
               ],
-              SectionLabel('Histórico'),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                initiallyExpanded: false,
+                title: Text(
+                  'Histórico',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                ),
+                subtitle: const Text('Redações anteriores e curva de notas'),
+                children: [
               history.when(
                 loading: () => const SkeletonList(count: 2, lines: 2),
                 error: (e, _) => QuietEmpty(
@@ -872,6 +891,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     ],
                   );
                 },
+              ),
+                ],
               ),
             ],
           ),

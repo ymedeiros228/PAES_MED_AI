@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/ui_kit.dart';
 import '../application/focus_controller.dart';
 
 class FocusScreen extends ConsumerStatefulWidget {
@@ -59,30 +60,22 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.go('/dashboard'),
         ),
-        title: Text('Modo Foco', style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text('Modo Foco', style: TextStyle(fontWeight: FontWeight.w700)),
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
+        child: PageBody(
           padding: const EdgeInsets.all(28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
-              Icon(Icons.center_focus_strong_rounded, size: 72, color: cs.primary),
-              const SizedBox(height: 24),
-              Text(
-                'Estudo sem distrações',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+              PageHeader(
+                eyebrow: 'Treino',
+                title: 'Modo Foco',
+                subtitle: 'Uma questão por vez — sem sidebar, só você e a prova',
+                icon: Icons.center_focus_strong_rounded,
               ),
               const SizedBox(height: 8),
-              Text(
-                'Uma questão por vez. Responda, veja a resolução e avance.\nSem sidebar, sem notificações — só você e a prova.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: cs.onSurface.withOpacity(0.6)),
-              ),
-              const SizedBox(height: 32),
               _FilterChip(
                 label: widget.subject ?? 'Todas as disciplinas',
                 icon: Icons.school_rounded,

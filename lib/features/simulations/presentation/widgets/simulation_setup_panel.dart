@@ -151,7 +151,7 @@ class SimulationSetupPanel extends StatelessWidget {
               ],
             ),
           ),
-        const SectionLabel('Simulado do dia', hint: 'Recomendado · como no dia da prova'),
+        const SectionLabel('Começar agora', hint: 'Um toque · como no dia da prova'),
         SimulationModeCard(
           selected: mode == 'dia_prova',
           icon: Icons.timer_outlined,
@@ -161,6 +161,26 @@ class SimulationSetupPanel extends StatelessWidget {
             HapticFeedback.selectionClick();
             onModeChanged('dia_prova');
           },
+        ),
+        const SizedBox(height: 8),
+        FilledButton.icon(
+          onPressed: starting || (mode == 'disciplina' && (subject == null || subject!.isEmpty))
+              ? null
+              : onStart,
+          icon: starting
+              ? SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
+                )
+              : const Icon(Icons.play_arrow_rounded),
+          label: Text(
+            starting
+                ? 'Carregando questões…'
+                : mode == 'dia_prova'
+                    ? 'Começar simulado'
+                    : 'Iniciar simulado',
+          ),
         ),
         const SizedBox(height: 4),
         ExpansionTile(
@@ -207,36 +227,18 @@ class SimulationSetupPanel extends StatelessWidget {
               style: TextStyle(fontSize: 13, color: cs.error),
             ),
           ),
-        const SizedBox(height: 12),
-        SectionLabel('Quantidade', hint: '$limit questões'),
-        Slider(
-          value: limit.toDouble(),
-          min: 5,
-          max: 30,
-          divisions: 5,
-          label: '$limit',
-          onChanged: (v) => onLimitChanged(v.round()),
-        ),
-        const SizedBox(height: 8),
-        FilledButton.icon(
-          onPressed: starting || (mode == 'disciplina' && (subject == null || subject!.isEmpty))
-              ? null
-              : onStart,
-          icon: starting
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
-                )
-              : const Icon(Icons.play_arrow_rounded),
-          label: Text(
-            starting
-                ? 'Carregando questões…'
-                : mode == 'dia_prova'
-                    ? 'Começar simulado do dia'
-                    : 'Iniciar simulado',
+        if (mode != 'dia_prova' && mode != 'paes_realista') ...[
+          const SizedBox(height: 12),
+          SectionLabel('Quantidade', hint: '$limit questões'),
+          Slider(
+            value: limit.toDouble().clamp(5, 30),
+            min: 5,
+            max: 30,
+            divisions: 5,
+            label: '$limit',
+            onChanged: (v) => onLimitChanged(v.round()),
           ),
-        ),
+        ],
       ],
     );
   }

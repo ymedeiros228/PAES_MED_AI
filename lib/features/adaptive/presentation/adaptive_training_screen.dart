@@ -233,13 +233,14 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 PageHeader(
-                  eyebrow: 'Conteúdo',
-                  title: 'Treino',
+                  eyebrow: 'Treino',
+                  title: 'Treino do tópico',
                   subtitle: finished
                       ? 'Fila concluída · $correctCount/$answeredCount'
                       : inQueue
                           ? 'Acertos $correctCount/$answeredCount · item ${index + 1}/${queue.length}'
-                          : 'Similares → mais difíceis no mesmo tópico',
+                          : 'Escolha a disciplina e o assunto — depois é só começar',
+                  icon: Icons.fitness_center_rounded,
                   trailing: (inQueue || finished)
                       ? TextButton(
                           onPressed: () {
@@ -338,57 +339,67 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     ),
                   ),
                 ] else if (!inQueue) ...[
-                  DropdownMenu<String>(
-                    initialSelection: subject,
-                    label: const Text('Disciplina'),
-                    onSelected: (v) => setState(() => subject = v ?? subject),
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
-                      DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
-                      DropdownMenuEntry(value: 'Química', label: 'Química'),
-                      DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
-                      DropdownMenuEntry(value: 'Física', label: 'Física'),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: topicCtrl,
-                    decoration: const InputDecoration(labelText: 'Assunto'),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: loading || topic.isEmpty ? null : () { HapticFeedback.selectionClick(); _start(); },
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: Text(loading ? 'Montando…' : 'Iniciar treino'),
+                  SurfacePanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        DropdownMenu<String>(
+                          initialSelection: subject,
+                          label: const Text('Disciplina'),
+                          onSelected: (v) => setState(() => subject = v ?? subject),
+                          dropdownMenuEntries: const [
+                            DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
+                            DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
+                            DropdownMenuEntry(value: 'Química', label: 'Química'),
+                            DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
+                            DropdownMenuEntry(value: 'Física', label: 'Física'),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: topicCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Assunto',
+                            hintText: 'Ex.: Genética',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: loading || topic.isEmpty
+                              ? null
+                              : () {
+                                  HapticFeedback.selectionClick();
+                                  _start();
+                                },
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: Text(loading ? 'Montando…' : 'Começar treino'),
+                        ),
+                      ],
+                    ),
                   ),
                   if (error != null) ...[
                     const SizedBox(height: 8),
                     QuietEmpty(
                       message: error!,
-                      action: Wrap(
-                        spacing: 8,
-                        children: [
-                          TextButton(
-                            onPressed: loading || topic.isEmpty ? null : () { HapticFeedback.selectionClick(); _start(); },
-                            child: const Text('Tentar'),
-                          ),
-                          TextButton(
-                            onPressed: () { HapticFeedback.selectionClick(); context.go('/biblioteca'); },
-                            child: const Text('Biblioteca'),
-                          ),
-                          TextButton(
-                            onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
-                            child: const Text('Sessão'),
-                          ),
-                        ],
+                      action: TextButton(
+                        onPressed: loading || topic.isEmpty
+                            ? null
+                            : () {
+                                HapticFeedback.selectionClick();
+                                unawaited(_start());
+                              },
+                        child: const Text('Tentar'),
                       ),
                     ),
                   ],
                   const SizedBox(height: 16),
                   QuietEmpty(
-                    message: 'Escolha tópico ou volte à sessão do dia.',
+                    message: 'Sem ideia de tópico? Volte à sessão do dia.',
                     action: TextButton(
-                      onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go('/sessao');
+                      },
                       child: const Text('Abrir sessão'),
                     ),
                   ),

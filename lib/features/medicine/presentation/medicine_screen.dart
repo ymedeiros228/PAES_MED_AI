@@ -111,7 +111,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                     title: 'Domínio',
                     subtitle: items.isEmpty
                         ? 'Onde vale focar a seguir'
-                        : '${items.length} assunto(s) por prioridade de estudo',
+                        : 'Ranking por prioridade — treine o primeiro da lista',
+                    icon: Icons.local_hospital_outlined,
                   ),
 
                   if (officialN == 0)
@@ -149,6 +150,25 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                     ),
 
+                  if (items.isNotEmpty) ...[
+                    FilledButton.icon(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        setState(() => selected = 0);
+                        context.go(_sessionPath(_rankItems.first, officialN));
+                      },
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: Text(
+                        () {
+                          final first = _rankItems.first;
+                          final t = first['topic']?.toString() ?? '';
+                          return t.isEmpty ? 'Treinar este' : 'Treinar: $t';
+                        }(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
                   // Fila de revisão humana + labels sujos — Avançado (Z3 / BR)
                   SectionLabel(
                     'Prioridade',
@@ -160,9 +180,10 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                     QuietEmpty(
                       message:
                           'Nada ranqueado ainda — faça uma sessão primeiro.',
-                      action: TextButton(
+                      action: FilledButton.icon(
                         onPressed: () => context.go('/sessao'),
-                        child: const Text('Sessão'),
+                        icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                        label: const Text('Abrir sessão'),
                       ),
                     )
                   else

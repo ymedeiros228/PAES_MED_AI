@@ -34,6 +34,7 @@ class PageHeader extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.badge,
+    this.icon,
     super.key,
   });
 
@@ -43,10 +44,59 @@ class PageHeader extends StatelessWidget {
   final Widget? trailing;
   /// Badge contextual ao lado do título (ex: "oficial", "treino", contador).
   final String? badge;
+  /// Ícone opcional (círculo soft) — padrão edtech das páginas secundárias.
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final titleRow = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: cs.primaryContainer.f65,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 22, color: cs.primary),
+          ),
+          const SizedBox(width: 12),
+        ],
+        Flexible(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              color: cs.onSurface,
+              height: 1.2,
+            ),
+          ),
+        ),
+        if (badge != null && badge!.isNotEmpty) ...[
+          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer.f65,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              badge!,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: cs.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
     final heading = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,41 +112,7 @@ class PageHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.4,
-                  color: cs.onSurface,
-                  height: 1.2,
-                ),
-              ),
-            ),
-            if (badge != null && badge!.isNotEmpty) ...[
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer.f65,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  badge!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: cs.onPrimaryContainer,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+        titleRow,
         Container(
           margin: const EdgeInsets.only(top: 12),
           width: 40,

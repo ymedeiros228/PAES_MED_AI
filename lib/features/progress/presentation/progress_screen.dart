@@ -207,10 +207,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const PageHeader(
+                PageHeader(
                   eyebrow: 'Analisar',
                   title: 'Progresso',
-                  subtitle: 'Evolução, pontos fracos e medalhas — prática, não nota de corte',
+                  subtitle: 'Seu ritmo e o próximo ponto a melhorar',
+                  icon: Icons.trending_up_rounded,
                 ),
                 // Abas: Desempenho | Conquistas
                 Padding(
@@ -283,6 +284,111 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                     ),
                   )
                 else if (_tabIndex == 0) ...[
+                  StatsStrip(
+                    items: [
+                      ('${data?['streakDays'] ?? essay['streakDays'] ?? 0}', 'dias seguidos'),
+                      (
+                        essay['levelLabel']?.toString() ??
+                            (_streakLevel((data?['streakDays'] as num?)?.toInt() ?? 0) > 0
+                                ? 'nível ${_streakLevel((data?['streakDays'] as num?)?.toInt() ?? 0)}'
+                                : 'prática'),
+                        'nível'
+                      ),
+                      (
+                        '${((data?['accuracy'] as num?) != null ? ((data!['accuracy'] as num) * 100).toStringAsFixed(0) : '—')}%',
+                        'acerto'
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (peaks.isNotEmpty && !(peaks.length == 1 && peaks.first['kind'] == 'hint'))
+                    SurfacePanel(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        () {
+                          final p = peaks.first;
+                          final title = p['title']?.toString() ?? p['label']?.toString() ?? '';
+                          final why = p['why']?.toString() ?? p['subtitle']?.toString() ?? '';
+                          if (title.isEmpty && why.isEmpty) {
+                            return data?['disclaimer']?.toString() ??
+                                'Continue as sessões para ver onde melhorar.';
+                          }
+                          return why.isEmpty ? title : '$title — $why';
+                        }(),
+                        style: TextStyle(fontSize: 14, height: 1.35, color: cs.onSurface),
+                      ),
+                    )
+                  else
+                    QuietEmpty(
+                      message:
+                          'Ainda sem insight claro. Faça uma sessão ou uma redação para ver o próximo passo.',
+                      action: FilledButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
+                        },
+                        child: const Text('Abrir sessão'),
+                      ),
+                    ),
+                  if (gaps.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Builder(
+                      builder: (_) {
+                        final g = Map<String, dynamic>.from(gaps.first as Map);
+                        final key = g['key']?.toString() ?? '';
+                        final parts = key.split('::');
+                        final subj = parts.isNotEmpty ? parts[0] : (g['subject']?.toString() ?? '');
+                        final top = parts.length > 1
+                            ? parts.sublist(1).join('::')
+                            : (g['topic']?.toString() ?? '');
+                        return PlaylistTile(
+                          title: subj.isEmpty ? 'Tópico para revisar' : subj,
+                          subtitle: top.isEmpty ? 'Abrir sessão Natureza' : top,
+                          badge: 'próximo',
+                          leadingIcon: Icons.terrain_rounded,
+                          onPlay: () {
+                            if (subj.isNotEmpty) {
+                              context.go(
+                                '/sessao?examBoard=UEMA_PAES&preferNatureza=1'
+                                '&subject=${Uri.encodeComponent(subj)}'
+                                '${top.isNotEmpty ? '&topic=${Uri.encodeComponent(top)}' : ''}',
+                              );
+                            } else {
+                              context.go(
+                                data?['sessionPath']?.toString() ??
+                                    '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.go(
+                          data?['sessionPath']?.toString() ??
+                              '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
+                        );
+                      },
+                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                      label: const Text('Continuar estudando'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    initiallyExpanded: false,
+                    title: Text(
+                      'Ver mais',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                    ),
+                    subtitle: const Text('Gráficos, missão e análise detalhada'),
+                    children: [
                   HeroStudyStrip(
                     eyebrow: 'Seu desempenho',
                     title: 'Onde você vai bem e onde pode melhorar',
@@ -313,43 +419,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  if (peaks.isEmpty || (peaks.length == 1 && peaks.first['kind'] == 'hint'))
-                    QuietEmpty(
-                      message:
-                          'Seu desempenho ainda está plano. Faça uma sessão ou uma redação para ver pontos fortes e pontos a melhorar.',
-                      action: Wrap(
-                        spacing: 8,
-                        children: [
-                          FilledButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-                            },
-                            child: const Text('Sessão'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              context.go('/redacao');
-                            },
-                            child: const Text('Redação'),
-                          ),
-                        ],
-                      ),
-                    )
-                  else const SizedBox.shrink(),
                   const SizedBox(height: 16),
-                  StatsStrip(
-                    items: [
-                      ('${data?['streakDays'] ?? essay['streakDays'] ?? 0}', 'dias seguidos'),
-                      ('${data?['studyMinutesToday'] ?? 0}', 'min hoje'),
-                      (
-                        '${((data?['accuracy'] as num?) != null ? ((data!['accuracy'] as num) * 100).toStringAsFixed(0) : '—')}%',
-                        'acerto'
-                      ),
-                    ],
-                  ),
                   if (mission is Map) ...[
                     const SectionLabel('Missão de redação', hint: 'prática · não banca'),
                     MissionQuestCard(
@@ -514,9 +584,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       const SizedBox(height: 8),
                     ],
                   ),
-                  if (gaps.isNotEmpty) ...[
-                    const SectionLabel('Pontos a melhorar', hint: 'próximo passo concreto'),
-                    for (final raw in gaps.take(3))
+                  if (gaps.length > 1) ...[
+                    const SectionLabel('Mais pontos a melhorar', hint: 'próximo passo concreto'),
+                    for (final raw in gaps.skip(1).take(2))
                       Builder(
                         builder: (_) {
                           final g = Map<String, dynamic>.from(raw as Map);
@@ -549,21 +619,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                         },
                       ),
                   ],
-                  const SizedBox(height: 16),
-                  // CTA unico — continuar estudando
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        context.go(
-                          data?['sessionPath']?.toString() ??
-                              '/sessao?examBoard=UEMA_PAES&preferNatureza=1',
-                        );
-                      },
-                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                      label: const Text('Continuar estudando'),
-                    ),
+                    ],
                   ),
                 ]
                 else if (_tabIndex == 1) ...[

@@ -112,7 +112,16 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 PageHeader(
                   eyebrow: 'Banco',
                   title: 'Questões',
-                  subtitle: 'Filtre e abra o que quiser treinar com calma',
+                  subtitle: 'Escolha um filtro e abra uma questão — ou vá direto à sessão',
+                  icon: Icons.quiz_rounded,
+                  trailing: FilledButton.tonalIcon(
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      context.go('/sessao');
+                    },
+                    icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                    label: const Text('Abrir sessão'),
+                  ),
                 ),
                 Wrap(
                   spacing: 8,
@@ -288,18 +297,23 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   });
                 }
                 if (items.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.quiz_outlined,
-                    title: 'Nenhuma questão aqui',
-                    subtitle: page > 0
-                        ? 'Volte uma página ou limpe os filtros.'
+                  return QuietEmpty(
+                    message: page > 0
+                        ? 'Nada nesta página — volte ou limpe os filtros.'
                         : officialWithGab
-                            ? 'Sem provas oficiais neste filtro. Importe pares com gabarito na Biblioteca ou desative o chip.'
-                            : 'Importe provas na Biblioteca ou afrouxe os filtros.',
+                            ? 'Sem provas oficiais neste filtro. Importe na Biblioteca ou desative o chip.'
+                            : 'Nenhuma questão aqui. Abra a sessão ou limpe os filtros.',
                     action: Wrap(
                       spacing: 8,
-                      alignment: WrapAlignment.center,
                       children: [
+                        FilledButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            context.go('/sessao');
+                          },
+                          icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                          label: const Text('Abrir sessão'),
+                        ),
                         if (page > 0)
                           TextButton(
                             onPressed: () {
@@ -313,32 +327,21 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             examBoard != null ||
                             officialWithGab ||
                             source != null)
-                          TapScale(
-                            child: FilledButton.tonal(
-                              onPressed: () {
-                                HapticFeedback.mediumImpact();
-                                _resetPage(() {
-                                  subject = null;
-                                  topic = null;
-                                  examBoard = null;
-                                  source = null;
-                                  officialWithGab = false;
-                                  difficulty = null;
-                                  year = null;
-                                });
-                              },
-                              child: const Text('Limpar filtros'),
-                            ),
-                          ),
-                        TapScale(
-                          child: FilledButton(
+                          TextButton(
                             onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              context.go('/biblioteca');
+                              HapticFeedback.selectionClick();
+                              _resetPage(() {
+                                subject = null;
+                                topic = null;
+                                examBoard = null;
+                                source = null;
+                                officialWithGab = false;
+                                difficulty = null;
+                                year = null;
+                              });
                             },
-                            child: const Text('Biblioteca'),
+                            child: const Text('Limpar filtros'),
                           ),
-                        ),
                       ],
                     ),
                   );

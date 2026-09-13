@@ -242,6 +242,7 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   eyebrow: 'Estudar',
                   title: 'Fila',
                   subtitle: coach ?? 'Próximo passo do dia · cerca de $minutes min',
+                  icon: Icons.playlist_play_rounded,
                   trailing: IconButton(
                     tooltip: 'Atualizar fila',
                     onPressed: _load,
@@ -278,10 +279,47 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                   },
                 ),
 
-                SectionLabel(
-                  'Outras ações',
-                  hint: 'Complementos do dia, abaixo da sessão principal',
-                ),
+                if (officialUnlocked && coachSubject != null && coachTopic != null) ...[
+                  const SizedBox(height: 12),
+                  SectionLabel(
+                    'Oficial do dia',
+                    hint: coachYear != null ? 'Ano $coachYear · base UEMA local' : 'Base UEMA local',
+                  ),
+                  PlaylistTile(
+                    title: coachSubject,
+                    subtitle: coachTopic,
+                    badge: 'oficial',
+                    active: navIndexFor(sessionPath) == selected,
+                    leadingIcon: Icons.menu_book_rounded,
+                    onPlay: () {
+                      HapticFeedback.selectionClick();
+                      final i = navIndexFor(sessionPath);
+                      if (i >= 0) setState(() => selected = i);
+                      context.go(sessionPath);
+                    },
+                  ),
+                ],
+
+                if (!hasAnything) ...[
+                  const SizedBox(height: 20),
+                  QuietEmpty(
+                    message:
+                        'Nada pendente na fila. Toque em Começar sessão acima para montar o plano de hoje.',
+                  ),
+                ],
+
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  initiallyExpanded: false,
+                  title: Text(
+                    'Mais do dia',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                  ),
+                  subtitle: Text(
+                    'Domínio, missão, revisões e atalhos',
+                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.65)),
+                  ),
+                  children: [
                 // Card de missão de redação com gradiente sutil (tertiary → surface)
                 Container(
                   margin: const EdgeInsets.only(bottom: 2),
@@ -351,47 +389,6 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ],
                   ),
                 ),
-
-                if (officialUnlocked && coachSubject != null && coachTopic != null) ...[
-                  const SizedBox(height: 12),
-                  SectionLabel(
-                    'Oficial do dia',
-                    hint: coachYear != null ? 'Ano $coachYear · base UEMA local' : 'Base UEMA local',
-                  ),
-                  PlaylistTile(
-                    title: coachSubject,
-                    subtitle: coachTopic,
-                    badge: 'oficial',
-                    active: navIndexFor(sessionPath) == selected,
-                    leadingIcon: Icons.menu_book_rounded,
-                    onPlay: () {
-                      HapticFeedback.selectionClick();
-                      final i = navIndexFor(sessionPath);
-                      if (i >= 0) setState(() => selected = i);
-                      context.go(sessionPath);
-                    },
-                  ),
-                ],
-
-                if (!hasAnything) ...[
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.playlist_add_check_rounded,
-                          size: 40,
-                          color: Theme.of(context).colorScheme.onSurface.f22,
-                        ),
-                        const SizedBox(height: 10),
-                        QuietEmpty(
-                          message:
-                              'Nada pendente na fila. Toque em Começar sessão acima para montar o plano de hoje.',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
 
                 if (gapN > 0) ...[
                   SectionLabel(
@@ -755,6 +752,8 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                       ],
                     );
                   },
+                ),
+                  ],
                 ),
               ],
             ),

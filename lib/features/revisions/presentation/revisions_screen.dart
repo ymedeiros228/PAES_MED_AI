@@ -86,11 +86,12 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     PageHeader(
-                      eyebrow: 'Analisar',
+                      eyebrow: 'Reforço',
                       title: 'Revisões',
                       subtitle: _items.isEmpty
-                          ? 'Revise os tópicos que você errou'
-                          : '${_items.length} assunto(s) para reforço',
+                          ? 'Os tópicos que você errou aparecem aqui'
+                          : '${_items.length} assunto(s) para reforçar agora',
+                      icon: Icons.replay_rounded,
                       trailing: IconButton(
                         tooltip: 'Atualizar',
                         onPressed: () {
@@ -101,31 +102,28 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                       ),
                     ),
                     if (_items.isEmpty)
-                      EmptyState(
-                        title: 'Nada agendado',
-                        subtitle: 'Erre na sessão ou no simulado — os tópicos para revisar aparecem aqui.',
-                        action: Wrap(
-                          spacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            FilledButton(
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                context.go('/sessao');
-                              },
-                              child: const Text('Sessão'),
-                            ),
-                            FilledButton.tonal(
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                context.go('/simulados');
-                              },
-                              child: const Text('Simulados'),
-                            ),
-                          ],
+                      QuietEmpty(
+                        message: 'Nada agendado. Erre na sessão ou no simulado — os tópicos para revisar aparecem aqui.',
+                        action: FilledButton.icon(
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            context.go('/sessao');
+                          },
+                          icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                          label: const Text('Abrir sessão'),
                         ),
                       )
-                    else
+                    else ...[
+                      FilledButton.icon(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          setState(() => selected = 0);
+                          _openItem(0);
+                        },
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: const Text('Revisar agora'),
+                      ),
+                      const SizedBox(height: 12),
                       StaggeredFadeIn(
                         itemDelay: const Duration(milliseconds: 70),
                         children: [
@@ -148,10 +146,7 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                     setState(() => selected = i);
                                     _openItem(i);
                                   },
-                                  secondary: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
+                                  secondary: IconButton(
                                     tooltip: 'Marcar feita',
                                     icon: const Icon(Icons.check_circle_outline),
                                     onPressed: () async {
@@ -165,47 +160,12 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                                       ref.read(refreshTickProvider.notifier).state++;
                                     },
                                   ),
-                                  IconButton(
-                                    tooltip: 'Marcar recuperada',
-                                    icon: const Icon(Icons.flag_outlined),
-                                    onPressed: () async {
-                                      try {
-                                        HapticFeedback.mediumImpact();
-                                        await apiClient.post('/api/gaps/recover', {
-                                          'subject': subject,
-                                          'topic': topic,
-                                        });
-                                        ref.read(refreshTickProvider.notifier).state++;
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Tópico para revisar marcado como recuperado (prática).',
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        HapticFeedback.heavyImpact();
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                humanApiError(e, fallback: 'Não deu para marcar o tópico para revisar.'),
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                );
+                              },
+                            ),
                         ],
                       ),
+                    ],
                   ],
                 ),
               ),
