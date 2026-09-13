@@ -1088,6 +1088,38 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     ),
                 ],
               ),
+              Builder(
+                builder: (_) {
+                  final q = sessionQuestions[qIndex];
+                  final year = q['year'];
+                  final board = (q['examBoard'] ?? q['exam_board'] ?? '').toString();
+                  final src = (q['source'] ?? '').toString();
+                  final isOfficial = q['isOfficial'] == true ||
+                      board.toUpperCase() == 'UEMA_PAES' ||
+                      src.toLowerCase().contains('pdf') ||
+                      src == 'oficial';
+                  if (!isOfficial && year == null) return const SizedBox.shrink();
+                  final parts = <String>[];
+                  if (year != null) parts.add('PAES $year');
+                  if (board.toUpperCase() == 'UEMA_PAES' || isOfficial) {
+                    parts.add('UEMA (oficial)');
+                  } else if (src.isNotEmpty) {
+                    parts.add(src);
+                  }
+                  if (parts.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Fonte: ${parts.join(' · ')}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  );
+                },
+              ),
               if (revealed) ...[
                 // Card de feedback — acerto/erro com cor e icone
                 Builder(builder: (_) {

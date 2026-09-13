@@ -1218,10 +1218,13 @@ def create_simulation(
     if mode_eff == "disciplina" and subject:
         questions = [q for q in questions if (q.get("subject") or "") == subject] or questions
 
-    # Modo PAES realista: distribui 60 questoes por materia conforme pesos do edital
+    # Modo PAES realista: distribui ~60 questões na proporção típica da prova
+    # (quantidade de itens por disciplina — NÃO é peso de pontuação).
+    # No PAES/UEMA cada objetiva vale igual; a classificação usa escore padronizado
+    # (desempenho relativo), não TRI nem peso maior por matéria.
     if mode_eff == "paes_realista":
         import random as _random
-        _PAES_WEIGHTS = {
+        _PAES_ITEM_COUNTS = {
             "História": 12, "Física": 10, "Biologia": 10, "Matemática": 8,
             "Língua Portuguesa e Literatura": 8, "Filosofia": 5, "Química": 5,
             "Geografia": 2,
@@ -1236,11 +1239,11 @@ def create_simulation(
             by_subj.setdefault(s, []).append(q)
         selected_paes: list[dict[str, Any]] = []
         used_ids: set[str] = set()
-        # Primeiro passa: pega oficiais conforme peso
-        for subj, weight in _PAES_WEIGHTS.items():
+        # Primeiro passa: pega oficiais conforme quantidade típica na prova
+        for subj, n_items in _PAES_ITEM_COUNTS.items():
             pool = by_subj.get(subj, [])
             _random.shuffle(pool)
-            for q in pool[:weight]:
+            for q in pool[:n_items]:
                 if q["id"] not in used_ids:
                     selected_paes.append(q)
                     used_ids.add(q["id"])
@@ -1268,8 +1271,9 @@ def create_simulation(
         limit = len(selected_paes)
         if not warning:
             warning = (
-                f"Simulado PAES com {len(selected_paes)} questões distribuídas por matéria. "
-                "Nota estimada é apenas referência local — não é nota oficial UEMA."
+                f"Simulado PAES com {len(selected_paes)} questões (mistura típica por disciplina). "
+                "No PAES/UEMA cada objetiva vale igual — a nota oficial usa escore padronizado, "
+                "não peso por matéria nem TRI. A % local é só referência de treino."
             )
 
     selected = questions[:limit]

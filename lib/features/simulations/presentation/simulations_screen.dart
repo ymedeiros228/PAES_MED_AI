@@ -316,7 +316,9 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         content: Text(
           '${healthNote != null ? '$healthNote\n\n' : ''}'
           '${isPaes
-              ? 'Simulado no estilo UEMA com 60 questões distribuídas por matéria.\nTempo: 4 horas.\nGabarito só ao finalizar.\n\n'
+              ? 'Simulado no estilo UEMA com ~60 questões (mistura típica por disciplina).\n'
+                  'Cada objetiva vale igual: a UEMA usa escore padronizado, não peso por matéria nem TRI.\n'
+                  'Tempo: 4 horas. Gabarito só ao finalizar.\n\n'
               : ''}'
           '${n < 10
               ? 'Há poucas oficiais na base ($n). Este modo NÃO inventa prova UEMA — sem acervo sério, a base de treino fica rotulada como treino.\n\n'

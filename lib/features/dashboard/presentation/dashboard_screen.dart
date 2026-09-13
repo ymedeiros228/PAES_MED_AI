@@ -894,10 +894,10 @@ class _QuickActions extends StatelessWidget {
   final ColorScheme cs;
 
   static const _items = <(String, String, IconData, Color)>[
+    ('/materiais', 'Materiais', Icons.picture_as_pdf_rounded, Color(0xFF26A69A)),
     ('/questoes', 'Questões', Icons.quiz_rounded, Color(0xFF42A5F5)),
     ('/simulados', 'Simulados', Icons.bolt_rounded, Color(0xFFEF6C00)),
     ('/redacao', 'Redação', Icons.edit_note_rounded, Color(0xFFEC407A)),
-    ('/tutor', 'Tutor', Icons.auto_awesome_rounded, AppTheme.teal),
   ];
 
   @override

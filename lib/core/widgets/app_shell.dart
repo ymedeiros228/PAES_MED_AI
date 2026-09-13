@@ -16,6 +16,7 @@ class AppShell extends ConsumerWidget {
   static const focusItems = <_NavItem>[
     _NavItem('/dashboard', 'Hoje', Icons.home_rounded),
     _NavItem('/sessao', 'Sessão', Icons.timer_rounded),
+    _NavItem('/materiais', 'Materiais', Icons.picture_as_pdf_rounded),
     _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
     _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
     _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
@@ -47,13 +48,14 @@ class AppShell extends ConsumerWidget {
   static const mainItems = <_NavItem>[
     _NavItem('/dashboard', 'Início', Icons.home_rounded),
     _NavItem('/sessao', 'Estudar', Icons.school_rounded),
-    _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
+    _NavItem('/materiais', 'Materiais', Icons.picture_as_pdf_rounded),
     _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
     _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
   ];
 
   /// Rotas secundárias — acessíveis via botão "Mais" no rail.
   static const moreItems = <_NavItem>[
+    _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
     _NavItem('/simulados', 'Simulados', Icons.assignment_rounded),
     _NavItem('/questoes', 'Questões', Icons.quiz_outlined),
     _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),

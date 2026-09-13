@@ -358,6 +358,19 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                       ),
                     );
                   }),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, bottom: 8),
+                    child: Text(
+                      q.year > 0
+                          ? 'Fonte: PAES ${q.year} · UEMA (oficial)'
+                          : 'Fonte: acervo local',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: cs.onSurface.withOpacity(0.55),
+                      ),
+                    ),
+                  ),
                   if (state.revealed && q.resolution != null && q.resolution!.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Container(

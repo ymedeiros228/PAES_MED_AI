@@ -8,7 +8,7 @@ import 'simulation_widgets.dart';
 /// Modos disponíveis fora do fluxo de prova.
 const simulationModes = <(String, String, String, IconData)>[
   ('dia_prova', 'Simulado do dia', 'Cronômetro ligado, gabarito no final', Icons.timer_outlined),
-  ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA, cronômetro 4h', Icons.assignment_turned_in),
+  ('paes_realista', 'Simulado PAES', '60 questões no estilo UEMA (cada item vale igual)', Icons.assignment_turned_in),
   ('revisao', 'Revisão', 'O que já está na fila para revisar', Icons.replay_rounded),
   ('disciplina', 'Por disciplina', 'Escolha a matéria', Icons.menu_book_outlined),
 ];

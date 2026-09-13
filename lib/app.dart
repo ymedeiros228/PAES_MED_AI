@@ -21,6 +21,7 @@ import 'features/focus/presentation/focus_screen.dart';
 import 'features/lessons/presentation/lessons_screen.dart';
 import 'features/library/presentation/curation_review_screen.dart';
 import 'features/library/presentation/ingest_review_screen.dart';
+import 'features/materials/presentation/materials_screen.dart';
 import 'features/materials/presentation/study_reader_screen.dart';
 import 'features/library/presentation/library_screen.dart';
 import 'features/medicine/presentation/medicine_screen.dart';
@@ -148,7 +149,10 @@ final appRouter = GoRouter(
             pageBuilder: (_, __) => _fadePage(const LessonsScreen())),
         GoRoute(
           path: '/materiais',
-          redirect: (_, __) => '/biblioteca',
+          pageBuilder: (_, state) {
+            final subject = state.uri.queryParameters['subject'];
+            return _fadePage(MaterialsScreen(initialSubject: subject));
+          },
         ),
         GoRoute(
           path: '/estudar',

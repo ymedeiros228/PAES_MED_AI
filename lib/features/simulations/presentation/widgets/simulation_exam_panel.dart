@@ -182,6 +182,19 @@ class SimulationExamPanel extends StatelessWidget {
                           onSelectAnswer(qi, id, i);
                         },
                       ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        year != null
+                            ? 'Fonte: PAES $year · UEMA (oficial)'
+                            : 'Fonte: acervo local',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          color: cs.onSurface.withOpacity(0.55),
+                        ),
+                      ),
+                    ),
                     if (answers.containsKey(id) && !examLocked)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

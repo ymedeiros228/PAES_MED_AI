@@ -465,7 +465,7 @@ def api_today(
                 theory_snippets.append(
                     f"{entry['subject']} · {entry['topic']}"
                     + (f" ({entry['subtopic']})" if entry.get("subtopic") else "")
-                    + f" — peso {entry.get('weight', 1)}"
+                    + " — prioridade de estudo no app (não é peso de pontuação PAES)"
                 )
     warning = None
     if prefer_official and selected:

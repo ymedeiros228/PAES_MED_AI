@@ -39,6 +39,7 @@ DEPLOY_DB_PATH = REPO_ROOT / "deploy" / "data" / "paes_med_ai.db"
 JUNK_PATTERNS: list[tuple[str, str]] = [
     # Cabeçalho/rodapé do PDF (mais específico primeiro)
     (r"Processo\s+Seletivo\s+de\s+Acesso", "cabecalho_pdf"),
+    (r"Processo\s+Seletivo\b", "cabecalho_pdf"),
     (r"\s*[\u2013\u2014\-]\s*PAES\s*/?\s*\d{4}\s+DOCV", "cabecalho_pdf"),
     (r"\s*[\u2013\u2014\-]\s*PAES\s*/?\s*\d{4}\s*-\s*DOCV", "cabecalho_pdf"),
     (r"\s*[\u2013\u2014\-]\s*PAES\s*/?\s*\d{4}\s+DOC", "cabecalho_pdf"),
@@ -46,6 +47,15 @@ JUNK_PATTERNS: list[tuple[str, str]] = [
     (r"DOCV/PROG/UEMA", "cabecalho_pdf"),
     (r"\d+\s*\|\s*P\s*[áa]\s*g\s*i\s*n\s*a", "rodape_pdf"),
     (r"\|\s*P\s*[áa]\s*g\s*i\s*n\s*a\s*\d*", "rodape_pdf"),
+    (r"P\s*[áa]\s*g\s*i\s*n\s*a\b", "rodape_pdf"),
+    (r"\b1[ªa]\s+ETAPA\b", "cabecalho_pdf"),
+    (r"\bSOCIOLOGIA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bFILOSOFIA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bHIST[ÓO]RIA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bGEOGRAFIA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bF[ÍI]SICA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bQU[ÍI]MICA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
+    (r"\bBIOLOGIA\s+Quest[\s]*[õo]es\s+de\b", "proxima_secao"),
     # Texto da próxima questão
     (r"Quest[\s]*[ãa]o\s*\d+\s+Leia", "proxima_questao"),
     (r"Quest[\s]*[ãa]o\s*\d+\s+Analise", "proxima_questao"),

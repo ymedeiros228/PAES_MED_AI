@@ -14,7 +14,8 @@ class AppNavMapPanel extends StatelessWidget {
   ];
 
   static const _library = [
-    (Icons.menu_book_rounded, 'Biblioteca', 'Provas UEMA e PDFs de estudo'),
+    (Icons.picture_as_pdf_rounded, 'Materiais', 'PDFs de estudo por disciplina'),
+    (Icons.menu_book_rounded, 'Biblioteca', 'Provas UEMA e importação'),
     (Icons.assignment_rounded, 'Simulados', 'Blocos cronometrados como na prova'),
     (Icons.edit_note_rounded, 'Redação', 'Escrever, corrigir e treinar eixos'),
     (Icons.auto_awesome_rounded, 'Tutor', 'Tire dúvidas citando seu material'),

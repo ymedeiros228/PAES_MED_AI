@@ -57,6 +57,22 @@ def _run_startup() -> None:
         except Exception:
             pass
 
+    # Limpa rodapé/cabeçalho PDF colado em alternativas (banco antigo do instalador)
+    if os.getenv("PAES_SKIP_OPTION_SANITIZE", "").strip().lower() not in ("1", "true", "yes"):
+        try:
+            from ingest_pdf import sanitize_questions_full
+
+            cleaned = sanitize_questions_full()
+            print(
+                "Sanitize opções/enunciados: "
+                f"stmts={cleaned.get('statements', 0)} opts={cleaned.get('options', 0)}"
+            )
+        except Exception as exc:
+            try:
+                print(f"Sanitize opções falhou (não fatal): {exc}")
+            except Exception:
+                pass
+
     # Backup automático do progresso do usuário (apenas desktop, nao no Render)
     if os.getenv("PAES_AUTO_BACKUP", "1").strip().lower() in ("1", "true", "yes"):
         try:
