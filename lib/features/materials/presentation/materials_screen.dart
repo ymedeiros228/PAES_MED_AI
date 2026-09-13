@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
@@ -16,6 +17,7 @@ class PdfItem {
     required this.subject,
     required this.sizeKb,
     required this.url,
+    this.coverUrl,
   });
 
   final String filename;
@@ -23,6 +25,7 @@ class PdfItem {
   final String subject;
   final double sizeKb;
   final String url;
+  final String? coverUrl;
 
   factory PdfItem.fromJson(Map<String, dynamic> j) => PdfItem(
         filename: j['filename'] ?? '',
@@ -30,6 +33,7 @@ class PdfItem {
         subject: j['subject'] ?? '',
         sizeKb: (j['size_kb'] ?? 0).toDouble(),
         url: j['url'] ?? '',
+        coverUrl: j['coverUrl']?.toString(),
       );
 }
 
@@ -120,106 +124,149 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final filtered = _filteredPdfs;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Biblioteca', style: TextStyle(fontWeight: FontWeight.w600)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadPdfs,
-            tooltip: 'Atualizar',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Barra de busca
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Buscar material...',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 20),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PageBody(
+          padding: const EdgeInsets.fromLTRB(28, 20, 28, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PageHeader(
+                eyebrow: 'Estudar',
+                title: 'Materiais',
+                subtitle: _loading
+                    ? 'Carregando PDFs locais…'
+                    : filtered.isEmpty
+                        ? 'PDFs oficiais e de treino na pasta local'
+                        : '${filtered.length} material(is) · toque em Estudar',
+                icon: Icons.picture_as_pdf_rounded,
+                trailing: IconButton(
+                  tooltip: 'Atualizar',
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    _loadPdfs();
+                  },
+                  icon: const Icon(Icons.refresh_rounded),
                 ),
-                filled: true,
-                fillColor: cs.surfaceContainerHighest.withOpacity(0.5),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              onChanged: (v) => setState(() => _searchQuery = v),
-            ),
-          ),
-
-          // Filtro de disciplina — chips horizontais
-          if (!_loading && _error == null)
-            SizedBox(
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: const Text('Todas'),
-                      selected: _selectedSubject == null,
-                      onSelected: (_) => setState(() => _selectedSubject = null),
-                    ),
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar material…',
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                  ..._availableSubjects.map((s) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(s),
-                        selected: _selectedSubject == s,
-                        avatar: Icon(_subjectIcons[s] ?? Icons.book, size: 16),
-                        onSelected: (_) => setState(() => _selectedSubject = s),
-                      ),
-                    );
-                  }),
-                ],
+                  filled: true,
+                  fillColor: cs.surfaceContainerHighest.withOpacity(0.5),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
               ),
-            ),
-
-          // Conteudo
-          Expanded(
-            child: _loading
-                ? ListView(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    children: const [
-                      SkeletonListTile(),
-                      SizedBox(height: 8),
-                      SkeletonListTile(),
-                      SizedBox(height: 8),
-                      SkeletonListTile(),
-                      SizedBox(height: 8),
-                      SkeletonListTile(),
-                      SizedBox(height: 8),
-                      SkeletonListTile(),
+              if (!_loading && _error == null) ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: const Text('Todas'),
+                          selected: _selectedSubject == null,
+                          onSelected: (_) {
+                            HapticFeedback.selectionClick();
+                            setState(() => _selectedSubject = null);
+                          },
+                        ),
+                      ),
+                      ..._availableSubjects.map((s) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(s),
+                            selected: _selectedSubject == s,
+                            avatar: Icon(_subjectIcons[s] ?? Icons.book, size: 16),
+                            onSelected: (_) {
+                              HapticFeedback.selectionClick();
+                              setState(() => _selectedSubject = s);
+                            },
+                          ),
+                        );
+                      }),
                     ],
-                  )
-                : _error != null
-                    ? _ErrorView(error: _error!, onRetry: _loadPdfs)
-                    : _filteredPdfs.isEmpty
-                        ? _EmptyView(hasPdfs: _allPdfs.isNotEmpty)
-                        : _PdfGrid(pdfs: _filteredPdfs),
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: _loading
+              ? ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+                  children: const [
+                    SkeletonListTile(),
+                    SizedBox(height: 8),
+                    SkeletonListTile(),
+                    SizedBox(height: 8),
+                    SkeletonListTile(),
+                    SizedBox(height: 8),
+                    SkeletonListTile(),
+                  ],
+                )
+              : _error != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: QuietEmpty(
+                        message: _error!,
+                        action: FilledButton(
+                          onPressed: _loadPdfs,
+                          child: const Text('Tentar novamente'),
+                        ),
+                      ),
+                    )
+                  : filtered.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(28),
+                          child: QuietEmpty(
+                            message: _allPdfs.isNotEmpty
+                                ? 'Nada neste filtro — limpe a busca ou escolha outra disciplina.'
+                                : 'Nenhum PDF na pasta local. Gere ou copie materiais para data/materiais.',
+                            action: _allPdfs.isNotEmpty
+                                ? TextButton(
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() {
+                                        _searchQuery = '';
+                                        _selectedSubject = null;
+                                      });
+                                    },
+                                    child: const Text('Limpar filtros'),
+                                  )
+                                : TextButton(
+                                    onPressed: () => context.go('/biblioteca'),
+                                    child: const Text('Biblioteca'),
+                                  ),
+                          ),
+                        )
+                      : _PdfGrid(pdfs: filtered),
+        ),
+      ],
     );
   }
 }
@@ -341,18 +388,33 @@ class _PdfCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              // Icone PDF
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.picture_as_pdf,
-                  color: cs.onPrimaryContainer,
-                  size: 22,
+              // Capa do material (ou ícone PDF)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 48,
+                  height: 64,
+                  child: pdf.coverUrl != null && pdf.coverUrl!.isNotEmpty
+                      ? Image.network(
+                          '${apiClient.baseUrl}${pdf.coverUrl}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => ColoredBox(
+                            color: cs.primaryContainer,
+                            child: Icon(
+                              Icons.picture_as_pdf,
+                              color: cs.onPrimaryContainer,
+                              size: 22,
+                            ),
+                          ),
+                        )
+                      : ColoredBox(
+                          color: cs.primaryContainer,
+                          child: Icon(
+                            Icons.picture_as_pdf,
+                            color: cs.onPrimaryContainer,
+                            size: 22,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -407,59 +469,6 @@ class _PdfCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Estados: erro e vazio
-// ---------------------------------------------------------------------------
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.error, required this.onRetry});
-  final String error;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.cloud_off, size: 48, color: cs.outline),
-            const SizedBox(height: 12),
-            Text('Erro ao carregar: $error', textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: onRetry, child: const Text('Tentar novamente')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyView extends StatelessWidget {
-  const _EmptyView({required this.hasPdfs});
-  final bool hasPdfs;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(hasPdfs ? Icons.search_off : Icons.picture_as_pdf, size: 64, color: cs.outline),
-          const SizedBox(height: 16),
-          Text(
-            hasPdfs ? 'Nenhum material encontrado.' : 'Nenhum PDF disponível.',
-            style: TextStyle(color: cs.outline),
-          ),
-        ],
       ),
     );
   }

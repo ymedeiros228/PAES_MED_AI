@@ -10,7 +10,6 @@ import '../../../core/data/api_error.dart';
 import '../../../core/widgets/flashcard_images.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class FlashcardsScreen extends ConsumerStatefulWidget {
@@ -26,11 +25,13 @@ class FlashcardsScreen extends ConsumerStatefulWidget {
 class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   final frontCtrl = TextEditingController();
   final backCtrl = TextEditingController();
+  final topicCtrl = TextEditingController();
   bool showBack = false;
   int? currentId;
   /// Ciclo G/AK: default due-only; CTA Fila usa `/flashcards?due=1`.
   late bool dueOnly = widget.dueOnlyInitial;
   bool axesOnly = false;
+  String createSubject = 'Biologia';
 
   @override
   void initState() {
@@ -41,19 +42,28 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
   void dispose() {
     frontCtrl.dispose();
     backCtrl.dispose();
+    topicCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _create() async {
     if (frontCtrl.text.trim().isEmpty || backCtrl.text.trim().isEmpty) return;
     try {
+      final topic = topicCtrl.text.trim();
       await apiClient.post('/api/flashcards', {
         'front': frontCtrl.text.trim(),
         'back': backCtrl.text.trim(),
+        'subject': createSubject,
+        if (topic.isNotEmpty) 'topic': topic,
       });
       frontCtrl.clear();
       backCtrl.clear();
+      topicCtrl.clear();
       ref.read(refreshTickProvider.notifier).state++;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cartão salvo.')),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,8 +113,9 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                   subtitle: axesOnly
                       ? 'Por área · toque para virar'
                       : dueOnly
-                          ? 'Só o que é para revisar hoje'
+                          ? 'Só o que é para revisar hoje — toque na carta'
                           : 'Todos os cartões · toque para virar',
+                  icon: Icons.style_rounded,
                   trailing: Wrap(
                     spacing: 4,
                     children: [
@@ -156,22 +167,29 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                       if (id != null) ids.add(id);
                     }
                     if (items.isEmpty) {
-                      return EmptyState(
-                        icon: Icons.style_outlined,
-                        title: dueOnly ? 'Nada para revisar agora' : 'Nenhum cartão ainda',
-                        subtitle: dueOnly
-                            ? 'Quando errar na sessão, os cartões aparecem aqui. Ou veja todos.'
-                            : 'Estude uma sessão: ao errar, criamos cartões para você.',
+                      return QuietEmpty(
+                        message: dueOnly
+                            ? 'Nada para revisar agora. Quando errar na sessão, os cartões aparecem aqui.'
+                            : 'Nenhum cartão ainda. Estude uma sessão — ao errar, criamos cartões para você.',
                         action: Wrap(
                           spacing: 8,
-                          alignment: WrapAlignment.center,
                           children: [
                             if (dueOnly)
                               FilledButton.tonal(
-                                onPressed: () { HapticFeedback.selectionClick(); setState(() => dueOnly = false); },
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => dueOnly = false);
+                                },
                                 child: const Text('Ver todos'),
                               ),
-                            FilledButton(onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); }, child: const Text('Sessão')),
+                            FilledButton.icon(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go('/sessao');
+                              },
+                              icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                              label: const Text('Abrir sessão'),
+                            ),
                           ],
                         ),
                       );
@@ -189,6 +207,13 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                             currentId = id;
                             showBack = false;
                           }
+                        });
+                      },
+                      onVisible: (id) {
+                        if (currentId == id) return;
+                        setState(() {
+                          currentId = id;
+                          showBack = false;
                         });
                       },
                       onPrev: () {
@@ -235,15 +260,57 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 const SizedBox(height: 16),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Criar cartão manual', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface)),
+                  title: Text(
+                    'Criar cartão manual',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                  ),
+                  subtitle: const Text('Matéria + tópico ligam a capa do material'),
                   children: [
+                    DropdownMenu<String>(
+                      initialSelection: createSubject,
+                      label: const Text('Disciplina'),
+                      width: double.infinity,
+                      onSelected: (v) {
+                        if (v == null) return;
+                        setState(() => createSubject = v);
+                      },
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
+                        DropdownMenuEntry(value: 'Química', label: 'Química'),
+                        DropdownMenuEntry(value: 'Física', label: 'Física'),
+                        DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
+                        DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
+                        DropdownMenuEntry(value: 'História', label: 'História'),
+                        DropdownMenuEntry(value: 'Geografia', label: 'Geografia'),
+                        DropdownMenuEntry(value: 'Filosofia', label: 'Filosofia'),
+                        DropdownMenuEntry(value: 'Sociologia', label: 'Sociologia'),
+                        DropdownMenuEntry(value: 'Inglês', label: 'Inglês'),
+                        DropdownMenuEntry(value: 'Espanhol', label: 'Espanhol'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: topicCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Assunto',
+                        hintText: 'Ex.: Genética',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextField(controller: frontCtrl, decoration: const InputDecoration(labelText: 'Frente')),
                     const SizedBox(height: 8),
                     TextField(controller: backCtrl, decoration: const InputDecoration(labelText: 'Verso')),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: FilledButton(onPressed: () { HapticFeedback.selectionClick(); _create(); }, child: const Text('Salvar cartão')),
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          _create();
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('Salvar cartão'),
+                      ),
                     ),
                   ],
                 ),
@@ -336,6 +403,7 @@ class _CardDeckView extends StatefulWidget {
     required this.currentId,
     required this.showBack,
     required this.onFlip,
+    required this.onVisible,
     required this.onPrev,
     required this.onNext,
     required this.onRemember,
@@ -347,6 +415,7 @@ class _CardDeckView extends StatefulWidget {
   final int? currentId;
   final bool showBack;
   final ValueChanged<int> onFlip;
+  final ValueChanged<int> onVisible;
   final VoidCallback onPrev;
   final VoidCallback onNext;
   final ValueChanged<int> onRemember;
@@ -360,17 +429,92 @@ class _CardDeckView extends StatefulWidget {
 class _CardDeckViewState extends State<_CardDeckView> {
   late PageController _pageController;
   int _currentIndex = 0;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(viewportFraction: 0.52);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+      _prefetchAround(_currentIndex);
+      _syncVisibleId(_currentIndex);
+    });
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _syncVisibleId(int index) {
+    if (index < 0 || index >= widget.items.length) return;
+    final raw = widget.items[index];
+    if (raw is! Map) return;
+    final id = raw['id'] is int ? raw['id'] as int : int.tryParse('${raw['id']}');
+    if (id != null) widget.onVisible(id);
+  }
+
+  void _prefetchAround(int index) {
+    for (final i in [index - 1, index, index + 1]) {
+      if (i < 0 || i >= widget.items.length) continue;
+      final raw = widget.items[i];
+      if (raw is! Map) continue;
+      final subj = raw['subject']?.toString() ?? '';
+      final top = raw['topic']?.toString() ?? '';
+      final url = flashcardImageUrl(apiClient.baseUrl, subj, top);
+      if (url == null) continue;
+      precacheImage(NetworkImage(url), context);
+    }
+  }
+
+  void _goTo(int index) {
+    if (index < 0 || index >= widget.items.length) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final id = widget.currentId;
+    if (event.logicalKey == LogicalKeyboardKey.space ||
+        event.logicalKey == LogicalKeyboardKey.enter) {
+      if (id != null) {
+        widget.onFlip(id);
+        return KeyEventResult.handled;
+      }
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
+        event.logicalKey == LogicalKeyboardKey.keyA ||
+        event.logicalKey == LogicalKeyboardKey.keyJ) {
+      _goTo(_currentIndex - 1);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
+        event.logicalKey == LogicalKeyboardKey.keyD ||
+        event.logicalKey == LogicalKeyboardKey.keyK) {
+      _goTo(_currentIndex + 1);
+      return KeyEventResult.handled;
+    }
+    if (id != null && widget.showBack) {
+      if (event.logicalKey == LogicalKeyboardKey.digit1 ||
+          event.logicalKey == LogicalKeyboardKey.numpad1) {
+        widget.onRemember(id);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.digit2 ||
+          event.logicalKey == LogicalKeyboardKey.numpad2) {
+        widget.onForgot(id);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
@@ -417,14 +561,18 @@ class _CardDeckViewState extends State<_CardDeckView> {
     }
     final isFlippedValid = flippedItem != null && flippedItem.isNotEmpty;
 
-    return Stack(
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _onKey,
+      child: Stack(
       children: [
         // Conteúdo normal (carrossel)
         Column(
           children: [
             // Indicador de progresso "2 / 300"
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 4),
               child: Text(
                 '${_currentIndex + 1} / $total',
                 style: TextStyle(
@@ -433,6 +581,12 @@ class _CardDeckViewState extends State<_CardDeckView> {
                   color: cs.onSurface.withOpacity(0.5),
                 ),
               ),
+            ),
+            Text(
+              widget.showBack
+                  ? '1 lembrou · 2 esqueceu · ← → navega'
+                  : 'Espaço vira · ← → navega',
+              style: TextStyle(fontSize: 11, color: cs.onSurface.withOpacity(0.45)),
             ),
             // Barra de progresso
             Padding(
@@ -457,6 +611,8 @@ class _CardDeckViewState extends State<_CardDeckView> {
                 onPageChanged: (index) {
                   HapticFeedback.selectionClick();
                   setState(() => _currentIndex = index);
+                  _syncVisibleId(index);
+                  _prefetchAround(index);
                 },
                 itemBuilder: (context, index) {
                   final raw = widget.items[index];
@@ -524,6 +680,58 @@ class _CardDeckViewState extends State<_CardDeckView> {
                   );
                 }),
               ),
+            if (total > 1) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 56,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  itemCount: total,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final raw = widget.items[index];
+                    final item = Map<String, dynamic>.from(raw as Map);
+                    final subj = item['subject']?.toString() ?? '';
+                    final top = item['topic']?.toString() ?? '';
+                    final url = flashcardImageUrl(apiClient.baseUrl, subj, top);
+                    final active = index == _currentIndex;
+                    final accent = Color(subjectColorSeed(subj));
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        width: 44,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: active ? cs.primary : cs.outlineVariant.withOpacity(0.5),
+                            width: active ? 2.5 : 1,
+                          ),
+                          color: accent.withOpacity(0.15),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: url == null
+                            ? Icon(subjectIcon(subj), size: 20, color: accent)
+                            : Image.network(
+                                url,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    Icon(subjectIcon(subj), size: 20, color: accent),
+                              ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ],
         ),
         // === OVERLAY: zoom + blur quando a carta está virada ===
@@ -536,6 +744,7 @@ class _CardDeckViewState extends State<_CardDeckView> {
             onDelete: () => widget.onDelete(widget.currentId!),
           ),
       ],
+    ),
     );
   }
 }
@@ -662,9 +871,7 @@ class _GameCardFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final accent = Color(subjectColorSeed(subject));
-    final gradColors = subjectGradient(subject);
-    final icon = subjectIcon(subject);
-    final emoji = subjectEmoji(subject);
+    final imageUrl = flashcardImageUrl(apiClient.baseUrl, subject, topic);
 
     return Material(
       color: Colors.transparent,
@@ -689,70 +896,15 @@ class _GameCardFace extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // === HERÓI: gradiente + ícone grande + emoji ===
+                // === HERÓI: capa real ou gradiente ===
                 Stack(
                   children: [
-                    Container(
+                    FlashcardHeroBanner(
+                      subject: subject,
+                      topic: topic,
+                      imageUrl: imageUrl,
                       height: 200,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: gradColors,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // Ícone grande de fundo (decorativo)
-                          Positioned(
-                            right: -30,
-                            top: -15,
-                            child: Icon(
-                              icon,
-                              size: 180,
-                              color: Colors.white.withOpacity(0.08),
-                            ),
-                          ),
-                          // Emoji grande centralizado
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  emoji,
-                                  style: const TextStyle(fontSize: 64),
-                                ),
-                                const SizedBox(height: 6),
-                                Icon(
-                                  isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
-                                  color: Colors.white.withOpacity(0.7),
-                                  size: 28,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Overlay gradiente inferior para legibilidade
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.6),
-                            ],
-                          ),
-                        ),
-                      ),
+                      isBack: isBack,
                     ),
                     // Badge FRENTE/VERSO (canto superior esquerdo)
                     Positioned(
@@ -1053,9 +1205,7 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
     final src = item['source']?.toString() ?? '';
     final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
     final accent = Color(subjectColorSeed(subj));
-    final gradColors = subjectGradient(subj);
-    final icon = subjectIcon(subj);
-    final emoji = subjectEmoji(subj);
+    final imageUrl = flashcardImageUrl(apiClient.baseUrl, subj, top);
     final backText = item['back']?.toString() ?? '';
     final dueLabel = humanDueLabel(item['next_due']?.toString());
 
@@ -1111,61 +1261,12 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                 // === HERÓI ===
                                 Stack(
                                   children: [
-                                    Container(
+                                    FlashcardHeroBanner(
+                                      subject: subj,
+                                      topic: top,
+                                      imageUrl: imageUrl,
                                       height: 180,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: gradColors,
-                                        ),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          Positioned(
-                                            right: -30,
-                                            top: -15,
-                                            child: Icon(
-                                              icon,
-                                              size: 200,
-                                              color: Colors.white.withOpacity(0.08),
-                                            ),
-                                          ),
-                                          Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text(emoji, style: const TextStyle(fontSize: 60)),
-                                                const SizedBox(height: 6),
-                                                Icon(
-                                                  Icons.lightbulb_rounded,
-                                                  color: Colors.white.withOpacity(0.7),
-                                                  size: 28,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        height: 70,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.transparent,
-                                              Colors.black.withOpacity(0.6),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                      isBack: true,
                                     ),
                                     Positioned(
                                       top: 12,

@@ -22,6 +22,15 @@ router = APIRouter(prefix="/api/materials", tags=["materiais"])
 
 # Diretório de PDFs gerados — usa DATA_DIR (respeita PAES_DATA_DIR no PyInstaller).
 _PDF_DIR = DATA_DIR / "materiais"
+_IMG_DIR = _PDF_DIR / "imagens"
+_IMG_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+_IMG_MEDIA = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+}
 
 
 class GenerateRequest(BaseModel):
@@ -48,6 +57,17 @@ async def list_pdfs() -> list[dict[str, Any]]:
     """Lista todos os PDFs disponíveis na pasta de materiais."""
     if not _PDF_DIR.exists():
         return []
+    from pdf_cover_map import PDF_TO_COVER
+
+    def _cover_for_stem(stem: str) -> str | None:
+        prefix = PDF_TO_COVER.get(stem.upper())
+        if not prefix or not _IMG_DIR.exists():
+            return None
+        matches = sorted(
+            p for p in _IMG_DIR.glob(f"{prefix}*") if p.suffix.lower() in _IMG_EXT
+        )
+        return matches[0].name if matches else None
+
     pdfs = []
     for f in sorted(_PDF_DIR.glob("*.pdf")):
         # Decodificar nome: BI_CITOLOGIA_MEMBRANA_PLASMATICA.pdf
@@ -60,12 +80,15 @@ async def list_pdfs() -> list[dict[str, Any]]:
                        "GEO": "Geografia", "FIL": "Filosofia", "SOC": "Sociologia",
                        "ING": "Inglês", "ESP": "Espanhol"}
         subject = subject_map.get(subject_code, subject_code)
+        cover = _cover_for_stem(name)
         pdfs.append({
             "filename": f.name,
             "title": title,
             "subject": subject,
             "size_kb": round(f.stat().st_size / 1024, 1),
             "url": f"/api/materials/pdf/{f.name}",
+            "coverUrl": f"/api/materials/imagens/{cover}" if cover else None,
+            "coverFilename": cover,
         })
     return pdfs
 
@@ -83,6 +106,27 @@ async def download_pdf(filename: str):
     return FileResponse(
         str(pdf_path),
         media_type="application/pdf",
+        filename=safe,
+    )
+
+
+@router.get("/imagens/{filename}")
+async def serve_cover_image(filename: str):
+    """Serve capa/diagrama local de `data/materiais/imagens` (flashcards + UI)."""
+    safe = Path(filename).name
+    suffix = Path(safe).suffix.lower()
+    if suffix not in _IMG_EXT:
+        raise HTTPException(status_code=400, detail="Formato de imagem não suportado.")
+    img_path = (_IMG_DIR / safe).resolve()
+    try:
+        img_path.relative_to(_IMG_DIR.resolve())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Caminho inválido.") from exc
+    if not img_path.is_file():
+        raise HTTPException(status_code=404, detail="Imagem não encontrada.")
+    return FileResponse(
+        str(img_path),
+        media_type=_IMG_MEDIA.get(suffix, "application/octet-stream"),
         filename=safe,
     )
 

@@ -153,14 +153,30 @@ String? _topicToSuffix(String prefix, String topic) {
   return subjMap.values.first;
 }
 
-/// Retorna o caminho do asset para a imagem do flashcard, ou null.
-String? flashcardImageFor(String subject, String topic) {
+/// Retorna o filename da capa em `data/materiais/imagens`, ou null.
+String? flashcardImageFilename(String subject, String topic) {
   final prefix = _subjectToPrefix(subject);
   if (prefix == null) return null;
-  final filename = _topicToSuffix(prefix, topic);
-  if (filename == null) return null;
-  return 'data/materiais/imagens/$filename';
+  return _topicToSuffix(prefix, topic);
 }
+
+/// Path relativo da API: `/api/materials/imagens/{file}`.
+String? flashcardImagePath(String subject, String topic) {
+  final filename = flashcardImageFilename(subject, topic);
+  if (filename == null) return null;
+  return '/api/materials/imagens/$filename';
+}
+
+/// URL absoluta para `Image.network` (usa [baseUrl] do ApiClient).
+String? flashcardImageUrl(String baseUrl, String subject, String topic) {
+  final path = flashcardImagePath(subject, topic);
+  if (path == null) return null;
+  final base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+  return '$base$path';
+}
+
+/// @deprecated Use [flashcardImagePath] / [flashcardImageUrl].
+String? flashcardImageFor(String subject, String topic) => flashcardImagePath(subject, topic);
 
 /// Retorna uma cor de destaque para a matéria.
 int subjectColorSeed(String subject) {
@@ -228,4 +244,114 @@ String subjectEmoji(String subject) {
   if (s.contains('filosof')) return '🧠';
   if (s.contains('sociolog')) return '👥';
   return '🃏';
+}
+
+/// Herói da carta: capa real quando existir; senão gradiente + ícone.
+class FlashcardHeroBanner extends StatelessWidget {
+  const FlashcardHeroBanner({
+    super.key,
+    required this.subject,
+    required this.topic,
+    required this.imageUrl,
+    this.height = 200,
+    this.isBack = false,
+  });
+
+  final String subject;
+  final String topic;
+  final String? imageUrl;
+  final double height;
+  final bool isBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final gradColors = subjectGradient(subject);
+    final icon = subjectIcon(subject);
+    final emoji = subjectEmoji(subject);
+
+    Widget fallback() => Stack(
+          fit: StackFit.expand,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: gradColors,
+                ),
+              ),
+            ),
+            Positioned(
+              right: -30,
+              top: -15,
+              child: Icon(icon, size: height * 0.9, color: Colors.white.withOpacity(0.08)),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(emoji, style: TextStyle(fontSize: height * 0.32)),
+                  const SizedBox(height: 6),
+                  Icon(
+                    isBack ? Icons.lightbulb_rounded : Icons.style_rounded,
+                    color: Colors.white.withOpacity(0.7),
+                    size: 28,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return SizedBox(height: height, width: double.infinity, child: fallback());
+    }
+
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            gaplessPlayback: true,
+            errorBuilder: (_, __, ___) => fallback(),
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  fallback(),
+                  const Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          // Vinheta leve para contraste dos badges
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.15),
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.55),
+                ],
+                stops: const [0, 0.45, 1],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
