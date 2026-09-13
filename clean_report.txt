@@ -1,0 +1,8 @@
+Modo: APLICADO
+Total questoes (todas as bases): 623
+Questoes limpas: 0
+Questoes sem lixo: 623
+================================================================================
+
+### C:\Users\Yuri\Documents\uema estudos\PAES_MED_AI\data\paes_med_ai.db
+Limpas=0 Sem lixo=623
