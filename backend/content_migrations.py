@@ -17,7 +17,7 @@ from db import db
 
 _log = logging.getLogger("paes.content_migrations")
 
-CONTENT_MIGRATION_VERSION = "1"
+CONTENT_MIGRATION_VERSION = "2"
 
 # Padrões de cartões gerados por template (sem valor de estudo).
 _TEMPLATE_PATTERNS = (
@@ -77,7 +77,8 @@ def migrate_content() -> dict[str, Any]:
                 front = str(card.get("front") or "").strip()
                 back = str(card.get("back") or "").strip()
                 key = _norm(front)
-                if not front or not back or key in existing:
+                # Algumas aulas trazem cartões de template ('Macete rápido — X').
+                if not front or not back or key in existing or _is_template(front, None):
                     continue
                 existing.add(key)
                 due = (today + timedelta(days=added % 7)).isoformat(timespec="seconds")
