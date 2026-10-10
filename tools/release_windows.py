@@ -144,6 +144,13 @@ def _compile_installer() -> None:
     print("[OK] Instalador compilado")
 
 
+def _prepare_clean_db() -> None:
+    """Regera data/paes_med_ai_clean.db (sem progresso pessoal) a partir do banco atual."""
+    script = REPO_ROOT / "tools" / "prepare_clean_database.py"
+    _run([sys.executable, str(script)], cwd=REPO_ROOT)
+    print("[OK] Banco limpo regerado")
+
+
 def _prepare_staging() -> None:
     """Monta installer/staging com app + backend bundle + dados + tools."""
     script = REPO_ROOT / "tools" / "prepare_installer.py"
@@ -217,6 +224,7 @@ def main() -> int:
             _build_web()
 
         _sync_deploy_data()
+        _prepare_clean_db()
         _prepare_staging()
         _compile_installer()
 

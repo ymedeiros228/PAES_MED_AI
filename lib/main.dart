@@ -11,8 +11,14 @@ String _shortUiError(String raw) {
   return '${s.substring(0, 320)}…';
 }
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lê a flag de onboarding uma vez (o redirect do router usa o cache).
+  try {
+    await preloadOnboardingFlag();
+  } catch (_) {
+    // Sem prefs: o redirect lê na 1ª navegação.
+  }
   // Inicia o backend Python local automaticamente no Windows.
   // Tenta ate 3x com intervalo de 2s — se falhar (ex: porta ocupada),
   // tenta novamente antes de desistir.
@@ -76,7 +82,7 @@ void main() {
                 style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
               Text(
-                '· Atalhos: F foco · Ctrl+T tema',
+                '· Atalhos: Ctrl+T tema · Ctrl+Shift+F foco',
                 style: TextStyle(fontSize: 13, color: Colors.black87),
               ),
             ],

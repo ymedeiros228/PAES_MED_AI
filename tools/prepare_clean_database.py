@@ -3,7 +3,6 @@ Gera um banco limpo (paes_med_ai_clean.db) para distribuicao no instalador.
 Remove todo o progresso, respostas, configuracoes e planos do usuario.
 Mantem: questions, flashcards, lessons, materials, syllabus.
 """
-import shutil
 import sqlite3
 from pathlib import Path
 
@@ -15,7 +14,14 @@ DST = ROOT / "data" / "paes_med_ai_clean.db"
 def create_clean_database():
     if DST.exists():
         DST.unlink()
-    shutil.copy2(SRC, DST)
+    # API de backup do SQLite: copia consistente mesmo com o banco aberto (WAL).
+    src = sqlite3.connect(f"file:{SRC.as_posix()}?mode=ro", uri=True)
+    dst = sqlite3.connect(DST)
+    try:
+        src.backup(dst)
+    finally:
+        dst.close()
+        src.close()
 
     conn = sqlite3.connect(DST)
     c = conn.cursor()
@@ -30,6 +36,8 @@ def create_clean_database():
         "study_gaps",
         "essays",
         "embeddings",  # embeddings gerados por usuario tambem
+        "ingest_jobs",  # historico de importacao do PC do desenvolvedor
+        "ingest_previews",
     ]
 
     for table in personal_tables:
@@ -48,6 +56,7 @@ def create_clean_database():
 
     # Opcional: cria um usuario/padrao minimo se necessario, mas no app ele cria sozinho.
     conn.commit()
+    conn.execute("VACUUM")
 
     # Verifica conteudo final
     c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")

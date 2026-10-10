@@ -46,7 +46,12 @@ from services_core import (
     study_week_close_status,
     topic_read_status,
 )
-from services_edital import theory_snippets_for
+from services_edital import (
+    is_same_topic,
+    rank_by_topic_relevance,
+    theory_sections_for,
+    theory_snippets_for,
+)
 from services_extra import (
     clear_session_checkpoint,
     complete_revision,
@@ -57,6 +62,54 @@ from services_extra import (
 from timeutil import now_iso
 
 router = APIRouter(tags=["estudo"])
+
+# Questão "do tópico" = pelo menos 2 radicais distintivos do tópico no texto.
+_MIN_TOPIC_HITS = 2
+
+
+def focused_topic_questions(
+    subject: str,
+    topic: str,
+    *,
+    exam_board: str | None = None,
+    year: int | None = None,
+    source_kind: str | None = None,
+    limit: int = 15,
+    min_fill: int = 8,
+) -> list[dict[str, Any]]:
+    """Questões para a meta (disciplina + tópico), priorizando o CONTEÚDO do tópico.
+
+    O rótulo `topic` das oficiais importadas não é confiável (o classificador pôs
+    51 oficiais de Biologia em 'Genética/Mendel', inclusive protozoários). Então:
+    1) junta as rotuladas no tópico + as da disciplina inteira (mesmos filtros);
+    2) ordena por relevância textual (rank_by_topic_relevance);
+    3) entram primeiro as relevantes; rotuladas com evidência fraca (1 radical)
+       só completam até `min_fill`; rotuladas sem evidência nenhuma ficam de fora.
+       Sem nenhuma relevante, mantém o comportamento antigo (só rótulo).
+    """
+    filters = {"exam_board": exam_board, "year": year, "source_kind": source_kind}
+    labelled = list_questions(subject=subject, topic=topic, limit=200, **filters)
+    wide = list_questions(subject=subject, limit=400, **filters)
+    seen: set[str] = set()
+    merged: list[dict[str, Any]] = []
+    for q in [*labelled, *wide]:
+        if q["id"] not in seen:
+            seen.add(q["id"])
+            merged.append(q)
+    ranked = rank_by_topic_relevance(merged, subject, topic)
+    relevant = [q for q in ranked if q.get("topicRelevance", 0) >= _MIN_TOPIC_HITS]
+    if not relevant:
+        return labelled[:limit]
+    out = relevant[:limit]
+    fill_to = min(limit, max(min_fill, len(out)))
+    for q in ranked:
+        if len(out) >= fill_to:
+            break
+        # completa só com rotuladas no tópico que tenham alguma evidência no texto
+        if q in out or not is_same_topic(q.get("topic"), topic) or q.get("topicRelevance", 0) < 1:
+            continue
+        out.append(q)
+    return out
 
 
 @router.get("/api/study/day-close")
@@ -194,13 +247,13 @@ def api_today(
         study_today = {
             "subject": subject_filter,
             "topic": topic_filter,
-            "reason": "Deep-link Domínio / tópico do dia (Ciclo X)",
+            "reason": "Tópico escolhido por você no Domínio.",
         }
     elif subject_filter and not study_today:
         study_today = {
             "subject": subject_filter,
             "topic": topic_filter or "Geral",
-            "reason": "Disciplina escolhida no Domínio",
+            "reason": "Disciplina escolhida por você no Domínio.",
         }
     topic_keys: list[tuple[str, str]] = []
     if study_today:
@@ -267,9 +320,9 @@ def api_today(
     # Deep-link subject+topic: prioriza as questões do tópico
     year_widened = False
     if subject_filter and topic_filter:
-        qpool = list_questions(
-            subject=subject_filter,
-            topic=topic_filter,
+        qpool = focused_topic_questions(
+            subject_filter,
+            topic_filter,
             exam_board=board_filter or ("UEMA_PAES" if prefer_official else None),
             year=year_filter,
             source_kind="oficial" if want_oficial_gab else None,
@@ -277,9 +330,9 @@ def api_today(
         )
         # AE2: year estreito demais → multi-ano do mesmo tópico
         if year_filter and len(qpool) < 5 and board_filter == "UEMA_PAES":
-            multi = list_questions(
-                subject=subject_filter,
-                topic=topic_filter,
+            multi = focused_topic_questions(
+                subject_filter,
+                topic_filter,
                 exam_board="UEMA_PAES",
                 year=None,
                 source_kind="oficial" if want_oficial_gab else None,
@@ -289,23 +342,27 @@ def api_today(
                 qpool = multi
                 year_widened = True
         if not qpool and prefer_official:
-            qpool = list_questions(
-                subject=subject_filter, topic=topic_filter, source_kind="oficial", limit=20
+            qpool = focused_topic_questions(
+                subject_filter, topic_filter, source_kind="oficial", limit=20
             )
             used_fallback = True
         if not qpool and not want_oficial_gab:
-            qpool = list_questions(subject=subject_filter, topic=topic_filter, limit=20)
+            qpool = focused_topic_questions(subject_filter, topic_filter, limit=20)
             if qpool:
                 used_fallback = True
         if want_oficial_gab:
             qpool = [q for q in qpool if _official_gab_ok(q)]
         selected = qpool[:15]
         if len(selected) < 8 and subject_filter in natureza_subjects and board_filter == "UEMA_PAES":
-            more = list_questions(
-                subject=subject_filter,
-                exam_board="UEMA_PAES",
-                source_kind="oficial" if want_oficial_gab else None,
-                limit=15,
+            more = rank_by_topic_relevance(
+                list_questions(
+                    subject=subject_filter,
+                    exam_board="UEMA_PAES",
+                    source_kind="oficial" if want_oficial_gab else None,
+                    limit=60,
+                ),
+                subject_filter,
+                topic_filter,
             )
             for question in more:
                 if want_oficial_gab and not _official_gab_ok(question):
@@ -403,9 +460,10 @@ def api_today(
         ]
     else:
         for s, t in topic_keys:
-            questions = list_questions(subject=s, topic=t, exam_board="UEMA_PAES", limit=15)
+            # Meta do dia/tópicos críticos: prioriza conteúdo do tópico (rótulo não é confiável)
+            questions = focused_topic_questions(s, t, exam_board="UEMA_PAES", limit=15)
             if not questions and prefer_official:
-                questions = list_questions(subject=s, topic=t, source_kind="oficial", limit=15)
+                questions = focused_topic_questions(s, t, source_kind="oficial", limit=15)
             if not questions and not want_oficial_gab:
                 questions = list_questions(subject=s, topic=t, exam_board="TREINO", limit=15)
                 if questions:
@@ -445,6 +503,7 @@ def api_today(
             session_plan[1]["title"] = "Só oficiais UEMA_PAES"
     edital_topics: list[dict[str, Any]] = []
     theory_snippets: list[str] = []
+    theory_sections: list[dict[str, Any]] = []
     if study_today:
         with db() as conn:
             edital_topics = [
@@ -453,13 +512,19 @@ def api_today(
                     (study_today["subject"],),
                 ).fetchall()
             ]
-        theory_snippets = theory_snippets_for(
+        # Teoria do TÓPICO da meta (material didático → aulas → edital), sem
+        # Markdown cru e sem blocos repetidos. O "reason" da meta não entra aqui:
+        # antes virava o 1º "trecho de teoria" (ex.: "Deep-link Domínio…").
+        theory_sections = theory_sections_for(
             study_today.get("subject"),
             study_today.get("topic"),
-            limit=8,
+            limit=10,
         )
-        if study_today.get("reason"):
-            theory_snippets.insert(0, str(study_today["reason"]))
+        theory_snippets = (
+            [f"{sec['title']}\n{sec['body']}" for sec in theory_sections]
+            if theory_sections
+            else theory_snippets_for(study_today.get("subject"), study_today.get("topic"), limit=10)
+        )
         if not theory_snippets:
             for entry in edital_topics[:8]:
                 theory_snippets.append(
@@ -540,11 +605,16 @@ def api_today(
     elif not prefer_official and not board_filter:
         warning = "Acervo oficial insuficiente; sessão usa base de treino rotulada."
     official_in_pack = sum(1 for q in selected if not q.get("generated"))
+    # SessionStartCard lê questionCount (ou phase.count); antes não vinha → sempre "8".
+    for phase in session_plan:
+        if phase.get("phase") == "questions":
+            phase["count"] = len(selected)
     return {
         "studyToday": study_today,
         "phases": {
             "theory": study_today,
             "theorySnippets": theory_snippets,
+            "theorySections": theory_sections,
             "questions": [question["id"] for question in selected],
             "revisions": due_revs,
             "flashcards": cards[:30],
@@ -554,7 +624,9 @@ def api_today(
         "flashcardsDueCount": len(cards),
         **{k: v for k, v in flashcard_axis_stats().items()},
         "theorySnippets": theory_snippets,
+        "theorySections": theory_sections,
         "sessionPlan": session_plan,
+        "questionCount": len(selected),
         "preferOfficial": prefer_official,
         "preferNatureza": natureza_first or want_natureza,
         "naturezaFirst": natureza_first,

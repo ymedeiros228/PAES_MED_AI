@@ -4,23 +4,80 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/media_reinforcement.dart';
 import '../../../../core/widgets/ui_kit.dart';
 
-/// Fase de teoria do edital na sessão guiada.
+/// Bloco de teoria já limpo pelo backend (theorySections: {title, body}).
+class TheoryBlock {
+  const TheoryBlock({this.title, required this.body});
+
+  final String? title;
+  final String body;
+
+  /// Aceita `theorySections` (mapas) e, como fallback, `theorySnippets` (strings
+  /// no formato "Título\ncorpo"). Remove Markdown cru que ainda venha do edital
+  /// e descarta blocos repetidos.
+  static List<TheoryBlock> fromPlan(Map<String, dynamic>? plan) {
+    if (plan == null) return const [];
+    final phases = plan['phases'] is Map ? plan['phases'] as Map : const {};
+    final rawSections = plan['theorySections'] ?? phases['theorySections'];
+    final out = <TheoryBlock>[];
+    final seen = <String>{};
+    void add(String? title, String body) {
+      final clean = cleanMarkdown(body);
+      if (clean.isEmpty || !seen.add(clean)) return;
+      final t = title == null ? null : cleanMarkdown(title);
+      out.add(TheoryBlock(title: (t == null || t.isEmpty) ? null : t, body: clean));
+    }
+
+    if (rawSections is List) {
+      for (final raw in rawSections) {
+        if (raw is Map) {
+          add(raw['title']?.toString(), raw['body']?.toString() ?? '');
+        }
+      }
+    }
+    if (out.isNotEmpty) return out;
+    final rawSnippets = plan['theorySnippets'] ?? phases['theorySnippets'];
+    if (rawSnippets is List) {
+      for (final raw in rawSnippets) {
+        add(null, raw?.toString() ?? '');
+      }
+    }
+    return out;
+  }
+
+  /// '## Título' → 'Título', '- item' → '• item', '**x**' → 'x'.
+  static String cleanMarkdown(String text) {
+    final lines = text
+        .split('\n')
+        .where((line) => !line.trim().startsWith('<!--'))
+        .map((line) {
+      var l = line.trim();
+      l = l.replaceFirst(RegExp(r'^#{1,6}\s+'), '');
+      l = l.replaceFirst(RegExp(r'^[-*+]\s+'), '• ');
+      l = l.replaceAllMapped(RegExp(r'(\*\*|__)(.+?)\1'), (m) => m[2] ?? '');
+      return l;
+    });
+    return lines.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+  }
+}
+
+/// Fase de teoria do tópico na sessão guiada.
 class SessionTheoryPanel extends StatelessWidget {
   const SessionTheoryPanel({
     super.key,
-    required this.snippets,
+    required this.blocks,
     required this.subject,
     required this.topic,
   });
 
-  final List<String> snippets;
+  final List<TheoryBlock> blocks;
   final String subject;
   final String topic;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final display = snippets.length > 10 ? snippets.take(10).toList() : snippets;
+    final display = blocks.length > 12 ? blocks.take(12).toList() : blocks;
+    final heading = topic.isNotEmpty ? 'Teoria · $topic' : 'Teoria do tópico';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -28,17 +85,19 @@ class SessionTheoryPanel extends StatelessWidget {
         const Divider(height: 24),
         Row(
           children: [
-            Text(
-              'Teoria do edital',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
+            Expanded(
+              child: Text(
+                heading,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
               ),
             ),
-            const Spacer(),
             Text(
-              snippets.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ler',
+              display.isEmpty ? 'Passo 1 de 2' : 'Passo 1 de 2 · ${display.length} blocos',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -62,9 +121,9 @@ class SessionTheoryPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        if (snippets.isEmpty)
+        if (display.isEmpty)
           QuietEmpty(
-            message: 'Sem teoria do edital para o assunto de hoje. Atualize o edital na Biblioteca.',
+            message: 'Sem teoria local para o assunto de hoje. Gere o material do tópico na Biblioteca.',
             action: FilledButton.tonal(
               onPressed: () => context.go('/biblioteca'),
               child: const Text('Abrir Biblioteca'),
@@ -89,12 +148,23 @@ class SessionTheoryPanel extends StatelessWidget {
                           color: cs.primary,
                         ),
                       ),
+                      if (display[si].title != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          display[si].title!,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.center,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 760),
-                          child: SelectableText(display[si]),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: SelectableText(
+                          display[si].body,
+                          style: const TextStyle(height: 1.45),
                         ),
                       ),
                     ],
@@ -102,7 +172,7 @@ class SessionTheoryPanel extends StatelessWidget {
                 ),
             ],
           ),
-        const Text('Leia os trechos acima (~20 min) e avance para as questões.'),
+        const Text('Leia os blocos acima (~20 min) e avance para as questões.'),
         if (subject.isNotEmpty || topic.isNotEmpty)
           MediaReinforcement(subject: subject, topic: topic, compact: true),
       ],

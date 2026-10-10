@@ -39,14 +39,33 @@ import 'features/today/presentation/today_queue_screen.dart';
 
 final onboardingTick = ValueNotifier<int>(0);
 
-void notifyOnboardingFinished() => onboardingTick.value++;
+/// Cache do "onboarding concluído" — o redirect roda a CADA navegação; ler
+/// SharedPreferences ali (async) deixava a troca de tela mais lenta.
+/// Carregado uma vez (main → [preloadOnboardingFlag] ou 1ª navegação).
+bool? _onboardingDone;
+
+/// Lê a flag uma única vez (chamado no main antes do runApp).
+Future<void> preloadOnboardingFlag() async {
+  final prefs = await SharedPreferences.getInstance();
+  _onboardingDone = prefs.getBool('onboarding_done_v1') ?? false;
+}
+
+/// Zera o cache (só para testes que trocam os valores mockados).
+@visibleForTesting
+void resetOnboardingFlagCache() => _onboardingDone = null;
+
+void notifyOnboardingFinished() {
+  _onboardingDone = true;
+  onboardingTick.value++;
+}
 
 final appRouter = GoRouter(
   initialLocation: '/dashboard',
   refreshListenable: onboardingTick,
   redirect: (context, state) async {
-    final prefs = await SharedPreferences.getInstance();
-    final done = prefs.getBool('onboarding_done_v1') ?? false;
+    final done = _onboardingDone ??= (await SharedPreferences.getInstance())
+            .getBool('onboarding_done_v1') ??
+        false;
     final onOnboarding = state.matchedLocation == '/onboarding';
     if (!done && !onOnboarding) return '/onboarding';
     if (done && onOnboarding) return '/dashboard';
@@ -249,28 +268,17 @@ final appRouter = GoRouter(
   ),
 );
 
-/// Cria uma CustomTransitionPage com fade suave (250ms) para transições
-/// entre telas dentro do ShellRoute. Mais sutil que o slide padrão do
-/// Material, evitando "flicker" ao trocar de aba no NavigationBar.
+/// Transição entre telas do shell: só fade, curto (160ms). Sem deslize —
+/// trocar de aba no menu deve parecer instantâneo, não "travado".
 CustomTransitionPage<void> _fadePage(Widget child) {
   return CustomTransitionPage(
     child: child,
-    transitionDuration: const Duration(milliseconds: 300),
-    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionDuration: const Duration(milliseconds: 160),
+    reverseTransitionDuration: const Duration(milliseconds: 120),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curved = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-      );
       return FadeTransition(
-        opacity: curved,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.0, 0.03),
-            end: Offset.zero,
-          ).animate(curved),
-          child: child,
-        ),
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
       );
     },
   );

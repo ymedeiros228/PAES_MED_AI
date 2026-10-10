@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'layout_tokens.dart';
+
 class ConfettiBurst {
   ConfettiBurst._();
 
@@ -278,17 +280,62 @@ class _PulseButtonState extends State<PulseButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scale;
+  int _halfCycles = 0;
+
+  /// Pulsa poucas vezes para chamar atenção e para (animação infinita
+  /// custava CPU o tempo todo na tela Início).
+  static const _maxHalfCycles = 6;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-    _scale = Tween(begin: 1.0, end: 1.04).animate(
+      duration: const Duration(milliseconds: 900),
+    )..addStatusListener(_onStatus);
+    _scale = Tween(begin: 1.0, end: 1.03).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(covariant PulseButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pulse != widget.pulse) {
+      _halfCycles = 0;
+      _sync();
+    }
+  }
+
+  void _sync() {
+    if (widget.pulse && !AppMotion.reduced(context) && _halfCycles < _maxHalfCycles) {
+      if (!_controller.isAnimating) _controller.forward();
+    } else {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (!mounted || !widget.pulse) return;
+    if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+      _halfCycles++;
+      if (_halfCycles >= _maxHalfCycles) {
+        if (status == AnimationStatus.completed) _controller.reverse();
+        return;
+      }
+      if (status == AnimationStatus.completed) {
+        _controller.reverse();
+      } else {
+        _controller.forward();
+      }
+    }
   }
 
   @override
@@ -299,19 +346,9 @@ class _PulseButtonState extends State<PulseButton>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.pulse) {
-      return FilledButton(onPressed: widget.onPressed, child: widget.child);
-    }
-    return AnimatedBuilder(
-      animation: _scale,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scale.value,
-          child: child,
-        );
-      },
-      child: FilledButton(onPressed: widget.onPressed, child: widget.child),
-    );
+    final button = FilledButton(onPressed: widget.onPressed, child: widget.child);
+    if (!widget.pulse) return button;
+    return ScaleTransition(scale: _scale, child: button);
   }
 }
 
@@ -532,7 +569,8 @@ class _StaggeredFadeInState extends State<StaggeredFadeIn>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: widget.duration + widget.itemDelay * widget.children.length,
+      duration: widget.duration +
+          widget.itemDelay * (widget.children.length < 6 ? widget.children.length : 6),
     )..forward();
   }
 
@@ -551,10 +589,12 @@ class _StaggeredFadeInState extends State<StaggeredFadeIn>
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
-              final start = widget.itemDelay.inMilliseconds * i;
-              final end = start + widget.duration.inMilliseconds;
-              final t = (_controller.value * 1000 - start).clamp(0, end - start);
-              final progress = (t / (end - start)).clamp(0.0, 1.0);
+              // Tempo decorrido real (ms) = valor do controller × duração total.
+              final totalMs = _controller.duration!.inMilliseconds;
+              final elapsed = _controller.value * totalMs;
+              final start = widget.itemDelay.inMilliseconds * (i < 6 ? i : 6);
+              final span = widget.duration.inMilliseconds;
+              final progress = ((elapsed - start) / span).clamp(0.0, 1.0);
               // easeOutQuart: saída mais rápida, repouso mais lento — mais natural
               final curve = Curves.easeOutQuart.transform(progress.toDouble());
               return Opacity(

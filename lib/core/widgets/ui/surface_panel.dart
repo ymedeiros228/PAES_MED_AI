@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
 
+/// Painel base (superfície com borda sutil). Não é clicável — para cards
+/// clicáveis com hover/foco use `AppCard(onTap: ...)`.
+///
+/// ```dart
+/// SurfacePanel(child: Text('Conteúdo'))
+/// SurfacePanel(color: cs.primaryContainer.f45, margin: EdgeInsets.only(bottom: 16), child: ...)
+/// ```
 class SurfacePanel extends StatelessWidget {
   const SurfacePanel({
     required this.child,
@@ -15,32 +21,50 @@ class SurfacePanel extends StatelessWidget {
 
   final Widget child;
   final EdgeInsets padding;
+
+  /// Cor de fundo. Padrão: `surface` (um degrau acima do fundo da tela).
   final Color? color;
   final EdgeInsets margin;
+
+  /// `true` = borda leve + sombra difusa no claro; `false` = borda mais marcada, sem sombra.
   final bool soft;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: margin,
       padding: padding,
-      decoration: BoxDecoration(
-        color: color ?? (isDark ? cs.surface.f90 : cs.surface.withOpacity(0.98)),
-        borderRadius: BorderRadius.circular(soft ? kRadiusPanelSoft : kRadiusPanel),
-        border: Border.all(color: soft ? cs.outlineVariant.f50 : cs.outlineVariant.f85),
-        boxShadow: soft && !isDark
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF0A1628).f10,
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
+      decoration: panelDecoration(context, color: color, soft: soft),
       child: child,
+    );
+  }
+
+  /// Decoração padrão de painel — reutilizável em Containers/AnimatedContainers.
+  static BoxDecoration panelDecoration(
+    BuildContext context, {
+    Color? color,
+    bool soft = true,
+    double radius = kRadiusPanel,
+    Color? borderColor,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return BoxDecoration(
+      color: color ?? cs.surface,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: borderColor ??
+            (soft ? cs.outlineVariant : cs.outline.withOpacity(isDark ? 0.7 : 0.6)),
+      ),
+      boxShadow: soft && !isDark
+          ? const [
+              BoxShadow(
+                color: Color(0x0D0A1628),
+                blurRadius: 12,
+                offset: Offset(0, 2),
+              ),
+            ]
+          : null,
     );
   }
 }

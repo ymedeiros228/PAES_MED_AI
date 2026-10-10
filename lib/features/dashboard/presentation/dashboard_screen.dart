@@ -11,6 +11,7 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import 'dashboard_update_banner.dart';
 import '../../../core/data/study_prefs_providers.dart';
+import '../../../core/theme/app_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
@@ -178,7 +179,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(dashboardProvider);
-    final examDaysLocal = ref.watch(examDateProvider.notifier).daysUntilExam;
+    final examCd = ref.watch(examCountdownProvider);
 
     return async.when(
       loading: () => PageBody(
@@ -228,7 +229,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           (data['examCountdown'] as Map?) ?? (routine['countdown'] as Map?) ?? const {},
         );
         final examDaysApi = countdown['daysLeft'] is num ? (countdown['daysLeft'] as num).toInt() : null;
-        final examDays = examDaysApi ?? examDaysLocal;
+        // Fonte única: data salva em Ajustes (igual à barra lateral). A API só
+        // entra se não houver data local.
+        final examDays = examCd.hasDate ? examCd.daysLeft : examDaysApi;
         final officialN = data['statsBasis'] is Map
             ? ((data['statsBasis'] as Map)['officialCount'] as int? ?? 0)
             : 0;
@@ -248,15 +251,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           slivers: [
             // Hero compacto: gradient + countdown + CTA principal
             SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.heroGradient(Theme.of(context).brightness),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                ),
+              child: ContentWidth(
+                vertical: const EdgeInsets.only(top: 24),
+                child: PageHero(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -279,6 +276,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           color: Colors.white.withOpacity(0.8),
                           fontWeight: FontWeight.w500,
                         ),
+                      ),
+                    ] else if (examCd.isPast) ...[
+                      Text(
+                        'A prova de ${examCd.dateLabel} já passou',
+                        style: AppFonts.display(fontSize: 26, fontWeight: FontWeight.w600, color: Colors.white),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: () => context.go('/configuracoes'),
+                        style: TextButton.styleFrom(foregroundColor: Colors.white, padding: EdgeInsets.zero),
+                        icon: const Icon(Icons.event_rounded, size: 18),
+                        label: const Text('Definir a data da próxima prova'),
                       ),
                     ] else ...[
                       Text(
@@ -349,13 +358,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ],
                 ),
               ),
+              ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 40),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  Align(
-                    alignment: Alignment.topCenter,
+                  ContentWidth(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: kPageMaxWidth),
                       child: Column(
@@ -461,7 +470,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 onCards: () => context.go('/flashcards?due=1'),
                                 onRevisions: () => context.go('/fila'),
                                 onCloseDay: dayClosed ? null : _closeDay,
-                                examDays: examDaysLocal,
+                                examDays: examCd.daysLeft,
                                 dailyGoal: ref.watch(dailyGoalProvider),
                               ),
 

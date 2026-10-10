@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import sys
+import threading
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
@@ -33,48 +39,80 @@ from routers import (
 from seed import seed
 
 
-def _run_startup() -> None:
-    for sub in ("provas", "gabaritos", "edital", "aulas", "backups", "inventory"):
-        (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
-    init_db()
-    seed(force=False)
+_log = logging.getLogger("paes.startup")
+
+
+def _setup_logging() -> None:
+    """Log do backend em DATA_DIR/logs/paes_backend.log (rotativo, 1 MB x 3).
+
+    Idempotente: reimportar main (testes) não duplica handlers.
+    """
+    root = logging.getLogger("paes")
+    if getattr(root, "_paes_configured", False):
+        return
+    root.setLevel(logging.INFO)
+    fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    try:
+        log_dir = DATA_DIR / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        fh = RotatingFileHandler(
+            log_dir / "paes_backend.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+        )
+        fh.setFormatter(fmt)
+        root.addHandler(fh)
+    except OSError:
+        # Pasta de dados somente-leitura: segue só com stderr.
+        pass
+    if sys.stderr is not None:  # PyInstaller sem console pode não ter stderr
+        sh = logging.StreamHandler()
+        sh.setFormatter(fmt)
+        root.addHandler(sh)
+    root._paes_configured = True  # type: ignore[attr-defined]
+
+
+def _env_flag(name: str, default: str = "") -> bool:
+    return os.getenv(name, default).strip().lower() in ("1", "true", "yes")
+
+
+def _startup_heavy() -> None:
+    """Trabalho pesado do startup (índice RAG, sanitize, backup diário).
+
+    Roda em thread de background para a API ficar disponível na hora; cada
+    etapa é independente e uma falha só é registrada no log (não é fatal).
+    """
+    started = time.perf_counter()
     # Em produção (Render), ingere PDFs oficiais se o banco estiver vazio
-    if os.getenv("PAES_BOOTSTRAP_PROD", "").strip().lower() in ("1", "true", "yes"):
+    if _env_flag("PAES_BOOTSTRAP_PROD"):
         try:
             from bootstrap_prod import bootstrap_production
 
             bootstrap_production()
-        except Exception as exc:
-            try:
-                print(f"Bootstrap prod falhou (não fatal): {exc}")
-            except Exception:
-                pass
+        except Exception:
+            _log.exception("Bootstrap prod falhou (não fatal)")
     else:
         try:
             from services_advanced import index_all_questions
 
             index_all_questions(limit=300, allow_remote=False)
         except Exception:
-            pass
+            _log.exception("Indexação local das questões falhou (não fatal)")
 
     # Limpa rodapé/cabeçalho PDF colado em alternativas (banco antigo do instalador)
-    if os.getenv("PAES_SKIP_OPTION_SANITIZE", "").strip().lower() not in ("1", "true", "yes"):
+    if not _env_flag("PAES_SKIP_OPTION_SANITIZE"):
         try:
             from ingest_pdf import sanitize_questions_full
 
             cleaned = sanitize_questions_full()
-            print(
-                "Sanitize opções/enunciados: "
-                f"stmts={cleaned.get('statements', 0)} opts={cleaned.get('options', 0)}"
+            _log.info(
+                "Sanitize opções/enunciados: stmts=%s opts=%s",
+                cleaned.get("statements", 0),
+                cleaned.get("options", 0),
             )
-        except Exception as exc:
-            try:
-                print(f"Sanitize opções falhou (não fatal): {exc}")
-            except Exception:
-                pass
+        except Exception:
+            _log.exception("Sanitize opções falhou (não fatal)")
 
     # Backup automático do progresso do usuário (apenas desktop, nao no Render)
-    if os.getenv("PAES_AUTO_BACKUP", "1").strip().lower() in ("1", "true", "yes"):
+    if _env_flag("PAES_AUTO_BACKUP", "1"):
         try:
             from services_extra import create_backup, last_backup_status
 
@@ -84,23 +122,38 @@ def _run_startup() -> None:
                 at = bk.get("at") or bk.get("createdAt") or bk.get("timestamp")
                 if at:
                     try:
-                        from datetime import datetime
                         dt = datetime.fromisoformat(str(at).replace("Z", ""))
-                        days = (datetime.now() - dt).days
-                        needs_backup = days >= 1
-                    except Exception:
+                        needs_backup = (datetime.now() - dt).days >= 1
+                    except ValueError:
+                        _log.warning("Data do último backup ilegível (%r); refazendo backup", at)
                         needs_backup = True
             if needs_backup:
                 result = create_backup()
-                try:
-                    print(f"Backup automático: {result.get('path')} | ok={result.get('ok')}")
-                except Exception:
-                    pass
-        except Exception as exc:
-            try:
-                print(f"Backup automático falhou (não fatal): {exc}")
-            except Exception:
-                pass
+                _log.info("Backup automático: %s | ok=%s", result.get("path"), result.get("ok"))
+        except Exception:
+            _log.exception("Backup automático falhou (não fatal)")
+    _log.info("Tarefas de startup em background concluídas em %.1fs", time.perf_counter() - started)
+
+
+_startup_thread: threading.Thread | None = None
+
+
+def _run_startup() -> None:
+    """Startup rápido (pastas, schema, seed) + tarefas pesadas em background.
+
+    PAES_STARTUP_SYNC=1 roda tudo de forma síncrona (testes/diagnóstico).
+    """
+    global _startup_thread
+    _setup_logging()
+    for sub in ("provas", "gabaritos", "edital", "aulas", "backups", "inventory"):
+        (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
+    init_db()
+    seed(force=False)
+    if _env_flag("PAES_STARTUP_SYNC"):
+        _startup_heavy()
+        return
+    _startup_thread = threading.Thread(target=_startup_heavy, name="paes-startup", daemon=True)
+    _startup_thread.start()
 
 
 @asynccontextmanager

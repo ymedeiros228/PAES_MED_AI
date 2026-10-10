@@ -127,18 +127,72 @@ class ExamDateNotifier extends StateNotifier<ExamDateState> {
 
   Future<void> retrySync() async => setDate(state.date);
 
-  int? get daysUntilExam {
-    if (state.date.isEmpty) return null;
-    try {
-      final d = DateTime.parse(state.date);
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      return d.difference(today).inDays;
-    } catch (_) {
-      return null;
-    }
+  /// Dias até a prova (negativo = passou). Prefira `ref.watch(examCountdownProvider)`.
+  int? get daysUntilExam => ExamCountdown.fromIso(state.date).daysLeft;
+}
+
+/// Contagem até a prova — FONTE ÚNICA DE VERDADE para sidebar, Início,
+/// Ajustes e Plano. Vem da data salva localmente (Ajustes), que é a que o
+/// aluno vê e edita; o backend recebe a mesma data via `setDate`/`retrySync`.
+///
+/// ```dart
+/// final cd = ref.watch(examCountdownProvider);
+/// if (cd.isPast) ... else if (cd.daysLeft != null) Text('${cd.daysLeft} dias')
+/// ```
+class ExamCountdown {
+  const ExamCountdown({this.date, this.daysLeft});
+
+  /// Data da prova (sem hora) ou null se não definida/ inválida.
+  final DateTime? date;
+
+  /// Dias até a prova (0 = hoje, negativo = já passou), null sem data.
+  final int? daysLeft;
+
+  bool get hasDate => date != null && daysLeft != null;
+  bool get isPast => hasDate && daysLeft! < 0;
+  bool get isToday => hasDate && daysLeft == 0;
+  bool get isUpcoming => hasDate && daysLeft! > 0;
+
+  /// "26/09" (ou "26/09/2027" se for de outro ano).
+  String get dateLabel {
+    final d = date;
+    if (d == null) return '';
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final now = DateTime.now();
+    return d.year == now.year ? '$dd/$mm' : '$dd/$mm/${d.year}';
+  }
+
+  /// Frase curta e honesta para qualquer lugar da UI.
+  String get shortLabel {
+    if (!hasDate) return 'Defina a data da prova';
+    if (isToday) return 'A prova é hoje';
+    if (isPast) return 'A prova de $dateLabel já passou';
+    return daysLeft == 1 ? 'Falta 1 dia para a prova' : 'Faltam $daysLeft dias para a prova';
+  }
+
+  static ExamCountdown fromIso(String iso, {DateTime? now}) {
+    final raw = iso.trim();
+    if (raw.isEmpty) return const ExamCountdown();
+    final parsed = DateTime.tryParse(raw.length >= 10 ? raw.substring(0, 10) : raw);
+    if (parsed == null) return const ExamCountdown();
+    final n = now ?? DateTime.now();
+    final today = DateTime(n.year, n.month, n.day);
+    final day = DateTime(parsed.year, parsed.month, parsed.day);
+    // Diferença em dias de calendário (robusto a horário de verão).
+    final days = DateTime.utc(day.year, day.month, day.day)
+        .difference(DateTime.utc(today.year, today.month, today.day))
+        .inDays;
+    return ExamCountdown(date: day, daysLeft: days);
   }
 }
+
+/// Reage a mudanças da data (diferente de `ref.watch(examDateProvider.notifier)`,
+/// que NÃO reconstrói quando o estado muda).
+final examCountdownProvider = Provider<ExamCountdown>((ref) {
+  final date = ref.watch(examDateProvider.select((s) => s.date));
+  return ExamCountdown.fromIso(date);
+});
 
 final tutorOnlinePrefProvider = StateNotifierProvider<TutorOnlinePrefNotifier, bool>((ref) {
   return TutorOnlinePrefNotifier();

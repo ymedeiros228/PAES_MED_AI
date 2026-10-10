@@ -133,7 +133,7 @@ Future<void> openTheoryReadSheet(
                       ),
                     if (note != null && note.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      SelectableText(note, style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
+                      Text(note, style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
                     ],
                     if (items.isEmpty) ...[
                       const SizedBox(height: 16),
@@ -275,7 +275,7 @@ Future<void> openTheoryReadSheet(
                         ),
                       ),
                       if (artDisclaimer != null)
-                        SelectableText(
+                        Text(
                           artDisclaimer,
                           style: TextStyle(
                             fontSize: 13,

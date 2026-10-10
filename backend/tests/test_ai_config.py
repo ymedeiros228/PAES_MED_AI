@@ -21,6 +21,16 @@ from schemas import AIProviderConfigRequest, AIProviderTestRequest, ChatRequest 
 from services_extra import TUTOR_SYSTEM  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _env_no_bundle_temporario(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Estes testes gravam o .env em BASE_DIR (monkeypatch → tmp_path).
+
+    O conftest aponta PAES_DATA_DIR para uma cópia temporária dos dados; sem
+    removê-lo aqui, ai_state escolheria o .env de PAES_DATA_DIR.
+    """
+    monkeypatch.delenv("PAES_DATA_DIR", raising=False)
+
+
 def test_grava_env_preservando_outras_chaves_e_sem_expor_segredo(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

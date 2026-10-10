@@ -1,6 +1,6 @@
 import 'dart:async' show TimeoutException;
 import 'dart:convert';
-import 'dart:io' show HttpClient, SocketException, X509Certificate;
+import 'dart:io' show HttpClient, SocketException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_version.dart';
 
@@ -50,39 +50,24 @@ class UpdateNotifier extends StateNotifier<UpdateState> {
   static const _repo = 'PAES_MED_AI';
 
   /// Busca a release mais recente no GitHub.
-  /// Em VMs sem certificados de CA atualizados, o HTTPS falha. Por isso
-  /// tenta primeiro com verificacao normal; se der HandshakeException,
-  /// faz uma segunda tentativa aceitando qualquer certificado.
+  /// Sempre com verificacao de certificado: a resposta decide qual
+  /// instalador sera baixado e executado.
   Future<String> _fetchReleaseJson() async {
-    Future<String> doFetch({required bool insecure}) async {
-      final client = HttpClient()
-        ..userAgent = 'PAES_MED_AI'
-        ..connectionTimeout = const Duration(seconds: 15);
-      if (insecure) {
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-      }
-      try {
-        final req = await client.getUrl(
-          Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
-        );
-        req.headers.set('User-Agent', 'PAES_MED_AI');
-        final response = await req.close();
-        if (response.statusCode != 200) {
-          throw Exception('GitHub API retornou ${response.statusCode}');
-        }
-        final body = await response.transform(utf8.decoder).join();
-        return body;
-      } finally {
-        client.close();
-      }
-    }
-
+    final client = HttpClient()
+      ..userAgent = 'PAES_MED_AI'
+      ..connectionTimeout = const Duration(seconds: 15);
     try {
-      return await doFetch(insecure: false);
-    } catch (e) {
-      // Fallback para certificados invalidos (VMs limpas).
-      return await doFetch(insecure: true);
+      final req = await client.getUrl(
+        Uri.parse('https://api.github.com/repos/$_owner/$_repo/releases/latest'),
+      );
+      req.headers.set('User-Agent', 'PAES_MED_AI');
+      final response = await req.close();
+      if (response.statusCode != 200) {
+        throw Exception('GitHub API retornou ${response.statusCode}');
+      }
+      return await response.transform(utf8.decoder).join();
+    } finally {
+      client.close();
     }
   }
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'layout_tokens.dart';
+
+/// Conta de 0 até [value] com animação suave (count-up).
 class AnimatedCounter extends StatefulWidget {
   const AnimatedCounter({
     required this.value,
-    this.duration = const Duration(milliseconds: 900),
+    this.duration = const Duration(milliseconds: 600),
     this.style,
     this.suffix = '',
     this.prefix = '',
@@ -69,7 +72,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
 class TapScale extends StatefulWidget {
   const TapScale({
     required this.child,
-    this.scaleDown = 0.95,
+    this.scaleDown = 0.97,
     this.duration = const Duration(milliseconds: 100),
     super.key,
   });
@@ -85,14 +88,21 @@ class TapScale extends StatefulWidget {
 class _TapScaleState extends State<TapScale> {
   bool _pressed = false;
 
+  void _set(bool v) {
+    if (_pressed != v && mounted) setState(() => _pressed = v);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
+    // Listener (eventos crus) em vez de GestureDetector: não entra na
+    // disputa de gestos com o botão filho — o clique nunca é "roubado".
+    return Listener(
+      behavior: HitTestBehavior.deferToChild,
+      onPointerDown: (_) => _set(true),
+      onPointerUp: (_) => _set(false),
+      onPointerCancel: (_) => _set(false),
       child: AnimatedScale(
-        scale: _pressed ? widget.scaleDown : 1.0,
+        scale: _pressed && !AppMotion.reduced(context) ? widget.scaleDown : 1.0,
         duration: widget.duration,
         curve: Curves.easeOut,
         child: widget.child,
@@ -121,7 +131,8 @@ class StaggeredListView extends StatelessWidget {
       children: [
         for (var i = 0; i < children.length; i++)
           _StaggeredItem(
-            delay: initialDelay + itemDelay * i,
+            // Limita o atraso: listas longas não ficam "aparecendo" por segundos.
+            delay: initialDelay + itemDelay * (i < 6 ? i : 6),
             child: children[i],
           ),
       ],
@@ -148,7 +159,7 @@ class _StaggeredItemState extends State<_StaggeredItem>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 280),
       vsync: this,
     );
     _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
@@ -158,7 +169,12 @@ class _StaggeredItemState extends State<_StaggeredItem>
     ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
 
     Future.delayed(widget.delay, () {
-      if (mounted) _ctrl.forward();
+      if (!mounted) return;
+      if (AppMotion.reduced(context)) {
+        _ctrl.value = 1;
+      } else {
+        _ctrl.forward();
+      }
     });
   }
 

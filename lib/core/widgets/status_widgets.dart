@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/api_client.dart';
 import '../data/api_error.dart';
 import '../data/study_prefs_providers.dart';
+import '../theme/app_fonts.dart';
 import '../theme/app_theme.dart';
 
 /// Banner mínimo: só alerta se backend morto. Sucesso = linha discreta ou nada.
@@ -145,7 +146,19 @@ class ExamDateSyncBanner extends ConsumerWidget {
   }
 }
 
-class EmptyState extends StatefulWidget {
+/// Estado vazio (tela/aba sem conteúdo ainda) com ação opcional.
+///
+/// ```dart
+/// EmptyState(
+///   icon: Icons.style_outlined,
+///   title: 'Nenhum flashcard ainda',
+///   subtitle: 'Erre uma questão na sessão e o card nasce sozinho.',
+///   actionLabel: 'Abrir sessão',
+///   onAction: () => context.go('/sessao'),
+/// )
+/// ```
+/// Para falhas de carregamento use `ErrorState` (tem "Tentar de novo").
+class EmptyState extends StatelessWidget {
   const EmptyState({
     required this.title,
     required this.subtitle,
@@ -163,115 +176,60 @@ class EmptyState extends StatefulWidget {
   final IconData? icon;
 
   @override
-  State<EmptyState> createState() => _EmptyStateState();
-}
-
-class _EmptyStateState extends State<EmptyState>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _scale;
-  late final Animation<double> _fade;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
-    );
-    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _ctrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final cta = widget.action ??
-        (widget.actionLabel != null && widget.onAction != null
-            ? FilledButton(onPressed: widget.onAction, child: Text(widget.actionLabel!))
+    final cta = action ??
+        (actionLabel != null && onAction != null
+            ? FilledButton(onPressed: onAction, child: Text(actionLabel!))
             : null);
-    final labelParts = <String>[widget.title, widget.subtitle];
-    if (widget.actionLabel != null) labelParts.add(widget.actionLabel!);
+    final labelParts = <String>[title, subtitle];
+    if (actionLabel != null) labelParts.add(actionLabel!);
     return Semantics(
       label: labelParts.join('. '),
-      button: cta != null,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(36),
+          padding: const EdgeInsets.all(32),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: FadeTransition(
-              opacity: _fade,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ScaleTransition(
-                    scale: _scale,
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            cs.primaryContainer,
-                            cs.primaryContainer.withOpacity(0.6),
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: cs.primary.withOpacity(0.15),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: cs.primary.withOpacity(0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        widget.icon ?? Icons.auto_stories_outlined,
-                        size: 34,
-                        color: cs.primary.withOpacity(0.9),
-                      ),
-                    ),
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    widget.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onSurface,
-                      height: 1.25,
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Icon(
+                    icon ?? Icons.auto_stories_outlined,
+                    size: 28,
+                    color: cs.onPrimaryContainer,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.subtitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: cs.onSurface.f72,
-                      height: 1.4,
-                    ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  style: AppFonts.display(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                    height: 1.3,
                   ),
-                  if (cta != null) ...[const SizedBox(height: 20), cta],
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: cs.onSurface.f72,
+                    height: 1.55,
+                  ),
+                ),
+                if (cta != null) ...[const SizedBox(height: 20), cta],
+              ],
             ),
           ),
         ),

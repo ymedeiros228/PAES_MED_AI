@@ -57,37 +57,46 @@ class Question {
   final Map<String, dynamic>? resolutionAxes;
   final String? studentResolutionLabel;
 
+  /// Tolerante a nulos/tipos trocados: um único campo ruim (ex.: `year` nulo
+  /// numa questão importada) não pode derrubar a lista inteira de questões.
   factory Question.fromJson(Map<String, dynamic> json) {
+    String str(Object? v, [String fallback = '']) => v?.toString() ?? fallback;
+    String? strOrNull(Object? v) => v?.toString();
+    int toInt(Object? v, [int fallback = 0]) =>
+        v is num ? v.toInt() : int.tryParse(v?.toString() ?? '') ?? fallback;
+    List<String> strList(Object? v) =>
+        v is List ? v.map((e) => e.toString()).toList() : const <String>[];
+    final mapRaw = json['professorMode'];
     return Question(
-      id: json['id'] as String,
-      year: json['year'] as int,
-      subject: json['subject'] as String,
-      topic: json['topic'] as String,
-      subtopic: json['subtopic'] as String?,
-      statement: json['statement'] as String,
-      options: (json['options'] as List<dynamic>).map((e) => e.toString()).toList(),
-      correctIndex: json['correctIndex'] as int,
-      difficulty: json['difficulty'] as String,
-      tags: (json['tags'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
-      resolution: json['resolution'] as String?,
-      bancaIntent: json['bancaIntent'] as String?,
-      macete: json['macete'] as String?,
-      pegadinha: json['pegadinha'] as String?,
-      relatedTopics: (json['relatedTopics'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
-      keywords: (json['keywords'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
-      professorMode: json['professorMode'] as Map<String, dynamic>?,
+      id: str(json['id']),
+      year: toInt(json['year']),
+      subject: str(json['subject'], 'Geral'),
+      topic: str(json['topic'], 'Geral'),
+      subtopic: strOrNull(json['subtopic']),
+      statement: str(json['statement']),
+      options: strList(json['options']),
+      correctIndex: toInt(json['correctIndex'] ?? json['correct_index'], -1),
+      difficulty: str(json['difficulty'], 'media'),
+      tags: strList(json['tags']),
+      resolution: strOrNull(json['resolution']),
+      bancaIntent: strOrNull(json['bancaIntent']),
+      macete: strOrNull(json['macete']),
+      pegadinha: strOrNull(json['pegadinha']),
+      relatedTopics: strList(json['relatedTopics']),
+      keywords: strList(json['keywords']),
+      professorMode: mapRaw is Map ? Map<String, dynamic>.from(mapRaw) : null,
       generated: json['generated'] == true,
       approved: json['approved'] != false,
-      source: json['source'] as String?,
-      sourcePdf: json['sourcePdf'] as String?,
-      examBoard: (json['examBoard'] as String?) ?? 'TREINO',
-      similarityOf: json['similarityOf'] as String?,
-      similarityNote: json['similarityNote'] as String?,
-      resolutionQuality: json['resolutionQuality'] as String?,
+      source: strOrNull(json['source']),
+      sourcePdf: strOrNull(json['sourcePdf']),
+      examBoard: strOrNull(json['examBoard']) ?? 'TREINO',
+      similarityOf: strOrNull(json['similarityOf']),
+      similarityNote: strOrNull(json['similarityNote']),
+      resolutionQuality: strOrNull(json['resolutionQuality']),
       resolutionAxes: json['resolutionAxes'] is Map
           ? Map<String, dynamic>.from(json['resolutionAxes'] as Map)
           : null,
-      studentResolutionLabel: json['studentResolutionLabel'] as String?,
+      studentResolutionLabel: strOrNull(json['studentResolutionLabel']),
     );
   }
 }

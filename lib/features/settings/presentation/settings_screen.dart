@@ -338,9 +338,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: Text(
                           () {
                             final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
-                            if (d < 0) return 'Prova: \$d dias atrás';
+                            if (d < 0) return 'A prova dessa data já passou (há ${-d} dia(s)) — defina a próxima.';
                             if (d == 0) return 'Prova: é hoje!';
-                            return 'Prova em \$d dia(s)';
+                            return 'Prova em $d dia(s)';
                           }(),
                           style: TextStyle(
                             fontSize: 13,

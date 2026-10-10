@@ -483,7 +483,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                       child: Text(
                         selected == q.correctIndex
                             ? 'Correto!'
-                            : 'Incorreto. Resposta da banca: ${'ABCDE'[q.correctIndex]}',
+                            : 'Incorreto. Resposta da banca: ${q.correctIndex >= 0 && q.correctIndex < 5 ? 'ABCDE'[q.correctIndex] : '—'}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

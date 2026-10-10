@@ -713,6 +713,26 @@ def topic_read_status(subject: str | None = None, topic: str | None = None) -> d
     return {"ok": True, "count": len(items), "items": items[:80]}
 
 
+_PROVA_PDFS_CACHE: dict[str, Any] = {"key": None, "files": []}
+
+
+def _prova_pdfs() -> list[Path]:
+    """PDFs de data/provas, com cache invalidado pelo mtime da pasta.
+
+    _serialize_question chama resolve_prova_pdf para CADA questão; sem cache
+    eram centenas de glob() por requisição (/api/questions, /api/today...).
+    """
+    provas = DATA_DIR / "provas"
+    try:
+        key = (str(provas), provas.stat().st_mtime_ns)
+    except OSError:
+        return []
+    if _PROVA_PDFS_CACHE["key"] != key:
+        _PROVA_PDFS_CACHE["files"] = sorted(provas.glob("*.pdf"))
+        _PROVA_PDFS_CACHE["key"] = key
+    return list(_PROVA_PDFS_CACHE["files"])
+
+
 def resolve_prova_pdf(year: int | None) -> Path | None:
     """Resolve PDF de prova no disco para o ano — None se não existir (Ciclo AV)."""
     if year is None:
@@ -721,11 +741,8 @@ def resolve_prova_pdf(year: int | None) -> Path | None:
         y = int(year)
     except (TypeError, ValueError):
         return None
-    provas = DATA_DIR / "provas"
-    if not provas.exists():
-        return None
     y_str = str(y)
-    candidates = [p for p in sorted(provas.glob("*.pdf")) if y_str in p.name]
+    candidates = [p for p in _prova_pdfs() if y_str in p.name]
     if not candidates:
         return None
     for pref in (f"paes_{y_str}", f"paes-{y_str}", f"PAES_{y_str}", f"prova_{y_str}"):
@@ -1584,16 +1601,27 @@ def professor_blocks(question: dict[str, Any]) -> dict[str, Any]:
 
 
 def predict_topic(
-    subject: str, topic: str, match: dict[str, Any] | None = None, official_only: bool | None = None
+    subject: str,
+    topic: str,
+    match: dict[str, Any] | None = None,
+    official_only: bool | None = None,
+    basis: str | None = None,
 ) -> dict[str, Any]:
-    """Pontuação local de prioridade — NÃO é probabilidade de cobrança UEMA nem de aprovação."""
+    """Pontuação local de prioridade — NÃO é probabilidade de cobrança UEMA nem de aprovação.
+
+    `basis` pode vir pronto do chamador (ex.: medicine_priority itera ~50 tópicos);
+    sem ele, stats_basis() abriria uma conexão SQLite por tópico.
+    """
     if match is None:
         freq_list = topic_frequency(official_only)
         match = next(
             (f for f in freq_list if f["subject"] == subject and f["topic"] == topic),
             None,
         )
-    basis = stats_basis()["basis"] if official_only is None else ("oficial" if official_only else "treino")
+    if official_only is not None:
+        basis = "oficial" if official_only else "treino"
+    elif basis is None:
+        basis = stats_basis()["basis"]
     if not match:
         return {
             "priorityScore": 0,
@@ -1674,7 +1702,7 @@ def medicine_priority(official_only: bool | None = None) -> list[dict[str, Any]]
     natureza_med = NATUREZA_SUBJECTS
     ranked = []
     for item in topic_frequency(official_only):
-        pred = predict_topic(item["subject"], item["topic"], item, official_only)
+        pred = predict_topic(item["subject"], item["topic"], item, official_only, basis["basis"])
         w = weights.get((item["subject"], item["topic"]), 1.0)
         priority = pred["probability"] * w
         key = (item["subject"], item["topic"])

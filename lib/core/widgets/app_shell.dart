@@ -7,6 +7,7 @@ import '../data/study_prefs_providers.dart';
 import '../data/theme_mode_provider.dart';
 import '../theme/app_theme.dart';
 import 'status_widgets.dart';
+import 'ui/exam_countdown.dart';
 
 class AppShell extends ConsumerWidget {
   const AppShell({required this.child, super.key});
@@ -45,43 +46,58 @@ class AppShell extends ConsumerWidget {
     return allowed.any((p) => path == p || path.startsWith('$p/'));
   }
 
+  /// Navegação agrupada — tudo visível (antes metade ficava em "Mais opções").
+  static const navGroups = <(String, List<_NavItem>)>[
+    ('Hoje', [
+      _NavItem('/dashboard', 'Início', Icons.home_rounded),
+      _NavItem('/sessao', 'Sessão guiada', Icons.school_rounded),
+    ]),
+    ('Praticar', [
+      _NavItem('/questoes', 'Questões', Icons.quiz_outlined),
+      _NavItem('/simulados', 'Simulados', Icons.assignment_rounded),
+      _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
+      _NavItem('/revisoes', 'Revisões', Icons.replay_rounded),
+      _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),
+    ]),
+    ('Aprender', [
+      _NavItem('/materiais', 'Materiais', Icons.picture_as_pdf_rounded),
+      _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
+      _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
+    ]),
+    ('Acompanhar', [
+      _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
+      _NavItem('/medicina', 'Domínio', Icons.insights_rounded),
+      _NavItem('/banca', 'Banca', Icons.account_balance_outlined),
+      _NavItem('/cronograma', 'Cronograma', Icons.calendar_month_outlined),
+    ]),
+    ('Sistema', [
+      _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
+      _NavItem('/atualizacoes', 'Atualizações', Icons.system_update_rounded),
+    ]),
+  ];
+
+  /// Destinos da barra inferior (janela estreita).
   static const mainItems = <_NavItem>[
     _NavItem('/dashboard', 'Início', Icons.home_rounded),
     _NavItem('/sessao', 'Estudar', Icons.school_rounded),
+    _NavItem('/questoes', 'Questões', Icons.quiz_outlined),
     _NavItem('/materiais', 'Materiais', Icons.picture_as_pdf_rounded),
-    _NavItem('/biblioteca', 'Biblioteca', Icons.menu_book_rounded),
     _NavItem('/configuracoes', 'Ajustes', Icons.settings_rounded),
   ];
 
-  /// Rotas secundárias — acessíveis via botão "Mais" no rail.
-  static const moreItems = <_NavItem>[
-    _NavItem('/progresso', 'Progresso', Icons.trending_up_rounded),
-    _NavItem('/simulados', 'Simulados', Icons.assignment_rounded),
-    _NavItem('/questoes', 'Questões', Icons.quiz_outlined),
-    _NavItem('/redacao', 'Redação', Icons.edit_note_rounded),
-    _NavItem('/flashcards', 'Flashcards', Icons.style_rounded),
-    _NavItem('/tutor', 'Tutor IA', Icons.auto_awesome_rounded),
-    _NavItem('/revisoes', 'Revisões', Icons.replay_rounded),
-    _NavItem('/medicina', 'Domínio', Icons.insights_rounded),
-    _NavItem('/banca', 'Banca', Icons.account_balance_outlined),
-    _NavItem('/cronograma', 'Cronograma', Icons.calendar_month_outlined),
-    _NavItem('/atualizacoes', 'Atualizações', Icons.system_update_rounded),
-  ];
-
-  List<_NavItem> _allItems() => [...mainItems, ...moreItems];
+  List<_NavItem> _allItems() => [for (final g in navGroups) ...g.$2];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final focus = ref.watch(focusModeProvider);
     final themeMode = ref.watch(themeModeProvider);
     final themeNotifier = ref.read(themeModeProvider.notifier);
-    final examDays = ref.watch(examDateProvider.notifier).daysUntilExam;
+    final countdown = ref.watch(examCountdownProvider);
     final examSyncPending = ref.watch(examDateProvider).syncError != null;
     final location = GoRouterState.of(context).uri.path;
 
     final focusNavItems = focus ? focusItems : mainItems;
     final allNavItems = focus ? focusItems : _allItems();
-    final moreActive = moreItems.any((item) => location == item.path || location.startsWith('${item.path}/'));
     var bottomNavIndex = focusNavItems.indexWhere(
       (item) => location == item.path || location.startsWith('${item.path}/'),
     );
@@ -118,41 +134,36 @@ class AppShell extends ConsumerWidget {
                         _BrandHeader(
                           expanded: expanded,
                           focus: focus,
-                          examDays: examDays,
+                          countdown: countdown,
                           examSyncPending: examSyncPending,
+                          onSetDate: () => context.go('/configuracoes'),
                         ),
-                        const SizedBox(height: 18),
-                        if (expanded)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
-                            child: Text(
-                              focus ? 'FOCO' : 'PRINCIPAL',
-                              style: TextStyle(fontSize: 11, color: cs.onSurface.f38, letterSpacing: 1.4, fontWeight: FontWeight.w600),
+                        const SizedBox(height: 4),
+                        for (final group in focus ? [('Foco', focusItems)] : navGroups) ...[
+                          if (expanded)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+                              child: Text(
+                                group.$1.toUpperCase(),
+                                style: TextStyle(fontSize: 11, color: cs.onSurface.f55, letterSpacing: 1.0, fontWeight: FontWeight.w600),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              child: Divider(height: 1, color: cs.outlineVariant),
                             ),
-                          ),
-                        for (final item in focusNavItems)
-                          _NavTile(
-                            item: item,
-                            expanded: expanded,
-                            selected: location == item.path || location.startsWith('${item.path}/'),
-                            badge: item.path == '/configuracoes' && examSyncPending,
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              context.go(item.path);
-                            },
-                          ),
-                        if (!focus) ...[
-                          const SizedBox(height: 8),
-                          _MoreNavSection(
-                            items: moreItems,
-                            expanded: expanded,
-                            active: moreActive,
-                            location: location,
-                            onNavigate: (path) {
-                              HapticFeedback.selectionClick();
-                              context.go(path);
-                            },
-                          ),
+                          for (final item in group.$2)
+                            _NavTile(
+                              item: item,
+                              expanded: expanded,
+                              selected: location == item.path || location.startsWith('${item.path}/'),
+                              badge: item.path == '/configuracoes' && examSyncPending,
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                context.go(item.path);
+                              },
+                            ),
                         ],
                       ],
                     ),
@@ -344,14 +355,16 @@ class _BrandHeader extends StatelessWidget {
   const _BrandHeader({
     required this.expanded,
     required this.focus,
-    required this.examDays,
+    required this.countdown,
     required this.examSyncPending,
+    required this.onSetDate,
   });
 
   final bool expanded;
   final bool focus;
-  final int? examDays;
+  final ExamCountdown countdown;
   final bool examSyncPending;
+  final VoidCallback onSetDate;
 
   @override
   Widget build(BuildContext context) {
@@ -431,24 +444,8 @@ class _BrandHeader extends StatelessWidget {
               ],
             ),
           ],
-          if (examDays != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                examDays! >= 0 ? '$examDays dias para a prova' : 'Data da prova passou',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: cs.onSurface.withOpacity(0.85),
-                ),
-              ),
-            ),
-          ],
+          const SizedBox(height: 14),
+          ExamCountdownCard(countdown: countdown, onSetDate: onSetDate),
         ],
       ),
     );
@@ -481,9 +478,9 @@ class _NavTileState extends State<_NavTile> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final bg = widget.selected
-        ? cs.primaryContainer.f85
+        ? cs.primaryContainer
         : hovered
-            ? cs.surfaceContainerHigh.withOpacity(0.6)
+            ? cs.surfaceContainerHigh
             : Colors.transparent;
 
     return Padding(
@@ -506,7 +503,7 @@ class _NavTileState extends State<_NavTile> {
                 borderRadius: BorderRadius.circular(12),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
-                  height: 44,
+                  height: 40,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: widget.selected
@@ -524,8 +521,8 @@ class _NavTileState extends State<_NavTile> {
                         children: [
                           Icon(
                             widget.item.icon,
-                            size: 22,
-                            color: widget.selected ? cs.primary : cs.onSurface.f55,
+                            size: 20,
+                            color: widget.selected ? cs.primary : cs.onSurface.f72,
                           ),
                           if (widget.badge)
                             Positioned(
@@ -637,225 +634,4 @@ class _NavItem {
   final String path;
   final String label;
   final IconData icon;
-}
-
-/// Seção "Mais" do rail: expande/recolhe rotas secundárias.
-/// - Rail expandido: toggle inline com animação suave.
-/// - Rail recolhido: popup menu com ícones.
-class _MoreNavSection extends StatefulWidget {
-  const _MoreNavSection({
-    required this.items,
-    required this.expanded,
-    required this.active,
-    required this.location,
-    required this.onNavigate,
-  });
-
-  final List<_NavItem> items;
-  final bool expanded;
-  final bool active;
-  final String location;
-  final ValueChanged<String> onNavigate;
-
-  @override
-  State<_MoreNavSection> createState() => _MoreNavSectionState();
-}
-
-class _MoreNavSectionState extends State<_MoreNavSection> {
-  bool _open = false;
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    // Rail recolhido: popup menu
-    if (!widget.expanded) {
-      return Tooltip(
-        message: 'Mais',
-        child: Semantics(
-          button: true,
-          label: 'Mais opções',
-          child: Material(
-            color: widget.active ? cs.primaryContainer.f55 : (_hovered ? cs.surfaceContainerHigh.withOpacity(0.5) : Colors.transparent),
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              onTap: () => _showPopup(context),
-              onHover: (h) => setState(() => _hovered = h),
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                height: 44,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Center(
-                      child: Icon(
-                        _open ? Icons.expand_less_rounded : Icons.more_horiz_rounded,
-                        size: 22,
-                        color: widget.active ? cs.primary : cs.onSurface.f55,
-                      ),
-                    ),
-                    if (widget.active)
-                      Positioned(
-                        left: -2,
-                        top: 11,
-                        child: Container(
-                          width: 3,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: cs.primary,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Rail expandido: seção colapsável inline
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-          child: Text(
-            'MAIS',
-            style: TextStyle(fontSize: 11, color: cs.onSurface.f38, letterSpacing: 1.4, fontWeight: FontWeight.w600),
-          ),
-        ),
-        _MoreToggle(
-          open: _open,
-          active: widget.active,
-          onTap: () => setState(() => _open = !_open),
-        ),
-        AnimatedCrossFade(
-          duration: const Duration(milliseconds: 200),
-          crossFadeState: _open ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          firstChild: const SizedBox(height: 0),
-          secondChild: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final item in widget.items)
-                  _NavTile(
-                    item: item,
-                    expanded: true,
-                    selected: widget.location == item.path || widget.location.startsWith('${item.path}/'),
-                    onTap: () => widget.onNavigate(item.path),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showPopup(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final position = renderBox?.localToGlobal(Offset.zero) ?? Offset.zero;
-    final size = renderBox?.size ?? Size.zero;
-
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx + (size.width + 8),
-        position.dy,
-        0,
-        0,
-      ),
-      items: [
-        for (final item in widget.items)
-          PopupMenuItem(
-            value: item.path,
-            child: Row(
-              children: [
-                Icon(item.icon, size: 18, color: cs.onSurface.withOpacity(0.6)),
-                const SizedBox(width: 10),
-                Text(item.label),
-              ],
-            ),
-          ),
-      ],
-    ).then((path) {
-      if (path != null) widget.onNavigate(path);
-    });
-  }
-}
-
-class _MoreToggle extends StatefulWidget {
-  const _MoreToggle({required this.open, required this.active, required this.onTap});
-  final bool open;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  State<_MoreToggle> createState() => _MoreToggleState();
-}
-
-class _MoreToggleState extends State<_MoreToggle> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final bg = widget.active
-        ? cs.primaryContainer.f55
-        : _hovered
-            ? cs.surfaceContainerHigh.withOpacity(0.5)
-            : Colors.transparent;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: widget.onTap,
-          onHover: (h) => setState(() => _hovered = h),
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Icon(
-                  widget.open ? Icons.expand_less_rounded : Icons.chevron_right_rounded,
-                  size: 20,
-                  color: widget.active ? cs.primary : cs.onSurface.f55,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Mais opções',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: widget.active ? FontWeight.w600 : FontWeight.w500,
-                      color: widget.active ? cs.onPrimaryContainer : cs.onSurface.withOpacity(0.68),
-                    ),
-                  ),
-                ),
-                Text(
-                  widget.open ? '-' : '+',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: cs.onSurface.withOpacity(0.4),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

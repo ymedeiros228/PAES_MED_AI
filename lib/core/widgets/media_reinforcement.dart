@@ -115,7 +115,7 @@ class _MediaReinforcementState extends State<MediaReinforcement> {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface),
           ),
           if (disclaimer != null && disclaimer.isNotEmpty)
-            SelectableText(disclaimer, style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
+            Text(disclaimer, style: TextStyle(fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface)),
           for (final raw in items.take(5))
             ListTile(
               title: Text(raw['title']?.toString() ?? (isVideo ? 'Vídeo' : 'Leitura'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(ctx).colorScheme.onSurface)),

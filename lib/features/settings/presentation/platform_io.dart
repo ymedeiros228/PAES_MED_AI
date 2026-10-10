@@ -1,6 +1,6 @@
 // platform_io.dart — implementacao desktop/mobile (usa dart:io)
 import 'dart:async';
-import 'dart:io' show Directory, File, HttpClient, Platform, Process, X509Certificate, FileMode;
+import 'dart:io' show Directory, File, HttpClient, Platform, Process, FileMode;
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
@@ -61,21 +61,30 @@ Future<bool> _openUrl(String url) async {
   }
 }
 
+/// Só baixa instalador de release oficial do GitHub (HTTPS).
+bool isTrustedSetupUrl(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || uri.scheme != 'https') return false;
+  return uri.host == 'github.com' &&
+      uri.path.startsWith('/ymedeiros228/PAES_MED_AI/releases/download/') &&
+      uri.path.toLowerCase().endsWith('.exe');
+}
+
 /// Faz download do instalador .exe para a pasta temp.
 /// [url] e o link direto do asset (ex: .../download/v1.0.0.54/PAESMedAI_Setup_1.0.0.54.exe)
 /// Retorna o path local ou null em caso de erro.
-/// Em VMs sem certificados CA atualizados, faz fallback para HTTPS sem
-/// verificacao de certificado (necessario para baixar do GitHub).
+/// Sempre com verificacao de certificado: o arquivo baixado e executado,
+/// entao aceitar certificado invalido permitiria instalar um programa falso.
 Future<String?> _downloadSetup(String url, void Function(int received, int total)? onProgress) async {
   _updaterLog('Iniciando download: $url');
-  Future<String?> doDownload({required bool insecure}) async {
+  if (!isTrustedSetupUrl(url)) {
+    _updaterLog('URL recusada (nao e release oficial no GitHub): $url');
+    return null;
+  }
+  Future<String?> doDownload() async {
     final client = HttpClient()
       ..userAgent = 'PAES-MED-AI-Updater'
       ..connectionTimeout = const Duration(seconds: 120);
-    if (insecure) {
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-    }
     try {
       final req = await client.getUrl(Uri.parse(url));
       req.headers.set('User-Agent', 'PAES-MED-AI-Updater');
@@ -106,15 +115,10 @@ Future<String?> _downloadSetup(String url, void Function(int received, int total
   }
 
   try {
-    return await doDownload(insecure: false);
+    return await doDownload();
   } catch (e) {
-    _updaterLog('HTTPS padrao falhou ($e), tentando sem verificacao de certificado');
-    try {
-      return await doDownload(insecure: true);
-    } catch (e2) {
-      _updaterLog('Erro no download: $e2');
-      return null;
-    }
+    _updaterLog('Erro no download: $e');
+    return null;
   }
 }
 

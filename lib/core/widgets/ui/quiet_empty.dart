@@ -1,79 +1,48 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import 'layout_tokens.dart';
 import 'surface_panel.dart';
 
-class QuietEmpty extends StatefulWidget {
+/// Aviso discreto dentro da página (seção vazia, info, falha leve) com ação
+/// opcional à direita. Estático — sem animação contínua (economiza CPU).
+///
+/// ```dart
+/// QuietEmpty(message: 'Nenhuma revisão para hoje.', icon: Icons.check_circle_outline)
+/// QuietEmpty(message: erro, action: TextButton(onPressed: _retry, child: Text('Tentar')))
+/// ```
+class QuietEmpty extends StatelessWidget {
   const QuietEmpty({required this.message, this.action, this.icon, super.key});
   final String message;
   final Widget? action;
   final IconData? icon;
 
   @override
-  State<QuietEmpty> createState() => _QuietEmptyState();
-}
-
-class _QuietEmptyState extends State<QuietEmpty>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 1800),
-      vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: widget.message,
-      button: widget.action != null,
+      label: message,
       child: SurfacePanel(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: kGap16, vertical: kGap12),
         child: Row(
           children: [
-            AnimatedBuilder(
-              animation: _ctrl,
-              builder: (context, child) => Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      cs.surfaceContainerHigh,
-                      cs.surfaceContainerHigh.withOpacity(0.6 + _ctrl.value * 0.2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: cs.outlineVariant.withOpacity(0.3 + _ctrl.value * 0.15),
-                    width: 1,
-                  ),
-                ),
-                child: child,
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(kRadiusControl),
               ),
               child: Icon(
-                widget.icon ?? Icons.inbox_rounded,
-                size: 20,
-                color: cs.onSurface.f55,
+                icon ?? Icons.inbox_rounded,
+                size: 18,
+                color: cs.onSurface.f72,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: kGap12),
             Expanded(
               child: Text(
-                widget.message,
+                message,
                 style: TextStyle(
                   fontSize: 14,
                   color: cs.onSurface.f72,
@@ -81,7 +50,7 @@ class _QuietEmptyState extends State<QuietEmpty>
                 ),
               ),
             ),
-            if (widget.action != null) ...[const SizedBox(width: 10), widget.action!],
+            if (action != null) ...[const SizedBox(width: kGap12), action!],
           ],
         ),
       ),
@@ -126,10 +95,3 @@ class CompactStatus extends StatelessWidget {
     );
   }
 }
-
-/// Formata enunciado de questão em parágrafos legíveis.
-/// Detecta mudanças de parágrafo (ponto final + maiúscula) e adiciona
-/// espaçamento vertical entre eles — melhora muito a leitura no desktop.
-/// Animação de entrada fade-in em cascata para listas de widgets.
-/// Cada item aparece com um pequeno atraso, criando um efeito visual suave.
-

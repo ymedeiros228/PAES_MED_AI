@@ -48,34 +48,77 @@ class _ConstellationMapState extends State<ConstellationMap>
   late final Listenable _animations;
   Timer? _shootingStarTimer;
 
+  Timer? _idleTimer;
+  bool _reduced = false;
+
+  /// Por quanto tempo o céu fica "vivo" depois de aparecer ou do mouse passar.
+  /// Depois disso as animações param (antes rodavam para sempre e custavam
+  /// CPU mesmo com a tela parada).
+  static const _liveWindow = Duration(seconds: 15);
+
   @override
   void initState() {
     super.initState();
     _twinkle = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3000),
-    )..repeat(reverse: true);
+    );
     _grow = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..forward();
+      duration: const Duration(milliseconds: 1200),
+    );
     _shootingStar = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     );
     // Listenable.merge criado UMA VEZ — AnimatedBuilder mantém referência estável
     _animations = Listenable.merge([_twinkle, _grow, _shootingStar]);
-    // Listener único para agendar próxima estrela cadente
     _shootingStar.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
         _scheduleNextShootingStar();
       }
     });
-    _scheduleNextShootingStar();
   }
 
-  void _scheduleNextShootingStar() {
-    final delay = Duration(seconds: 10 + DateTime.now().millisecond % 8);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduced = AppMotion.reduced(context);
+    final first = _grow.status == AnimationStatus.dismissed && !_grow.isAnimating;
+    _reduced = reduced;
+    if (reduced) {
+      _goIdle();
+      _grow.value = 1;
+    } else if (first) {
+      _grow.forward();
+      _wake();
+    }
+  }
+
+  /// Liga o brilho/estrelas cadentes por [_liveWindow].
+  void _wake() {
+    if (_reduced || !mounted) return;
+    _idleTimer?.cancel();
+    _idleTimer = Timer(_liveWindow, _goIdle);
+    if (!_twinkle.isAnimating) _twinkle.repeat(reverse: true);
+    if (_shootingStarTimer == null || !_shootingStarTimer!.isActive) {
+      if (!_shootingStar.isAnimating) _scheduleNextShootingStar(first: true);
+    }
+  }
+
+  void _goIdle() {
+    _idleTimer?.cancel();
+    _shootingStarTimer?.cancel();
+    _shootingStarTimer = null;
+    if (_twinkle.isAnimating) _twinkle.animateTo(0.5, duration: const Duration(milliseconds: 600));
+  }
+
+  void _scheduleNextShootingStar({bool first = false}) {
+    if (_idleTimer == null || !_idleTimer!.isActive) return;
+    final delay = first
+        ? const Duration(seconds: 3)
+        : Duration(seconds: 8 + DateTime.now().millisecond % 6);
+    _shootingStarTimer?.cancel();
     _shootingStarTimer = Timer(delay, _fireShootingStar);
   }
 
@@ -88,6 +131,7 @@ class _ConstellationMapState extends State<ConstellationMap>
 
   @override
   void dispose() {
+    _idleTimer?.cancel();
     _shootingStarTimer?.cancel();
     _twinkle.dispose();
     _grow.dispose();
@@ -211,7 +255,12 @@ class _ConstellationMapState extends State<ConstellationMap>
           ),
           const SizedBox(height: 16),
           // Céu estrelado — AnimatedBuilder com Listenable estável
-          SizedBox(
+          // RepaintBoundary: o céu repinta sozinho, sem arrastar o resto da tela.
+          // MouseRegion: passar o mouse "acorda" a animação por alguns segundos.
+          MouseRegion(
+            onEnter: (_) => _wake(),
+            child: RepaintBoundary(
+              child: SizedBox(
             height: rows * 36.0,
             child: AnimatedBuilder(
               animation: _animations,
@@ -233,6 +282,8 @@ class _ConstellationMapState extends State<ConstellationMap>
                   child: const SizedBox.expand(),
                 );
               },
+            ),
+              ),
             ),
           ),
           const SizedBox(height: 8),

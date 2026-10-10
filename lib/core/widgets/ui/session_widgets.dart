@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
 import 'surface_panel.dart';
 
+/// Alternativa A–E em painel clicável (sessão / simulado).
 class ChoiceOptionTile extends StatefulWidget {
   const ChoiceOptionTile({
     required this.index,
@@ -437,7 +438,7 @@ class MissionQuestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          SelectableText(
+          Text(
             why,
             style: TextStyle(
               fontSize: 14,
@@ -795,6 +796,3 @@ class SessionResumeBanner extends StatelessWidget {
     );
   }
 }
-
-/// Conta de 0 até [value] com animação suave (count-up).
-/// Estilo Duolingo/Khan — números ganham vida ao aparecer.

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
 
+/// Enunciado de questão em parágrafos legíveis (texto selecionável).
+/// Detecta mudança de parágrafo (ponto final + maiúscula) e espaça.
 class StatementView extends StatelessWidget {
   const StatementView({
     required this.text,
@@ -100,5 +102,3 @@ class StatementView extends StatelessWidget {
     );
   }
 }
-
-/// Alternativa A–E em painéis clicáveis (sessão / simulado).

@@ -1020,17 +1020,13 @@ class _GameCardFace extends StatelessWidget {
                         // Texto principal
                         Flexible(
                           child: SingleChildScrollView(
-                            child: SelectableText(
+                            child: Text(
                               text,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: cs.onSurface,
                                 height: 1.5,
-                              ),
-                              contextMenuBuilder: (context, editableTextState) =>
-                                  AdaptiveTextSelectionToolbar.editableText(
-                                editableTextState: editableTextState,
                               ),
                             ),
                           ),
@@ -1376,17 +1372,13 @@ class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        SelectableText(
+                                        Text(
                                           backText,
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             color: cs.onSurface,
                                             height: 1.55,
-                                          ),
-                                          contextMenuBuilder: (context, editableTextState) =>
-                                              AdaptiveTextSelectionToolbar.editableText(
-                                            editableTextState: editableTextState,
                                           ),
                                         ),
                                         const SizedBox(height: 12),

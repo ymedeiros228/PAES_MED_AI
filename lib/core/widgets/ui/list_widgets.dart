@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
 
+/// Linha tipo playlist (Fila / Domínio / Plano).
 class PlaylistTile extends StatefulWidget {
   const PlaylistTile({
     required this.title,

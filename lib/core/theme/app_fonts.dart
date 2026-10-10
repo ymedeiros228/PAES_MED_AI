@@ -1,9 +1,24 @@
-// Tipografia do app — Segoe UI no desktop (via app_theme.dart).
-// Fontes embutidas (Inter/Poppins) ficam desativadas até QA estável no Windows.
+// Tipografia do app — Inter (corpo/UI) + Poppins (títulos), embutidas em
+// assets/fonts e declaradas no pubspec.yaml. Fallback: Segoe UI → Arial.
+//
+// Histórico: em ago/2026 as fontes foram removidas porque o pacote
+// google_fonts tentava baixá-las da internet e o fallback quebrava o texto.
+// Agora não há google_fonts: os TTF são locais e empacotados no build.
 import 'package:flutter/material.dart';
 
 class AppFonts {
-  /// Títulos — herda Segoe UI / Arial do tema.
+  AppFonts._();
+
+  /// Família do corpo/UI.
+  static const bodyFamily = 'Inter';
+
+  /// Família de títulos/display.
+  static const displayFamily = 'Poppins';
+
+  /// Fallback do sistema (Windows) caso algum glifo falte.
+  static const fallback = <String>['Segoe UI', 'Arial', 'sans-serif'];
+
+  /// Títulos (Poppins).
   static TextStyle display({
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.w600,
@@ -12,6 +27,8 @@ class AppFonts {
     double letterSpacing = 0,
   }) {
     return TextStyle(
+      fontFamily: displayFamily,
+      fontFamilyFallback: fallback,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
@@ -20,15 +37,17 @@ class AppFonts {
     );
   }
 
-  /// Corpo / UI — herda Segoe UI / Arial do tema.
+  /// Corpo / UI (Inter).
   static TextStyle body({
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.w400,
     Color? color,
-    double height = 1.4,
+    double height = 1.5,
     double letterSpacing = 0,
   }) {
     return TextStyle(
+      fontFamily: bodyFamily,
+      fontFamilyFallback: fallback,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
@@ -37,12 +56,15 @@ class AppFonts {
     );
   }
 
-  @Deprecated('Use AppFonts.display — poppins não está embutida')
+  /// Números tabulares (cronômetro, placares, estatísticas).
+  static const tabular = [FontFeature.tabularFigures()];
+
+  /// Alias de [display] (compat).
   static TextStyle poppins({
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.w400,
     Color? color,
-    double height = 1.0,
+    double height = 1.2,
     double letterSpacing = 0,
   }) =>
       display(
@@ -53,12 +75,12 @@ class AppFonts {
         letterSpacing: letterSpacing,
       );
 
-  @Deprecated('Use AppFonts.body — inter não está embutida')
+  /// Alias de [body] (compat).
   static TextStyle inter({
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.w400,
     Color? color,
-    double height = 1.0,
+    double height = 1.5,
     double letterSpacing = 0,
   }) =>
       body(

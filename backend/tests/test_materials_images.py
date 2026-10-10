@@ -22,7 +22,9 @@ def client() -> TestClient:
 
 
 def test_serve_cover_image_ok(client: TestClient) -> None:
-    img = ROOT / "data" / "materiais" / "imagens" / "bi_gene_capa.jpg"
+    from db import DATA_DIR
+
+    img = DATA_DIR / "materiais" / "imagens" / "bi_gene_capa.jpg"
     if not img.is_file():
         pytest.skip("capa bi_gene_capa.jpg ausente no workspace")
     r = client.get("/api/materials/imagens/bi_gene_capa.jpg")

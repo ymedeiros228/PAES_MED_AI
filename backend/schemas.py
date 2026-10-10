@@ -253,6 +253,10 @@ class SessionCheckpointRequest(BaseModel):
     phaseName: str | None = None
     questionIds: list[str] = Field(default_factory=list)
     started: bool = True
+    # O app envia e relê estes campos ao retomar a sessão; sem eles o Pydantic
+    # descartava silenciosamente (tópicos errados e cartões criados zeravam).
+    missTopics: list[dict[str, str]] = Field(default_factory=list)
+    flashcardsCreated: int = 0
 
 class SimCheckpointRequest(BaseModel):
     mode: str = "dia_prova"

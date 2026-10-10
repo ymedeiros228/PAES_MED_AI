@@ -646,9 +646,10 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       buf.writeln('## Meta: ${study['subject']} — ${study['topic']}');
       buf.writeln('${study['reason']}\n');
     }
-    buf.writeln('## Teoria (edital)');
-    for (final s in (plan?['theorySnippets'] as List? ?? plan?['phases']?['theorySnippets'] as List? ?? [])) {
-      buf.writeln('- $s');
+    buf.writeln('## Teoria');
+    for (final b in TheoryBlock.fromPlan(plan)) {
+      if (b.title != null) buf.writeln('### ${b.title}');
+      buf.writeln('${b.body}\n');
     }
     buf.writeln('\n## Sessão');
     buf.writeln('Respondidas: ${answeredIds.length} · Acertos: $correctCount · Cartões: $cardsDone');
@@ -806,11 +807,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final isQuestions = phaseName == 'questions';
     final isTheory = phaseName == 'theory';
     final isRevisions = phaseName == 'revisions' || phaseName == 'review';
-    final snippets = (plan!['theorySnippets'] as List? ??
-            (plan!['phases'] as Map?)?['theorySnippets'] as List? ??
-            [])
-        .map((e) => e.toString())
-        .toList();
+    final theoryBlocks = TheoryBlock.fromPlan(plan);
     final clockMs = sw.elapsedMilliseconds + _resumeElapsedMs;
     final clockElapsed = Duration(milliseconds: clockMs);
     final clock =
@@ -962,7 +959,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    '${(qIndex + cardsDone)}/${(sessionQuestions.length + sessionCards.length)}',
+                    // Na teoria não há questões/cartões carregados: antes mostrava "0/0".
+                    (isQuestions || isRevisions) &&
+                            (sessionQuestions.length + sessionCards.length) > 0
+                        ? '${(qIndex + cardsDone)}/${(sessionQuestions.length + sessionCards.length)}'
+                        : 'Fase ${phaseIndex.clamp(0, phases.length - 1) + 1}/${phases.length}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -1019,7 +1020,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   children: [
                     if (isTheory)
                       SessionTheoryPanel(
-                        snippets: snippets,
+                        blocks: theoryBlocks,
                         subject: study?['subject']?.toString() ?? '',
                         topic: study?['topic']?.toString() ?? '',
                       ),
