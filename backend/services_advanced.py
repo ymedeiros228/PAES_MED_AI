@@ -187,9 +187,9 @@ def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: i
                 n_harder = min(n_harder + 2, 22)
     except Exception:
         pass
-    same = list_questions(subject=subject, topic=topic, source_kind="oficial" if official_first else None)
+    same = list_questions(answerable_only=True, subject=subject, topic=topic, source_kind="oficial" if official_first else None)
     if official_first and not same:
-        same = list_questions(subject=subject, topic=topic)
+        same = list_questions(answerable_only=True, subject=subject, topic=topic)
     similar = [q for q in same if q.get("difficulty") in ("Fácil", "Média")][:n_similar]
     if len(similar) < n_similar:
         similar = same[:n_similar]
@@ -197,9 +197,9 @@ def adaptive_training(subject: str, topic: str, n_similar: int = 10, n_harder: i
     harder = [q for q in same if q.get("difficulty") == "Difícil"]
     if len(harder) < n_harder:
         # completar com outras difíceis da mesma disciplina
-        all_subj = list_questions(subject=subject, source_kind="oficial" if official_first else None)
+        all_subj = list_questions(answerable_only=True, subject=subject, source_kind="oficial" if official_first else None)
         if official_first and not all_subj:
-            all_subj = list_questions(subject=subject)
+            all_subj = list_questions(answerable_only=True, subject=subject)
         harder = (harder + [q for q in all_subj if q.get("difficulty") == "Difícil" and q["id"] not in {x["id"] for x in harder}])[
             :n_harder
         ]

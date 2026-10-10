@@ -319,14 +319,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           tag: 'question_${q.id}',
           child: Material(
             type: MaterialType.transparency,
-            child: Text(
-              '${q.subject} · ${q.topic} · ${q.year}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-                color: cs.onSurface,
-              ),
+            child: QuestionMetaChips(
+              subject: q.subject,
+              topic: q.topic,
+              year: q.year,
+              extra: q.semGabarito ? 'Sem gabarito' : null,
             ),
           ),
         ),
@@ -443,7 +440,6 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
               ),
             ),
-          ActionRow(children: [AppButton.primary(onPressed: selected == null || q.semGabarito ? null : _submit, label: 'Responder')]),
         ] else ...[
           // Animacao de entrada do feedback (slide + fade) — sensação de revelação
           AnimatedSize(
@@ -471,7 +467,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                           ? Icons.check_circle_rounded
                           : Icons.cancel_rounded,
                       size: 24,
-                      color: selected == q.correctIndex ? cs.primary : cs.error,
+                      color: selected == q.correctIndex ? context.palette.success : cs.error,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -482,7 +478,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: selected == q.correctIndex ? cs.primary : cs.error,
+                          color: selected == q.correctIndex ? context.palette.success : cs.error,
                         ),
                       ),
                     ),
@@ -767,7 +763,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
       ],
     );
 
-    return wide
+    final layout = wide
         ? Row(
               children: [
                 Expanded(
@@ -809,6 +805,28 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                 ),
               ],
             );
+
+    // Barra inferior fixa: botão principal alinhado à direita.
+    final Widget? bar = !revealed
+        ? AppButton.primary(
+            onPressed: selected == null || q.semGabarito ? null : _submit,
+            label: 'Responder',
+          )
+        : null;
+    if (bar == null) return layout;
+    return Column(
+      children: [
+        Expanded(child: layout),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            border: Border(top: BorderSide(color: cs.outlineVariant.f60)),
+          ),
+          child: Align(alignment: Alignment.centerRight, child: bar),
+        ),
+      ],
+    );
   }
 }
 

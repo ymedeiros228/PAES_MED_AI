@@ -17,7 +17,7 @@ from db import db
 
 _log = logging.getLogger("paes.content_migrations")
 
-CONTENT_MIGRATION_VERSION = "1"
+CONTENT_MIGRATION_VERSION = "3"
 
 # Padrões de cartões gerados por template (sem valor de estudo).
 _TEMPLATE_PATTERNS = (
@@ -40,6 +40,31 @@ def _is_template(front: str | None, source: str | None) -> bool:
     if src.startswith(_AUTO_SOURCE_PREFIXES):
         return True
     return any(p.search(front or "") for p in _TEMPLATE_PATTERNS)
+
+
+def _fix_subjects(conn) -> int:
+    """Corrige ``subject`` de lessons e flashcards(source='aula') quando o tópico só
+    existe no syllabus sob outra disciplina. Só toca na coluna subject."""
+    by_topic: dict[str, set[str]] = {}
+    names: dict[str, str] = {}
+    for r in conn.execute("SELECT subject, topic FROM syllabus").fetchall():
+        by_topic.setdefault(_norm(r["topic"]), set()).add(_norm(r["subject"]))
+        names[_norm(r["subject"])] = r["subject"]
+
+    def target(subject: str | None, topic: str | None) -> str | None:
+        subs = by_topic.get(_norm(topic))
+        if not subs or _norm(subject) in subs or len(subs) != 1:
+            return None
+        return names[next(iter(subs))]
+
+    fixed = 0
+    for table, where in (("lessons", ""), ("flashcards", " WHERE source='aula'")):
+        for r in conn.execute(f"SELECT id, subject, topic FROM {table}{where}").fetchall():
+            new = target(r["subject"], r["topic"])
+            if new:
+                conn.execute(f"UPDATE {table} SET subject=? WHERE id=?", (new, r["id"]))
+                fixed += 1
+    return fixed
 
 
 def migrate_content() -> dict[str, Any]:
@@ -77,7 +102,8 @@ def migrate_content() -> dict[str, Any]:
                 front = str(card.get("front") or "").strip()
                 back = str(card.get("back") or "").strip()
                 key = _norm(front)
-                if not front or not back or key in existing:
+                # Algumas aulas trazem cartões de template ('Macete rápido — X').
+                if not front or not back or key in existing or _is_template(front, None):
                     continue
                 existing.add(key)
                 due = (today + timedelta(days=added % 7)).isoformat(timespec="seconds")
@@ -88,12 +114,18 @@ def migrate_content() -> dict[str, Any]:
                 )
                 added += 1
 
-        # (c) grava a versão
+        # (c) corrige disciplina errada de aulas/cartões de aula pelo syllabus
+        fixed = _fix_subjects(conn)
+
+        # (d) grava a versão
         conn.execute(
             "INSERT INTO settings (key, value) VALUES ('content_migration_version', ?) "
             "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             (CONTENT_MIGRATION_VERSION,),
         )
         conn.commit()
-    _log.info("Migração de conteúdo: %s cartões removidos, %s importados", removed, added)
-    return {"removed": removed, "added": added}
+    _log.info(
+        "Migração de conteúdo: %s cartões removidos, %s importados, %s disciplinas corrigidas",
+        removed, added, fixed,
+    )
+    return {"removed": removed, "added": added, "fixed": fixed}

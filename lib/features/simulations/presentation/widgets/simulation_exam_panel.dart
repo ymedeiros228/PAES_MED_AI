@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/ui/content_widgets.dart';
 import 'simulation_setup_panel.dart';
 import 'simulation_widgets.dart';
 
@@ -132,6 +133,28 @@ class SimulationExamPanel extends StatelessWidget {
               ],
             ),
           ),
+        if (questions.isNotEmpty) ...[
+          Row(children: [
+            Text(
+              'Questão ${(keyboardQuestionIndex + 1).clamp(1, questions.length)} de ${questions.length}',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+            const Spacer(),
+            Text('${answers.length} respondidas',
+                style: TextStyle(fontSize: 12, color: cs.onSurface.f72)),
+          ]),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: answers.length / questions.length),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              builder: (_, v, __) => LinearProgressIndicator(value: v, minHeight: 4),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
         for (var qi = 0; qi < questions.length; qi++)
           Builder(
             builder: (context) {
@@ -147,22 +170,18 @@ class SimulationExamPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Questão ${qi + 1} de ${questions.length}'
-                      '${year != null ? ' · $year' : ''}',
+                      'Questão ${qi + 1} de ${questions.length}',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: cs.primary,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${q['subject'] ?? ''} · ${q['topic'] ?? ''}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: kbActive ? cs.onPrimaryContainer : cs.onSurface,
-                      ),
+                    const SizedBox(height: 6),
+                    QuestionMetaChips(
+                      subject: '${q['subject'] ?? ''}',
+                      topic: '${q['topic'] ?? ''}',
+                      year: (year as num?)?.toInt(),
                     ),
                     const SizedBox(height: 8),
                     FiguraAviso(statement: q['statement']?.toString() ?? ''),
@@ -218,22 +237,6 @@ class SimulationExamPanel extends StatelessWidget {
               );
             },
           ),
-        if (questions.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          ActionRow(
-            children: [
-              AppButton.primary(
-                onPressed: (answers.length < questions.length || grading) ? null : onGrade,
-                loading: grading,
-                label: grading
-                    ? 'Corrigindo ${answers.length} questões…'
-                    : answers.length < questions.length
-                        ? 'Responda todas (${answers.length}/${questions.length})'
-                        : 'Finalizar e corrigir',
-              ),
-            ],
-          ),
-        ],
       ],
     );
   }

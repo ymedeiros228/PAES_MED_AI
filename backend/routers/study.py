@@ -88,8 +88,8 @@ def focused_topic_questions(
        Sem nenhuma relevante, mantém o comportamento antigo (só rótulo).
     """
     filters = {"exam_board": exam_board, "year": year, "source_kind": source_kind}
-    labelled = list_questions(subject=subject, topic=topic, limit=200, **filters)
-    wide = list_questions(subject=subject, limit=400, **filters)
+    labelled = list_questions(answerable_only=True, subject=subject, topic=topic, limit=200, **filters)
+    wide = list_questions(answerable_only=True, subject=subject, limit=400, **filters)
     seen: set[str] = set()
     merged: list[dict[str, Any]] = []
     for q in [*labelled, *wide]:
@@ -355,7 +355,7 @@ def api_today(
         selected = qpool[:15]
         if len(selected) < 8 and subject_filter in natureza_subjects and board_filter == "UEMA_PAES":
             more = rank_by_topic_relevance(
-                list_questions(
+                list_questions(answerable_only=True, 
                     subject=subject_filter,
                     exam_board="UEMA_PAES",
                     source_kind="oficial" if want_oficial_gab else None,
@@ -387,7 +387,7 @@ def api_today(
         ]
     # Ciclo M/O/P: sessão só-oficiais (year opcional; Natureza-first)
     elif board_filter:
-        selected = list_questions(
+        selected = list_questions(answerable_only=True, 
             exam_board=board_filter,
             year=year_filter,
             source_kind="oficial" if (want_oficial_gab and board_filter == "UEMA_PAES") else None,
@@ -400,7 +400,7 @@ def api_today(
             if filtered:
                 selected = filtered
         if year_filter and len(selected) < 5 and board_filter == "UEMA_PAES":
-            multi = list_questions(
+            multi = list_questions(answerable_only=True, 
                 exam_board="UEMA_PAES",
                 year=None,
                 source_kind="oficial" if want_oficial_gab else None,
@@ -414,7 +414,7 @@ def api_today(
                 selected = multi
                 year_widened = True
         if not selected and board_filter == "UEMA_PAES":
-            selected = list_questions(
+            selected = list_questions(answerable_only=True, 
                 exam_board="UEMA_PAES",
                 source_kind="oficial" if want_oficial_gab else None,
                 limit=40,
@@ -424,7 +424,7 @@ def api_today(
             used_fallback = bool(selected) and year_filter is not None
         # Nunca recuar para TREINO quando officialWithGab / UEMA base
         if not selected and board_filter == "UEMA_PAES" and not want_oficial_gab:
-            selected = list_questions(source_kind="oficial", year=year_filter, limit=40)
+            selected = list_questions(answerable_only=True, source_kind="oficial", year=year_filter, limit=40)
             used_fallback = True
         if board_filter == "UEMA_PAES" and want_natureza and selected:
             nat = [q for q in selected if (q.get("subject") or "") in natureza_subjects]
@@ -441,7 +441,7 @@ def api_today(
             and prefer_official
             and len(selected) < 8
         ):
-            more = list_questions(
+            more = list_questions(answerable_only=True, 
                 exam_board="UEMA_PAES",
                 source_kind="oficial" if want_oficial_gab else None,
                 limit=15,
@@ -465,11 +465,11 @@ def api_today(
             if not questions and prefer_official:
                 questions = focused_topic_questions(s, t, source_kind="oficial", limit=15)
             if not questions and not want_oficial_gab:
-                questions = list_questions(subject=s, topic=t, exam_board="TREINO", limit=15)
+                questions = list_questions(answerable_only=True, subject=s, topic=t, exam_board="TREINO", limit=15)
                 if questions:
                     used_fallback = True
             if not questions and not want_oficial_gab:
-                questions = list_questions(subject=s, topic=t, limit=15)
+                questions = list_questions(answerable_only=True, subject=s, topic=t, limit=15)
                 if questions:
                     used_fallback = True
             for question in questions:
@@ -554,7 +554,7 @@ def api_today(
     target_pack_min = 10
     natureza_pool_n = 0
     if prefer_official or board_filter == "UEMA_PAES":
-        nat_pool = list_questions(
+        nat_pool = list_questions(answerable_only=True, 
             exam_board="UEMA_PAES",
             source_kind="oficial" if want_oficial_gab else None,
             limit=80,

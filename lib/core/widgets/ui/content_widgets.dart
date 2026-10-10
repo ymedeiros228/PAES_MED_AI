@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
 import 'layout_tokens.dart';
+import 'subject_style.dart';
 
 /// Enunciado de questão em parágrafos legíveis (texto selecionável).
 /// Detecta mudança de parágrafo (ponto final + maiúscula) e espaça.
@@ -45,19 +46,28 @@ class StatementView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final paragraphs = _splitParagraphs(text);
 
-    // Estilo serif para enunciados — Lora (Google Fonts) para leitura confortável
-    final statementStyle = TextStyle(fontFamily: 'Georgia', 
-      fontSize: 15.5,
-      height: 1.65,
-      letterSpacing: 0.15,
+    // Mesma fonte do app, corpo de leitura 16.5 com entrelinha 1.6
+    final statementStyle = TextStyle(
+      fontSize: 16.5,
+      height: 1.6,
       color: cs.onSurface,
     );
 
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: kReadingMaxWidth),
+        child: _card(cs, paragraphs, statementStyle),
+      ),
+    );
+  }
+
+  Widget _card(ColorScheme cs, List<String> paragraphs, TextStyle statementStyle) {
     if (paragraphs.length <= 1) {
       // Texto curto: SelectableText simples em container
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
         decoration: BoxDecoration(
           color: cs.surfaceContainerHigh.f38,
           borderRadius: BorderRadius.circular(kRadiusPanel),
@@ -77,7 +87,7 @@ class StatementView extends StatelessWidget {
     // Múltiplos parágrafos: container com cada parágrafo separado
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh.f38,
         borderRadius: BorderRadius.circular(kRadiusPanel),
@@ -100,5 +110,46 @@ class StatementView extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Chips de contexto da questão: disciplina (cor própria), tópico e ano.
+class QuestionMetaChips extends StatelessWidget {
+  const QuestionMetaChips({
+    required this.subject,
+    this.topic,
+    this.year,
+    this.extra,
+    super.key,
+  });
+
+  final String subject;
+  final String? topic;
+  final int? year;
+  final String? extra;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final v = subjectVisual(subject);
+    Widget pill(String text, Color bg, Color fg, {IconData? icon}) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            if (icon != null) ...[Icon(icon, size: 14, color: fg), const SizedBox(width: 5)],
+            Flexible(
+              child: Text(text,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg)),
+            ),
+          ]),
+        );
+    return Wrap(spacing: 8, runSpacing: 6, children: [
+      if (subject.isNotEmpty) pill(subject, v.soft, v.color, icon: v.icon),
+      if ((topic ?? '').isNotEmpty)
+        pill(topic!, cs.surfaceContainerHigh, cs.onSurfaceVariant),
+      if (year != null) pill('$year', cs.surfaceContainerHigh, cs.onSurfaceVariant),
+      if ((extra ?? '').isNotEmpty) pill(extra!, cs.surfaceContainerHigh, cs.onSurfaceVariant),
+    ]);
   }
 }

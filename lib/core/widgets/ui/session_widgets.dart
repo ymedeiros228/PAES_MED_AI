@@ -42,6 +42,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final pal = context.palette;
     final letter = widget.index >= 0 && widget.index < 5 ? 'ABCDE'[widget.index] : '?';
     Color border = cs.outlineVariant.f60;
     Color bg = cs.surface;
@@ -50,29 +51,32 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
     IconData? trailingIcon;
 
     if (widget.revealCorrect == true) {
-      border = cs.primary.f55;
-      bg = cs.primaryContainer.f45;
-      letterBg = cs.primary;
-      letterFg = cs.onPrimary;
+      border = pal.success;
+      bg = pal.successContainer.f55;
+      letterBg = pal.success;
+      letterFg = pal.onSuccess;
       trailingIcon = Icons.check_circle_rounded;
     } else if (widget.revealCorrect == false && widget.selected) {
-      border = cs.error.f45;
+      border = cs.error.f55;
       bg = cs.errorContainer.f35;
       letterBg = cs.error;
       letterFg = cs.onError;
       trailingIcon = Icons.cancel_rounded;
     } else if (widget.selected) {
-      border = cs.primary.f55;
+      border = cs.primary;
       bg = cs.primaryContainer.f38;
       letterBg = cs.primary;
       letterFg = cs.onPrimary;
     } else if (_hover && widget.enabled) {
-      border = cs.outlineVariant.f85;
-      bg = cs.surfaceContainerHigh.f50;
+      border = cs.primary.f55;
+      bg = cs.primaryContainer.f35;
+      letterBg = cs.primaryContainer;
+      letterFg = cs.onPrimaryContainer;
     }
+    final iconColor = widget.revealCorrect == true ? pal.success : cs.error;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: MouseRegion(
         cursor: widget.enabled && widget.onTap != null
             ? SystemMouseCursors.click
@@ -83,14 +87,14 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
           color: Colors.transparent,
           child: InkWell(
             onTap: widget.enabled ? _handleTap : null,
-            borderRadius: BorderRadius.circular(kRadiusButton),
+            borderRadius: BorderRadius.circular(14),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: bg,
-                borderRadius: BorderRadius.circular(kRadiusButton),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: border,
                   width: widget.selected || widget.revealCorrect != null ? 1.4 : 1,
@@ -105,12 +109,12 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeOutCubic,
                     child: Container(
-                      width: 30,
-                      height: 30,
+                      width: 32,
+                      height: 32,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: letterBg,
-                        borderRadius: BorderRadius.circular(12),
+                        shape: BoxShape.circle,
                       ),
                       child: Text(
                         letter,
@@ -129,10 +133,10 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                     child: Text(
                       widget.label,
                       style: TextStyle(
-                        height: 1.45,
-                        fontSize: 14,
+                        height: 1.5,
+                        fontSize: 15.5,
                         color: widget.revealCorrect == true
-                            ? cs.onPrimaryContainer
+                            ? pal.onSuccessContainer
                             : cs.onSurface,
                         fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
                       ),
@@ -150,7 +154,7 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                         child: Icon(
                           trailingIcon,
                           size: 20,
-                          color: widget.revealCorrect == true ? cs.primary : cs.error,
+                          color: iconColor,
                         ),
                       ),
                     ),
