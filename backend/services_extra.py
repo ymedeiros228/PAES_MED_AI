@@ -2240,6 +2240,40 @@ def gamification_overview() -> dict[str, Any]:
     }
 
 
+BACKUP_KEEP = 10
+
+
+def _sqlite_copy(src: Path, dest: Path) -> None:
+    """Copia um banco SQLite de forma consistente mesmo com o app aberto (API de backup)."""
+    import sqlite3
+
+    src_conn = sqlite3.connect(str(src), timeout=30.0)
+    dest_conn = sqlite3.connect(str(dest), timeout=30.0)
+    try:
+        src_conn.backup(dest_conn)
+    finally:
+        dest_conn.close()
+        src_conn.close()
+
+
+def prune_backups(keep: int = BACKUP_KEEP) -> int:
+    """Mantém só os `keep` zips mais recentes e apaga pastas antigas (duplicavam o zip)."""
+    backup_dir = DATA_DIR / "backups"
+    if not backup_dir.exists():
+        return 0
+    removed = 0
+    zips = sorted(backup_dir.glob("backup_*.zip"), reverse=True)
+    for old in zips[keep:]:
+        old.unlink(missing_ok=True)
+        removed += 1
+    for folder in list(backup_dir.glob("backup_*")) + list(backup_dir.glob("_staging_*")):
+        if folder.is_dir():
+            shutil.rmtree(folder, ignore_errors=True)
+            removed += 1
+    shutil.rmtree(backup_dir / "_restore_tmp", ignore_errors=True)
+    return removed
+
+
 def create_backup() -> dict[str, Any]:
     import hashlib
     import zipfile
@@ -2247,24 +2281,25 @@ def create_backup() -> dict[str, Any]:
     backup_dir = DATA_DIR / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     stamp = file_stamp()
-    dest = backup_dir / f"backup_{stamp}"
+    # Monta numa pasta temporária, zipa e apaga a pasta: o zip é o backup.
+    dest = backup_dir / f"_staging_{stamp}"
     dest.mkdir(parents=True, exist_ok=True)
 
     db_path = DATA_DIR / "paes_med_ai.db"
     files_copied = []
-    if db_path.exists():
-        shutil.copy2(db_path, dest / "paes_med_ai.db")
-        files_copied.append("paes_med_ai.db")
-    for sub in ("provas", "gabaritos", "edital", "aulas"):
-        src = DATA_DIR / sub
-        if src.exists():
-            target = dest / sub
-            if target.exists():
-                shutil.rmtree(target)
-            shutil.copytree(src, target, dirs_exist_ok=True)
-            files_copied.append(sub)
+    try:
+        if db_path.exists():
+            _sqlite_copy(db_path, dest / "paes_med_ai.db")
+            files_copied.append("paes_med_ai.db")
+        for sub in ("provas", "gabaritos", "edital", "aulas"):
+            src = DATA_DIR / sub
+            if src.exists():
+                shutil.copytree(src, dest / sub, dirs_exist_ok=True)
+                files_copied.append(sub)
+        zip_path = shutil.make_archive(str(backup_dir / f"backup_{stamp}"), "zip", root_dir=dest)
+    finally:
+        shutil.rmtree(dest, ignore_errors=True)
 
-    zip_path = shutil.make_archive(str(dest), "zip", root_dir=dest)
     zpath = Path(zip_path)
     size = zpath.stat().st_size if zpath.exists() else 0
     sha = hashlib.sha256(zpath.read_bytes()).hexdigest()[:16] if zpath.exists() else ""
@@ -2296,11 +2331,13 @@ def create_backup() -> dict[str, Any]:
             ),
         )
         conn.commit()
+    pruned = prune_backups()
     return {
         "ok": True,
         "path": zip_path,
-        "folder": str(dest),
+        "folder": str(backup_dir),
         "verify": verify,
+        "pruned": pruned,
         "note": "PDFs em provas/gabaritos/edital também estão no zip. Restore restaura o DB; pastas PDF podem ser reabertas do zip.",
     }
 
@@ -2312,23 +2349,25 @@ def restore_backup_db(zip_or_folder: str) -> dict[str, Any]:
     src = Path(zip_or_folder)
     if not src.exists():
         return {"ok": False, "error": "path_not_found"}
-    tmp_db = None
-    if src.suffix.lower() == ".zip":
-        with zipfile.ZipFile(src, "r") as zf:
-            names = [n for n in zf.namelist() if n.endswith("paes_med_ai.db")]
-            if not names:
-                return {"ok": False, "error": "db_missing_in_zip"}
-            extract_dir = DATA_DIR / "backups" / "_restore_tmp"
-            extract_dir.mkdir(parents=True, exist_ok=True)
-            zf.extract(names[0], extract_dir)
-            tmp_db = extract_dir / names[0]
-    else:
-        candidate = src / "paes_med_ai.db"
-        if not candidate.exists():
-            return {"ok": False, "error": "db_missing_in_folder"}
-        tmp_db = candidate
+    extract_dir = DATA_DIR / "backups" / "_restore_tmp"
     dest = DATA_DIR / "paes_med_ai.db"
-    shutil.copy2(tmp_db, dest)
+    try:
+        if src.suffix.lower() == ".zip":
+            with zipfile.ZipFile(src, "r") as zf:
+                names = [n for n in zf.namelist() if n.endswith("paes_med_ai.db")]
+                if not names:
+                    return {"ok": False, "error": "db_missing_in_zip"}
+                extract_dir.mkdir(parents=True, exist_ok=True)
+                zf.extract(names[0], extract_dir)
+                tmp_db = extract_dir / names[0]
+        else:
+            tmp_db = src / "paes_med_ai.db"
+            if not tmp_db.exists():
+                return {"ok": False, "error": "db_missing_in_folder"}
+        # API de backup do SQLite: grava por cima do banco aberto sem dessincronizar o WAL.
+        _sqlite_copy(tmp_db, dest)
+    finally:
+        shutil.rmtree(extract_dir, ignore_errors=True)
     return {
         "ok": True,
         "dbPath": str(dest),

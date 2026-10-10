@@ -85,3 +85,11 @@ ler_atalho.ps1
 listar_atalhos.ps1
 nul
 
+
+# Saídas geradas / capturas de tela de teste
+screenshot_*.png
+*_out.txt
+clean_report.txt
+# Anotações de scraping (URLs de imagens) usadas para gerar materiais
+backend/br_*.txt
+backend/data/*.db

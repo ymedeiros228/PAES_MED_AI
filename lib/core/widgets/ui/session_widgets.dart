@@ -122,8 +122,10 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                     ),
                   ),
                   const SizedBox(width: 14),
+                  // Text (não SelectableText): SelectableText captura o clique e
+                  // a alternativa só respondia quando clicavam na letra.
                   Expanded(
-                    child: SelectableText(
+                    child: Text(
                       widget.label,
                       style: TextStyle(
                         height: 1.45,
@@ -132,10 +134,6 @@ class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
                             ? cs.onPrimaryContainer
                             : cs.onSurface,
                         fontWeight: widget.revealCorrect == true ? FontWeight.w600 : null,
-                      ),
-                      contextMenuBuilder: (context, editableTextState) =>
-                          AdaptiveTextSelectionToolbar.editableText(
-                        editableTextState: editableTextState,
                       ),
                     ),
                   ),

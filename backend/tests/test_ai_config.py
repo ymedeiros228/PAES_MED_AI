@@ -39,7 +39,9 @@ def test_grava_env_preservando_outras_chaves_e_sem_expor_segredo(
         assert "OUTRA_CONFIG=preservar" in content
         assert "GEMINI_MODEL=gemini-test" in content
         assert "GEMINI_API_KEY=" + secret in content
-        assert stat.S_IMODE(env_path.stat().st_mode) == 0o600
+        if sys.platform != "win32":
+            # Windows não tem bits de permissão POSIX (chmod só alterna somente-leitura).
+            assert stat.S_IMODE(env_path.stat().st_mode) == 0o600
         assert ai_state.masked_key("gemini") == "este"
         assert secret not in str(ai_state.state())
     finally:
