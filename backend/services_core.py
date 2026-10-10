@@ -1395,10 +1395,14 @@ def list_questions(
     approved_only: bool | None = None,
     limit: int | None = None,
     offset: int = 0,
+    answerable_only: bool = False,
 ) -> list[dict[str, Any]]:
+    """Lista questões. ``answerable_only=True`` (fluxos de prática) exclui as sem gabarito."""
     with db() as conn:
         sql = "SELECT * FROM questions WHERE 1=1"
         params: list[Any] = []
+        if answerable_only:
+            sql += " AND LOWER(COALESCE(source,'')) NOT LIKE 'pdf_ingest_sem_gabarito%'"
         if subject:
             sql += " AND subject = ?"
             params.append(subject)
@@ -2829,12 +2833,12 @@ def build_tutor_day_plan() -> dict[str, Any]:
     hot = dash.get("errorHotTopics") or []
     official_n = int(basis.get("officialCount") or 0)
 
-    uema = list_questions(subject=subject, topic=topic, exam_board="UEMA_PAES", limit=8)
+    uema = list_questions(answerable_only=True, subject=subject, topic=topic, exam_board="UEMA_PAES", limit=8)
     if not uema and official_n > 0:
-        uema = list_questions(exam_board="UEMA_PAES", limit=8)
-    treino = list_questions(subject=subject, topic=topic, exam_board="TREINO", limit=5)
-    outras = list_questions(subject=subject, topic=topic, exam_board="OUTRA", limit=3)
-    similares = list_questions(subject=subject, topic=topic, similares_only=True, limit=3)
+        uema = list_questions(answerable_only=True, exam_board="UEMA_PAES", limit=8)
+    treino = list_questions(answerable_only=True, subject=subject, topic=topic, exam_board="TREINO", limit=5)
+    outras = list_questions(answerable_only=True, subject=subject, topic=topic, exam_board="OUTRA", limit=3)
+    similares = list_questions(answerable_only=True, subject=subject, topic=topic, similares_only=True, limit=3)
 
     prefer_uema = official_n >= 10 or bool(uema)
     if prefer_uema and uema:
@@ -2845,7 +2849,7 @@ def build_tutor_day_plan() -> dict[str, Any]:
         primary_pool = treino
     else:
         primary_board = "TREINO"
-        primary_pool = list_questions(subject=subject, topic=topic, limit=5)
+        primary_pool = list_questions(answerable_only=True, subject=subject, topic=topic, limit=5)
 
     steps = [
         f"Teoria rápida: {subject} · {topic} (syllabus local / trechos da sessão).",

@@ -772,6 +772,31 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
       ],
     ));
 
-    return body;
+    if (report != null || questions.isEmpty) return body;
+    // Barra inferior fixa com a ação principal à direita.
+    return Column(
+      children: [
+        Expanded(child: body),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            border: Border(top: BorderSide(color: cs.outlineVariant)),
+          ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: AppButton.primary(
+              onPressed: (answers.length < questions.length || grading) ? null : _grade,
+              loading: grading,
+              label: grading
+                  ? 'Corrigindo ${answers.length} questões…'
+                  : answers.length < questions.length
+                      ? 'Responda todas (${answers.length}/${questions.length})'
+                      : 'Finalizar e corrigir',
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

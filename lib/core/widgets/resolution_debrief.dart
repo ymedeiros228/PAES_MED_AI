@@ -50,7 +50,7 @@ class ResolutionDebrief extends StatelessWidget {
             SelectableText(
               t,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 height: 1.6,
                 color: cs.onPrimaryContainer,
               ),
@@ -62,7 +62,7 @@ class ResolutionDebrief extends StatelessWidget {
 
     return SurfacePanel(
       color: cs.primaryContainer.f55,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -70,10 +70,10 @@ class ResolutionDebrief extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  isReal ? 'Explicação (4 eixos)' : 'Rascunho / modelo',
+                  isReal ? 'Por que essa é a resposta' : 'Rascunho / modelo',
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     color: cs.onPrimaryContainer,
                   ),
                 ),

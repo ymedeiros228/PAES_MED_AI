@@ -6,6 +6,7 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/status_widgets.dart';
+import '../../../core/widgets/ui/subject_style.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 // ---------------------------------------------------------------------------
@@ -204,9 +205,8 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
                 onTap: () => setState(() => _selectedSubject = null),
               ),
               for (final s in _availableSubjects)
-                AppChip(
-                  label: s,
-                  icon: subjectStyle(s).icon,
+                _SubjectChip(
+                  subject: s,
                   selected: _selectedSubject == s,
                   onTap: () => setState(() => _selectedSubject = s),
                 ),
@@ -221,7 +221,7 @@ class _MaterialsScreenState extends State<MaterialsScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Seções por disciplina
+// Catálogo em grade, agrupado por disciplina
 // ---------------------------------------------------------------------------
 
 class _SubjectSections extends StatelessWidget {
@@ -235,20 +235,32 @@ class _SubjectSections extends StatelessWidget {
       bySubject.putIfAbsent(p.subject, () => []).add(p);
     }
     final subjects = bySubject.keys.toList()..sort();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final subject in subjects) ...[
-          SectionHeader(
-            title: '$subject · ${bySubject[subject]!.length}',
-            icon: subjectStyle(subject).icon,
-          ),
-          const SizedBox(height: kGap8),
-          for (final pdf in bySubject[subject]!) _PdfCard(pdf: pdf),
-          const SizedBox(height: kGap16),
+    return LayoutBuilder(builder: (context, c) {
+      // 2 a 4 colunas, cartões com no mínimo ~260px.
+      final cols = (c.maxWidth / 260).floor().clamp(2, 4);
+      final w = (c.maxWidth - (cols - 1) * kGap16) / cols;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final subject in subjects) ...[
+            SectionHeader(
+              title: '$subject · ${bySubject[subject]!.length}',
+              icon: subjectVisual(subject).icon,
+            ),
+            const SizedBox(height: kGap8),
+            Wrap(
+              spacing: kGap16,
+              runSpacing: kGap16,
+              children: [
+                for (final pdf in bySubject[subject]!)
+                  SizedBox(width: w, child: _PdfCard(pdf: pdf)),
+              ],
+            ),
+            const SizedBox(height: kGap24),
+          ],
         ],
-      ],
-    );
+      );
+    });
   }
 }
 
@@ -261,6 +273,8 @@ void _openStudy(BuildContext context, PdfItem pdf) {
   }).toString());
 }
 
+/// Cartão de curso: capa (ou bloco colorido da disciplina), título e tópico.
+/// O cartão inteiro abre o leitor; o AppCard cuida de hover/elevação.
 class _PdfCard extends StatelessWidget {
   const _PdfCard({required this.pdf});
   final PdfItem pdf;
@@ -268,67 +282,116 @@ class _PdfCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final style = subjectStyle(pdf.subject);
+    final v = subjectVisual(pdf.subject);
     final hasCover = pdf.coverUrl != null && pdf.coverUrl!.isNotEmpty;
-    // Capa repetida/genérica já vem sem URL do backend: cartão da disciplina.
-    final fallback = ColoredBox(
-      color: style.color.withOpacity(0.16),
-      child: Icon(style.icon, color: style.color, size: 26),
+    final fallback = Container(
+      color: v.soft,
+      alignment: Alignment.center,
+      child: Icon(v.icon, color: v.color, size: 44),
     );
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: kGap8),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: kGap16, vertical: kGap12),
-        onTap: () => _openStudy(context, pdf),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 48,
-                height: 64,
-                child: hasCover
-                    ? Image.network(
-                        '${apiClient.baseUrl}${pdf.coverUrl}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => fallback,
-                      )
-                    : fallback,
-              ),
+    return AppCard(
+      padding: EdgeInsets.zero,
+      onTap: () => _openStudy(context, pdf),
+      semanticLabel: 'Abrir ${pdf.title}',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: SizedBox(
+              height: 120,
+              width: double.infinity,
+              child: hasCover
+                  ? Image.network(
+                      '${apiClient.baseUrl}${pdf.coverUrl}',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => fallback,
+                    )
+                  : fallback,
             ),
-            const SizedBox(width: kGap16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    pdf.title,
-                    style: context.text.titleSmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: kGap4),
-                  Text(
-                    pdf.topic.isNotEmpty && pdf.topic != pdf.title
-                        ? '${pdf.subject} · ${pdf.topic}'
-                        : pdf.subject,
-                    style: context.text.bodySmall
-                        ?.copyWith(color: cs.onSurfaceVariant),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(kGap16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  pdf.title,
+                  style: context.text.titleSmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: kGap4),
+                Text(
+                  pdf.topic.isNotEmpty && pdf.topic != pdf.title
+                      ? pdf.topic
+                      : pdf.subject,
+                  style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: kGap12),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: v.soft,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(pdf.subject,
+                          style: context.text.labelSmall
+                              ?.copyWith(color: v.color, fontWeight: FontWeight.w700)),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.arrow_forward_rounded, size: 18, color: v.color),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: kGap12),
-            AppButton.tonal(
-              label: 'Estudar',
-              icon: Icons.menu_book,
-              size: AppButtonSize.small,
-              onPressed: () => _openStudy(context, pdf),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Chip de filtro com a cor da disciplina.
+class _SubjectChip extends StatelessWidget {
+  const _SubjectChip({required this.subject, required this.selected, required this.onTap});
+  final String subject;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = subjectVisual(subject);
+    final cs = Theme.of(context).colorScheme;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      decoration: ShapeDecoration(
+        color: selected ? v.color : v.soft,
+        shape: const StadiumBorder(),
+      ),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(v.icon, size: 15, color: selected ? Colors.white : v.color),
+              const SizedBox(width: 6),
+              Text(subject,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? Colors.white : cs.onSurface,
+                  )),
+            ],
+          ),
         ),
       ),
     );

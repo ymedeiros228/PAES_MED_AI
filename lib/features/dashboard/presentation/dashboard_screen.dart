@@ -14,6 +14,8 @@ import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/tour_overlay.dart';
+import '../../../core/widgets/ui/score_ring.dart';
+import '../../../core/widgets/ui/subject_style.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Hoje: hero com coach do dia + checklist + prontidão/semana (Ciclo C/F).
@@ -110,8 +112,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               : 'Descartar a sessão salva? Você vai começar do zero na próxima.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Descartar')),
+          AppButton.tertiary(label: 'Cancelar', onPressed: () => Navigator.pop(ctx, false)),
+          AppButton.primary(label: 'Descartar', onPressed: () => Navigator.pop(ctx, true)),
         ],
       ),
     );
@@ -295,6 +297,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
+                    Text(
+                      'CONTINUE DE ONDE PAROU',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white.withOpacity(0.75),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (_nextStep(data) != null) ...[
+                      Text(
+                        _nextStep(data)!,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                    ],
                     // Coach line — uma frase curta
                     Text(
                       coachLine,
@@ -305,7 +329,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
                     // CTA principal + ação secundária
                     Wrap(
                       spacing: 10,
@@ -359,9 +383,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: QuietEmpty(
                                 message: checkpointLoadError!,
-                                action: TextButton(
+                                action: AppButton.tertiary(
+                                  label: 'Tentar',
                                   onPressed: _loadCheckpoint,
-                                  child: const Text('Tentar'),
                                 ),
                               ),
                             ),
@@ -370,16 +394,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: QuietEmpty(
                                 message: ref.watch(examDateProvider).syncError!,
-                                action: TextButton(
+                                action: AppButton.tertiary(
+                                  label: 'Tentar',
                                   onPressed: () => unawaited(
                                     ref.read(examDateProvider.notifier).retrySync(),
                                   ),
-                                  child: const Text('Tentar'),
                                 ),
                               ),
                             ),
                           if (showFirstRunCoach && !semana1Ok)
-                            SurfacePanel(
+                            AppCard(
                               margin: const EdgeInsets.only(bottom: 16),
                               color: Theme.of(context).colorScheme.primaryContainer.f45,
                               child: Column(
@@ -410,15 +434,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   Wrap(
                                     spacing: 8,
                                     children: [
-                                      TapScale(
-                                        child: FilledButton(
-                                          onPressed: () {
-                                            context.go('/biblioteca?semana1=1');
-                                          },
-                                          child: const Text('Ir à Biblioteca'),
-                                        ),
+                                      AppButton.primary(
+                                        label: 'Ir à Biblioteca',
+                                        onPressed: () => context.go('/biblioteca?semana1=1'),
                                       ),
-                                      TextButton(onPressed: _dismissFirstRunCoach, child: const Text('Depois')),
+                                      AppButton.tertiary(label: 'Depois', onPressed: _dismissFirstRunCoach),
                                     ],
                                   ),
                                 ],
@@ -432,6 +452,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           // Conteudo com entrada suave (staggered fade-in)
                           StaggeredFadeIn(
                             children: [
+                              _GoalStreakStrip(
+                                minutesToday: (data['studyMinutesToday'] as num?)?.toInt() ??
+                                    ((data['studyToday'] as Map?)?['minutes'] as num?)?.toInt() ??
+                                    0,
+                                goal: ref.watch(dailyGoalProvider),
+                                streakDays: data['streakDays'] as int? ?? 0,
+                              ),
+                              const SizedBox(height: 24),
+                              _SubjectsGrid(
+                                accuracy: (data['accuracyBySubject'] is Map)
+                                    ? Map<String, dynamic>.from(data['accuracyBySubject'] as Map)
+                                    : const {},
+                              ),
+                              const SizedBox(height: 24),
                               _DashboardStatsRow(
                                 cs: cs,
                                 streakDays: data['streakDays'] as int? ?? 0,
@@ -475,6 +509,200 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Próximo passo (disciplina · tópico) vindo de `studyToday`, se houver.
+String? _nextStep(Map<String, dynamic> data) {
+  final st = data['studyToday'];
+  if (st is! Map) return null;
+  final subj = st['subject']?.toString() ?? '';
+  final topic = st['topic']?.toString() ?? '';
+  if (subj.isEmpty || topic.isEmpty) return null;
+  return '$subj · $topic';
+}
+
+// ===========================================================================
+// Faixa meta do dia (anel) + sequência
+// ===========================================================================
+
+class _GoalStreakStrip extends StatelessWidget {
+  const _GoalStreakStrip({
+    required this.minutesToday,
+    required this.goal,
+    required this.streakDays,
+  });
+  final int minutesToday;
+  final int goal;
+  final int streakDays;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final pct = goal > 0 ? (minutesToday / goal * 100).clamp(0, 100).toDouble() : 0.0;
+    const flame = Color(0xFFF08A24);
+    return AppCard(
+      padding: const EdgeInsets.all(kGap20),
+      child: Wrap(
+        spacing: kGap24,
+        runSpacing: kGap16,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ScoreRing(percent: pct, size: 88),
+              const SizedBox(width: kGap16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Meta do dia', style: context.text.titleSmall),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$minutesToday de $goal min',
+                    style: context.text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: flame.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(Icons.local_fire_department_rounded, color: flame, size: 32),
+              ),
+              const SizedBox(width: kGap12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$streakDays ${streakDays == 1 ? 'dia' : 'dias'}',
+                      style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                  Text(
+                    streakDays > 0 ? 'de sequência' : 'estude hoje para começar',
+                    style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// Suas disciplinas — grade colorida com % de domínio
+// ===========================================================================
+
+class _SubjectsGrid extends StatelessWidget {
+  const _SubjectsGrid({required this.accuracy});
+  final Map<String, dynamic> accuracy;
+
+  static const _defaults = ['Biologia', 'Química', 'Física', 'Matemática', 'Português', 'História'];
+
+  @override
+  Widget build(BuildContext context) {
+    final names = accuracy.isNotEmpty ? accuracy.keys.toList() : _defaults;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(title: 'Suas disciplinas', icon: Icons.auto_stories_rounded),
+        const SizedBox(height: kGap12),
+        LayoutBuilder(builder: (context, c) {
+          final cols = (c.maxWidth / 220).floor().clamp(2, 4);
+          final w = (c.maxWidth - (cols - 1) * kGap12) / cols;
+          return Wrap(
+            spacing: kGap12,
+            runSpacing: kGap12,
+            children: [
+              for (final n in names)
+                SizedBox(
+                  width: w,
+                  child: _SubjectCard(name: n, mastery: _frac(accuracy[n])),
+                ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  static double? _frac(dynamic v) {
+    if (v is! num) return null;
+    final d = v.toDouble();
+    return (d > 1 ? d / 100 : d).clamp(0.0, 1.0);
+  }
+}
+
+class _SubjectCard extends StatelessWidget {
+  const _SubjectCard({required this.name, required this.mastery});
+  final String name;
+  final double? mastery;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = subjectVisual(name);
+    final cs = Theme.of(context).colorScheme;
+    return AppCard(
+      padding: const EdgeInsets.all(kGap16),
+      onTap: () => context.go('/adaptativo?subject=${Uri.encodeComponent(name)}'),
+      semanticLabel: 'Treinar $name',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: v.soft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(v.icon, color: v.color, size: 22),
+              ),
+              const Spacer(),
+              Text(
+                mastery == null ? '—' : '${(mastery! * 100).round()}%',
+                style: context.text.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800, color: v.color),
+              ),
+            ],
+          ),
+          const SizedBox(height: kGap12),
+          Text(name,
+              style: context.text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: kGap8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: mastery ?? 0),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
+              builder: (_, val, __) => LinearProgressIndicator(
+                value: val,
+                minHeight: 7,
+                color: v.color,
+                backgroundColor: v.soft,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            mastery == null ? 'Ainda sem dados' : 'Domínio estimado',
+            style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 }
