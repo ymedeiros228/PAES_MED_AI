@@ -223,7 +223,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final map = Map<String, dynamic>.from(data as Map);
       setState(() => msg = map['message']?.toString() ?? 'Base reprocessada.');
     } catch (e) {
-      setState(() => msg = humanApiError(e, fallback: 'Falha ao recalcular a base local.'));
+      setState(() => msg = humanApiError(e, fallback: 'Não deu para recalcular seus dados.'));
     }
   }
 
@@ -284,11 +284,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     final online = health?['status'] == 'ok';
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -331,13 +330,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       },
                     ),
-                    if (ref.watch(examDateProvider.notifier).daysUntilExam != null) ...[
+                    if (ref.watch(examCountdownProvider).daysLeft != null) ...[
                       const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           () {
-                            final d = ref.watch(examDateProvider.notifier).daysUntilExam!;
+                            final d = ref.watch(examCountdownProvider).daysLeft!;
                             if (d < 0) return 'A prova dessa data já passou (há ${-d} dia(s)) — defina a próxima.';
                             if (d == 0) return 'Prova: é hoje!';
                             return 'Prova em $d dia(s)';
@@ -801,9 +800,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ],
           ),
-        ),
       ],
-    );
+    ));
   }
 }
 

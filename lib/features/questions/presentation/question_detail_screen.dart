@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'widgets/figura_aviso.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +13,6 @@ import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../domain/question.dart';
@@ -284,30 +284,16 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
   Widget build(BuildContext context) {
     if (error != null) {
       return Center(
-        child: EmptyState(
-          icon: Icons.quiz_outlined,
-          title: 'Não deu para abrir a ficha',
-          subtitle: error!,
-          action: Wrap(
-            spacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              FilledButton(
-                onPressed: () {
-                  setState(() => error = null);
-                  unawaited(_load());
-                },
-                child: const Text('Tentar'),
-              ),
-              TextButton(
-                onPressed: () => context.go('/questoes'),
-                child: const Text('Lista'),
-              ),
-              TextButton(
-                onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-                child: const Text('Sessão'),
-              ),
-            ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: ErrorState(
+            title: 'Não deu para abrir a questão',
+            message: error!,
+            onRetry: () {
+              setState(() => error = null);
+              unawaited(_load());
+            },
+            secondary: AppButton.tertiary(label: 'Voltar à lista', onPressed: () => context.go('/questoes')),
           ),
         ),
       );
@@ -431,6 +417,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           ),
         const SizedBox(height: 12),
         // StatementView formata o enunciado em parágrafos legíveis
+        FiguraAviso(statement: q.statement, sourcePdf: q.sourcePdf, year: q.year),
         StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement),
         const SizedBox(height: 16),
         for (var i = 0; i < q.options.length; i++)
@@ -448,7 +435,15 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           ),
         if (!revealed) ...[
           const SizedBox(height: 12),
-          FilledButton(onPressed: selected == null ? null : _submit, child: const Text('Responder')),
+          if (q.semGabarito)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Esta questão ainda não tem gabarito no app, então não dá para corrigir. Use só para ler e treinar a interpretação.',
+                style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+              ),
+            ),
+          ActionRow(children: [AppButton.primary(onPressed: selected == null || q.semGabarito ? null : _submit, label: 'Responder')]),
         ] else ...[
           // Animacao de entrada do feedback (slide + fade) — sensação de revelação
           AnimatedSize(
@@ -513,13 +508,15 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                   ),
               ],
             ),
-            FilledButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                _confirmErrorAndSave();
-              },
-              child: const Text('Salvar erro'),
-            ),
+            ActionRow(children: [
+              AppButton.primary(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  _confirmErrorAndSave();
+                },
+                label: 'Salvar erro',
+              ),
+            ]),
           ],
         ],
       ],
@@ -650,7 +647,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
             title: Text(
-              'Prioridade local (não é incidência UEMA)',
+              'Chance de cair de novo (estimativa do app)',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -726,15 +723,17 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: professorBusy
-                        ? null
-                        : () {
-                            HapticFeedback.mediumImpact();
-                            _acceptProfessor();
-                          },
-                    child: const Text('Aceitar'),
-                  ),
+                  ActionRow(children: [
+                    AppButton.primary(
+                      onPressed: professorBusy
+                          ? null
+                          : () {
+                              HapticFeedback.mediumImpact();
+                              _acceptProfessor();
+                            },
+                      label: 'Aceitar',
+                    ),
+                  ]),
                 ],
               ),
             ),

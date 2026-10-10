@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 /// Domínio: ranking para estudar. Ferramentas de curadoria ficam em Avançado.
@@ -54,28 +53,14 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         padding: EdgeInsets.all(16),
         child: SkeletonList(count: 3, lines: 2),
       ),
-      error: (e, _) => EmptyState(
-        title: 'Domínio indisponível',
-        subtitle: humanApiError(e, fallback: 'Tente de novo em instantes.'),
-        action: Wrap(
-          spacing: 8,
-          alignment: WrapAlignment.center,
-          children: [
-            FilledButton(
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                ref.read(refreshTickProvider.notifier).state++;
-              },
-              child: const Text('Tentar de novo'),
-            ),
-            TextButton(
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-              },
-              child: const Text('Sessão'),
-            ),
-          ],
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: ErrorState(
+          message: humanApiError(e, fallback: 'Tente de novo em instantes.'),
+          onRetry: () {
+            HapticFeedback.selectionClick();
+            ref.read(refreshTickProvider.notifier).state++;
+          },
         ),
       ),
       data: (payload) {
@@ -99,11 +84,10 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
         final natN = curation['naturezaCount'] as int? ?? 0;
         final cs = Theme.of(context).colorScheme;
 
-        return ListView(
-          padding: const EdgeInsets.only(bottom: 24),
+        return LayoutBuilder(builder: (context, box) => ListView(
+          padding: PageInsets.of(box.maxWidth),
           children: [
-            PageBody(
-              child: Column(
+            Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   PageHeader(
@@ -248,7 +232,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ),
                     ),
                     subtitle: const Text(
-                        'Rascunhos, assuntos duvidosos, inventário e curadoria'),
+                        'Rascunhos, assuntos duvidosos e revisão das questões'),
                     children: [
                       FutureBuilder(
                         key: ValueKey('drafts-$tick'),
@@ -361,7 +345,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SectionLabel('Inventário (base local)'),
+                            const SectionLabel('Questões no seu computador'),
                             const SizedBox(height: 8),
                             Text(
                               'Oficiais: $officialN · Natureza: $natN\n'
@@ -456,7 +440,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                       ListTile(
                         title: const Text('Completar explicações Natureza'),
                         subtitle: const Text(
-                            '4 eixos didáticos — modelo de apoio, não texto da banca'),
+                            '4 competências da redação — modelo de apoio, não é texto da banca'),
                         trailing: OutlinedButton(
                           onPressed: () async {
                             HapticFeedback.selectionClick();
@@ -518,9 +502,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
                   ),
                 ],
               ),
-            ),
           ],
-        );
+        ));
       },
     );
   }

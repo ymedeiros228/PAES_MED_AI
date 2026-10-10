@@ -241,14 +241,11 @@ class SessionRevisionsPanel extends StatelessWidget {
               onTap: onToggleFlip,
             ),
           ),
-          Wrap(
-            spacing: 8,
+          ActionRow(
             children: [
-              FilledButton.tonal(onPressed: onReveal, child: const Text('Revelar (Space)')),
-              TapScale(
-                child: FilledButton(onPressed: onRemembered, child: const Text('Lembrei (L)')),
-              ),
-              OutlinedButton(onPressed: onForgot, child: const Text('Esqueci (E)')),
+              if (!cardFlipped) AppButton.primary(onPressed: onReveal, label: 'Revelar (Espaço)'),
+              AppButton.tonal(onPressed: onRemembered, label: 'Lembrei (L)'),
+              AppButton.secondary(onPressed: onForgot, label: 'Esqueci (E)'),
             ],
           ),
           if (cardReviewError != null) ...[

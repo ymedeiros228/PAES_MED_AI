@@ -62,7 +62,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     });
     try {
       final exam = ref.read(examDateProvider).date;
-      final until = ref.read(examDateProvider.notifier).daysUntilExam;
+      final until = ref.read(examCountdownProvider).daysLeft;
       if (until != null && until > 0 && until < 180) {
         days = until;
       }
@@ -180,7 +180,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final until = ref.watch(examDateProvider.notifier).daysUntilExam;
+    final until = ref.watch(examCountdownProvider).daysLeft;
     final examState = ref.watch(examDateProvider);
     final exam = examState.date;
     final cs = Theme.of(context).colorScheme;
@@ -189,11 +189,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
     final doneN = plan.where((e) => (e as Map)['done'] == true).length;
     final progress = plan.isEmpty ? 0.0 : doneN / plan.length;
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -203,9 +202,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                     ? 'Defina a data da prova em Ajustes'
                     : 'Próximos dias · faltam $until para${exam.isEmpty ? ' a prova' : ' $exam'}',
                 icon: Icons.calendar_month_rounded,
-                trailing: TextButton(
+                trailing: AppButton.secondary(
+                  label: 'Gerar de novo',
+                  icon: Icons.refresh_rounded,
                   onPressed: loading ? null : () { HapticFeedback.selectionClick(); _load(regenerate: true); },
-                  child: const Text('Regenerar'),
                 ),
               ),
 
@@ -339,7 +339,7 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ),
               if (exportMsg != null) ...[
                 const SizedBox(height: 8),
-                Text(exportMsg!, style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)).copyWith(color: cs.primary)),
+                Text(exportMsg!, style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant).copyWith(color: cs.primary)),
               ],
                 ],
               ),
@@ -349,12 +349,9 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ],
               if (error != null) ...[
                 const SizedBox(height: 8),
-                QuietEmpty(
+                ErrorState(
                   message: error!,
-                  action: TextButton(
-                    onPressed: () { HapticFeedback.selectionClick(); unawaited(_load()); },
-                    child: const Text('Tentar de novo'),
-                  ),
+                  onRetry: () { HapticFeedback.selectionClick(); unawaited(_load()); },
                 ),
               ],
 
@@ -449,10 +446,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
 
               if (!loading && plan.isEmpty)
                 QuietEmpty(
-                  message: 'Gere um plano com Regenerar.',
-                  action: FilledButton(
+                  message: 'Você ainda não tem um plano. Gere um para ver o que estudar a cada dia.',
+                  action: AppButton.primary(
+                    label: 'Gerar plano',
                     onPressed: () { HapticFeedback.mediumImpact(); _load(regenerate: true); },
-                    child: const Text('Gerar'),
                   ),
                 ),
 
@@ -510,10 +507,10 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
                                         fontWeight: FontWeight.w700,
                                       ),
                                 ),
-                                SelectableText(
+                                Text(
                                   item['reason']?.toString() ?? '',
                                   maxLines: 3,
-                                  style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                                  style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
                                 ),
                                 if (fromErrors)
                                   Text(
@@ -550,9 +547,8 @@ class _StudyPlanScreenState extends ConsumerState<StudyPlanScreen> {
               ],
             ],
           ),
-        ),
       ],
-    );
+    ));
   }
 }
 
@@ -634,7 +630,7 @@ class _SmartPlanCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.7),
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 6),
@@ -723,7 +719,7 @@ class _GoalChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: cs.onSurface.withOpacity(0.7),
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],

@@ -312,18 +312,17 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isPaes ? 'Simulado PAES — 60 questões' : 'Pronto para o simulado do dia?'),
+        title: Text(isPaes ? 'Simulado PAES: 60 questões' : 'Começar o simulado do dia?'),
         content: Text(
           '${healthNote != null ? '$healthNote\n\n' : ''}'
           '${isPaes
-              ? 'Simulado no estilo UEMA com ~60 questões (mistura típica por disciplina).\n'
-                  'Cada objetiva vale igual: a UEMA usa escore padronizado, não peso por matéria nem TRI.\n'
-                  'Tempo: 4 horas. Gabarito só ao finalizar.\n\n'
-              : ''}'
-          '${n < 10
-              ? 'Há poucas oficiais na base ($n). Este modo NÃO inventa prova UEMA — sem acervo sério, a base de treino fica rotulada como treino.\n\n'
-                  'Tempo estimado: ~$mins min.\nResolução só ao finalizar.'
-              : 'Base oficial: $n questões (contagem local).\nTempo estimado: ~$mins min.\nResolução oculta até finalizar · sem treino disfarçado nesta seleção.'}',
+              ? 'São cerca de 60 questões no estilo da UEMA, misturando as disciplinas como na prova. '
+                  'Todas valem o mesmo. Você tem 4 horas e só vê o gabarito ao finalizar.'
+              : n < 10
+                  ? 'Ainda há poucas questões oficiais no app ($n), então este simulado vai usar questões de treino. '
+                      'Você tem cerca de $mins minutos e só vê o gabarito ao finalizar.'
+                  : 'As questões vêm das provas oficiais que já estão no app ($n no total). '
+                      'Você tem cerca de $mins minutos e só vê o gabarito ao finalizar.'}',
         ),
         actions: [
           TextButton(
@@ -333,12 +332,12 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
             },
             child: const Text('Cancelar'),
           ),
-          FilledButton(
+          AppButton.primary(
             onPressed: () {
               HapticFeedback.selectionClick();
               Navigator.pop(ctx, true);
             },
-            child: const Text('Começar'),
+            label: 'Começar',
           ),
         ],
       ),
@@ -643,11 +642,10 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
         .where((r) => r['correct'] != true)
         .toList();
 
-    final body = ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    final body = LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -657,11 +655,11 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                     ? (report != null
                         ? 'Veja o resultado e escolha o próximo passo'
                         : examLocked
-                            ? 'Simulado do dia · tempo restante $_timeRemainingLabel'
+                            ? 'Simulado do dia · o gabarito só aparece no final'
                             : 'Responda questão a questão · gabarito só no final')
                     : 'Um modo recomendado — ou escolha outro abaixo',
                 icon: Icons.timer_outlined,
-                trailing: inSession && report == null
+                trailing: inSession && report == null && !examLocked
                     ? SurfacePanel(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         color: examLocked ? cs.tertiaryContainer.f55 : null,
@@ -678,16 +676,6 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                                 fontFeatures: const [FontFeature.tabularFigures()],
                               ),
                             ),
-                            if (examLocked && diaProvaHardCap != null)
-                              Text(
-                                '−$_timeRemainingLabel',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: cs.onSurface.f65,
-                                  fontFeatures: const [FontFeature.tabularFigures()],
-                                ),
-                              ),
                           ],
                         ),
                       )
@@ -781,9 +769,8 @@ class _SimulationsScreenState extends ConsumerState<SimulationsScreen> {
                 ),
             ],
           ),
-        ),
       ],
-    );
+    ));
 
     return body;
   }

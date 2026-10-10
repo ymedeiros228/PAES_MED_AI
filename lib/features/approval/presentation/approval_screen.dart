@@ -70,11 +70,10 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -220,8 +219,7 @@ class _ApprovalScreenState extends ConsumerState<ApprovalScreen> {
               ),
             ],
           ),
-        ),
       ],
-    );
+    ));
   }
 }

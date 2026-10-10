@@ -263,3 +263,36 @@ def delete_material(material_id: str) -> bool:
         cursor = conn.execute("DELETE FROM materials WHERE id=?", (material_id,))
         conn.commit()
         return cursor.rowcount > 0
+
+
+def list_pdf_metadata() -> dict[str, dict[str, Any]]:
+    """Mapa pdf_filename -> metadados do banco (título correto, disciplina, tópico)."""
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT pdf_filename, title, subject, topic, subtopic, "
+            "length(content_json) AS content_len FROM materials "
+            "WHERE pdf_filename IS NOT NULL AND pdf_filename != ''"
+        ).fetchall()
+    return {r["pdf_filename"]: dict(r) for r in rows}
+
+
+def get_material_by_pdf(pdf_filename: str) -> dict[str, Any] | None:
+    """Material completo (conteúdo estruturado + imagens) a partir do nome do PDF."""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT * FROM materials WHERE pdf_filename=?", (pdf_filename,)
+        ).fetchone()
+        if not row:
+            return None
+        result = row_to_dict(row)
+        if not result:
+            return None
+        try:
+            result["content"] = json.loads(result.pop("content_json") or "{}")
+        except (ValueError, TypeError):
+            result["content"] = {}
+        try:
+            result["images"] = json.loads(result.pop("images_json") or "[]")
+        except (ValueError, TypeError):
+            result["images"] = []
+        return result

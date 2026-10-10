@@ -52,7 +52,7 @@ class AiTutorController extends StateNotifier<AiTutorState> {
               ChatMessage(
                 role: ChatRole.assistant,
                 content:
-                    'Olá! Sou seu tutor calibrado no PAES/UEMA (base local + edital). '
+                    'Olá! Sou seu tutor calibrado no PAES/UEMA (provas anteriores + edital). '
                     'Não invento estatísticas. Posso explicar como professor, fazer macetes, mapas e cartões de estudo. O que estudamos?',
               ),
             ],

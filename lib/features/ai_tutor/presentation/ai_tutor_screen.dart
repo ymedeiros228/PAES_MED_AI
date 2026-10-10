@@ -111,7 +111,10 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
     });
 
     return SafeArea(
-      child: Column(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: kPageMaxWidth),
+          child: Column(
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(28, kGap16, kGap16, chatting ? 8 : 0),
@@ -293,6 +296,8 @@ class _AiTutorScreenState extends ConsumerState<AiTutorScreen> {
                 .setProvider(p),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

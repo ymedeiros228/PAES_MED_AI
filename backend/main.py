@@ -149,6 +149,12 @@ def _run_startup() -> None:
         (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
     init_db()
     seed(force=False)
+    try:
+        from content_migrations import migrate_content
+
+        migrate_content()
+    except Exception:
+        _log.exception("Migração de conteúdo falhou (não fatal)")
     if _env_flag("PAES_STARTUP_SYNC"):
         _startup_heavy()
         return

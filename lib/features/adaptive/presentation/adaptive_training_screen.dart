@@ -256,7 +256,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                       : null,
                 ),
                 if (generatedPartialNote != null) ...[
-                  SelectableText(
+                  Text(
                     generatedPartialNote!,
                     style: TextStyle(fontSize: 13, color: cs.tertiary),
                   ),
@@ -587,7 +587,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           ],
                         ),
                         const SizedBox(height: 8),
-                        SelectableText(
+                        Text(
                           pendingErrorPick
                               ? 'Atalhos: 1–5 tipo de erro · Enter registra'
                               : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',

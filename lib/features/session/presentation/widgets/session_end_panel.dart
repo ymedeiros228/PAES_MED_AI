@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/ui/score_ring.dart';
 import 'session_widgets.dart';
 
 /// Painel de encerramento da sessão guiada — resumo, gaps e próximos passos.
@@ -48,22 +49,7 @@ class SessionEndPanel extends StatelessWidget {
                   ),
                 ),
               ),
-              if (totalAnswered > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$pct%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimary,
-                    ),
-                  ),
-                ),
+              if (totalAnswered > 0) ScoreRing(percent: pct.toDouble(), size: 96),
             ],
           ),
           const SizedBox(height: 4),
@@ -113,12 +99,12 @@ class SessionEndPanel extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          TapScale(
-            child: FilledButton.icon(
+          Center(
+            child: AppButton.primary(
               onPressed: () => context.go('/fila'),
-              icon: const Icon(Icons.playlist_play_rounded),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              label: const Text('Continuar na Fila', style: TextStyle(fontSize: 15)),
+              icon: Icons.playlist_play_rounded,
+              label: 'Continuar na Fila',
+              size: AppButtonSize.large,
             ),
           ),
           const SizedBox(height: 10),

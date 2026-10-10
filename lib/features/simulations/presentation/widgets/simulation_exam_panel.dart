@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../questions/presentation/widgets/figura_aviso.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -117,13 +118,12 @@ class SimulationExamPanel extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Respostas: ${answers.length}/${questions.length} · tempo $clock'
-                        '${diaProvaHardCap != null ? ' · restam $timeRemainingLabel' : ''}',
+                        'Respondidas: ${answers.length} de ${questions.length}',
                         style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Sem gabarito até finalizar. Ao acabar o tempo ou responder tudo, o app corrige.',
+                        'O gabarito só aparece no final. Quando o tempo acabar, o app corrige sozinho.',
                         style: TextStyle(fontSize: 13, color: cs.onSurface.f65),
                       ),
                     ],
@@ -165,6 +165,7 @@ class SimulationExamPanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    FiguraAviso(statement: q['statement']?.toString() ?? ''),
                     StatementView(
                       key: ValueKey('sim_stmt_$id'),
                       text: q['statement']?.toString() ?? '',
@@ -219,26 +220,18 @@ class SimulationExamPanel extends StatelessWidget {
           ),
         if (questions.isNotEmpty) ...[
           const SizedBox(height: 4),
-          FilledButton.tonal(
-            onPressed: (answers.length < questions.length || grading) ? null : onGrade,
-            child: grading
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      const SizedBox(width: 8),
-                      Text('Corrigindo ${answers.length} questões…'),
-                    ],
-                  )
-                : Text(
-                    answers.length < questions.length
+          ActionRow(
+            children: [
+              AppButton.primary(
+                onPressed: (answers.length < questions.length || grading) ? null : onGrade,
+                loading: grading,
+                label: grading
+                    ? 'Corrigindo ${answers.length} questões…'
+                    : answers.length < questions.length
                         ? 'Responda todas (${answers.length}/${questions.length})'
                         : 'Finalizar e corrigir',
-                  ),
+              ),
+            ],
           ),
         ],
       ],

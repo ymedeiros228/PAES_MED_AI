@@ -86,7 +86,7 @@ class ProgressReadableRelief extends StatelessWidget {
           const SizedBox(height: kGap12),
           for (final peak in ordered)
             _ReliefRow(
-              label: peak['label']?.toString() ?? 'Eixo',
+              label: peak['label']?.toString() ?? 'Competência',
               value: progressRelevoValue(peak),
               max: progressRelevoMax(peak),
               progress: progress,
@@ -160,7 +160,7 @@ class _ReliefRow extends StatelessWidget {
     final note = '${value.toStringAsFixed(1)} de ${max.toStringAsFixed(0)}';
 
     return Semantics(
-      label: 'Eixo $label, nota $note${isValley ? ', ponto a melhorar' : ', ponto forte'}',
+      label: 'Competência $label, nota $note${isValley ? ', ponto a melhorar' : ', ponto forte'}',
       child: Padding(
         padding: const EdgeInsets.only(bottom: kGap8),
         child: LayoutBuilder(

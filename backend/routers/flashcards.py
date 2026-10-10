@@ -11,6 +11,8 @@ from schemas import (
     FlashcardReview,
     FlashcardsFromQuestionRequest,
 )
+from db import db
+from timeutil import now_iso
 from services_advanced import (
     create_flashcard,
     delete_flashcard,
@@ -24,7 +26,33 @@ router = APIRouter(tags=["flashcards"])
 
 @router.get("/api/flashcards")
 def api_flashcards(dueOnly: bool = False, axesOnly: bool = False) -> list[dict[str, Any]]:
-    return list_flashcards(due_only=dueOnly, axes_only=axesOnly)
+    # list_flashcards corta em 300 (mais recentes); com os cartões das aulas
+    # o acervo passa disso, então a rota lista tudo (até 3000) por conta própria.
+    with db() as conn:
+        rows = conn.execute("SELECT * FROM flashcards ORDER BY id DESC LIMIT 3000").fetchall()
+    now = now_iso()
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        item = dict(r)
+        src = (item.get("source") or "").strip()
+        if axesOnly and not src.startswith("axis:"):
+            continue
+        if dueOnly and item.get("next_due") and item["next_due"] > now:
+            continue
+        out.append(
+            {
+                "id": item.get("id"),
+                "front": item.get("front"),
+                "back": item.get("back"),
+                "subject": item.get("subject"),
+                "topic": item.get("topic"),
+                "source": src or "manual",
+                "next_due": item.get("next_due"),
+                "reviews": item.get("reviews") or 0,
+                "fromAxes": src.startswith("axis:"),
+            }
+        )
+    return out
 
 @router.post("/api/flashcards")
 def api_flashcards_create(payload: FlashcardCreate) -> dict[str, Any]:

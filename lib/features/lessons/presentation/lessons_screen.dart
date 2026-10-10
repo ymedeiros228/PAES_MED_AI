@@ -119,11 +119,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     return CtrlEnterScope(
       enabled: !busy && transcriptCtrl.text.trim().length >= 80,
       onSubmit: _submitText,
-      child: ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      child: LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -225,7 +224,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ],
                       if (lastLesson!['macetes'] != null) ...[
                         const SizedBox(height: 8),
-                        SelectableText('Macete: ${lastLesson!['macetes']}', style: TextStyle(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
+                        Text('Macete: ${lastLesson!['macetes']}', style: TextStyle(fontSize: 13, height: 1.5, color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.9))),
                       ],
                       const SizedBox(height: 12),
                       FilledButton.tonal(
@@ -305,9 +304,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               ),
             ],
           ),
-        ),
       ],
-    ),
+    )),
     );
   }
 }

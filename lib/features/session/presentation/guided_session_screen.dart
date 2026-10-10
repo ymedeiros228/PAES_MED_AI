@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../questions/presentation/widgets/figura_aviso.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +16,7 @@ import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
+import '../../questions/domain/question.dart' show isSemGabarito;
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import 'widgets/session_end_panel.dart';
@@ -312,16 +314,29 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   Future<void> _loadQuestionBodies(List ids) async {
     final out = <Map<String, dynamic>>[];
     var failed = 0;
-    final batch = ids.take(12).toList();
-    _lastQuestionBodyIds = batch.map((e) => e.toString()).toList();
-    for (final raw in batch) {
-      try {
-        final q = await apiClient.get('/api/questions/${raw.toString()}');
-        out.add(Map<String, dynamic>.from(q as Map));
-      } catch (_) {
-        failed++;
+    // Carrega todas as questões do plano, em blocos paralelos de 4 (ordem preservada).
+    final batch = ids.map((e) => e.toString()).toList();
+    _lastQuestionBodyIds = batch;
+    for (var i = 0; i < batch.length; i += 4) {
+      final chunk = batch.skip(i).take(4).toList();
+      final results = await Future.wait(chunk.map((id) async {
+        try {
+          final q = await apiClient.get('/api/questions/$id');
+          return Map<String, dynamic>.from(q as Map);
+        } catch (_) {
+          return null;
+        }
+      }));
+      for (final r in results) {
+        if (r == null) {
+          failed++;
+        } else if (!isSemGabarito(r)) {
+          // Questão sem gabarito não pode ser corrigida: fica fora da sessão.
+          out.add(r);
+        }
       }
     }
+    if (!mounted) return;
     setState(() {
       sessionQuestions = out;
       qIndex = 0;
@@ -781,20 +796,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         icon: Icons.school_outlined,
         title: 'Sessão indisponível',
         subtitle: error!,
-        action: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
+        action: AppButton.primary(onPressed: _load, label: 'Tentar de novo'),
       );
     }
     if (plan == null) {
-      return ListView(
-        padding: const EdgeInsets.all(24),
-        children: const [
-          SkeletonCard(lines: 2),
-          SizedBox(height: 12),
-          SkeletonCard(lines: 3),
-          SizedBox(height: 12),
-          SkeletonCard(lines: 2),
-        ],
-      );
+      return const SkeletonPage();
     }
 
     final phases = (plan!['sessionPlan'] as List? ?? [
@@ -817,8 +823,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final remainingSec = phaseMinutes * 60 - clockElapsed.inSeconds;
     final lastMinute = started && !paused && phaseMinutes > 0 && remainingSec > 0 && remainingSec <= 60;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
         children: [
           PageHeader(
             eyebrow: 'Sessão',
@@ -857,8 +863,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               topic: (plan?['studyToday'] as Map? ?? {})['topic']?.toString() ?? '',
               onCloseStudyDay: _closeStudyDay,
             ),
-            TapScale(
-              child: FilledButton.tonal(
+            ActionRow(children: [AppButton.secondary(
+                label: 'Recomeçar (mesma meta)',
+                icon: Icons.restart_alt_rounded,
                 onPressed: () async {
                   await _clearCheckpoint();
                   setState(() {
@@ -873,9 +880,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     sessionQuestions = [];
                   });
                 },
-                child: const Text('Recomeçar (mesma meta)'),
-              ),
-            ),
+              )]),
           ] else if (checkpointLoadError != null && !started) ...[
             QuietEmpty(
               message: checkpointLoadError!,
@@ -979,36 +984,36 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               onStart: _start,
             ),
           if (started) ...[
-            Wrap(
-              spacing: 8,
+            ActionRow(
               children: [
-                FilledButton.tonal(onPressed: _togglePause, child: Text(paused ? 'Continuar' : 'Pausar')),
                 if (!isQuestions || sessionQuestions.isEmpty)
-                  TapScale(
-                    child: FilledButton(
-                      onPressed: () async {
-                        if (isQuestions && sessionQuestions.isEmpty) {
-                          await _enterQuestionsPhase();
-                        } else if (isRevisions && sessionCards.isEmpty && !revisionUsingQuestions) {
-                          await _enterRevisionsPhase();
-                        } else if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty) {
-                          await _enterRevisionsPhase();
-                        } else {
-                          await _nextPhase();
-                        }
-                      },
-                      child: Text(
-                        isQuestions && sessionQuestions.isEmpty
-                            ? 'Carregar questões'
-                            : isRevisions && sessionCards.isEmpty && sessionQuestions.isEmpty
-                                ? 'Carregar revisões'
-                                : 'Próxima fase',
-                      ),
-                    ),
+                  AppButton.primary(
+                    onPressed: () async {
+                      if (isQuestions && sessionQuestions.isEmpty) {
+                        await _enterQuestionsPhase();
+                      } else if (isRevisions && sessionCards.isEmpty && !revisionUsingQuestions) {
+                        await _enterRevisionsPhase();
+                      } else if (isRevisions && revisionUsingQuestions && sessionQuestions.isEmpty) {
+                        await _enterRevisionsPhase();
+                      } else {
+                        await _nextPhase();
+                      }
+                    },
+                    label: isQuestions && sessionQuestions.isEmpty
+                        ? 'Carregar questões'
+                        : isRevisions && sessionCards.isEmpty && sessionQuestions.isEmpty
+                            ? 'Carregar revisões'
+                            : 'Próxima fase',
                   ),
-                FilledButton.tonal(onPressed: _exportDay, child: const Text('Exportar pacote do dia')),
+                AppButton.secondary(
+                  onPressed: _togglePause,
+                  label: paused ? 'Continuar' : 'Pausar',
+                  icon: paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                ),
+                AppButton.tertiary(onPressed: _exportDay, label: 'Exportar pacote do dia'),
               ],
             ),
+            const SizedBox(height: 12),
             // AnimatedSwitcher: transição suave (FadeTransition) entre fases
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
@@ -1053,6 +1058,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+              FiguraAviso(
+                statement: sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                sourcePdf: sessionQuestions[qIndex]['sourcePdf']?.toString(),
+                year: (sessionQuestions[qIndex]['year'] as num?)?.toInt(),
+              ),
               StatementView(
                 key: ValueKey('statement_$qIndex'),
                 text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
@@ -1181,9 +1191,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                         ),
                     ],
                   ),
-                  TapScale(
-                    child: FilledButton(onPressed: _confirmErrorAndSave, child: const Text('Salvar erro e ver explicação')),
-                  ),
+                  ActionRow(children: [
+                    AppButton.primary(onPressed: _confirmErrorAndSave, label: 'Salvar erro e ver explicação'),
+                  ]),
                 ],
                 if (!pendingErrorPick &&
                     selected !=
@@ -1207,7 +1217,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   Text(lastRemediation!['title']?.toString() ?? 'Reforço', style: const TextStyle(fontWeight: FontWeight.w700)),
                   for (final s in (lastRemediation!['steps'] as List? ?? []))
                     Text('• $s'),
-                  SelectableText(
+                  Text(
                     lastRemediation!['practiceHint']?.toString() ?? '',
                     style: TextStyle(
                       fontSize: 13,
@@ -1222,13 +1232,9 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 spacing: 8,
                 children: [
                   if (!revealed)
-                    TapScale(
-                      child: FilledButton(onPressed: selected == null ? null : _submitAnswer, child: const Text('Responder (Enter)')),
-                    ),
+                    AppButton.primary(onPressed: selected == null ? null : _submitAnswer, label: 'Responder (Enter)'),
                   if (revealed && !pendingErrorPick)
-                    TapScale(
-                      child: FilledButton(onPressed: _nextQuestion, child: const Text('Próxima (N)')),
-                    ),
+                    AppButton.primary(onPressed: _nextQuestion, label: 'Próxima (N)'),
                 ],
               ),
               if (answerSaveError != null) ...[
@@ -1303,6 +1309,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
             ),
           ],
         ],
-    );
+    ));
   }
 }

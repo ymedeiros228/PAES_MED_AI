@@ -292,15 +292,15 @@ class _WelcomePage extends StatelessWidget {
                     // Features
                     _FeatureItem(
                       icon: Icons.menu_book_rounded,
-                      title: '92 materiais de estudo',
+                      title: 'Materiais de estudo',
                       subtitle: 'PDFs organizados por disciplina',
                       cs: cs,
                     ),
                     const SizedBox(height: 16),
                     _FeatureItem(
                       icon: Icons.quiz_rounded,
-                      title: '657 questões',
-                      subtitle: 'Oficiais da UEMA + geradas',
+                      title: 'Questões oficiais da UEMA',
+                      subtitle: 'Provas anteriores com gabarito para treinar',
                       cs: cs,
                     ),
                     const SizedBox(height: 16),

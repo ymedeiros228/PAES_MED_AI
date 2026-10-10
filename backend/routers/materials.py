@@ -14,7 +14,9 @@ from material_service import (
     delete_material,
     generate_material,
     get_material,
+    get_material_by_pdf,
     list_materials,
+    list_pdf_metadata,
     list_syllabus_with_status,
 )
 
@@ -65,32 +67,60 @@ async def list_all_materials(subject: str | None = Query(None)) -> list[dict[str
 
 @router.get("/pdf-list")
 async def list_pdfs() -> list[dict[str, Any]]:
-    """Lista todos os PDFs disponíveis na pasta de materiais."""
+    """Lista os PDFs da pasta de materiais, com título/disciplina vindos do banco."""
     if not _PDF_DIR.exists():
         return []
+    subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
+                   "MT": "Matemática", "PT": "Português", "HIS": "História",
+                   "GEO": "Geografia", "FIL": "Filosofia", "SOC": "Sociologia",
+                   "ING": "Inglês", "ESP": "Espanhol"}
+    meta = list_pdf_metadata()
     pdfs = []
     for f in sorted(_PDF_DIR.glob("*.pdf")):
-        # Decodificar nome: BI_CITOLOGIA_MEMBRANA_PLASMATICA.pdf
         name = f.stem
         parts = name.split("_", 1)
         subject_code = parts[0] if parts else ""
-        title = parts[1].replace("_", " ") if len(parts) > 1 else name
-        subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
-                       "MT": "Matemática", "PT": "Português", "HIS": "História",
-                       "GEO": "Geografia", "FIL": "Filosofia", "SOC": "Sociologia",
-                       "ING": "Inglês", "ESP": "Espanhol"}
+        title = parts[1].replace("_", " ").title() if len(parts) > 1 else name
         subject = subject_map.get(subject_code, subject_code)
+        topic = ""
+        has_content = False
+        m = meta.get(f.name)
+        if m:
+            title = m.get("title") or title
+            subject = m.get("subject") or subject
+            topic = m.get("topic") or ""
+            has_content = (m.get("content_len") or 0) > 10
         cover = _cover_for_stem(name)
         pdfs.append({
             "filename": f.name,
             "title": title,
             "subject": subject,
+            "topic": topic,
+            "hasContent": has_content,
             "size_kb": round(f.stat().st_size / 1024, 1),
             "url": f"/api/materials/pdf/{f.name}",
             "coverUrl": f"/api/materials/imagens/{cover}" if cover else None,
             "coverFilename": cover,
         })
+    # Capa repetida em vários PDFs é genérica: o app mostra cartão da disciplina.
+    uso: dict[str, int] = {}
+    for p in pdfs:
+        if p["coverFilename"]:
+            uso[p["coverFilename"]] = uso.get(p["coverFilename"], 0) + 1
+    for p in pdfs:
+        if p["coverFilename"] and uso[p["coverFilename"]] > 1:
+            p["coverUrl"] = None
     return pdfs
+
+
+@router.get("/by-pdf/{filename}")
+async def material_by_pdf(filename: str) -> dict[str, Any]:
+    """Conteúdo estruturado (leitura dentro do app) do material ligado a um PDF."""
+    safe = Path(filename).name
+    material = get_material_by_pdf(safe)
+    if not material:
+        raise HTTPException(status_code=404, detail="Material não encontrado.")
+    return material
 
 
 @router.get("/pdf/{filename}/cover")

@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
-import '../../../core/widgets/flashcard_images.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/ux_copy.dart';
+import '../../../core/widgets/ui/subject_style.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class FlashcardsScreen extends ConsumerStatefulWidget {
@@ -100,11 +98,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
             : ref.watch(flashcardsAllProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
         children: [
-          PageBody(
-            child: Column(
+          Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 PageHeader(
@@ -141,22 +138,10 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                   ),
                 ),
                 async.when(
-                  loading: () => const SkeletonList(count: 4, lines: 2),
-                  error: (e, _) => QuietEmpty(
+                  loading: () => const SkeletonList(count: 2, lines: 3),
+                  error: (e, _) => ErrorState(
                     message: humanApiError(e, fallback: 'Não deu para carregar os cartões.'),
-                    action: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: () { HapticFeedback.selectionClick(); ref.read(refreshTickProvider.notifier).state++; },
-                          child: const Text('Tentar'),
-                        ),
-                        TextButton(
-                          onPressed: () { HapticFeedback.selectionClick(); context.go('/sessao'); },
-                          child: const Text('Sessão'),
-                        ),
-                      ],
-                    ),
+                    onRetry: () => ref.read(refreshTickProvider.notifier).state++,
                   ),
                   data: (items) {
                     final ids = <int>[];
@@ -316,87 +301,12 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
                 ),
               ],
             ),
-          ),
         ],
-    );
+    ));
   }
 }
 
-class _FlipCard extends StatefulWidget {
-  const _FlipCard({required this.front, required this.back, required this.flipped});
-
-  final Widget front;
-  final Widget back;
-  final bool flipped;
-
-  @override
-  State<_FlipCard> createState() => _FlipCardState();
-}
-
-class _FlipCardState extends State<_FlipCard> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
-    );
-    if (widget.flipped) _controller.value = 1.0;
-  }
-
-  @override
-  void didUpdateWidget(covariant _FlipCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.flipped != widget.flipped) {
-      if (widget.flipped) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final angle = _animation.value * pi;
-        final showFront = angle < 0.5 * pi;
-        return Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(angle),
-          child: showFront
-              ? widget.front
-              : Transform.flip(
-                  flipX: true,
-                  child: widget.back,
-                ),
-        );
-      },
-    );
-  }
-}
-
-// ============================================================
-// _CardDeckView — carrossel horizontal estilo Netflix
-// PageView com peek das cartas vizinhas + indicador de progresso
-// ============================================================
-
+/// Deck de estudo: uma carta grande no centro, virada 3D suave e autoavaliação.
 class _CardDeckView extends StatefulWidget {
   const _CardDeckView({
     required this.items,
@@ -426,91 +336,92 @@ class _CardDeckView extends StatefulWidget {
   State<_CardDeckView> createState() => _CardDeckViewState();
 }
 
-class _CardDeckViewState extends State<_CardDeckView> {
-  late PageController _pageController;
-  int _currentIndex = 0;
+class _CardDeckViewState extends State<_CardDeckView> with SingleTickerProviderStateMixin {
+  int _index = 0;
   final FocusNode _focusNode = FocusNode();
+  late final AnimationController _flip = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 260),
+  );
+
+  int? _idAt(int i) {
+    if (i < 0 || i >= widget.items.length) return null;
+    final raw = widget.items[i];
+    if (raw is! Map) return null;
+    return raw['id'] is int ? raw['id'] as int : int.tryParse('${raw['id']}');
+  }
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.52);
+    _flip.value = widget.showBack ? 1 : 0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _focusNode.requestFocus();
-      _prefetchAround(_currentIndex);
-      _syncVisibleId(_currentIndex);
+      _announce();
     });
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
-    _pageController.dispose();
+    _flip.dispose();
     super.dispose();
   }
 
-  void _syncVisibleId(int index) {
-    if (index < 0 || index >= widget.items.length) return;
-    final raw = widget.items[index];
-    if (raw is! Map) return;
-    final id = raw['id'] is int ? raw['id'] as int : int.tryParse('${raw['id']}');
-    if (id != null) widget.onVisible(id);
+  void _announce() {
+    final id = _idAt(_index);
+    if (id != null && id != widget.currentId) widget.onVisible(id);
   }
 
-  void _prefetchAround(int index) {
-    for (final i in [index - 1, index, index + 1]) {
-      if (i < 0 || i >= widget.items.length) continue;
-      final raw = widget.items[i];
-      if (raw is! Map) continue;
-      final subj = raw['subject']?.toString() ?? '';
-      final top = raw['topic']?.toString() ?? '';
-      final url = flashcardImageUrl(apiClient.baseUrl, subj, top);
-      if (url == null) continue;
-      precacheImage(NetworkImage(url), context);
+  void _goTo(int i) {
+    if (i < 0 || i >= widget.items.length) return;
+    setState(() => _index = i);
+    _announce();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CardDeckView old) {
+    super.didUpdateWidget(old);
+    if (_index >= widget.items.length) _index = widget.items.isEmpty ? 0 : widget.items.length - 1;
+    if (widget.showBack) {
+      _flip.forward();
+    } else {
+      _flip.reverse();
     }
-  }
-
-  void _goTo(int index) {
-    if (index < 0 || index >= widget.items.length) return;
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-    );
+    if (widget.currentId == null || widget.currentId != _idAt(_index)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _announce();
+      });
+    }
   }
 
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final id = widget.currentId;
-    if (event.logicalKey == LogicalKeyboardKey.space ||
-        event.logicalKey == LogicalKeyboardKey.enter) {
-      if (id != null) {
-        widget.onFlip(id);
-        return KeyEventResult.handled;
-      }
-    }
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
-        event.logicalKey == LogicalKeyboardKey.keyA ||
-        event.logicalKey == LogicalKeyboardKey.keyJ) {
-      _goTo(_currentIndex - 1);
+    final k = event.logicalKey;
+    final id = _idAt(_index);
+    if ((k == LogicalKeyboardKey.space || k == LogicalKeyboardKey.enter) && id != null) {
+      widget.onFlip(id);
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
-        event.logicalKey == LogicalKeyboardKey.keyD ||
-        event.logicalKey == LogicalKeyboardKey.keyK) {
-      _goTo(_currentIndex + 1);
+    if (k == LogicalKeyboardKey.arrowLeft || k == LogicalKeyboardKey.keyA) {
+      _goTo(_index - 1);
+      return KeyEventResult.handled;
+    }
+    if (k == LogicalKeyboardKey.arrowRight || k == LogicalKeyboardKey.keyD) {
+      _goTo(_index + 1);
       return KeyEventResult.handled;
     }
     if (id != null && widget.showBack) {
-      if (event.logicalKey == LogicalKeyboardKey.digit1 ||
-          event.logicalKey == LogicalKeyboardKey.numpad1) {
-        widget.onRemember(id);
+      if (k == LogicalKeyboardKey.digit1 || k == LogicalKeyboardKey.numpad1) {
+        widget.onForgot(id);
         return KeyEventResult.handled;
       }
-      if (event.logicalKey == LogicalKeyboardKey.digit2 ||
-          event.logicalKey == LogicalKeyboardKey.numpad2) {
-        widget.onForgot(id);
+      if (k == LogicalKeyboardKey.digit2 ||
+          k == LogicalKeyboardKey.numpad2 ||
+          k == LogicalKeyboardKey.digit3 ||
+          k == LogicalKeyboardKey.numpad3) {
+        widget.onRemember(id);
         return KeyEventResult.handled;
       }
     }
@@ -518,981 +429,235 @@ class _CardDeckViewState extends State<_CardDeckView> {
   }
 
   @override
-  void didUpdateWidget(covariant _CardDeckView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.currentId != null) {
-      final idx = widget.items.indexWhere((r) {
-        if (r is! Map) return false;
-        final id = r['id'] is int ? r['id'] : int.tryParse('${r['id']}');
-        return id == widget.currentId;
-      });
-      if (idx >= 0 && idx != _currentIndex) {
-        _currentIndex = idx;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_pageController.hasClients) {
-            _pageController.animateToPage(
-              idx,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-            );
-          }
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     if (widget.items.isEmpty) return const SizedBox.shrink();
+    final cs = Theme.of(context).colorScheme;
     final total = widget.items.length;
-
-    // Dados da carta virada (para o overlay de zoom)
-    Map<String, dynamic>? flippedItem;
-    if (widget.showBack && widget.currentId != null) {
-      for (final r in widget.items) {
-        if (r is! Map) continue;
-        final id = r['id'] is int ? r['id'] : int.tryParse('${r['id']}');
-        if (id == widget.currentId) {
-          flippedItem = Map<String, dynamic>.from(r);
-          break;
-        }
-      }
-    }
-    final isFlippedValid = flippedItem != null && flippedItem.isNotEmpty;
+    final index = _index.clamp(0, total - 1);
+    final item = Map<String, dynamic>.from(widget.items[index] as Map);
+    final id = _idAt(index);
+    final subject = item['subject']?.toString() ?? '';
+    final topic = item['topic']?.toString() ?? '';
+    final style = subjectVisual(subject);
+    final front = item['front']?.toString() ?? '';
+    final back = item['back']?.toString() ?? '';
 
     return Focus(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: Stack(
-      children: [
-        // Conteúdo normal (carrossel)
-        Column(
-          children: [
-            // Indicador de progresso "2 / 300"
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                '${_currentIndex + 1} / $total',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface.withOpacity(0.5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text('Cartão ${index + 1} de $total',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurface.withOpacity(0.7))),
+              const SizedBox(width: kGap12),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (index + 1) / total,
+                    minHeight: 6,
+                    color: style.color,
+                    backgroundColor: cs.surfaceContainerHighest,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              widget.showBack
-                  ? '1 lembrou · 2 esqueceu · ← → navega'
-                  : 'Espaço vira · ← → navega',
-              style: TextStyle(fontSize: 11, color: cs.onSurface.withOpacity(0.45)),
-            ),
-            // Barra de progresso
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 4),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: total > 0 ? (_currentIndex + 1) / total : 0,
-                  minHeight: 4,
-                  backgroundColor: cs.surfaceContainerHighest,
-                  color: cs.primary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Carrossel PageView estilo Netflix — card vertical retrato
-            SizedBox(
-              height: 540,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: total,
-                onPageChanged: (index) {
-                  HapticFeedback.selectionClick();
-                  setState(() => _currentIndex = index);
-                  _syncVisibleId(index);
-                  _prefetchAround(index);
-                },
-                itemBuilder: (context, index) {
-                  final raw = widget.items[index];
-                  final item = Map<String, dynamic>.from(raw as Map);
-                  final id = item['id'] is int ? item['id'] : int.tryParse('${item['id']}');
-                  if (id == null) return const SizedBox.shrink();
-
-                  final subj = item['subject']?.toString() ?? '';
-                  final top = item['topic']?.toString() ?? '';
-                  final src = item['source']?.toString() ?? '';
-                  final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-                  final accent = Color(subjectColorSeed(subj));
-                  final flipped = widget.showBack && widget.currentId == id;
-
-                  return AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, child) {
-                      double scale = 1.0;
-                      if (_pageController.position.haveDimensions) {
-                        final page = _pageController.page ?? _currentIndex.toDouble();
-                        final diff = (index - page).abs();
-                        scale = (1 - diff * 0.12).clamp(0.78, 1.0);
-                      }
-                      return Transform.scale(scale: scale, child: child);
-                    },
-                    child: Center(
-                      child: SizedBox(
-                        width: 280,
-                        child: _GameCard(
-                          flipped: flipped,
-                          subject: subj,
-                          topic: top,
-                          fromAxes: fromAxes,
-                          frontText: item['front']?.toString() ?? '',
-                          backText: item['back']?.toString() ?? '',
-                          accent: accent,
-                          dueLabel: humanDueLabel(item['next_due']?.toString()),
-                          onTap: () => widget.onFlip(id),
-                          onRemember: () => widget.onRemember(id),
-                          onForgot: () => widget.onForgot(id),
-                          onDelete: () => widget.onDelete(id),
+            ],
+          ),
+          const SizedBox(height: kGap24),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: GestureDetector(
+                onTap: id == null ? null : () => widget.onFlip(id),
+                child: AnimatedBuilder(
+                  animation: _flip,
+                  builder: (context, _) {
+                    final t = Curves.easeInOutCubic.transform(_flip.value);
+                    final angle = t * pi;
+                    final showingBack = t > 0.5;
+                    return Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.0012)
+                        ..rotateY(angle),
+                      child: Transform(
+                        alignment: Alignment.center,
+                        // Espelha o verso para o texto não ficar invertido.
+                        transform: Matrix4.rotationY(showingBack ? pi : 0),
+                        child: _CardFace(
+                          style: style,
+                          subject: subject,
+                          topic: topic,
+                          text: showingBack ? back : front,
+                          label: showingBack ? 'Resposta' : 'Pergunta',
+                          hint: showingBack ? null : 'Toque na carta ou aperte Espaço para virar',
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Indicadores de ponto (estilo Netflix dots)
-            if (total <= 12)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(total, (i) {
-                  final active = i == _currentIndex;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: active ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: active ? cs.primary : cs.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
-              ),
-            if (total > 1) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 56,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  itemCount: total,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final raw = widget.items[index];
-                    final item = Map<String, dynamic>.from(raw as Map);
-                    final subj = item['subject']?.toString() ?? '';
-                    final top = item['topic']?.toString() ?? '';
-                    final url = flashcardImageUrl(apiClient.baseUrl, subj, top);
-                    final active = index == _currentIndex;
-                    final accent = Color(subjectColorSeed(subj));
-                    return GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 280),
-                          curve: Curves.easeOutCubic,
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        width: 44,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: active ? cs.primary : cs.outlineVariant.withOpacity(0.5),
-                            width: active ? 2.5 : 1,
-                          ),
-                          color: accent.withOpacity(0.15),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: url == null
-                            ? Icon(subjectIcon(subj), size: 20, color: accent)
-                            : Image.network(
-                                url,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    Icon(subjectIcon(subj), size: 20, color: accent),
-                              ),
                       ),
                     );
                   },
                 ),
               ),
-            ],
-          ],
-        ),
-        // === OVERLAY: zoom + blur quando a carta está virada ===
-        if (isFlippedValid)
-          _ZoomBlurOverlay(
-            item: flippedItem,
-            onTap: () => widget.onFlip(widget.currentId!),
-            onRemember: () => widget.onRemember(widget.currentId!),
-            onForgot: () => widget.onForgot(widget.currentId!),
-            onDelete: () => widget.onDelete(widget.currentId!),
-          ),
-      ],
-    ),
-    );
-  }
-}
-
-// ============================================================
-// _GameCard — carta estilo TCG com herói gradiente + ícone
-// ============================================================
-
-class _GameCard extends StatelessWidget {
-  const _GameCard({
-    required this.flipped,
-    required this.subject,
-    required this.topic,
-    required this.fromAxes,
-    required this.frontText,
-    required this.backText,
-    required this.accent,
-    required this.dueLabel,
-    required this.onTap,
-    required this.onRemember,
-    required this.onForgot,
-    required this.onDelete,
-  });
-
-  final bool flipped;
-  final String subject;
-  final String topic;
-  final bool fromAxes;
-  final String frontText;
-  final String backText;
-  final Color accent;
-  final String dueLabel;
-  final VoidCallback onTap;
-  final VoidCallback onRemember;
-  final VoidCallback onForgot;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Cartas empilhadas atrás (efeito deck)
-        if (!flipped) ...[
-          Positioned(
-            left: 12,
-            right: 12,
-            top: 10,
-            child: Container(
-              height: 480,
-              decoration: BoxDecoration(
-                color: accent.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(24),
-              ),
             ),
           ),
-          Positioned(
-            left: 6,
-            right: 6,
-            top: 5,
-            child: Container(
-              height: 480,
-              decoration: BoxDecoration(
-                color: accent.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(24),
-              ),
+          const SizedBox(height: kGap24),
+          Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: widget.showBack && id != null
+                  ? ActionRow(
+                      key: const ValueKey('rate'),
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _RateButton(label: 'Errei', hint: '1', color: const Color(0xFFD64545), onTap: () => widget.onForgot(id)),
+                        _RateButton(label: 'Difícil', hint: '2', color: const Color(0xFFE59B1F), onTap: () => widget.onRemember(id)),
+                        _RateButton(label: 'Fácil', hint: '3', color: const Color(0xFF2E9E5B), onTap: () => widget.onRemember(id)),
+                      ],
+                    )
+                  : ActionRow(
+                      key: const ValueKey('flip'),
+                      alignment: WrapAlignment.center,
+                      children: [
+                        AppButton.tertiary(
+                          label: 'Anterior',
+                          icon: Icons.arrow_back_rounded,
+                          onPressed: index > 0 ? () => _goTo(index - 1) : null,
+                        ),
+                        AppButton.primary(
+                          label: 'Virar carta',
+                          icon: Icons.flip_rounded,
+                          onPressed: id == null ? null : () => widget.onFlip(id),
+                        ),
+                        AppButton.tertiary(
+                          label: 'Próximo',
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: index < total - 1 ? () => _goTo(index + 1) : null,
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+          const SizedBox(height: kGap8),
+          Center(
+            child: TextButton.icon(
+              onPressed: id == null ? null : () => widget.onDelete(id),
+              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+              label: const Text('Apagar este cartão'),
             ),
           ),
         ],
-        _FlipCard(
-          flipped: flipped,
-          front: _GameCardFace(
-            text: frontText,
-            subject: subject,
-            topic: topic,
-            fromAxes: fromAxes,
-            isBack: false,
-            onTap: onTap,
-            dueLabel: dueLabel,
-          ),
-          back: _GameCardFace(
-            text: backText,
-            subject: subject,
-            topic: topic,
-            fromAxes: fromAxes,
-            isBack: true,
-            onTap: onTap,
-            dueLabel: dueLabel,
-            onRemember: onRemember,
-            onForgot: onForgot,
-            onDelete: onDelete,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GameCardFace extends StatelessWidget {
-  const _GameCardFace({
-    required this.text,
-    required this.subject,
-    required this.topic,
-    required this.fromAxes,
-    required this.isBack,
-    required this.onTap,
-    required this.dueLabel,
-    this.onRemember,
-    this.onForgot,
-    this.onDelete,
-  });
-
-  final String text;
-  final String subject;
-  final String topic;
-  final bool fromAxes;
-  final bool isBack;
-  final VoidCallback onTap;
-  final String dueLabel;
-  final VoidCallback? onRemember;
-  final VoidCallback? onForgot;
-  final VoidCallback? onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final accent = Color(subjectColorSeed(subject));
-    final imageUrl = flashcardImageUrl(apiClient.baseUrl, subject, topic);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            color: cs.surface,
-            border: Border.all(color: accent.withOpacity(0.3), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withOpacity(0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // === HERÓI: capa real ou gradiente ===
-                Stack(
-                  children: [
-                    FlashcardHeroBanner(
-                      subject: subject,
-                      topic: topic,
-                      imageUrl: imageUrl,
-                      height: 200,
-                      isBack: isBack,
-                    ),
-                    // Badge FRENTE/VERSO (canto superior esquerdo)
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
-                        ),
-                        child: Text(
-                          isBack ? 'VERSO' : 'FRENTE',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Badge EIXOS (canto superior direito)
-                    if (fromAxes)
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade700.withOpacity(0.85),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.star_rounded, size: 14, color: Colors.white),
-                              const SizedBox(width: 4),
-                              Text(
-                                'EIXOS',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    // Nome da matéria + tópico (rodapé do herói)
-                    Positioned(
-                      bottom: 8,
-                      left: 14,
-                      right: 14,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            subject.isNotEmpty ? subject : 'Flashcard',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
-                              ],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (topic.isNotEmpty)
-                            Text(
-                              topic,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white.withOpacity(0.85),
-                                shadows: [
-                                  Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
-                                ],
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                // === BARRA DE RARIDADE ===
-                Container(
-                  height: 5,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [accent, accent.withOpacity(0.3), accent],
-                    ),
-                  ),
-                ),
-                // === CORPO DA CARTA ===
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Texto principal
-                        Flexible(
-                          child: SingleChildScrollView(
-                            child: Text(
-                              text,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: cs.onSurface,
-                                height: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Próxima revisão
-                        if (dueLabel.isNotEmpty)
-                          Row(
-                            children: [
-                              Icon(Icons.schedule_rounded, size: 12, color: cs.onSurface.withOpacity(0.3)),
-                              const SizedBox(width: 4),
-                              Text(
-                                dueLabel,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: cs.onSurface.withOpacity(0.4),
-                                ),
-                              ),
-                            ],
-                          ),
-                        // Botões de ação (só no verso)
-                        if (isBack && onRemember != null) ...[
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: FilledButton.icon(
-                                  onPressed: onRemember,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: accent,
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size.fromHeight(44),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  icon: const Icon(Icons.check_rounded, size: 20),
-                                  label: Text(
-                                    'Lembrei',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: onForgot,
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: accent,
-                                    minimumSize: const Size.fromHeight(44),
-                                    side: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  icon: const Icon(Icons.refresh_rounded, size: 20),
-                                  label: Text(
-                                    'Esqueci',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Center(
-                            child: TextButton.icon(
-                              onPressed: onDelete,
-                              icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
-                              label: Text(
-                                'Apagar cartão',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: cs.onSurface.withOpacity(0.35),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                        // Dica de flip (só na frente)
-                        if (!isBack) ...[
-                          const SizedBox(height: 6),
-                          Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.5)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Toque para virar a carta',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: accent.withOpacity(0.6),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
 }
 
-// ============================================================
-// _ZoomBlurOverlay — overlay com blur + carta expandida
-// Mostra o verso da carta em tela cheia com desfoque no fundo
-// ============================================================
+class _RateButton extends StatelessWidget {
+  const _RateButton({required this.label, required this.hint, required this.color, required this.onTap});
 
-class _ZoomBlurOverlay extends StatefulWidget {
-  const _ZoomBlurOverlay({
-    required this.item,
-    required this.onTap,
-    required this.onRemember,
-    required this.onForgot,
-    required this.onDelete,
-  });
-
-  final Map<String, dynamic> item;
+  final String label;
+  final String hint;
+  final Color color;
   final VoidCallback onTap;
-  final VoidCallback onRemember;
-  final VoidCallback onForgot;
-  final VoidCallback onDelete;
 
   @override
-  State<_ZoomBlurOverlay> createState() => _ZoomBlurOverlayState();
+  Widget build(BuildContext context) {
+    return FilledButton(
+      onPressed: onTap,
+      style: FilledButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(120, 48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      child: Text('$label  ($hint)', style: const TextStyle(fontWeight: FontWeight.w700)),
+    );
+  }
 }
 
-class _ZoomBlurOverlayState extends State<_ZoomBlurOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scale;
-  late final Animation<double> _blur;
-  late final Animation<double> _opacity;
+class _CardFace extends StatelessWidget {
+  const _CardFace({
+    required this.style,
+    required this.subject,
+    required this.topic,
+    required this.text,
+    required this.label,
+    this.hint,
+  });
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-    _blur = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final SubjectVisual style;
+  final String subject;
+  final String topic;
+  final String text;
+  final String label;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final item = widget.item;
-    final subj = item['subject']?.toString() ?? '';
-    final top = item['topic']?.toString() ?? '';
-    final src = item['source']?.toString() ?? '';
-    final fromAxes = item['fromAxes'] == true || src.startsWith('axis:');
-    final accent = Color(subjectColorSeed(subj));
-    final imageUrl = flashcardImageUrl(apiClient.baseUrl, subj, top);
-    final backText = item['back']?.toString() ?? '';
-    final dueLabel = humanDueLabel(item['next_due']?.toString());
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Stack(
-          children: [
-            // Fundo desfocado (só blur, sem escurecimento)
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 16 * _blur.value,
-                  sigmaY: 16 * _blur.value,
+    final long = text.length > 160;
+    return Container(
+      height: 340,
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: style.color.withOpacity(0.35)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 18, offset: const Offset(0, 8))],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: style.soft,
+            padding: const EdgeInsets.symmetric(horizontal: kGap20, vertical: kGap12),
+            child: Row(
+              children: [
+                Icon(style.icon, size: 20, color: style.color),
+                const SizedBox(width: kGap8),
+                Expanded(
+                  child: Text(
+                    [if (subject.isNotEmpty) subject, if (topic.isNotEmpty) topic].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: style.color),
+                  ),
                 ),
-                child: Container(
-                  color: Colors.transparent,
-                ),
-              ),
+                Text(label.toUpperCase(),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1, color: style.color)),
+              ],
             ),
-            // Carta expandida centralizada
-            Center(
-              child: Transform.scale(
-                scale: _scale.value,
-                child: Opacity(
-                  opacity: _opacity.value,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: widget.onTap,
-                        borderRadius: BorderRadius.circular(24),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            color: cs.surface,
-                            border: Border.all(color: accent, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: accent.withOpacity(0.4),
-                                blurRadius: 30,
-                                offset: const Offset(0, 12),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(22),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // === HERÓI ===
-                                Stack(
-                                  children: [
-                                    FlashcardHeroBanner(
-                                      subject: subj,
-                                      topic: top,
-                                      imageUrl: imageUrl,
-                                      height: 180,
-                                      isBack: true,
-                                    ),
-                                    Positioned(
-                                      top: 12,
-                                      left: 12,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.4),
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(color: Colors.white.withOpacity(0.25), width: 1),
-                                        ),
-                                        child: Text(
-                                          'VERSO',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.white,
-                                            letterSpacing: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (fromAxes)
-                                      Positioned(
-                                        top: 12,
-                                        right: 12,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber.shade700.withOpacity(0.85),
-                                            borderRadius: BorderRadius.circular(14),
-                                            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.star_rounded, size: 14, color: Colors.white),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                'EIXOS',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    Positioned(
-                                      bottom: 10,
-                                      left: 16,
-                                      right: 16,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            subj.isNotEmpty ? subj : 'Flashcard',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.white,
-                                              shadows: [
-                                                Shadow(color: Colors.black.withOpacity(0.6), blurRadius: 4),
-                                              ],
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          if (top.isNotEmpty)
-                                            Text(
-                                              top,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white.withOpacity(0.85),
-                                                shadows: [
-                                                  Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 3),
-                                                ],
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // === BARRA DE RARIDADE ===
-                                Container(
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      colors: [accent, accent.withOpacity(0.3), accent],
-                                    ),
-                                  ),
-                                ),
-                                // === CORPO EXPANDIDO (sem scroll) ===
-                                Flexible(
-                                  child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          backText,
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: cs.onSurface,
-                                            height: 1.55,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        if (dueLabel.isNotEmpty)
-                                          Row(
-                                            children: [
-                                              Icon(Icons.schedule_rounded, size: 13, color: cs.onSurface.withOpacity(0.3)),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                dueLabel,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: cs.onSurface.withOpacity(0.4),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        const SizedBox(height: 14),
-                                        // Botões de ação
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: FilledButton.icon(
-                                                onPressed: () {
-                                                  HapticFeedback.selectionClick();
-                                                  widget.onRemember();
-                                                },
-                                                style: FilledButton.styleFrom(
-                                                  backgroundColor: accent,
-                                                  foregroundColor: Colors.white,
-                                                  minimumSize: const Size.fromHeight(48),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                                ),
-                                                icon: const Icon(Icons.check_rounded, size: 22),
-                                                label: Text(
-                                                  'Lembrei',
-                                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: OutlinedButton.icon(
-                                                onPressed: () {
-                                                  HapticFeedback.selectionClick();
-                                                  widget.onForgot();
-                                                },
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor: accent,
-                                                  minimumSize: const Size.fromHeight(48),
-                                                  side: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                                ),
-                                                icon: const Icon(Icons.refresh_rounded, size: 22),
-                                                label: Text(
-                                                  'Esqueci',
-                                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            TextButton.icon(
-                                              onPressed: () {
-                                                HapticFeedback.selectionClick();
-                                                widget.onDelete();
-                                              },
-                                              icon: Icon(Icons.delete_outline, size: 16, color: cs.onSurface.withOpacity(0.35)),
-                                              label: Text(
-                                                'Apagar',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: cs.onSurface.withOpacity(0.35),
-                                                ),
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Icons.touch_app_rounded, size: 14, color: accent.withOpacity(0.5)),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  'Toque para fechar',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: accent.withOpacity(0.6),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: kGap24, vertical: kGap16),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Text(
+                    text,
+                    textAlign: long ? TextAlign.left : TextAlign.center,
+                    style: TextStyle(
+                      fontSize: long ? 18 : 24,
+                      height: 1.45,
+                      fontWeight: long ? FontWeight.w500 : FontWeight.w700,
+                      color: cs.onSurface,
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+          if (hint != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: kGap12),
+              child: Text(hint!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: cs.onSurface.withOpacity(0.5))),
+            ),
+        ],
+      ),
     );
   }
 }

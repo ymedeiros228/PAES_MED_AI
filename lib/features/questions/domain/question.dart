@@ -100,3 +100,21 @@ class Question {
     );
   }
 }
+
+/// Questão importada de PDF sem gabarito: não dá para corrigir, então fica fora
+/// de sessões, simulados e treinos. Aceita o JSON cru ou um [Question].
+bool isSemGabarito(Map<String, dynamic> json) =>
+    (json['source']?.toString() ?? '').toLowerCase().startsWith('pdf_ingest_sem_gabarito');
+
+final RegExp _figuraRe = RegExp(
+  r'\b(figura|gr[aá]fico|tabela|esquema|imagem|charge|mapa|tirinha|ilustra[cç][aã]o)s?\b',
+  caseSensitive: false,
+);
+
+/// O enunciado cita figura/gráfico/tabela que vem na prova original (PDF).
+bool mencionaFigura(String statement) => _figuraRe.hasMatch(statement);
+
+extension QuestionFlags on Question {
+  bool get semGabarito => (source ?? '').toLowerCase().startsWith('pdf_ingest_sem_gabarito');
+  bool get temFiguraNaProva => mencionaFigura(statement);
+}

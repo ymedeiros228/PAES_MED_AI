@@ -69,7 +69,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
                 eyebrow: 'Seu progresso',
                 title: 'Conquistas',
                 subtitle: loading
-                    ? 'Carregando...'
+                    ? 'Carregando suas medalhas…'
                     : '${data?['unlockedCount'] ?? 0} de ${data?['totalAchievements'] ?? 0} medalhas desbloqueadas',
               ),
             ),
@@ -84,7 +84,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen> {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
-                  child: QuietEmpty(message: error!),
+                  child: ErrorState(message: error!, onRetry: _load),
                 ),
               ),
             ] else if (data != null) ...[

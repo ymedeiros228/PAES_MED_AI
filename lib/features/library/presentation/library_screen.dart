@@ -14,8 +14,6 @@ import '../../../core/widgets/ui_kit.dart';
 import 'ingest_review_screen.dart';
 import 'library_dialogs.dart';
 import 'widgets/library_acervo_tab.dart';
-import 'widgets/library_materiais_tab.dart';
-import 'widgets/library_tab_bar.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -25,7 +23,6 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
-  int _tabIndex = 0;
   final _searchCtrl = TextEditingController();
   final _semana1PanelKey = GlobalKey();
   bool _wantSemana1Scroll = false;
@@ -591,32 +588,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Column(
       children: [
-        Material(
-          color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              children: [
-                LibraryTab(
-                  label: 'Acervo',
-                  icon: Icons.inventory_2_rounded,
-                  selected: _tabIndex == 0,
-                  onTap: () => setState(() => _tabIndex = 0),
-                ),
-                const SizedBox(width: 8),
-                LibraryTab(
-                  label: 'Materiais',
-                  icon: Icons.picture_as_pdf_rounded,
-                  selected: _tabIndex == 1,
-                  onTap: () => setState(() => _tabIndex = 1),
-                ),
-              ],
-            ),
-          ),
-        ),
         Expanded(
-          child: _tabIndex == 0
-              ? LibraryAcervoTab(
+          child: LibraryAcervoTab(
                   searchController: _searchCtrl,
                   actions: _acervoActions(),
                   busy: s.busy,
@@ -641,8 +614,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   coverage: s.coverage,
                   showLocalDataHint: library?['dataDir'] != null,
                   semana1PanelKey: _semana1PanelKey,
-                )
-              : LibraryMateriaisTab(pdfsLoaded: s.pdfsLoaded, pdfs: s.studyPdfs),
+                ),
         ),
       ],
     );

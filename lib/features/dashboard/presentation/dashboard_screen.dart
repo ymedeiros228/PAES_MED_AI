@@ -13,7 +13,6 @@ import 'dashboard_update_banner.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -182,37 +181,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final examCd = ref.watch(examCountdownProvider);
 
     return async.when(
-      loading: () => PageBody(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const PageHeader(title: 'Hoje', eyebrow: 'PAES MED AI'),
-            const SkeletonCard(lines: 3),
-            const SizedBox(height: 12),
-            const SkeletonCard(lines: 2),
-            const SizedBox(height: 12),
-            const SkeletonCard(lines: 2),
-          ],
-        ),
+      loading: () => const PageScaffold(
+        eyebrow: 'PAES MED AI',
+        title: 'Início',
+        child: SkeletonPage(),
       ),
-      error: (e, _) => EmptyState(
-        title: 'Não foi possível carregar',
-        subtitle: humanApiError(e, fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
-        action: Wrap(
-          spacing: 8,
-          alignment: WrapAlignment.center,
-          children: [
-            TapScale(
-              child: FilledButton(
-                onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                child: const Text('Tentar de novo'),
-              ),
-            ),
-            TextButton(
-              onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-              child: const Text('Sessão'),
-            ),
-          ],
+      error: (e, _) => PageScaffold(
+        eyebrow: 'PAES MED AI',
+        title: 'Início',
+        child: ErrorState(
+          message: humanApiError(e,
+              fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
+          onRetry: () => ref.read(refreshTickProvider.notifier).state++,
+          secondary: AppButton.tertiary(
+            label: 'Ir para a sessão',
+            onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
+          ),
         ),
       ),
       data: (data) {
@@ -337,7 +321,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             child: Text(
                               checkpoint != null
                                   ? 'Continuar · ${_checkpointShort(checkpoint!)}'
-                                  : 'Começar sessão',
+                                  : 'Começar a estudar',
                             ),
                           ),
                         ),
@@ -529,43 +513,31 @@ class _DashboardStatsRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Linha de métricas: streak · flashcards · acerto (3 cards densos)
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _StatCard(
-                  cs: cs,
-                  icon: Icons.local_fire_department_rounded,
-                  value: '$streakDays',
-                  label: 'dias seguidos',
-                  color: cs.error,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  cs: cs,
-                  icon: Icons.style_rounded,
-                  value: '$flashcardsDue',
-                  label: 'flashcards hoje',
-                  color: cs.tertiary,
-                  onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  cs: cs,
-                  icon: Icons.track_changes_rounded,
-                  value: accuracyLabel,
-                  label: 'de acerto',
-                  color: cs.primary,
-                ),
-              ),
-            ],
-          ),
+        StatGrid(
+          minTileWidth: 180,
+          children: [
+            StatTile(
+              label: 'Dias seguidos',
+              value: '$streakDays',
+              icon: Icons.local_fire_department_rounded,
+              tone: AppTone.warning,
+              hint: streakDays > 0 ? 'Continue assim!' : 'Estude hoje para começar',
+            ),
+            StatTile(
+              label: 'Flashcards para hoje',
+              value: '$flashcardsDue',
+              icon: Icons.style_rounded,
+              tone: AppTone.info,
+              onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
+            ),
+            StatTile(
+              label: 'Taxa de acerto',
+              value: accuracyLabel,
+              icon: Icons.track_changes_rounded,
+              tone: AppTone.success,
+              hint: totalAnswered > 0 ? '$totalAnswered questões respondidas' : 'Responda questões para ver',
+            ),
+          ],
         ),
         if (hasTopic) ...[
           const SizedBox(height: 12),
@@ -590,11 +562,11 @@ class _DashboardStatsRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Tópico do dia',
+                        'Seu próximo passo',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: cs.onSurface.f60,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       Text(
@@ -626,12 +598,11 @@ class _PanelCard extends StatelessWidget {
   const _PanelCard({
     required this.child,
     this.onTap,
-    this.padding = const EdgeInsets.all(16),
     this.color,
   });
   final Widget child;
   final VoidCallback? onTap;
-  final EdgeInsets padding;
+  final EdgeInsets padding = const EdgeInsets.all(16);
   final Color? color;
 
   @override
@@ -671,69 +642,6 @@ class _PanelCard extends StatelessWidget {
   }
 }
 
-/// Card de estatística individual (streak, flashcards, etc)
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.cs,
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.color,
-    this.onTap,
-  });
-  final ColorScheme cs;
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color color;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: cs.onSurface,
-              height: 1.0,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: cs.onSurface.f60,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// Checklist simples do dia
 class _SimpleChecklist extends StatelessWidget {
   const _SimpleChecklist({
@@ -765,36 +673,39 @@ class _SimpleChecklist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SurfacePanel(
-      padding: const EdgeInsets.all(20),
+    final feitos = [sessionDone, cardsDone, revisionsDone].where((b) => b).length;
+    return AppCard(
+      title: 'Atividades do dia',
+      subtitle: examDays != null && examDays! > 0
+          ? '$feitos de 3 feitas · faltam $examDays dias para a prova'
+          : '$feitos de 3 feitas',
+      icon: Icons.checklist_rounded,
+      trailing: SizedBox(
+        width: 44,
+        height: 44,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: feitos / 3),
+              duration: const Duration(milliseconds: 250),
+              builder: (_, v, __) => SizedBox(
+                width: 44,
+                height: 44,
+                child: CircularProgressIndicator(
+                  value: v,
+                  strokeWidth: 5,
+                  backgroundColor: cs.surfaceContainerHighest,
+                ),
+              ),
+            ),
+            Text('$feitos/3', style: Theme.of(context).textTheme.labelSmall),
+          ],
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.checklist_rounded, color: cs.primary, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                'Atividades do dia',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface,
-                ),
-              ),
-              const Spacer(),
-              if (examDays != null && examDays! > 0)
-                Text(
-                  '$examDays dias',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: cs.primary,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
           _CheckRow(
             done: sessionDone,
             label: 'Sessão de estudo',
@@ -817,27 +728,23 @@ class _SimpleChecklist extends StatelessWidget {
             cs: cs,
           ),
           if (onCloseDay != null) ...[
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
+            const SizedBox(height: kGap8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppButton.tertiary(
+                label: 'Encerrar o dia',
+                icon: Icons.check_circle_outline,
                 onPressed: onCloseDay,
-                icon: const Icon(Icons.check_circle_outline, size: 18),
-                label: const Text('Encerrar dia'),
-                style: TextButton.styleFrom(
-                  foregroundColor: cs.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
               ),
             ),
           ],
-          const SizedBox(height: 8),
+          const SizedBox(height: kGap8),
           Text(
-            'Meta: $dailyGoal min/dia',
-            style: TextStyle(
-              fontSize: 12,
-              color: cs.onSurface.withOpacity(0.4),
-            ),
+            'Meta: $dailyGoal min por dia',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: cs.onSurfaceVariant),
           ),
         ],
       ),
@@ -862,33 +769,33 @@ class _CheckRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: done ? null : onAction,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: Row(
             children: [
               Icon(
                 done ? Icons.check_circle : icon,
                 size: 22,
-                color: done ? cs.primary : cs.onSurface.withOpacity(0.4),
+                color: done ? cs.primary : cs.onSurfaceVariant,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: done ? FontWeight.w600 : FontWeight.w500,
-                    color: done ? cs.primary : cs.onSurface.withOpacity(0.7),
+                    color: done ? cs.primary : cs.onSurface,
                     decoration: done ? TextDecoration.lineThrough : null,
                   ),
                 ),
               ),
               if (!done)
-                Icon(Icons.chevron_right, size: 20, color: cs.onSurface.withOpacity(0.3)),
+                Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
             ],
           ),
         ),
@@ -914,20 +821,7 @@ class _QuickActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.grid_view_rounded, color: cs.primary, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Atalhos',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-          ],
-        ),
+        const SectionHeader(title: 'Atalhos', icon: Icons.grid_view_rounded),
         const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, c) {
@@ -941,7 +835,7 @@ class _QuickActions extends StatelessWidget {
                 for (final it in _items)
                   SizedBox(
                     width: w,
-                    child: _PanelCard(
+                    child: AppCard(
                       onTap: () => context.go(it.$1),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                       child: Column(

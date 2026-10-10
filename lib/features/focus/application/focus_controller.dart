@@ -132,6 +132,8 @@ class FocusController extends StateNotifier<FocusState> {
       final questions = <FocusQuestion>[];
       for (final item in list) {
         final m = Map<String, dynamic>.from(item as Map);
+        // Sem gabarito não dá para corrigir: fica fora do treino.
+        if ((m['source']?.toString() ?? '').toLowerCase().startsWith('pdf_ingest_sem_gabarito')) continue;
         questions.add(FocusQuestion(
           id: m['id']?.toString() ?? '',
           statement: m['statement']?.toString() ?? '',
@@ -200,6 +202,15 @@ class FocusController extends StateNotifier<FocusState> {
       revealed: false,
       questionStartSeconds: 0,
     );
+  }
+
+  /// Refaz só as questões que o aluno errou nesta sessão.
+  void reviewWrong() {
+    final wrong = state.questions.where((q) => state.wrongIds.contains(q.id)).toList();
+    if (wrong.isEmpty) return;
+    _ticker?.cancel();
+    state = FocusState(questions: wrong, subject: state.subject, year: state.year);
+    _startTicker();
   }
 
   void reset() {

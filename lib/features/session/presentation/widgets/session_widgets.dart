@@ -284,23 +284,12 @@ class SessionStartCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  TapScale(
-                    child: FilledButton.icon(
+                  Center(
+                    child: AppButton.primary(
                       onPressed: onStart,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                      label: Text(
-                        'Estudar agora',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      icon: Icons.play_arrow_rounded,
+                      label: 'Estudar agora',
+                      size: AppButtonSize.large,
                     ),
                   ),
                 ],

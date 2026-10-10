@@ -178,7 +178,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
     };
     final subjectScores = <String, double>{
       for (final p in peaks)
-        (p['label']?.toString() ?? 'Eixo'):
+        (p['label']?.toString() ?? 'Competência'):
             ((progressRelevoValue(p) / progressRelevoMax(p)) * 100).clamp(0, 100).toDouble(),
     };
 
@@ -200,11 +200,11 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
 
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
+      child: LayoutBuilder(builder: (context, box) => ListView(
+ padding: PageInsets.of(box.maxWidth),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          PageBody(
-            child: Column(
+          Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 PageHeader(
@@ -254,34 +254,12 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   const SkeletonCard(lines: 2),
                 ]
                 else if (error != null)
-                  QuietEmpty(
+                  ErrorState(
                     message: error!,
-                    action: Wrap(
-                      spacing: 8,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            _load();
-                          },
-                          child: const Text('Tentar'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/fila');
-                          },
-                          child: const Text('Fila'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
-                          },
-                          child: const Text('Sessão'),
-                        ),
-                      ],
-                    ),
+                    onRetry: () {
+                      HapticFeedback.selectionClick();
+                      _load();
+                    },
                   )
                 else if (_tabIndex == 0) ...[
                   StatsStrip(
@@ -423,8 +401,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                   if (mission is Map) ...[
                     const SectionLabel('Missão de redação', hint: 'prática · não banca'),
                     MissionQuestCard(
-                      title: 'Missão · ${mission['label'] ?? 'eixo'}',
-                      why: mission['prompt']?.toString() ?? 'Treine o eixo mais fraco.',
+                      title: 'Missão · ${mission['label'] ?? 'competência'}',
+                      why: mission['prompt']?.toString() ?? 'Treine o ponto mais fraco.',
                       ctaLabel: questStatus == MissionQuestStatus.cleared
                           ? 'Ver redação'
                           : 'Aceitar missão',
@@ -481,7 +459,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                       if ((essay['count'] as int? ?? 0) > 0) ...[
                         SectionLabel(
                           'Quinteto da redação',
-                          hint: essay['disclaimer']?.toString() ?? 'eixos 0–10',
+                          hint: essay['disclaimer']?.toString() ?? 'notas de 0 a 10 por competência',
                         ),
                         SurfacePanel(
                           margin: const EdgeInsets.only(bottom: 16),
@@ -658,9 +636,8 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen>
                 ],
               ],
             ),
-          ),
         ],
-      ),
+      )),
     );
   }
 }

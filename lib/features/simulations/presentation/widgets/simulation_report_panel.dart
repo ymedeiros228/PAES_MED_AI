@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/ui/score_ring.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -42,26 +43,31 @@ class SimulationReportPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: ((report['accuracy'] as num) * 100).toDouble()),
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) {
-                  final pct = value.toStringAsFixed(0);
-                  final color = value >= 70
-                      ? cs.primary
-                      : value >= 40
-                          ? cs.tertiary
-                          : cs.error;
-                  return Text(
-                    '$pct% de acerto',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
-                  );
-                },
-              ),
-              Text(
-                '${report['correct']}/${report['total']} corretas · tempo $clock',
-                style: TextStyle(fontSize: 14, height: 1.5, color: cs.onPrimaryContainer.withOpacity(0.9)),
+              Row(
+                children: [
+                  ScoreRing(percent: ((report['accuracy'] as num) * 100).toDouble(), label: 'de acerto'),
+                  const SizedBox(width: kGap20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ((report['accuracy'] as num) * 100) >= 70
+                              ? 'Ótimo trabalho!'
+                              : ((report['accuracy'] as num) * 100) >= 45
+                                  ? 'Bom caminho, falta pouco'
+                                  : 'Hora de reforçar a base',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${report['correct']} de ${report['total']} corretas · tempo $clock',
+                          style: TextStyle(fontSize: 14, height: 1.5, color: cs.onSurface.withOpacity(0.75)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               if (report['estimatedScore'] != null) ...[
                 const SizedBox(height: 6),
@@ -165,7 +171,7 @@ class SimulationReportPanel extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            FilledButton.icon(
+            AppButton.primary(
               onPressed: gaps.isNotEmpty
                   ? () {
                       HapticFeedback.selectionClick();
@@ -175,12 +181,8 @@ class SimulationReportPanel extends StatelessWidget {
                       HapticFeedback.selectionClick();
                       context.go('/fila');
                     },
-              icon: const Icon(Icons.playlist_play_rounded),
-              label: Text(
-                gaps.isNotEmpty
-                    ? 'Mandar tópicos para revisar para a Fila'
-                    : 'Continuar na Fila',
-              ),
+              icon: Icons.playlist_play_rounded,
+              label: gaps.isNotEmpty ? 'Revisar erros (enviar para a Fila)' : 'Continuar na Fila',
             ),
           ],
         ),
@@ -189,12 +191,12 @@ class SimulationReportPanel extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            FilledButton.tonal(
+            AppButton.secondary(
               onPressed: () {
                 HapticFeedback.selectionClick();
                 context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1');
               },
-              child: const Text('Sessão Natureza'),
+              label: 'Sessão Natureza',
             ),
             TextButton(
               onPressed: () {
@@ -208,7 +210,7 @@ class SimulationReportPanel extends StatelessWidget {
                 HapticFeedback.selectionClick();
                 context.go('/dashboard');
               },
-              child: const Text('Hoje'),
+              child: const Text('Voltar ao início'),
             ),
             TextButton(
               onPressed: () {

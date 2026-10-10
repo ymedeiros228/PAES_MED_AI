@@ -88,18 +88,17 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 onTap: () => _showYearPicker(cs),
               ),
               const Spacer(),
-              FilledButton.icon(
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  setState(() => _started = true);
-                  ref.read(focusControllerProvider.notifier).loadQuestions(count: 20);
-                },
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
-                  child: Text('Começar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Center(
+                child: AppButton.primary(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    setState(() => _started = true);
+                    ref.read(focusControllerProvider.notifier).loadQuestions(count: 20);
+                  },
+                  icon: Icons.play_arrow_rounded,
+                  label: 'Começar',
+                  size: AppButtonSize.large,
                 ),
-                style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 52)),
               ),
               const SizedBox(height: 16),
             ],
@@ -180,17 +179,12 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => context.go('/dashboard'))),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: cs.error),
-              const SizedBox(height: 16),
-              Text(state.error!, textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
-              const SizedBox(height: 24),
-              FilledButton(onPressed: () => setState(() => _started = false), child: const Text('Voltar')),
-            ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: ErrorState(
+            message: state.error!,
+            onRetry: () => ref.read(focusControllerProvider.notifier).loadQuestions(count: 20),
+            secondary: AppButton.tertiary(label: 'Voltar', onPressed: () => setState(() => _started = false)),
           ),
         ),
       ),
@@ -399,28 +393,31 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 children: [
                   if (!state.revealed)
                     Expanded(
-                      child: FilledButton(
-                        onPressed: state.selectedIndex == null ? null : () {
-                          HapticFeedback.mediumImpact();
-                          ref.read(focusControllerProvider.notifier).revealAnswer();
-                        },
-                        style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                        child: const Text('Confirmar resposta', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: AppButton.primary(
+                          onPressed: state.selectedIndex == null ? null : () {
+                            HapticFeedback.mediumImpact();
+                            ref.read(focusControllerProvider.notifier).revealAnswer();
+                          },
+                          label: 'Confirmar resposta',
+                          size: AppButtonSize.large,
+                        ),
                       ),
                     )
                   else
                     Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          ref.read(focusControllerProvider.notifier).nextQuestion();
-                        },
-                        icon: const Icon(Icons.arrow_forward_rounded),
-                        label: Text(
-                          state.currentIndex + 1 >= state.total ? 'Ver resultado' : 'Próxima questão',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: AppButton.primary(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            ref.read(focusControllerProvider.notifier).nextQuestion();
+                          },
+                          icon: Icons.arrow_forward_rounded,
+                          label: state.currentIndex + 1 >= state.total ? 'Ver resultado' : 'Próxima questão',
+                          size: AppButtonSize.large,
                         ),
-                        style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                       ),
                     ),
                 ],
@@ -477,26 +474,31 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
               const SizedBox(height: 10),
               _StatCard(icon: Icons.speed_rounded, label: 'Tempo médio por questão', value: _fmtTime((state.elapsedSeconds / total).round()), color: cs.secondary),
               const Spacer(),
-              if (state.wrongIds.isNotEmpty)
-                OutlinedButton.icon(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    ref.read(focusControllerProvider.notifier).reset();
-                    setState(() => _started = false);
-                  },
-                  icon: const Icon(Icons.replay_rounded),
-                  label: const Text('Revisar erradas (em breve)'),
-                  style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+              Center(
+                child: ActionRow(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    AppButton.primary(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(focusControllerProvider.notifier).reset();
+                        setState(() => _started = false);
+                      },
+                      label: 'Nova sessão',
+                      size: AppButtonSize.large,
+                    ),
+                    if (state.wrongIds.isNotEmpty)
+                      AppButton.secondary(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          ref.read(focusControllerProvider.notifier).reviewWrong();
+                        },
+                        icon: Icons.replay_rounded,
+                        label: 'Refazer as erradas (${state.wrongIds.length})',
+                        size: AppButtonSize.large,
+                      ),
+                  ],
                 ),
-              const SizedBox(height: 10),
-              FilledButton(
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  ref.read(focusControllerProvider.notifier).reset();
-                  setState(() => _started = false);
-                },
-                style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 52)),
-                child: const Text('Nova sessão', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 10),
               TextButton(onPressed: () => context.go('/dashboard'), child: const Text('Voltar ao início')),
@@ -515,13 +517,13 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
         content: const Text('Seu progresso desta sessão será perdido.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Continuar')),
-          FilledButton(
+          AppButton.danger(
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(focusControllerProvider.notifier).reset();
               context.go('/dashboard');
             },
-            child: const Text('Sair'),
+            label: 'Sair',
           ),
         ],
       ),

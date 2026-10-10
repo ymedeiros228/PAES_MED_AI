@@ -61,11 +61,10 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
     final freq = ref.watch(frequencyProvider);
     final cs = Theme.of(context).colorScheme;
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -162,7 +161,7 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
                                       const SizedBox(height: 4),
                                       Text(
                                         total != null
-                                            ? '$total questões na análise local'
+                                            ? 'Baseado em $total questões das provas'
                                             : 'Perfil estimado a partir do seu acervo',
                                         style: TextStyle(
                                           fontSize: 13,
@@ -471,9 +470,8 @@ class _BankProfileScreenState extends ConsumerState<BankProfileScreen> {
               ),
             ],
           ),
-        ),
       ],
-    );
+    ));
   }
 
   Color _heatColor(int n) {

@@ -290,15 +290,17 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     ),
                 ],
                 const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.pop(ctx);
-                    _applyEssayToEditor(item);
-                  },
-                  icon: const Icon(Icons.edit_note_rounded),
-                  label: const Text('Reescrever este texto'),
-                ),
+                ActionRow(children: [
+                  AppButton.secondary(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(ctx);
+                      _applyEssayToEditor(item);
+                    },
+                    icon: Icons.edit_note_rounded,
+                    label: 'Reescrever este texto',
+                  ),
+                ]),
               ],
             );
           },
@@ -465,19 +467,14 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              TapScale(
-                child: FilledButton.icon(
+              ActionRow(children: [
+                AppButton.primary(
                   onPressed: busy || textCtrl.text.trim().length < 50 ? null : _grade,
-                  icon: busy
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
-                        )
-                      : const Icon(Icons.rate_review_outlined),
-                  label: Text(busy ? 'Corrigindo…' : '3 · Corrigir redação'),
+                  icon: Icons.rate_review_outlined,
+                  loading: busy,
+                  label: busy ? 'Corrigindo…' : 'Corrigir redação',
                 ),
-              ),
+              ]),
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Row(
@@ -489,7 +486,7 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: SelectableText(
+                      child: Text(
                         _draftRestored
                             ? 'Rascunho restaurado · salvo automaticamente no seu PC'
                             : 'Rascunho salvo automaticamente no seu PC',

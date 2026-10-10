@@ -124,11 +124,10 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     final update = ref.watch(updateProvider);
     final local = kAppVersionLabel;
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+      padding: PageInsets.of(box.maxWidth),
       children: [
-        PageBody(
-          child: Column(
+        Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               PageHeader(
@@ -266,8 +265,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
               ),
             ],
           ),
-        ),
       ],
-    );
+    ));
   }
 }

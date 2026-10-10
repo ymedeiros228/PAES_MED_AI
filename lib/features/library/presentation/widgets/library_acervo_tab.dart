@@ -110,15 +110,14 @@ class LibraryAcervoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return ListView(
-    padding: const EdgeInsets.only(bottom: 24),
+    return LayoutBuilder(builder: (context, box) => ListView(
+    padding: PageInsets.of(box.maxWidth),
     children: [
-      PageBody(
-        child: Column(
+      Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PageHeader(
-              eyebrow: 'Materiais',
+              eyebrow: 'Acervo',
               title: 'Biblioteca',
               subtitle: officialN > 0
                   ? '$officialN questões oficiais disponíveis'
@@ -249,7 +248,7 @@ class LibraryAcervoTab extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final h in searchHistory.take(8))
+                  for (final h in _buscasUnicas())
                     ActionChip(
                       label: Text(
                         h['q']?.toString() ?? '',
@@ -408,7 +407,7 @@ class LibraryAcervoTab extends StatelessWidget {
                                     ready ? 'Pronto para estudar' : partial ? 'Falta gabarito' : canFetch ? 'Toque para importar' : 'Sem PDF',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurface.withOpacity(0.6),
+                                      color: ready ? cs.onPrimaryContainer.withOpacity(0.85) : cs.onSurfaceVariant,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -427,40 +426,39 @@ class LibraryAcervoTab extends StatelessWidget {
             // Ação principal — apenas uma, clara
             const SizedBox(height: 16),
             if (officialN > 0)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
+              Align(
+                alignment: Alignment.centerLeft,
+                child: AppButton.primary(
+                  label: 'Estudar agora',
+                  icon: Icons.play_arrow_rounded,
                   onPressed: () {
                     HapticFeedback.mediumImpact();
                     context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1&officialWithGab=1');
                   },
-                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                  label: const Text('Estudar agora'),
                 ),
               )
             else if (!showFirstRunCoach)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
+              Align(
+                alignment: Alignment.centerLeft,
+                child: AppButton.primary(
+                  label: 'Importar provas',
+                  icon: Icons.download_rounded,
                   onPressed: busy ? null : () { HapticFeedback.mediumImpact(); actions.onImportAllComplete(); },
-                  icon: const Icon(Icons.download_rounded, size: 20),
-                  label: const Text('Importar provas'),
                 ),
               ),
             if (anosParciais > 0) ...[
               const SizedBox(height: 8),
               Text(
-                '$anosParciais ano(s) com prova mas sem gabarito. Coloque o gabarito na pasta para importar.',
-                style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                _textoSemGabarito(),
+                style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
               ),
             ],
 
             if (pendingN > 0) ...[
-              SectionLabel('Precisa da sua revisão', hint: '$pendingN arquivo(s)'),
-              for (final raw in pendingItems.take(4))
+              SectionLabel('Precisa da sua revisão', hint: '${_revisaoAgrupada().length} arquivo(s)'),
+              for (final it in _revisaoAgrupada().take(4))
                 Builder(
                   builder: (_) {
-                    final it = Map<String, dynamic>.from(raw as Map);
                     final y = it['year'];
                     return PlaylistTile(
                       title: it['filename']?.toString() ?? 'Preview',
@@ -568,13 +566,13 @@ class LibraryAcervoTab extends StatelessWidget {
                     'Questões oficiais: ${curation!['officialCount'] ?? '—'}\n'
                     'Com gabarito validado: ${curation!['realCount'] ?? 0}'
                     '${curation!['realPercent'] != null ? ' (${curation!['realPercent']}%)' : ''}\n'
-                    'Questões que misturam matérias: ${curation!['crossDomainCount'] ?? 0}',
-                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                    'Questões que misturam disciplinas: ${curation!['crossDomainCount'] ?? 0}',
+                    style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
                   ),
                   if (curation!['message'] != null)
                     Text(
                       curation!['message'].toString(),
-                      style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                      style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
                     ),
                   const SizedBox(height: 8),
                 ],
@@ -633,13 +631,13 @@ class LibraryAcervoTab extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     coverage!['message']?.toString() ?? '',
-                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                    style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
                   ),
                 ],
                 if (showLocalDataHint)
                   Text(
                     'Conteúdo salvo no seu computador',
-                    style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7)),
+                    style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
                   ),
               ],
             ),
@@ -687,8 +685,66 @@ class LibraryAcervoTab extends StatelessWidget {
             ],
           ],
         ),
-      ),
     ],
-  );
+  ));
+  }
+
+  bool _semGabarito(dynamic g) {
+    final onDisk = Map<String, dynamic>.from((g as Map)['onDisk'] as Map? ?? {});
+    return onDisk['hasProva'] == true &&
+        onDisk['hasGabarito'] != true &&
+        !(g['uiStatus'] == 'committed' || ((g['committedCount'] as num?) ?? 0) > 0);
+  }
+
+  /// Texto único, coerente com os cartões de ano: só conta anos realmente sem gabarito.
+  String _textoSemGabarito() {
+    final recentes = board.where(_semGabarito).length;
+    final antigos = hist.where(_semGabarito).length;
+    final partes = <String>[];
+    if (recentes > 0) partes.add('$recentes de 2024–26');
+    if (antigos > 0) partes.add('$antigos de 2014–23 (em Provas antigas)');
+    if (partes.isEmpty) {
+      return 'Alguns anos têm a prova, mas ainda falta o gabarito. Coloque o arquivo na pasta de gabaritos.';
+    }
+    return 'Falta o gabarito de ${partes.join(' e ')}. Coloque o arquivo na pasta de gabaritos para importar.';
+  }
+
+  /// Chave sem acento/maiúscula para não repetir a mesma busca recente.
+  static String _chave(String s) {
+    const de = 'áàâãäéèêëíìîïóòôõöúùûüç';
+    const para = 'aaaaaeeeeiiiiooooouuuuc';
+    var t = s.trim().toLowerCase();
+    for (var i = 0; i < de.length; i++) {
+      t = t.replaceAll(de[i], para[i]);
+    }
+    return t;
+  }
+
+  List<Map<String, dynamic>> _buscasUnicas() {
+    final vistos = <String>{};
+    final out = <Map<String, dynamic>>[];
+    for (final h in searchHistory) {
+      final q = h['q']?.toString() ?? '';
+      if (q.trim().isEmpty || !vistos.add(_chave(q))) continue;
+      out.add(h);
+      if (out.length >= 6) break;
+    }
+    return out;
+  }
+
+  /// Agrupa os registros de revisão pelo nome do arquivo (o mesmo PDF pode aparecer várias vezes).
+  List<Map<String, dynamic>> _revisaoAgrupada() {
+    final porArquivo = <String, Map<String, dynamic>>{};
+    for (final raw in pendingItems) {
+      final it = Map<String, dynamic>.from(raw as Map);
+      final nome = it['filename']?.toString() ?? 'Preview';
+      final atual = porArquivo[nome];
+      if (atual == null) {
+        porArquivo[nome] = it;
+      } else if (((it['count'] as num?) ?? 0) > ((atual['count'] as num?) ?? 0)) {
+        porArquivo[nome] = it;
+      }
+    }
+    return porArquivo.values.toList();
   }
 }

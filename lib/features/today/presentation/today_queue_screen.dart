@@ -10,7 +10,6 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/widgets/media_reinforcement.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../../core/widgets/week_close_panel.dart';
@@ -165,34 +164,23 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     if (error != null) {
-      return EmptyState(
-        title: 'Fila indisponível',
-        subtitle: error!,
-        action: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TapScale(
-              child: FilledButton(onPressed: _load, child: const Text('Tentar de novo')),
-            ),
-            TextButton(
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: ErrorState(
+            title: 'Fila indisponível',
+            message: error!,
+            onRetry: _load,
+            secondary: AppButton.tertiary(
+              label: 'Ir para a sessão',
               onPressed: () => context.go('/sessao?examBoard=UEMA_PAES&preferNatureza=1'),
-              child: const Text('Sessão'),
             ),
-          ],
+          ),
         ),
       );
     }
     if (queue == null) {
-      return ListView(
-        padding: const EdgeInsets.all(24),
-        children: const [
-          SkeletonCard(lines: 2),
-          SizedBox(height: 12),
-          SkeletonCard(lines: 3),
-          SizedBox(height: 12),
-          SkeletonCard(lines: 2),
-        ],
-      );
+      return const SkeletonPage();
     }
 
     final revisions = (queue!['revisions'] as List? ?? []);
@@ -250,16 +238,14 @@ class _TodayQueueScreenState extends ConsumerState<TodayQueueScreen> {
                     ),
                 ),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: TapScale(
-                    child: FilledButton.icon(
-                      onPressed: () => context.go(sessionPath),
-                      icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Começar sessão'),
-                    ),
+                ActionRow(children: [
+                  AppButton.primary(
+                    onPressed: () => context.go(sessionPath),
+                    icon: Icons.play_arrow_rounded,
+                    label: 'Começar sessão',
+                    size: AppButtonSize.large,
                   ),
-                ),
+                ]),
                 FutureBuilder(
                   future: _checkpointFuture,
                   builder: (context, snap) {

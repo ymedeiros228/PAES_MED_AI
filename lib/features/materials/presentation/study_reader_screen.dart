@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/data/api_client.dart';
 import '../../ai_tutor/application/ai_tutor_controller.dart';
 import '../../ai_tutor/domain/chat_message.dart';
+import 'material_reader_view.dart';
 
 // Conditional imports for web platform view
 import 'study_reader_web.dart' if (dart.library.html) 'study_reader_web_html.dart';
@@ -167,6 +168,14 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
     );
   }
 
+  /// Leitura dentro do app; sem texto estruturado, cai para o PDF.
+  Widget _reader() => MaterialReaderView(
+        pdfFilename: widget.pdfFilename,
+        subject: widget.subject,
+        onOpenPdf: _openExternal,
+        fallback: _PdfViewer(url: _pdfUrl, filename: widget.pdfFilename),
+      );
+
   // Layout largo: PDF | Tutor lado a lado
   Widget _buildWideLayout(ColorScheme cs) {
     return Row(
@@ -174,7 +183,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
         // Leitor PDF
         Expanded(
           flex: _tutorOpen ? 3 : 5,
-          child: _PdfViewer(url: _pdfUrl, filename: widget.pdfFilename),
+          child: _reader(),
         ),
         if (_tutorOpen) ...[
           Container(width: 1, color: cs.outlineVariant.withOpacity(0.3)),
@@ -198,7 +207,7 @@ class _StudyReaderScreenState extends ConsumerState<StudyReaderScreen> {
   Widget _buildNarrowLayout(ColorScheme cs) {
     return Stack(
       children: [
-        _PdfViewer(url: _pdfUrl, filename: widget.pdfFilename),
+        _reader(),
         if (_tutorOpen)
           Positioned(
             bottom: 0,

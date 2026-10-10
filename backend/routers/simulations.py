@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
+from db import db
 from schemas import (
     GradeRequest,
     ScheduleGapsRequest,
@@ -24,9 +25,34 @@ from services_extra import (
 router = APIRouter(tags=["simulados"])
 
 
+def _sem_gabarito_fora(pack: dict[str, Any]) -> dict[str, Any]:
+    """Remove do simulado as questões sem gabarito (não dá para corrigir)."""
+    questions = pack.get("questions") or []
+    if not questions:
+        return pack
+    ids = [q["id"] for q in questions]
+    marks = ",".join("?" * len(ids))
+    with db() as conn:
+        bad = {
+            r["id"]
+            for r in conn.execute(
+                f"SELECT id FROM questions WHERE id IN ({marks}) "
+                "AND LOWER(COALESCE(source,'')) LIKE 'pdf_ingest_sem_gabarito%'",
+                ids,
+            ).fetchall()
+        }
+    if not bad:
+        return pack
+    kept = [q for q in questions if q["id"] not in bad]
+    pack["questions"] = kept
+    pack["count"] = len(kept)
+    pack["officialInPack"] = sum(1 for q in kept if not q.get("generated"))
+    return pack
+
+
 @router.post("/api/simulations")
 def api_simulations(payload: SimulationRequest) -> dict[str, Any]:
-    return create_simulation(
+    pack = create_simulation(
         payload.mode,
         payload.subject,
         payload.topic,
@@ -35,6 +61,7 @@ def api_simulations(payload: SimulationRequest) -> dict[str, Any]:
         payload.limit,
         payload.exam_minutes,
     )
+    return _sem_gabarito_fora(pack)
 
 @router.post("/api/simulations/grade")
 def api_simulations_grade(payload: GradeRequest) -> dict[str, Any]:

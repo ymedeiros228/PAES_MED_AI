@@ -7,7 +7,6 @@ import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/ux_copy.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 
 class RevisionsScreen extends ConsumerStatefulWidget {
@@ -46,29 +45,19 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(revisionsApiProvider);
     return async.when(
-        loading: () => const SkeletonList(count: 5, lines: 2),
-        error: (e, _) => EmptyState(
-          title: 'Revisões indisponíveis',
-          subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
-          action: Wrap(
-            spacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              FilledButton(
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  ref.read(refreshTickProvider.notifier).state++;
-                },
-                child: const Text('Tentar de novo'),
-              ),
-              TextButton(
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  context.go('/sessao');
-                },
-                child: const Text('Sessão'),
-              ),
-            ],
+        loading: () => const SkeletonPage(),
+        error: (e, _) => Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: ErrorState(
+              title: 'Revisões indisponíveis',
+              message: humanApiError(e, fallback: 'Não deu para carregar as revisões.'),
+              onRetry: () {
+                HapticFeedback.selectionClick();
+                ref.read(refreshTickProvider.notifier).state++;
+              },
+              secondary: AppButton.tertiary(label: 'Ir para a sessão', onPressed: () => context.go('/sessao')),
+            ),
           ),
         ),
         data: (items) {
@@ -78,11 +67,10 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
               if (mounted) setState(() => selected = _items.length - 1);
             });
           }
-          return ListView(
-            padding: const EdgeInsets.only(bottom: 24),
+          return LayoutBuilder(builder: (context, box) => ListView(
+            padding: PageInsets.of(box.maxWidth),
             children: [
-              PageBody(
-                child: Column(
+              Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     PageHeader(
@@ -104,25 +92,27 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                     if (_items.isEmpty)
                       QuietEmpty(
                         message: 'Nada agendado. Erre na sessão ou no simulado — os tópicos para revisar aparecem aqui.',
-                        action: FilledButton.icon(
+                        action: AppButton.primary(
                           onPressed: () {
                             HapticFeedback.selectionClick();
                             context.go('/sessao');
                           },
-                          icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                          label: const Text('Abrir sessão'),
+                          icon: Icons.play_arrow_rounded,
+                          label: 'Abrir sessão',
                         ),
                       )
                     else ...[
-                      FilledButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          setState(() => selected = 0);
-                          _openItem(0);
-                        },
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Revisar agora'),
-                      ),
+                      ActionRow(children: [
+                        AppButton.primary(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            setState(() => selected = 0);
+                            _openItem(0);
+                          },
+                          icon: Icons.play_arrow_rounded,
+                          label: 'Revisar agora',
+                        ),
+                      ]),
                       const SizedBox(height: 12),
                       StaggeredFadeIn(
                         itemDelay: const Duration(milliseconds: 70),
@@ -168,9 +158,8 @@ class _RevisionsScreenState extends ConsumerState<RevisionsScreen> {
                     ],
                   ],
                 ),
-              ),
             ],
-          );
+          ));
         },
     );
   }

@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../domain/question.dart';
 
@@ -114,13 +113,13 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   title: 'Questões',
                   subtitle: 'Escolha um filtro e abra uma questão — ou vá direto à sessão',
                   icon: Icons.quiz_rounded,
-                  trailing: FilledButton.tonalIcon(
+                  trailing: AppButton.tonal(
                     onPressed: () {
                       HapticFeedback.selectionClick();
                       context.go('/sessao');
                     },
-                    icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                    label: const Text('Abrir sessão'),
+                    icon: Icons.play_arrow_rounded,
+                    label: 'Abrir sessão',
                   ),
                 ),
                 Wrap(
@@ -262,31 +261,12 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                 padding: const EdgeInsets.all(28),
                 child: SkeletonList(count: 5, lines: 2),
               ),
-              error: (e, _) => EmptyState(
-                icon: Icons.quiz_outlined,
-                title: 'Não foi possível carregar',
-                subtitle: humanApiError(e, fallback: 'Reabra o app e tente de novo.'),
-                action: Wrap(
-                  spacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    TapScale(
-                      child: FilledButton(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          ref.read(refreshTickProvider.notifier).state++;
-                        },
-                        child: const Text('Tentar de novo'),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        context.go('/biblioteca');
-                      },
-                      child: const Text('Biblioteca'),
-                    ),
-                  ],
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(28),
+                child: ErrorState(
+                  message: humanApiError(e, fallback: 'Não deu para carregar as questões.'),
+                  onRetry: () => ref.read(refreshTickProvider.notifier).state++,
+                  secondary: AppButton.tertiary(label: 'Biblioteca', onPressed: () => context.go('/biblioteca')),
                 ),
               ),
               data: (items) {
@@ -350,14 +330,14 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                   children: [
                     Expanded(
                       child: RepaintBoundary(
-                        child: ListView.builder(
+                        child: LayoutBuilder(builder: (context, box) => ListView.builder(
                           controller: _scrollCtrl,
-                          padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+                          padding: PageInsets.of(box.maxWidth, top: 0, bottom: 24),
                           cacheExtent: 500, // pré-renderiza além da viewport — scroll smoother
                           itemCount: items.length,
                           itemBuilder: (context, i) {
                           final q = items[i];
-                          final badge = _badgeLabel(
+                          final badge = q.semGabarito ? 'Sem gabarito' : _badgeLabel(
                             source: q.source,
                             generated: q.generated,
                             approved: q.approved,
@@ -386,7 +366,7 @@ class _QuestionsScreenState extends ConsumerState<QuestionsScreen> {
                             ),
                           ));
                         },
-                      ),
+                      )),
                       ),
                     ),
                     Padding(
