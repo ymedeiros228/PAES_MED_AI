@@ -177,18 +177,30 @@ class SimulationExamPanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    QuestionMetaChips(
-                      subject: '${q['subject'] ?? ''}',
-                      topic: '${q['topic'] ?? ''}',
-                      year: (year as num?)?.toInt(),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        QuestionMetaChips(
+                          subject: '${q['subject'] ?? ''}',
+                          topic: '${q['topic'] ?? ''}',
+                          year: (year as num?)?.toInt(),
+                        ),
+                        SourceBadge(official: isOfficialQuestion(q), year: year?.toInt()),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     FiguraAviso(statement: q['statement']?.toString() ?? ''),
-                    StatementView(
-                      key: ValueKey('sim_stmt_$id'),
-                      text: q['statement']?.toString() ?? '',
+                    QuestionReadingCard(
+                      subject: q['subject']?.toString(),
+                      child: StatementView(
+                        framed: false,
+                        key: ValueKey('sim_stmt_$id'),
+                        text: q['statement']?.toString() ?? '',
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 14),
                     for (var i = 0; i < opts.length; i++)
                       ChoiceOptionTile(
                         key: ValueKey('sim_opt_${id}_$i'),
@@ -201,19 +213,6 @@ class SimulationExamPanel extends StatelessWidget {
                           onSelectAnswer(qi, id, i);
                         },
                       ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        year != null
-                            ? 'Fonte: PAES $year · UEMA (oficial)'
-                            : 'Fonte: acervo local',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                          color: cs.onSurface.withOpacity(0.55),
-                        ),
-                      ),
-                    ),
                     if (answers.containsKey(id) && !examLocked)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

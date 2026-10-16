@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'widgets/figura_aviso.dart';
-import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +9,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/ux_copy.dart';
 import '../../../core/widgets/media_reinforcement.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/theory_read_sheet.dart';
@@ -319,20 +317,20 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           tag: 'question_${q.id}',
           child: Material(
             type: MaterialType.transparency,
-            child: QuestionMetaChips(
-              subject: q.subject,
-              topic: q.topic,
-              year: q.year,
-              extra: q.semGabarito ? 'Sem gabarito' : null,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                QuestionMetaChips(
+                  subject: q.subject,
+                  topic: q.topic,
+                  year: q.year,
+                  extra: q.semGabarito ? 'Sem gabarito' : null,
+                ),
+                SourceBadge(official: q.examBoard.toUpperCase() == 'UEMA_PAES', year: q.year),
+              ],
             ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          kSoftAtalhosHint,
-          style: TextStyle(
-            fontSize: 11.5,
-            color: cs.onSurface.f60,
           ),
         ),
         if (saveError != null) ...[
@@ -367,7 +365,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PDF ${q.year}: ainda não está na pasta Provas do PC (sem inventar).',
+                  'O PDF da prova de ${q.year} ainda não está na pasta Provas deste PC.',
                   style: TextStyle(
                     fontSize: 13,
                     color: cs.onSurface.withOpacity(0.7),
@@ -415,8 +413,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
         const SizedBox(height: 12),
         // StatementView formata o enunciado em parágrafos legíveis
         FiguraAviso(statement: q.statement, sourcePdf: q.sourcePdf, year: q.year),
-        StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement),
-        const SizedBox(height: 16),
+        QuestionReadingCard(
+          subject: q.subject,
+          child: StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement, framed: false),
+        ),
+        const SizedBox(height: 18),
         for (var i = 0; i < q.options.length; i++)
           ChoiceOptionTile(
             index: i,
@@ -441,79 +442,22 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ),
             ),
         ] else ...[
-          // Animacao de entrada do feedback (slide + fade) — sensação de revelação
-          AnimatedSize(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              transitionBuilder: (child, anim) => FadeTransition(
-                opacity: anim,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.15),
-                    end: Offset.zero,
-                  ).animate(anim),
-                  child: child,
-                ),
-              ),
-              child: Container(
-                key: ValueKey('feedback_${selected == q.correctIndex}_$pendingErrorPick'),
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      selected == q.correctIndex
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      size: 24,
-                      color: selected == q.correctIndex ? context.palette.success : cs.error,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        selected == q.correctIndex
-                            ? 'Correto!'
-                            : 'Incorreto. Resposta da banca: ${q.correctIndex >= 0 && q.correctIndex < 5 ? 'ABCDE'[q.correctIndex] : '—'}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: selected == q.correctIndex ? context.palette.success : cs.error,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          const SizedBox(height: 6),
+          AnswerFeedbackBanner(
+            key: ValueKey('feedback_${q.id}'),
+            correct: selected == q.correctIndex,
+            correctIndex: q.correctIndex,
+            detail: pendingErrorPick
+                ? 'Marque o tipo de erro para ver a explicação.'
+                : (wide ? 'A explicação do professor está ao lado.' : 'A explicação do professor está logo abaixo.'),
+            child: pendingErrorPick
+                ? ErrorTypePicker(
+                    options: _errorTypes,
+                    value: errorType,
+                    onChanged: (t) => setState(() => errorType = t),
+                  )
+                : null,
           ),
-          if (pendingErrorPick) ...[
-            const SizedBox(height: 8),
-            const Text('Por que errou?'),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final e in _errorTypes.entries)
-                  ChoiceChip(
-                    label: Text(e.value),
-                    selected: errorType == e.key,
-                    onSelected: (_) {
-                      HapticFeedback.selectionClick();
-                      setState(() => errorType = e.key);
-                    },
-                  ),
-              ],
-            ),
-            ActionRow(children: [
-              AppButton.primary(
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  _confirmErrorAndSave();
-                },
-                label: 'Salvar erro',
-              ),
-            ]),
-          ],
         ],
       ],
     );
@@ -806,26 +750,55 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ],
             );
 
-    // Barra inferior fixa: botão principal alinhado à direita.
+    // Barra inferior fixa: Responder → Ver explicação; depois some.
     final Widget? bar = !revealed
-        ? AppButton.primary(
-            onPressed: selected == null || q.semGabarito ? null : _submit,
-            label: 'Responder',
+        ? QuestionActionBar(
+            maxWidth: 1400,
+            hint: q.semGabarito
+                ? 'Sem gabarito no app: dá para ler, mas não para corrigir.'
+                : selected == null
+                    ? 'Escolha uma alternativa (teclas 1–5 ou A–E).'
+                    : 'Enter para responder.',
+            primary: AppButton.primary(
+              onPressed: selected == null || q.semGabarito ? null : _submit,
+              icon: Icons.check_rounded,
+              label: 'Responder',
+            ),
           )
-        : null;
-    if (bar == null) return layout;
-    return Column(
-      children: [
-        Expanded(child: layout),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            border: Border(top: BorderSide(color: cs.outlineVariant.f60)),
-          ),
-          child: Align(alignment: Alignment.centerRight, child: bar),
-        ),
-      ],
+        : pendingErrorPick
+            ? QuestionActionBar(
+                maxWidth: 1400,
+                hint: 'Teclas 1–5 escolhem o tipo de erro · Enter mostra a explicação.',
+                primary: AppButton.primary(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    _confirmErrorAndSave();
+                  },
+                  icon: Icons.lightbulb_outline_rounded,
+                  label: 'Ver explicação',
+                ),
+              )
+            : null;
+    return QuestionKeyHandler(
+      optionCount: pendingErrorPick ? _errorTypes.length : q.options.length,
+      onSelect: pendingErrorPick
+          ? (i) => setState(() => errorType = _errorTypes.keys.elementAt(i))
+          : revealed
+              ? null
+              : (i) => setState(() => selected = i),
+      onEnter: !revealed
+          ? (selected == null || q.semGabarito ? null : _submit)
+          : pendingErrorPick
+              ? _confirmErrorAndSave
+              : null,
+      child: bar == null
+          ? layout
+          : Column(
+              children: [
+                Expanded(child: layout),
+                bar,
+              ],
+            ),
     );
   }
 }

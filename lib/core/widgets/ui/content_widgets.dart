@@ -10,11 +10,15 @@ class StatementView extends StatelessWidget {
   const StatementView({
     required this.text,
     this.maxLines,
+    this.framed = true,
     super.key,
   });
 
   final String text;
   final int? maxLines;
+
+  /// false = sem fundo/borda próprios (quando já está dentro de um cartão).
+  final bool framed;
 
   /// Divide o texto em parágrafos por pontos finais seguidos de maiúscula.
   /// Preserva citações e abreviações comuns (Sr., Dr., etc.).
@@ -67,12 +71,14 @@ class StatementView extends StatelessWidget {
       // Texto curto: SelectableText simples em container
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHigh.f38,
-          borderRadius: BorderRadius.circular(kRadiusPanel),
-          border: Border.all(color: cs.outlineVariant.f38),
-        ),
+        padding: framed ? const EdgeInsets.symmetric(horizontal: 22, vertical: 20) : EdgeInsets.zero,
+        decoration: framed
+            ? BoxDecoration(
+                color: cs.surfaceContainerHigh.f38,
+                borderRadius: BorderRadius.circular(kRadiusPanel),
+                border: Border.all(color: cs.outlineVariant.f38),
+              )
+            : null,
         child: SelectableText(
           text,
           style: statementStyle,
@@ -87,12 +93,14 @@ class StatementView extends StatelessWidget {
     // Múltiplos parágrafos: container com cada parágrafo separado
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh.f38,
-        borderRadius: BorderRadius.circular(kRadiusPanel),
-        border: Border.all(color: cs.outlineVariant.f38),
-      ),
+      padding: framed ? const EdgeInsets.symmetric(horizontal: 22, vertical: 20) : EdgeInsets.zero,
+      decoration: framed
+          ? BoxDecoration(
+              color: cs.surfaceContainerHigh.f38,
+              borderRadius: BorderRadius.circular(kRadiusPanel),
+              border: Border.all(color: cs.outlineVariant.f38),
+            )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

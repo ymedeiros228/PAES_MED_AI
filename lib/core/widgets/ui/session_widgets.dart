@@ -32,6 +32,23 @@ class ChoiceOptionTile extends StatefulWidget {
 class _ChoiceOptionTileState extends State<ChoiceOptionTile> {
   bool _hover = false;
 
+  @override
+  void didUpdateWidget(covariant ChoiceOptionTile old) {
+    super.didUpdateWidget(old);
+    // Escolha pelo teclado (1–5 / A–E): traz a alternativa para a tela.
+    if (widget.selected && !old.selected) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        );
+      });
+    }
+  }
+
   void _handleTap() {
     if (widget.onTap == null) return;
     // Haptic feedback sutil ao selecionar uma alternativa.

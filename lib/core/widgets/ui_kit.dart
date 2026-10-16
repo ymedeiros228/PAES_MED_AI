@@ -26,6 +26,7 @@ export 'ui/layout_widgets.dart';
 export 'ui/list_widgets.dart';
 export 'ui/loading_skeletons.dart';
 export 'ui/micro_interactions.dart';
+export 'ui/question_widgets.dart';
 export 'ui/quiet_empty.dart';
 export 'ui/session_widgets.dart';
 export 'ui/stats_widgets.dart';

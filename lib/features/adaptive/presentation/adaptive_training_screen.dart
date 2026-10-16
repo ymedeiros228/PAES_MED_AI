@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +34,8 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   Map<String, dynamic>? meta;
   int correctCount = 0;
   int answeredCount = 0;
+  /// Acerto/erro por posição na fila, para a trilha de progresso.
+  final results = <int, bool>{};
   String errorType = 'conceito';
   bool autoStarted = false;
   bool finished = false;
@@ -92,6 +93,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       revealed = false;
       correctCount = 0;
       answeredCount = 0;
+      results.clear();
       finished = false;
     });
     try {
@@ -181,6 +183,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
         revealed = true;
         answeredCount++;
         correctCount++;
+        results[index] = true;
         pendingErrorPick = false;
       });
       await _postAnswer(correct: true);
@@ -189,6 +192,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
       setState(() {
         revealed = true;
         answeredCount++;
+        results[index] = false;
         pendingErrorPick = true;
       });
     }
@@ -225,7 +229,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     final cs = Theme.of(context).colorScheme;
     final inQueue = queue.isNotEmpty && !finished;
 
-    return ListView(
+    final content = ListView(
       padding: const EdgeInsets.only(bottom: 24),
         children: [
           PageBody(
@@ -409,23 +413,32 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Questão ${index + 1}/${queue.length}'
-                          ' · ${_phaseLabel[q['_phase']] ?? q['_phase']}'
-                          '${q['generated'] == true ? ' · revisar depois' : ''}',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary),
+                        QuestionHeader(
+                          index: index,
+                          total: queue.length,
+                          marks: [
+                            for (var i = 0; i < queue.length; i++)
+                              results[i] == null
+                                  ? QuestionMark.pending
+                                  : (results[i]! ? QuestionMark.correct : QuestionMark.wrong),
+                          ],
+                          subject: (q['subject'] ?? subject).toString(),
+                          topic: (q['topic'] ?? topic).toString(),
+                          year: (q['year'] as num?)?.toInt(),
+                          official: isOfficialQuestion(Map<String, dynamic>.from(q)),
+                          extra: _phaseLabel[q['_phase']]?.toString(),
+                          trailing: answeredCount == 0 ? null : '$correctCount/$answeredCount acertos',
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${q['subject'] ?? subject} · ${q['topic'] ?? topic}',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.onSurface),
+                        const SizedBox(height: 16),
+                        QuestionReadingCard(
+                          subject: (q['subject'] ?? subject).toString(),
+                          child: StatementView(
+                            framed: false,
+                            key: ValueKey('adapt_stmt_${q['id']}'),
+                            text: q['statement']?.toString() ?? q['id']?.toString() ?? '',
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        StatementView(
-                          key: ValueKey('adapt_stmt_${q['id']}'),
-                          text: q['statement']?.toString() ?? q['id']?.toString() ?? '',
-                        ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 18),
                         if (options.isEmpty)
                           QuietEmpty(
                             message: 'Sem alternativas — abra a questão completa se precisar.',
@@ -455,57 +468,21 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                                 setState(() => selected = i);
                               },
                             ),
-                        if (!revealed) ...[
-                          const SizedBox(height: 8),
-                          Text('Se errar, tipo de erro:', style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                              for (final e in _errorLabels.entries)
-                                ChoiceChip(
-                                  label: Text(e.value),
-                                  selected: errorType == e.key,
-                                  onSelected: (_) {
-                                    HapticFeedback.selectionClick();
-                                    setState(() => errorType = e.key);
-                                  },
-                                ),
-                            ],
+                        if (revealed) ...[
+                          const SizedBox(height: 6),
+                          AnswerFeedbackBanner(
+                            key: ValueKey('adapt_fb_${q['id']}'),
+                            correct: selected == correctIndex,
+                            correctIndex: correctIndex,
+                            detail: pendingErrorPick ? 'Marque o tipo de erro para ver a explicação.' : null,
+                            child: pendingErrorPick
+                                ? ErrorTypePicker(
+                                    options: _errorLabels,
+                                    value: errorType,
+                                    onChanged: (t) => setState(() => errorType = t),
+                                  )
+                                : null,
                           ),
-                        ] else ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            selected == correctIndex
-                                ? 'Correto!'
-                                : 'Incorreto · gabarito ${correctIndex != null ? 'ABCDE'[correctIndex] : '—'}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: selected == correctIndex ? cs.primary : cs.error,
-                            ),
-                          ),
-                          if (pendingErrorPick) ...[
-                            const SizedBox(height: 8),
-                            Text('Tipo de erro (1–5):', style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.7))),
-                            Wrap(
-                              spacing: 8,
-                              children: [
-                                for (final e in _errorLabels.entries)
-                                  ChoiceChip(
-                                    label: Text(e.value),
-                                    selected: errorType == e.key,
-                                    onSelected: (_) {
-                                    HapticFeedback.selectionClick();
-                                    setState(() => errorType = e.key);
-                                  },
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            FilledButton(
-                              onPressed: () { HapticFeedback.selectionClick(); unawaited(_confirmErrorAndSave()); },
-                              child: const Text('Registrar tipo e continuar'),
-                            ),
-                          ],
                           if (!pendingErrorPick) ...[
                           const SizedBox(height: 8),
                           ResolutionDebrief(
@@ -560,39 +537,6 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                           ),
                           ],
                         ],
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            FilledButton(
-                              onPressed: revealed || selected == null ? null : () { HapticFeedback.selectionClick(); _submit(); },
-                              child: const Text('Confirmar'),
-                            ),
-                            FilledButton.tonal(
-                              onPressed: revealed && !pendingErrorPick ? () { HapticFeedback.selectionClick(); _next(); } : null,
-                              child: Text(index >= queue.length - 1 ? 'Concluir' : 'Próxima'),
-                            ),
-                            TextButton(
-                              onPressed: index == 0
-                                  ? null
-                                  : () { HapticFeedback.selectionClick(); setState(() {
-                                        index--;
-                                        selected = null;
-                                        revealed = false;
-                                        pendingErrorPick = false;
-                                      }); },
-                              child: const Text('Anterior'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          pendingErrorPick
-                              ? 'Atalhos: 1–5 tipo de erro · Enter registra'
-                              : 'Atalhos: 1–5 opção · Enter confirma · N/Enter próxima',
-                          style: TextStyle(fontSize: 13, color: cs.onSurface.f45),
-                        ),
                       ],
                     ),
                   ),
@@ -601,6 +545,64 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
             ),
           ),
         ],
+    );
+    if (q == null) return content;
+    final errorKeys = _errorLabels.keys.toList();
+    final last = index >= queue.length - 1;
+    return QuestionKeyHandler(
+      optionCount: pendingErrorPick ? errorKeys.length : options.length,
+      onSelect: pendingErrorPick
+          ? (i) => setState(() => errorType = errorKeys[i])
+          : revealed
+              ? null
+              : (i) => setState(() => selected = i),
+      onEnter: !revealed
+          ? (selected == null ? null : () => unawaited(_submit()))
+          : pendingErrorPick
+              ? () => unawaited(_confirmErrorAndSave())
+              : _next,
+      onNext: revealed && !pendingErrorPick ? _next : null,
+      child: Column(
+        children: [
+          Expanded(child: content),
+          QuestionActionBar(
+            hint: !revealed
+                ? (selected == null ? 'Escolha uma alternativa (teclas 1–5 ou A–E).' : 'Enter para responder.')
+                : pendingErrorPick
+                    ? 'Teclas 1–5 escolhem o tipo de erro · Enter mostra a explicação.'
+                    : (last ? 'Última questão da fila.' : 'N para a próxima.'),
+            secondary: [
+              if (index > 0)
+                AppButton.tertiary(
+                  label: 'Anterior',
+                  onPressed: () => setState(() {
+                    index--;
+                    selected = null;
+                    revealed = false;
+                    pendingErrorPick = false;
+                  }),
+                ),
+            ],
+            primary: !revealed
+                ? AppButton.primary(
+                    onPressed: selected == null ? null : () => unawaited(_submit()),
+                    icon: Icons.check_rounded,
+                    label: 'Responder',
+                  )
+                : pendingErrorPick
+                    ? AppButton.primary(
+                        onPressed: () => unawaited(_confirmErrorAndSave()),
+                        icon: Icons.lightbulb_outline_rounded,
+                        label: 'Ver explicação',
+                      )
+                    : AppButton.primary(
+                        onPressed: _next,
+                        icon: last ? Icons.flag_rounded : Icons.arrow_forward_rounded,
+                        label: last ? 'Concluir' : 'Próxima questão',
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

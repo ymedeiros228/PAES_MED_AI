@@ -10,7 +10,6 @@ import 'package:path/path.dart' as p;
 import '../../../core/data/api_client.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
 import '../../../core/widgets/tour_overlay.dart';
@@ -63,6 +62,8 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   String errorType = 'conceito';
   bool pendingErrorPick = false;
   final answeredIds = <String>[];
+  /// Acerto (true) ou erro (false) por questão, para a trilha de progresso.
+  final answerMarks = <String, bool>{};
   final sessionErrors = <String>[];
   final missTopics = <Map<String, String>>[];
   int flashcardsCreated = 0;
@@ -178,6 +179,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         'phaseIndex': phaseIndex,
         'qIndex': qIndex,
         'answeredIds': answeredIds.toList(),
+        'answerMarks': answerMarks,
         'elapsedMs': _resumeElapsedMs + sw.elapsedMilliseconds,
         'correctCount': correctCount,
         'sessionErrors': sessionErrors.toList(),
@@ -260,6 +262,12 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       answeredIds
         ..clear()
         ..addAll((cp['answeredIds'] as List? ?? []).map((e) => e.toString()));
+      answerMarks
+        ..clear()
+        ..addAll({
+          for (final e in ((cp['answerMarks'] as Map?) ?? {}).entries)
+            if (e.value is bool) e.key.toString(): e.value as bool,
+        });
       sessionErrors
         ..clear()
         ..addAll((cp['sessionErrors'] as List? ?? []).map((e) => e.toString()));
@@ -296,7 +304,19 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       if (name == 'questions' || name == 'revisions' || name == 'review') {
         if (ids.isNotEmpty) {
           await _loadQuestionBodies(ids);
-          setState(() => qIndex = qIdx.clamp(0, sessionQuestions.isEmpty ? 0 : sessionQuestions.length - 1));
+          // Pula as questões já respondidas: antes a questão salva voltava em branco
+          // e dava para responder de novo, contando o acerto duas vezes.
+          var resumeAt = qIdx.clamp(0, sessionQuestions.isEmpty ? 0 : sessionQuestions.length - 1);
+          while (resumeAt < sessionQuestions.length - 1 &&
+              answeredIds.contains(sessionQuestions[resumeAt]['id']?.toString())) {
+            resumeAt++;
+          }
+          setState(() => qIndex = resumeAt);
+          if (sessionQuestions.isNotEmpty &&
+              answeredIds.contains(sessionQuestions[resumeAt]['id']?.toString())) {
+            // Todas já respondidas: segue para a próxima fase.
+            await _nextPhase();
+          }
         } else if (name == 'questions') {
           await _enterQuestionsPhase();
         } else {
@@ -375,6 +395,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
       scheduleGapsError = null;
       phaseIndex = 0;
       answeredIds.clear();
+      answerMarks.clear();
       sessionErrors.clear();
       missTopics.clear();
       flashcardsCreated = 0;
@@ -569,6 +590,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
         pendingErrorPick = false;
         answerSaveError = null;
         answeredIds.add(q['id'].toString());
+        answerMarks[q['id'].toString()] = correct;
         lastRemediation = correct
             ? null
             : Map<String, dynamic>.from((res as Map?)?['remediation'] as Map? ?? {});
@@ -823,7 +845,11 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
     final remainingSec = phaseMinutes * 60 - clockElapsed.inSeconds;
     final lastMinute = started && !paused && phaseMinutes > 0 && remainingSec > 0 && remainingSec <= 60;
 
-    return LayoutBuilder(builder: (context, box) => ListView(
+    final showQuestionBar = started &&
+        !sessionComplete &&
+        (isQuestions || (isRevisions && revisionUsingQuestions)) &&
+        sessionQuestions.isNotEmpty;
+    final content = LayoutBuilder(builder: (context, box) => ListView(
       padding: PageInsets.of(box.maxWidth),
         children: [
           PageHeader(
@@ -873,6 +899,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     phaseIndex = 0;
                     qIndex = 0;
                     answeredIds.clear();
+                    answerMarks.clear();
                     sessionErrors.clear();
                     missTopics.clear();
                     correctCount = 0;
@@ -1037,37 +1064,34 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-              Text(
-                'Questão ${qIndex + 1}/${sessionQuestions.length} · acertos $correctCount/${answeredIds.length}',
-                style: const TextStyle(fontWeight: FontWeight.w700),
+              QuestionHeader(
+                index: qIndex,
+                total: sessionQuestions.length,
+                marks: [
+                  for (final sq in sessionQuestions)
+                    _markFor(sq['id']?.toString() ?? ''),
+                ],
+                subject: sessionQuestions[qIndex]['subject']?.toString() ?? '',
+                topic: sessionQuestions[qIndex]['topic']?.toString(),
+                year: (sessionQuestions[qIndex]['year'] as num?)?.toInt(),
+                official: isOfficialQuestion(sessionQuestions[qIndex]),
+                trailing: answeredIds.isEmpty ? null : '$correctCount/${answeredIds.length} acertos',
               ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(
-                    begin: 0,
-                    end: sessionQuestions.isEmpty ? 0 : (qIndex + 1) / sessionQuestions.length,
-                  ),
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: value,
-                    minHeight: 4,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               FiguraAviso(
                 statement: sessionQuestions[qIndex]['statement']?.toString() ?? '',
                 sourcePdf: sessionQuestions[qIndex]['sourcePdf']?.toString(),
                 year: (sessionQuestions[qIndex]['year'] as num?)?.toInt(),
               ),
-              StatementView(
-                key: ValueKey('statement_$qIndex'),
-                text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
+              QuestionReadingCard(
+                subject: sessionQuestions[qIndex]['subject']?.toString(),
+                child: StatementView(
+                  framed: false,
+                  key: ValueKey('statement_$qIndex'),
+                  text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               StaggeredFadeIn(
                 key: ValueKey('options_$qIndex'),
                 children: [
@@ -1099,102 +1123,27 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                     ),
                 ],
               ),
-              Builder(
-                builder: (_) {
-                  final q = sessionQuestions[qIndex];
-                  final year = q['year'];
-                  final board = (q['examBoard'] ?? q['exam_board'] ?? '').toString();
-                  final src = (q['source'] ?? '').toString();
-                  final isOfficial = q['isOfficial'] == true ||
-                      board.toUpperCase() == 'UEMA_PAES' ||
-                      src.toLowerCase().contains('pdf') ||
-                      src == 'oficial';
-                  if (!isOfficial && year == null) return const SizedBox.shrink();
-                  final parts = <String>[];
-                  if (year != null) parts.add('PAES $year');
-                  if (board.toUpperCase() == 'UEMA_PAES' || isOfficial) {
-                    parts.add('UEMA (oficial)');
-                  } else if (src.isNotEmpty) {
-                    parts.add(src);
-                  }
-                  if (parts.isEmpty) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(
-                      'Fonte: ${parts.join(' · ')}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  );
-                },
-              ),
               if (revealed) ...[
-                // Card de feedback — acerto/erro com cor e icone
                 Builder(builder: (_) {
                   final correctIdx = (sessionQuestions[qIndex]['correctIndex'] as int?) ??
                       (sessionQuestions[qIndex]['correct_index'] as int?);
-                  final isCorrect = selected == correctIdx;
-                  final cs = Theme.of(context).colorScheme;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isCorrect ? cs.primaryContainer.f45 : cs.errorContainer.f40,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isCorrect ? cs.primary.f45 : cs.error.f40,
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                          color: isCorrect ? cs.primary : cs.error,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            isCorrect
-                                ? 'Correto!'
-                                : 'Incorreto. Gabarito: ${'ABCDE'[(correctIdx ?? 0).clamp(0, 4)]}',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: isCorrect ? cs.onPrimaryContainer : cs.onErrorContainer,
-                            ),
-                          ),
-                        ),
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: AnswerFeedbackBanner(
+                      key: ValueKey('feedback_$qIndex'),
+                      correct: selected == correctIdx,
+                      correctIndex: correctIdx,
+                      detail: pendingErrorPick ? 'Marque o tipo de erro para ver a explicação.' : null,
+                      child: pendingErrorPick
+                          ? ErrorTypePicker(
+                              options: {for (final t in _errorTypes) t: errorTypeLabelPt(t)},
+                              value: errorType,
+                              onChanged: (t) => setState(() => errorType = t),
+                            )
+                          : null,
                     ),
                   );
                 }),
-                if (pendingErrorPick) ...[
-                  const SizedBox(height: 8),
-                  const Text('Tipo de erro:'),
-                  Wrap(
-                    spacing: 6,
-                    children: [
-                      for (final t in _errorTypes)
-                        ChoiceChip(
-                          label: Text(errorTypeLabelPt(t)),
-                          selected: errorType == t,
-                          onSelected: (_) {
-                            HapticFeedback.selectionClick();
-                            setState(() => errorType = t);
-                          },
-                        ),
-                    ],
-                  ),
-                  ActionRow(children: [
-                    AppButton.primary(onPressed: _confirmErrorAndSave, label: 'Salvar erro e ver explicação'),
-                  ]),
-                ],
                 if (!pendingErrorPick &&
                     selected !=
                         ((sessionQuestions[qIndex]['correctIndex'] as int?) ??
@@ -1227,16 +1176,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   ),
                 ],
               ],
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: [
-                  if (!revealed)
-                    AppButton.primary(onPressed: selected == null ? null : _submitAnswer, label: 'Responder (Enter)'),
-                  if (revealed && !pendingErrorPick)
-                    AppButton.primary(onPressed: _nextQuestion, label: 'Próxima (N)'),
-                ],
-              ),
               if (answerSaveError != null) ...[
                 const SizedBox(height: 8),
                 QuietEmpty(
@@ -1263,7 +1202,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               ),
             ] else if (isQuestions && started)
               QuietEmpty(
-                message: 'Questões ainda não carregadas. Toque no botão abaixo ou use 1–5 + Enter.',
+                message: 'Questões ainda não carregadas. Toque no botão abaixo para buscar.',
                 action: FilledButton.tonal(
                   onPressed: () => unawaited(_enterQuestionsPhase()),
                   child: const Text('Carregar questões'),
@@ -1310,5 +1249,68 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
           ],
         ],
     ));
+    if (!showQuestionBar) return content;
+    final optionCount = (sessionQuestions[qIndex]['options'] as List? ?? []).length;
+    return QuestionKeyHandler(
+      optionCount: pendingErrorPick ? _errorTypes.length : optionCount,
+      onSelect: pendingErrorPick
+          ? (i) => setState(() => errorType = _errorTypes[i])
+          : revealed
+              ? null
+              : (i) => setState(() => selected = i),
+      onEnter: !revealed
+          ? (selected == null ? null : () => unawaited(_submitAnswer()))
+          : pendingErrorPick
+              ? () => unawaited(_confirmErrorAndSave())
+              : () => unawaited(_nextQuestion()),
+      onNext: revealed && !pendingErrorPick ? () => unawaited(_nextQuestion()) : null,
+      child: Column(
+        children: [
+          Expanded(child: content),
+          _questionActionBar(),
+        ],
+      ),
+    );
+  }
+
+  /// Cor do pontinho de cada questão na trilha do cabeçalho.
+  QuestionMark _markFor(String id) {
+    final r = answerMarks[id];
+    if (r != null) return r ? QuestionMark.correct : QuestionMark.wrong;
+    // Retomada de checkpoint: sabemos que respondeu, não se acertou.
+    return answeredIds.contains(id) ? QuestionMark.answered : QuestionMark.pending;
+  }
+
+  /// Barra fixa: Responder → (tipo de erro) → Próxima.
+  Widget _questionActionBar() {
+    final last = qIndex >= sessionQuestions.length - 1;
+    if (!revealed) {
+      return QuestionActionBar(
+        hint: selected == null ? 'Escolha uma alternativa (teclas 1–5 ou A–E).' : 'Enter para responder.',
+        primary: AppButton.primary(
+          onPressed: selected == null ? null : _submitAnswer,
+          icon: Icons.check_rounded,
+          label: 'Responder',
+        ),
+      );
+    }
+    if (pendingErrorPick) {
+      return QuestionActionBar(
+        hint: 'Teclas 1–5 escolhem o tipo de erro · Enter mostra a explicação.',
+        primary: AppButton.primary(
+          onPressed: _confirmErrorAndSave,
+          icon: Icons.lightbulb_outline_rounded,
+          label: 'Ver explicação',
+        ),
+      );
+    }
+    return QuestionActionBar(
+      hint: last ? 'Última questão desta fase.' : 'N para a próxima.',
+      primary: AppButton.primary(
+        onPressed: _nextQuestion,
+        icon: last ? Icons.flag_rounded : Icons.arrow_forward_rounded,
+        label: last ? 'Concluir fase' : 'Próxima questão',
+      ),
+    );
   }
 }
