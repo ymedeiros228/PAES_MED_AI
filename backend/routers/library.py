@@ -7,20 +7,15 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 
+from api_helpers import data_file_response
 from db import DATA_DIR, db
 from fix_questions import (
     diagnose_questions,
     fix_all,
     mark_question_reviewed,
     review_queue,
-)
-from schemas import (
-    MarkReviewedRequest,
-    OpenFolderRequest,
-    OpenPathRequest,
-    OpenUrlRequest,
 )
 from ingest_pdf import (
     compute_year_statuses,
@@ -29,6 +24,12 @@ from ingest_pdf import (
     reimport_weak_years,
     sanitize_question_statements,
     sanitize_questions_full,
+)
+from schemas import (
+    MarkReviewedRequest,
+    OpenFolderRequest,
+    OpenPathRequest,
+    OpenUrlRequest,
 )
 from services_advanced import index_all_questions
 from services_core import (
@@ -259,7 +260,7 @@ def api_library_open_path(payload: OpenPathRequest) -> dict[str, Any]:
 
 
 @router.get("/api/library/file/{folder}/{filename}")
-def api_library_serve_file(folder: str, filename: str) -> FileResponse:
+def api_library_serve_file(folder: str, filename: str) -> Response:
     """Serve um arquivo de data/ (provas, gabaritos, edital) para a versão web.
 
     No desktop o app usa os.startfile; na web o front abre esta URL no browser.
@@ -280,8 +281,8 @@ def api_library_serve_file(folder: str, filename: str) -> FileResponse:
         raise HTTPException(403, "Fora da pasta de dados") from exc
     if not target.exists() or not target.is_file():
         raise HTTPException(404, "Arquivo não encontrado")
-    return FileResponse(
-        str(target),
+    return data_file_response(
+        target,
         media_type="application/pdf" if safe_name.lower().endswith(".pdf") else "application/octet-stream",
         filename=safe_name,
     )

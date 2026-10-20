@@ -1358,7 +1358,8 @@ def sanitize_question_statements() -> int:
     """Limpa enunciados persistidos e retorna quantos registros mudaram."""
     changed = 0
     with db() as conn:
-        rows = conn.execute("SELECT id, statement FROM questions").fetchall()
+        # questão oficial importada (scripts/provas) já vem revisada e formatada: não mexer
+        rows = conn.execute("SELECT id, statement FROM questions WHERE number IS NULL").fetchall()
         for row in rows:
             original = str(row["statement"] or "")
             cleaned = clean_question_statement(original)
@@ -1523,7 +1524,8 @@ def sanitize_questions_full() -> dict[str, int]:
     changed_options = 0
     with db() as conn:
         rows = conn.execute(
-            "SELECT id, statement, options_json FROM questions"
+            # questão oficial importada (scripts/provas) já vem revisada e formatada: não mexer
+            "SELECT id, statement, options_json FROM questions WHERE number IS NULL"
         ).fetchall()
         for row in rows:
             original_stmt = str(row["statement"] or "")

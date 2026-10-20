@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/data/auth.dart';
 import 'core/data/backend_launcher.dart';
 import 'core/theme/app_theme.dart';
 
@@ -19,6 +21,9 @@ Future<void> main() async {
   } catch (_) {
     // Sem prefs: o redirect lê na 1ª navegação.
   }
+  // Versão web: confere o login antes de abrir (sem piscar a tela de entrada).
+  // No desktop o backend local não exige login.
+  if (kIsWeb) await auth.verificar();
   // Inicia o backend Python local automaticamente no Windows.
   // Tenta ate 3x com intervalo de 2s — se falhar (ex: porta ocupada),
   // tenta novamente antes de desistir.

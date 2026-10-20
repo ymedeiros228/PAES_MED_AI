@@ -1290,6 +1290,7 @@ def create_simulation(
                 "subject": q["subject"],
                 "topic": q["topic"],
                 "statement": q["statement"],
+                "passage": q.get("passage"),
                 "options": q["options"],
                 "difficulty": q["difficulty"],
                 "examBoard": q.get("examBoard") or q.get("exam_board"),
@@ -2022,7 +2023,7 @@ def gamification_overview() -> dict[str, Any]:
             "SELECT COUNT(*) FROM flashcards WHERE reviews > 0"
         ).fetchone()[0]
         conn.execute(
-            "SELECT COUNT(DISTINCT date(answered_at)) FROM answers"
+            "SELECT COUNT(DISTINCT substr(answered_at, 1, 10)) FROM answers"
         ).fetchone()[0]
 
     # Nivel baseado em XP (questoes respondidas + ensaios + flashcards revisados + streak)

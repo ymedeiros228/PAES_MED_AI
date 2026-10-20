@@ -3,11 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/auth.dart';
 import '../data/study_prefs_providers.dart';
 import '../data/theme_mode_provider.dart';
 import '../theme/app_theme.dart';
 import 'status_widgets.dart';
 import 'ui/exam_countdown.dart';
+
+/// Valor do item "Sair" no menu (não é rota).
+const _sair = '__sair';
 
 class AppShell extends ConsumerWidget {
   const AppShell({required this.child, super.key});
@@ -187,6 +191,16 @@ class AppShell extends ConsumerWidget {
                           active: themeMode != ThemeMode.system,
                           onTap: () => themeNotifier.cycle(),
                         ),
+                        if (auth.sessao?.exigeLogin ?? false) ...[
+                          const SizedBox(height: 6),
+                          _RailControl(
+                            expanded: expanded,
+                            icon: Icons.logout_rounded,
+                            label: 'Sair · ${auth.sessao!.nomeExibido}',
+                            active: false,
+                            onTap: auth.sair,
+                          ),
+                        ],
                         if (expanded) ...[
                           const SizedBox(height: 10),
                         ],
@@ -267,7 +281,7 @@ class AppShell extends ConsumerWidget {
                   ),
                   PopupMenuButton<String>(
                     tooltip: examSyncPending ? 'Menu · data da prova pendente' : 'Menu',
-                    onSelected: context.go,
+                    onSelected: (valor) => valor == _sair ? auth.sair() : context.go(valor),
                     icon: examSyncPending
                         ? Badge(
                             smallSize: 8,
@@ -294,6 +308,19 @@ class AppShell extends ConsumerWidget {
                             ],
                           ),
                         ),
+                      if (auth.sessao?.exigeLogin ?? false) ...[
+                        const PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: _sair,
+                          child: Row(
+                            children: [
+                              Icon(Icons.logout_rounded, size: 18, color: cs.onSurface.withOpacity(0.6)),
+                              const SizedBox(width: 10),
+                              Expanded(child: Text('Sair · ${auth.sessao!.nomeExibido}')),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],

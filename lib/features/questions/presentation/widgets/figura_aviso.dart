@@ -8,15 +8,16 @@ import '../../domain/question.dart';
 /// Aviso discreto para questões que citam figura/gráfico/tabela que não vem
 /// no texto (enunciado extraído de PDF). Some sozinho se o enunciado não cita.
 class FiguraAviso extends StatelessWidget {
-  const FiguraAviso({required this.statement, this.sourcePdf, this.year, super.key});
+  const FiguraAviso({required this.statement, this.passage, this.sourcePdf, this.year, super.key});
 
   final String statement;
+  final String? passage;
   final String? sourcePdf;
   final int? year;
 
   @override
   Widget build(BuildContext context) {
-    if (!mencionaFigura(statement)) return const SizedBox.shrink();
+    if (!mencionaFigura(statement) || figuraNoTexto(statement, passage)) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
     final pdf = sourcePdf;
     return Padding(

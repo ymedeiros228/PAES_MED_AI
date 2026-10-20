@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 import threading
 import time
@@ -14,12 +15,14 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+import auth
+from auth import exige_login, sessao_da_requisicao
 from config import EXTRA_ORIGINS, LOCAL_ORIGIN_REGEX
 from db import DATA_DIR, init_db
 from routers import (
@@ -37,7 +40,6 @@ from routers import (
     study,
 )
 from seed import seed
-
 
 _log = logging.getLogger("paes.startup")
 
@@ -145,6 +147,10 @@ def _run_startup() -> None:
     """
     global _startup_thread
     _setup_logging()
+    if os.getenv("VERCEL"):
+        # Versão web (Vercel + Postgres): disco só leitura e cada instância nasce e morre
+        # sozinha. Esquema, conteúdo e índice vêm prontos da migração; backup é do Supabase.
+        return
     for sub in ("provas", "gabaritos", "edital", "aulas", "backups", "inventory"):
         (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
     init_db()
@@ -180,6 +186,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Na versão web (Vercel) o disco é só leitura e o banco é compartilhado: ficam de fora as
+# rotas de manutenção do acervo (ingestão, curadoria, backup, abrir pasta/arquivo no PC,
+# geração em lote) e as que só gravam arquivo local. Elas continuam no app local.
+_ROTAS_SO_LOCAL = re.compile(
+    r"/api/(ingest|acervo|curation|backup|seed|rag/reindex|edital/sync-syllabus"
+    r"|library/(open-|reprocess|reimport-weak-years|fix-questions)"
+    r"|media/open$|materials/(open-pdf|generate)|ai/(config|generate-)|professor/batch-fill"
+    r"|approval|study/export-|stats/bank-profile/export|lessons/from-audio)"
+)
+
+
+@app.middleware("http")
+async def _bloqueia_manutencao_na_web(request: Request, call_next: Any) -> Any:
+    if (
+        request.method in ("POST", "PATCH", "PUT", "DELETE")
+        and os.getenv("VERCEL")
+        and (
+            _ROTAS_SO_LOCAL.match(request.url.path)
+            or request.url.path.startswith("/api/questions/")
+            and request.method == "PATCH"
+            or request.url.path.startswith("/api/materials/")
+            and request.method == "DELETE"
+        )
+    ):
+        return JSONResponse(
+            {"detail": "Função de manutenção do acervo: disponível só no app local."}, status_code=403
+        )
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def _exige_sessao_na_web(request: Request, call_next: Any) -> Any:
+    # segunda barreira (a primeira é o middleware.js na borda): API só com login
+    caminho = request.url.path
+    if (
+        exige_login()
+        and caminho.startswith("/api/")
+        and not caminho.startswith("/api/auth/")
+        and not sessao_da_requisicao(request)
+    ):
+        return JSONResponse({"detail": "Faça login para continuar."}, status_code=401)
+    return await call_next(request)
+
+
+app.include_router(auth.router)
 for module in (
     meta,
     questions,
@@ -195,6 +246,12 @@ for module in (
     ai,
 ):
     app.include_router(module.router)
+
+
+# Figuras das provas oficiais (scripts/provas): no Vercel saem pela CDN em /data/figuras
+_FIGURAS = Path(__file__).resolve().parent.parent / "data" / "figuras"
+if not os.getenv("VERCEL") and _FIGURAS.is_dir():
+    app.mount("/data/figuras", StaticFiles(directory=str(_FIGURAS)), name="figuras-provas")
 
 
 # --- Servir front web (deploy unificado) ---

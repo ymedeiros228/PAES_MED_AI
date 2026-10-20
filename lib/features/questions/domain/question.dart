@@ -27,6 +27,8 @@ class Question {
     this.resolutionQuality,
     this.resolutionAxes,
     this.studentResolutionLabel,
+    this.passage,
+    this.number,
   });
 
   final String id;
@@ -56,6 +58,12 @@ class Question {
   final String? resolutionQuality;
   final Map<String, dynamic>? resolutionAxes;
   final String? studentResolutionLabel;
+
+  /// Texto de apoio da prova (questão oficial), com figuras e tabelas no lugar.
+  final String? passage;
+
+  /// Número da questão na prova oficial.
+  final int? number;
 
   /// Tolerante a nulos/tipos trocados: um único campo ruim (ex.: `year` nulo
   /// numa questão importada) não pode derrubar a lista inteira de questões.
@@ -97,6 +105,8 @@ class Question {
           ? Map<String, dynamic>.from(json['resolutionAxes'] as Map)
           : null,
       studentResolutionLabel: strOrNull(json['studentResolutionLabel']),
+      passage: strOrNull(json['passage']),
+      number: json['number'] == null ? null : toInt(json['number']),
     );
   }
 }
@@ -113,6 +123,12 @@ final RegExp _figuraRe = RegExp(
 
 /// O enunciado cita figura/gráfico/tabela que vem na prova original (PDF).
 bool mencionaFigura(String statement) => _figuraRe.hasMatch(statement);
+
+/// Questão oficial importada já traz a figura ou a tabela no próprio texto.
+bool figuraNoTexto(String statement, [String? passage]) {
+  final t = '$statement\n${passage ?? ''}';
+  return t.contains('[[img:') || t.contains('\n|');
+}
 
 extension QuestionFlags on Question {
   bool get semGabarito => (source ?? '').toLowerCase().startsWith('pdf_ingest_sem_gabarito');

@@ -1,0 +1,392 @@
+{
+  "paes-2024-01": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-02": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-03": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-04": {
+    "topico": "Literatura",
+    "subtopico": "diálogo entre texto",
+    "syllabus_id": "edital-6c8801a07bb61e60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-05": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-06": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-07": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-08": {
+    "topico": "Gramática em uso",
+    "subtopico": "classes de palavras",
+    "syllabus_id": "edital-ad7a557fced0f0b4",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-09": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-10": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-11": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-12": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-13": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-14": {
+    "topico": "Interpretação de texto",
+    "subtopico": "argumentos",
+    "syllabus_id": "edital-7e4ebda0748904df",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-15": {
+    "topico": "Coesão e coerência",
+    "subtopico": "conectivos",
+    "syllabus_id": "edital-f005282f9876d3a6",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2024-16-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2024-16-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Espanhol"
+  },
+  "paes-2024-17-en": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Inglês"
+  },
+  "paes-2024-17-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2024-18-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2024-18-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "implícitos",
+    "syllabus_id": "edital-1cf92e88428e8dfe",
+    "materia": "Espanhol"
+  },
+  "paes-2024-19-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2024-19-es": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Espanhol"
+  },
+  "paes-2024-20-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2024-20-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "finalidade",
+    "syllabus_id": "edital-f7b96387295c0ec8",
+    "materia": "Espanhol"
+  },
+  "paes-2024-21": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2024-22": {
+    "topico": "Mundo contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-598ecabe7d128b00",
+    "materia": "História"
+  },
+  "paes-2024-23": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2024-24": {
+    "topico": "Império",
+    "subtopico": null,
+    "syllabus_id": "edital-d600879dfb86e713",
+    "materia": "História"
+  },
+  "paes-2024-25": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2024-26": {
+    "topico": "Globalização",
+    "subtopico": null,
+    "syllabus_id": "edital-85ae1db2b4994a70",
+    "materia": "Geografia"
+  },
+  "paes-2024-27": {
+    "topico": "População",
+    "subtopico": null,
+    "syllabus_id": "edital-ce000900b701ed4e",
+    "materia": "Geografia"
+  },
+  "paes-2024-28": {
+    "topico": "Questões agrárias",
+    "subtopico": null,
+    "syllabus_id": "edital-7b2648c1ee4c8a43",
+    "materia": "Geografia"
+  },
+  "paes-2024-29": {
+    "topico": "Cartografia",
+    "subtopico": null,
+    "syllabus_id": "edital-dea6d676a770dfa6",
+    "materia": "Geografia"
+  },
+  "paes-2024-30": {
+    "topico": "Maranhão",
+    "subtopico": null,
+    "syllabus_id": "edital-aa1d4643d796e300",
+    "materia": "Geografia"
+  },
+  "paes-2024-31": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2024-32": {
+    "topico": "Contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-e1a13d9ae05616d9",
+    "materia": "Filosofia"
+  },
+  "paes-2024-33": {
+    "topico": "Contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-e1a13d9ae05616d9",
+    "materia": "Filosofia"
+  },
+  "paes-2024-34": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2024-35": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2024-36": {
+    "topico": "Direitos",
+    "subtopico": null,
+    "syllabus_id": "edital-e9ff30793a83db2e",
+    "materia": "Sociologia"
+  },
+  "paes-2024-37": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2024-38": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2024-39": {
+    "topico": "Trabalho",
+    "subtopico": null,
+    "syllabus_id": "edital-1469eb53751b11f6",
+    "materia": "Sociologia"
+  },
+  "paes-2024-40": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia"
+  },
+  "paes-2024-41": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2024-42": {
+    "topico": "Termologia",
+    "subtopico": null,
+    "syllabus_id": "edital-bb770fda60704dd2",
+    "materia": "Física"
+  },
+  "paes-2024-43": {
+    "topico": "Eletrodinâmica",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c8881dd9af0c8f",
+    "materia": "Física"
+  },
+  "paes-2024-44": {
+    "topico": "Circuitos",
+    "subtopico": null,
+    "syllabus_id": "edital-2e21d305c2aa54f6",
+    "materia": "Física"
+  },
+  "paes-2024-45": {
+    "topico": "Magnetismo",
+    "subtopico": null,
+    "syllabus_id": "edital-0a7de0c5c78360b2",
+    "materia": "Física"
+  },
+  "paes-2024-46": {
+    "topico": "Funções",
+    "subtopico": "afim",
+    "syllabus_id": "edital-e7c3ec5d98ecc039",
+    "materia": "Matemática"
+  },
+  "paes-2024-47": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "gráficos",
+    "syllabus_id": "edital-2c3fb20ac230e20a",
+    "materia": "Matemática"
+  },
+  "paes-2024-48": {
+    "topico": "Funções",
+    "subtopico": "logarítmica",
+    "syllabus_id": "edital-420fd82b20df163a",
+    "materia": "Matemática"
+  },
+  "paes-2024-49": {
+    "topico": "Geometria plana",
+    "subtopico": "áreas",
+    "syllabus_id": "edital-032598b9ae4b1c89",
+    "materia": "Matemática"
+  },
+  "paes-2024-50": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "tabelas",
+    "syllabus_id": "edital-e8d5193c3d9e3a38",
+    "materia": "Matemática"
+  },
+  "paes-2024-51": {
+    "topico": "Genética",
+    "subtopico": null,
+    "syllabus_id": "edital-d2428a4800ca078d",
+    "materia": "Biologia"
+  },
+  "paes-2024-52": {
+    "topico": "Fisiologia humana",
+    "subtopico": null,
+    "syllabus_id": "edital-2c0df48c01e6a848",
+    "materia": "Biologia"
+  },
+  "paes-2024-53": {
+    "topico": "Ecologia",
+    "subtopico": null,
+    "syllabus_id": "edital-67f51efbff7f56e0",
+    "materia": "Biologia"
+  },
+  "paes-2024-54": {
+    "topico": "Genética",
+    "subtopico": null,
+    "syllabus_id": "edital-d2428a4800ca078d",
+    "materia": "Biologia"
+  },
+  "paes-2024-55": {
+    "topico": "Fisiologia humana",
+    "subtopico": null,
+    "syllabus_id": "edital-2c0df48c01e6a848",
+    "materia": "Biologia"
+  },
+  "paes-2024-56": {
+    "topico": "Polaridade",
+    "subtopico": null,
+    "syllabus_id": "edital-41afe7c266d2e9d1",
+    "materia": "Química"
+  },
+  "paes-2024-57": {
+    "topico": "Estrutura atômica",
+    "subtopico": null,
+    "syllabus_id": "edital-4fdafc67a5417801",
+    "materia": "Química"
+  },
+  "paes-2024-58": {
+    "topico": "Estrutura atômica",
+    "subtopico": null,
+    "syllabus_id": "edital-4fdafc67a5417801",
+    "materia": "Química"
+  },
+  "paes-2024-59": {
+    "topico": "Funções",
+    "subtopico": null,
+    "syllabus_id": "edital-c0ebccef4d6d462f",
+    "materia": "Química"
+  },
+  "paes-2024-60": {
+    "topico": "Cinética",
+    "subtopico": null,
+    "syllabus_id": "edital-dde540611ed9a5df",
+    "materia": "Química"
+  }
+}

@@ -10,10 +10,11 @@ import json
 import logging
 import re
 import unicodedata
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from db import db
+from timeutil import now
 
 _log = logging.getLogger("paes.content_migrations")
 
@@ -85,7 +86,7 @@ def migrate_content() -> dict[str, Any]:
 
         # (b) importa cartões das aulas
         existing = {_norm(r["front"]) for r in conn.execute("SELECT front FROM flashcards").fetchall()}
-        today = datetime.now().replace(microsecond=0)
+        today = now().replace(microsecond=0)
         added = 0
         for lesson in conn.execute(
             "SELECT id, subject, topic, flashcards_json FROM lessons WHERE flashcards_json IS NOT NULL AND flashcards_json != '[]'"

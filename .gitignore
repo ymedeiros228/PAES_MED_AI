@@ -93,3 +93,12 @@ clean_report.txt
 # Anotações de scraping (URLs de imagens) usadas para gerar materiais
 backend/br_*.txt
 backend/data/*.db
+
+# Versão web: montada por scripts/publicar_web.py (não versionar)
+/public/
+.vercel
+
+.vercel
+.env*
+# índice gerado a cada publicação (scripts/publicar_web.py)
+/data/arquivos_web.json

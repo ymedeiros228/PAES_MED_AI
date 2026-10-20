@@ -436,6 +436,7 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                             framed: false,
                             key: ValueKey('adapt_stmt_${q['id']}'),
                             text: q['statement']?.toString() ?? q['id']?.toString() ?? '',
+                            passage: q['passage']?.toString(),
                           ),
                         ),
                         const SizedBox(height: 18),

@@ -1,0 +1,62 @@
+{
+  "paes-2025-29": {
+    "conferida": true,
+    "nota": "Enunciado curto com o link da charge no meio; texto conferido contra a página 18 (Claude, 19/10/2026)."
+  },
+  "paes-2025-59": {
+    "conferida": true,
+    "nota": "H₂SO₄ e mol L⁻¹ vêm picados no texto do PDF; enunciado conferido contra a página 37 (Claude, 19/10/2026)."
+  },
+  "paes-2025-43": {
+    "substituir": [
+      [
+        "F_TS",
+        "\\(F_{TS}\\)"
+      ]
+    ],
+    "alternativas": [
+      "\\(9F_{TS}\\)",
+      "\\(\\left(\\frac{1}{4}\\right)F_{TS}\\)",
+      "\\(F_{TS}\\)",
+      "\\(6F_{TS}\\)",
+      "\\(\\left(\\frac{3}{2}\\right)F_{TS}\\)"
+    ],
+    "nota": "Frações empilhadas no PDF; transcritas da página 27 do caderno (Claude, 19/10/2026)."
+  },
+  "paes-2025-45": {
+    "substituir": [
+      [
+        "seja de 4 segundos? ( ) 1",
+        "seja de 4 segundos?"
+      ]
+    ],
+    "alternativas": [
+      "\\(\\left(\\frac{1}{2}\\right)c\\)",
+      "\\(\\left(\\frac{\\sqrt{5}}{4}\\right)c\\)",
+      "\\(\\left(\\frac{1}{6}\\right)c\\)",
+      "\\(\\left(\\frac{1}{4}\\right)c\\)",
+      "\\(\\left(\\frac{\\sqrt{3}}{2}\\right)c\\)"
+    ],
+    "nota": "Frações e raízes empilhadas no PDF; transcritas da página 28 do caderno (Claude, 19/10/2026)."
+  },
+  "paes-2025-46": {
+    "substituir": [
+      [
+        "Receita do tradicional arroz de cuxá maranhense",
+        "Receita do tradicional arroz de cuxá maranhense"
+      ],
+      [
+        "Seja C_i o custo pago por cada participante na divisão, pode-se concluir que p - x",
+        "Seja \\(C_i\\) o custo pago por cada participante na divisão, pode-se concluir que"
+      ]
+    ],
+    "alternativas": [
+      "\\(C_i < \\dfrac{p - x}{N}\\)",
+      "\\(C_i = \\dfrac{p}{N}\\)",
+      "\\(C_i + x < \\dfrac{p}{N}\\)",
+      "\\(C_i = p - x\\)",
+      "\\(C_i < \\dfrac{x}{N}\\)"
+    ],
+    "nota": "Frações empilhadas no PDF; transcritas da página 29 do caderno (Claude, 19/10/2026)."
+  }
+}

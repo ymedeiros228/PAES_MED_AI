@@ -452,9 +452,11 @@ def apply_all_gabaritos() -> dict[str, int]:
             if not answers:
                 continue
 
-            # Buscar questões deste ano
+            # Só questões da prova (paes-YYYY-NNN): as de treino têm ano no id
+            # ("bio-2022-01") e antes recebiam o gabarito da questão 1 da prova
             rows = conn.execute(
-                "SELECT id, subject, topic, statement, options_json, correct_index, source, exam_board FROM questions WHERE year=? ORDER BY id",
+                "SELECT id, subject, topic, statement, options_json, correct_index, source, exam_board FROM questions"
+                " WHERE year=? AND exam_board='UEMA_PAES' AND id LIKE 'paes-%' ORDER BY id",
                 (year,),
             ).fetchall()
 

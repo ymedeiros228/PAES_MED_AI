@@ -8,13 +8,21 @@ mudaria a virada do dia e quebraria as comparações de string com o que já est
 
 from __future__ import annotations
 
+import os
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 ISO_TIMESPEC = "seconds"
 
+# Na versão web o servidor roda em UTC; PAES_TZ (ex.: America/Sao_Paulo) devolve o
+# calendário do aluno. Sem PAES_TZ (desktop), vale o relógio do próprio PC.
+_TZ = ZoneInfo(os.environ["PAES_TZ"]) if os.getenv("PAES_TZ") else None
+
 
 def now() -> datetime:
-    """Agora no fuso local do aluno."""
+    """Agora no fuso local do aluno (sem offset, como as datas já gravadas)."""
+    if _TZ is not None:
+        return datetime.now(_TZ).replace(tzinfo=None)
     return datetime.now()
 
 

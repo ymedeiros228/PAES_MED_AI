@@ -12,10 +12,11 @@ import pytest
 BACKEND = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND))
 
-from db import db  # noqa: E402
+from db import USE_PG, db  # noqa: E402
 from timeutil import file_stamp, iso_in, now, now_iso, today, today_iso  # noqa: E402
 
 
+@pytest.mark.skipif(USE_PG, reason="no Postgres a conexão volta ao pool, não é fechada")
 def test_db_fecha_a_conexao_no_fim_do_bloco() -> None:
     with db() as conn:
         conn.execute("SELECT 1")
@@ -23,6 +24,7 @@ def test_db_fecha_a_conexao_no_fim_do_bloco() -> None:
         conn.execute("SELECT 1")
 
 
+@pytest.mark.skipif(USE_PG, reason="no Postgres a conexão volta ao pool, não é fechada")
 def test_db_fecha_a_conexao_mesmo_com_erro() -> None:
     with pytest.raises(RuntimeError), db() as conn:
         raise RuntimeError("falha no meio da query")

@@ -14,6 +14,11 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// 401: sem login ou sessão vencida (versão web).
+class ApiUnauthorizedException extends ApiException {
+  const ApiUnauthorizedException(super.message);
+}
+
 class ApiTimeoutException implements Exception {
   const ApiTimeoutException(this.message);
   final String message;
@@ -25,6 +30,9 @@ class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
+
+  /// Chamado quando a API responde 401 (a sessão do login acabou): o auth volta à tela de entrada.
+  static void Function()? aoPerderSessao;
 
   static const _configuredBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
 
@@ -163,6 +171,10 @@ class ApiClient {
       return decoded;
     }
     final detail = decoded is Map ? decoded['detail']?.toString() : null;
+    if (response.statusCode == 401) {
+      aoPerderSessao?.call();
+      throw ApiUnauthorizedException(detail ?? 'Faça login para continuar.');
+    }
     throw ApiException(detail ?? 'Erro HTTP ${response.statusCode}');
   }
 

@@ -32,6 +32,10 @@ for _name in (
 os.environ["PAES_AUTO_BACKUP"] = "0"
 # Startup síncrono nos testes: evita a thread de background disputando o banco.
 os.environ["PAES_STARTUP_SYNC"] = "1"
+# Nunca o Postgres de produção: a suíte usa a cópia SQLite abaixo. Para rodar contra um
+# Postgres de TESTE, defina PAES_TEST_DATABASE_URL (esquema descartável).
+os.environ["DATABASE_URL"] = os.environ.get("PAES_TEST_DATABASE_URL", "")
+os.environ.pop("VERCEL", None)
 
 _REAL_DATA = Path(__file__).resolve().parents[2] / "data"
 

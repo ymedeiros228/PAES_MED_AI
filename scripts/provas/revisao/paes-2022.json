@@ -1,0 +1,57 @@
+{
+  "paes-2022-41": {
+    "enunciado": "Como habitante do planeta Terra, sabemos que o Sol é de suma importância para a manutenção da vida em nosso planeta. Esse axioma é cantado também pelos cancioneiros populares. A letra da canção do Bumba meu Boi, da Maioba, Se não existisse o Sol, tem o seguinte trecho:\n\nSe não existisse o Sol\nComo seria pra Terra se aquecer\nE se não existisse o mar\nComo seria pra natureza sobreviver [...]\n\nNa realidade, na perspectiva da Física, se não existisse o Sol, a Terra seria totalmente congelada e, sem a massa do Sol, não haveria a força gravitacional para manter todos os planetas “presos” em órbitas. Tanto a Terra quanto a lua e os demais planetas sairiam “voando” espaço afora.\n\nSabe-se que a força de atração entre a Terra e o Sol é vinte vezes maior que a força de atração entre Marte e o Sol. Por sua vez, a massa da Terra é nove vezes maior que a massa de Marte. Utilizando o Sol como referencial, a razão entre os quadrados dos raios das órbitas de Marte e da Terra é",
+    "alternativas": [
+      "\\(\\frac{20}{9}\\)",
+      "\\(\\frac{9}{20}\\)",
+      "\\(\\frac{2\\sqrt{5}}{3}\\)",
+      "\\(\\frac{2\\sqrt{5}}{9}\\)",
+      "\\(3\\sqrt{20}\\)"
+    ],
+    "conferida": true,
+    "nota": "Frações e raízes empilhadas no PDF; transcritas da página 29 do caderno (Claude, 19/10/2026)."
+  },
+  "paes-2022-49": {
+    "enunciado": "A empresa Maranhense de Administração Portuária (EMAP) administra o Porto de Itaqui e os terminais de Ferry Boat da Ponta da Espera, em São Luís, e Cujupe, no Município de Alcântara, responsável pela Infraestrutura-Preservação Ambiental-Segurança. A Agência Estadual de Transporte e Mobilidade Urbana (MOB), por sua vez, é responsável pelo Planejamento, pela Coordenação, pela Concessão, pela Permissão, pela Autorização, pela Regulamentação, pela Inspeção e pela Fiscalização dos serviços públicos de transportes aquáticos intermunicipal de passageiros, de cargas e de veículos. Atualmente, no Maranhão, duas empresas marítimas fazem essa travessia.\n\n[[FIGURA 1]]\n\nEmbarcação de Ferry Boat\n\nAmbas as empresas praticam os mesmos preços dos bilhetes de passagens para todas as categorias de passageiros e de veículos. A capacidade máxima de lotação, por embarcação, por viagem, de uma das empresas é de 1000 passageiros e de 70 veículos, em média.\n\nAnalise o quadro que corresponde a uma viagem, de uma embarcação, com saída do Terminal da Ponta da Espera e chegada ao Porto do Cujupe.\n\n[[TABELA 1]]\n\nConsiderando as condições descritas no quadro, os percentuais em relação à lotação máxima dos quantitativos de passageiros e de veículos, respectivamente, e o total, em reais, arrecadado nas vendas dos bilhetes de passageiros e de veículos, em uma viagem, são",
+    "tabelas": [
+      "| Descrição | Quantidade | Valor em R$ por passagem |\n| --- | --- | --- |\n| Passageiros (de 0 a 5 anos) gratuidade | 30 | 0 |\n| Idosos a partir de 65 anos gratuidade | 80 | 0 |\n| Passageiros de 6 a 10 anos | 50 | 2,00 |\n| Estudantes (Lei nº 9985/2014 - Art.48) | 50 | 6,00 |\n| Passageiros maiores de 10 anos | 200 | 12,00 |\n| Veículo de passeio/utilitário acima de 04 metros | 14 | 88,00 |\n| Caminhão 3/4 carregado | 5 | 140,00 |\n| Van Porte Grande 20 lugares (rodagem dupla) | 5 | 115,00 |\n| Micro Ônibus (até 29 passageiros) | 5 | 145,00 |\n| Veículo de passeio/utilitário de até 04 metros | 10 | 77,00 |"
+    ],
+    "alternativas": [
+      "41,50% e 50% — R$ 6.670,00",
+      "55% e 51% — R$ 6.402,00",
+      "41% e 55,71% — R$ 6.802,00",
+      "54,5% e 45% — R$ 6.527,00",
+      "50% e 56,70% — R$ 6.930,00"
+    ],
+    "conferida": true,
+    "nota": "Texto em duas colunas e alternativas em quadro; transcritos das páginas 32 e 33 (Claude, 19/10/2026)."
+  },
+  "paes-2022-56": {
+    "enunciado": "Durante aproximadamente 400 anos de colonização do continente americano, a produção de açúcar foi a principal e mais rentável atividade agroindustrial. Havia milhares de engenhos espalhados pelas colônias portuguesas, dentre as quais, o Brasil, visto com condições favoráveis para o cultivo da planta.\n\nA cana produzida aqui era cultivada em monocultura, em grande escala, e tinha o escravismo como base das relações sociais de produção. Os escravos, primeiramente indígenas, e, posteriormente africanos, cultivavam, cortavam e levavam a cana ao engenho, onde ela era moída e o caldo era fervido, até formar uma garapa, para ser cristalizada e dar origem aos torrões de açúcar (sacarose), exportados para a Europa.\n\nA classificação da formação, a partir da condensação dos glicídios, dos torrões de açúcar, produzidos aqui, desde o Brasil Colônia, e a sua respectiva justificativa estão contempladas na seguinte opção:",
+    "tabelas": [],
+    "alternativas": [
+      "Formação: maltose e frutose. Justificativa: polissacarídeo formado pelas pentoses solúveis em água.",
+      "Formação: glicose e maltose. Justificativa: dissacarídeo formado por uma hexose e uma pentose, respectivamente.",
+      "Formação: frutose e lactose. Justificativa: polissacarídeo formado por monossacarídeos solúveis em água.",
+      "Formação: glicose e frutose. Justificativa: dissacarídeo formado pela ligação glicosídica entre os dois monossacarídeos.",
+      "Formação: lactose e maltose. Justificativa: dissacarídeo formado pelos dois monossacarídeos insolúveis em água."
+    ],
+    "conferida": true,
+    "nota": "Alternativas em quadro (formação × justificativa); transcritas da página 37 (Claude, 19/10/2026)."
+  },
+  "paes-2022-27": {
+    "conferida": true,
+    "nota": "Enunciado curto com a charge no meio; conferido contra a página 20 (Claude, 19/10/2026)."
+  },
+  "paes-2022-40": {
+    "alternativas": [
+      "Sérgio Buarque de Holanda, uma vez que, para este intelectual, o problema da complexa formação histórica da sociedade brasileira era consequência da divisão da sociedade entre o meio urbano patriarcal e a modernização do meio rural, não estando, portanto, relacionado à sua composição étnico-racial.",
+      "Gilberto Freyre, pois, para este intelectual, a miscigenação brasileira, ou a mestiçagem, em seus termos, não poderia ser vista como atraso ou um problema social, mas era, justamente, a construtora da principal particularidade cultural da sociedade brasileira, que a diferenciava daquelas onde imperava a segregação racial.",
+      "Roberto DaMatta, tendo em vista que, para este intelectual, desde a colonização portuguesa os grupos étnico-raciais já se misturavam, sendo a fonte do desenvolvimento da Colônia e da Metrópole, assim como foi com a chegada dos africanos que, para sobreviverem, mantinham relações estreitas com a população indígena.",
+      "Darcy Ribeiro, posto que, para este intelectual, a mistura étnica do povo brasileiro, iniciada com a chegada dos africanos escravizados, possibilitou o desenvolvimento econômico do país, pois eram esses mestiços que trabalhavam na lavoura do café e da cana-de-açúcar, sendo, portanto, heróis nacionais.",
+      "Karl Marx, na medida em que, para este intelectual, a miscigenação proporcionava crescimento quantitativo da população brasileira, sendo esse aumento necessário para o setor produtivo, pois, assim, ter-se-ia a oferta de mão de obra e, ao mesmo tempo, a oferta de consumidores para os produtos produzidos, o que deveria incentivar a miscigenação."
+    ],
+    "conferida": true,
+    "nota": "Hífen de étnico-raciais perdido na quebra de linha (Claude, 19/10/2026)."
+  }
+}

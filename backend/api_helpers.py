@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import quote
 
 import httpx
 from fastapi import (
     HTTPException,
     UploadFile,
 )
+from fastapi.responses import FileResponse, RedirectResponse, Response
 
 from ai_state import (
     configured_provider,
@@ -23,7 +26,21 @@ from ai_state import (
     set_provider_status,
 )
 from config import MAX_UPLOAD_BYTES, OPENAI_TIMEOUT_SECONDS
+from db import DATA_DIR
 from schemas import ChatMessage
+
+
+def data_file_response(path: Path, *, media_type: str, filename: str) -> Response:
+    """Entrega um arquivo de data/ (PDF, capa).
+
+    No Vercel, redireciona para a cópia estática em /data/... (CDN): uma função
+    não devolve mais de 4,5 MB, e vários PDFs passam disso. No desktop, envia o arquivo.
+    """
+    if os.getenv("VERCEL"):
+        rel = path.resolve().relative_to(DATA_DIR.resolve()).as_posix()
+        return RedirectResponse(f"/data/{quote(rel)}", status_code=307)
+    return FileResponse(str(path), media_type=media_type, filename=filename)
+
 
 GEMINI_PROBE_TIMEOUT_SECONDS = 15
 MAX_GEMINI_CANDIDATES_PER_REQUEST = 3

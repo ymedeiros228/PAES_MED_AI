@@ -1080,6 +1080,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
               const SizedBox(height: 16),
               FiguraAviso(
                 statement: sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                passage: sessionQuestions[qIndex]['passage']?.toString(),
                 sourcePdf: sessionQuestions[qIndex]['sourcePdf']?.toString(),
                 year: (sessionQuestions[qIndex]['year'] as num?)?.toInt(),
               ),
@@ -1089,6 +1090,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   framed: false,
                   key: ValueKey('statement_$qIndex'),
                   text: sessionQuestions[qIndex]['statement']?.toString() ?? '',
+                  passage: sessionQuestions[qIndex]['passage']?.toString(),
                 ),
               ),
               const SizedBox(height: 18),

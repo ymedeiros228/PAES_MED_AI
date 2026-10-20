@@ -191,13 +191,14 @@ class SimulationExamPanel extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    FiguraAviso(statement: q['statement']?.toString() ?? ''),
+                    FiguraAviso(statement: q['statement']?.toString() ?? '', passage: q['passage']?.toString()),
                     QuestionReadingCard(
                       subject: q['subject']?.toString(),
                       child: StatementView(
                         framed: false,
                         key: ValueKey('sim_stmt_$id'),
                         text: q['statement']?.toString() ?? '',
+                        passage: q['passage']?.toString(),
                       ),
                     ),
                     const SizedBox(height: 14),

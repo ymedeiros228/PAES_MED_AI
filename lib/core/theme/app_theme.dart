@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import 'app_fonts.dart';
@@ -215,7 +216,7 @@ class AppTheme {
         shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
         titleTextStyle: display.copyWith(fontSize: 18, fontWeight: FontWeight.w600),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surface,
         surfaceTintColor: Colors.transparent,
@@ -434,7 +435,7 @@ class AppTheme {
         showDuration: const Duration(milliseconds: 2000),
         preferBelow: true,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: dark ? scheme.surfaceContainer : scheme.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

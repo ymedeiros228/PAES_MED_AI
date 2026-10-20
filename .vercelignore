@@ -1,0 +1,25 @@
+# Só sobe o que a versão web usa: public/ (app Flutter + PDFs), api/, backend/ e data/ de leitura.
+/*
+!/api
+!/backend
+!/data
+!/public
+!/requirements.txt
+!/middleware.js
+!/vercel.json
+/backend/tests
+/backend/__pycache__
+/backend/**/__pycache__
+/backend/.env
+/backend/.env.*
+/backend/build
+/backend/dist
+/data/paes_med_ai.db*
+/data/backups
+/data/exports
+/data/logs
+/data/aulas
+# materiais e figuras vão pela CDN (public/data); a função só lê data/arquivos_web.json
+/data/materiais
+/data/figuras
+/data/provas_oficiais

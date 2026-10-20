@@ -1,0 +1,392 @@
+{
+  "paes-2026-01": {
+    "topico": "Interpretação de texto",
+    "subtopico": "gênero",
+    "syllabus_id": "edital-f933c20985cae4dd",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-02": {
+    "topico": "Coesão e coerência",
+    "subtopico": "progressão temática",
+    "syllabus_id": "edital-aadb4ee21e7a1a8c",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-03": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-04": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-05": {
+    "topico": "Linguagem",
+    "subtopico": "variação linguística",
+    "syllabus_id": "edital-1d679b8fd28ab308",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-06": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-07": {
+    "topico": "Literatura",
+    "subtopico": "contexto",
+    "syllabus_id": "edital-9112f077c2ab2d60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-08": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-09": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-10": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-11": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-12": {
+    "topico": "Literatura",
+    "subtopico": "contexto",
+    "syllabus_id": "edital-9112f077c2ab2d60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-13": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-14": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-15": {
+    "topico": "Gramática em uso",
+    "subtopico": "sintaxe",
+    "syllabus_id": "edital-0b04dbc79384cecf",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2026-16-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2026-16-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2026-17-en": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Inglês"
+  },
+  "paes-2026-17-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "finalidade",
+    "syllabus_id": "edital-f7b96387295c0ec8",
+    "materia": "Espanhol"
+  },
+  "paes-2026-18-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Inglês"
+  },
+  "paes-2026-18-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2026-19-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2026-19-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2026-20-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "gênero",
+    "syllabus_id": "edital-f933c20985cae4dd",
+    "materia": "Inglês"
+  },
+  "paes-2026-20-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2026-21": {
+    "topico": "Cidadania",
+    "subtopico": null,
+    "syllabus_id": "edital-d0c3020a62cd7ccc",
+    "materia": "História"
+  },
+  "paes-2026-22": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2026-23": {
+    "topico": "Cidadania",
+    "subtopico": null,
+    "syllabus_id": "edital-d0c3020a62cd7ccc",
+    "materia": "História"
+  },
+  "paes-2026-24": {
+    "topico": "Cidadania",
+    "subtopico": null,
+    "syllabus_id": "edital-d0c3020a62cd7ccc",
+    "materia": "História"
+  },
+  "paes-2026-25": {
+    "topico": "Império",
+    "subtopico": null,
+    "syllabus_id": "edital-d600879dfb86e713",
+    "materia": "História"
+  },
+  "paes-2026-26": {
+    "topico": "Economia",
+    "subtopico": null,
+    "syllabus_id": "edital-a7f82d85138ae57c",
+    "materia": "Geografia"
+  },
+  "paes-2026-27": {
+    "topico": "Urbanização",
+    "subtopico": null,
+    "syllabus_id": "edital-624586391e0d5a1e",
+    "materia": "Geografia"
+  },
+  "paes-2026-28": {
+    "topico": "Geografia do Brasil",
+    "subtopico": null,
+    "syllabus_id": "edital-72f90a6345414666",
+    "materia": "Geografia"
+  },
+  "paes-2026-29": {
+    "topico": "Ambiente",
+    "subtopico": null,
+    "syllabus_id": "edital-60a60c369a3fb0f7",
+    "materia": "Geografia"
+  },
+  "paes-2026-30": {
+    "topico": "Maranhão",
+    "subtopico": null,
+    "syllabus_id": "edital-aa1d4643d796e300",
+    "materia": "Geografia"
+  },
+  "paes-2026-31": {
+    "topico": "Pensamento moderno",
+    "subtopico": null,
+    "syllabus_id": "edital-22354c465a3125f4",
+    "materia": "Filosofia"
+  },
+  "paes-2026-32": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2026-33": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2026-34": {
+    "topico": "Contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-e1a13d9ae05616d9",
+    "materia": "Filosofia"
+  },
+  "paes-2026-35": {
+    "topico": "Ética",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c615c86e1d9965",
+    "materia": "Filosofia"
+  },
+  "paes-2026-36": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2026-37": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2026-38": {
+    "topico": "Trabalho",
+    "subtopico": null,
+    "syllabus_id": "edital-1469eb53751b11f6",
+    "materia": "Sociologia"
+  },
+  "paes-2026-39": {
+    "topico": "Movimentos sociais",
+    "subtopico": null,
+    "syllabus_id": "edital-f57dcf0670d4662e",
+    "materia": "Sociologia"
+  },
+  "paes-2026-40": {
+    "topico": "Estado",
+    "subtopico": null,
+    "syllabus_id": "edital-23b00a94c39e7309",
+    "materia": "Sociologia"
+  },
+  "paes-2026-41": {
+    "topico": "Acústica",
+    "subtopico": null,
+    "syllabus_id": "edital-c6a9e3c904874ce3",
+    "materia": "Física"
+  },
+  "paes-2026-42": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2026-43": {
+    "topico": "Termologia",
+    "subtopico": null,
+    "syllabus_id": "edital-bb770fda60704dd2",
+    "materia": "Física"
+  },
+  "paes-2026-44": {
+    "topico": "Eletrodinâmica",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c8881dd9af0c8f",
+    "materia": "Física"
+  },
+  "paes-2026-45": {
+    "topico": "Energia",
+    "subtopico": null,
+    "syllabus_id": "edital-6842a6543b0ac2d2",
+    "materia": "Física"
+  },
+  "paes-2026-46": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "contagem",
+    "syllabus_id": "edital-c0c6f128feaf2fe5",
+    "materia": "Matemática"
+  },
+  "paes-2026-47": {
+    "topico": "Álgebra",
+    "subtopico": "sequências",
+    "syllabus_id": "edital-49f98ff529a3f2e0",
+    "materia": "Matemática"
+  },
+  "paes-2026-48": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "gráficos",
+    "syllabus_id": "edital-2c3fb20ac230e20a",
+    "materia": "Matemática"
+  },
+  "paes-2026-49": {
+    "topico": "Funções",
+    "subtopico": "exponencial",
+    "syllabus_id": "edital-a8457b1dbb9a8517",
+    "materia": "Matemática"
+  },
+  "paes-2026-50": {
+    "topico": "Funções",
+    "subtopico": "exponencial",
+    "syllabus_id": "edital-a8457b1dbb9a8517",
+    "materia": "Matemática"
+  },
+  "paes-2026-51": {
+    "topico": "Sustentabilidade",
+    "subtopico": null,
+    "syllabus_id": "edital-1785893e9f6494c8",
+    "materia": "Biologia"
+  },
+  "paes-2026-52": {
+    "topico": "Ecologia",
+    "subtopico": null,
+    "syllabus_id": "edital-67f51efbff7f56e0",
+    "materia": "Biologia"
+  },
+  "paes-2026-53": {
+    "topico": "Metabolismo",
+    "subtopico": null,
+    "syllabus_id": "edital-29b8f83ebf6f3d8f",
+    "materia": "Biologia"
+  },
+  "paes-2026-54": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2026-55": {
+    "topico": "Imunidade",
+    "subtopico": null,
+    "syllabus_id": "edital-492cf4cf23796559",
+    "materia": "Biologia"
+  },
+  "paes-2026-56": {
+    "topico": "Funções inorgânicas",
+    "subtopico": null,
+    "syllabus_id": "edital-c88961fa45cf60ee",
+    "materia": "Química"
+  },
+  "paes-2026-57": {
+    "topico": "Aplicações cotidianas",
+    "subtopico": null,
+    "syllabus_id": "edital-464f52c1e1003506",
+    "materia": "Química"
+  },
+  "paes-2026-58": {
+    "topico": "Cinética",
+    "subtopico": null,
+    "syllabus_id": "edital-dde540611ed9a5df",
+    "materia": "Química"
+  },
+  "paes-2026-59": {
+    "topico": "Orgânica",
+    "subtopico": null,
+    "syllabus_id": "edital-755c1a72e6b9f776",
+    "materia": "Química"
+  },
+  "paes-2026-60": {
+    "topico": "Reações",
+    "subtopico": null,
+    "syllabus_id": "edital-4f613c0e0052a59e",
+    "materia": "Química"
+  }
+}

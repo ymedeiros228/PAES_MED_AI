@@ -310,8 +310,11 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     final wide = MediaQuery.sizeOf(context).width >= 1100;
 
     final cs = Theme.of(context).colorScheme;
+    // celular: os dois painéis rolam juntos numa página só (sem caixa de altura fixa)
     final questionPane = ListView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      shrinkWrap: !wide,
+      physics: wide ? null : const NeverScrollableScrollPhysics(),
+      padding: wide ? const EdgeInsets.fromLTRB(24, 20, 24, 32) : const EdgeInsets.fromLTRB(16, 16, 16, 20),
       children: [
         Hero(
           tag: 'question_${q.id}',
@@ -412,10 +415,10 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           ),
         const SizedBox(height: 12),
         // StatementView formata o enunciado em parágrafos legíveis
-        FiguraAviso(statement: q.statement, sourcePdf: q.sourcePdf, year: q.year),
+        FiguraAviso(statement: q.statement, passage: q.passage, sourcePdf: q.sourcePdf, year: q.year),
         QuestionReadingCard(
           subject: q.subject,
-          child: StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement, framed: false),
+          child: StatementView(key: ValueKey('stmt_${q.id}'), text: q.statement, passage: q.passage, framed: false),
         ),
         const SizedBox(height: 18),
         for (var i = 0; i < q.options.length; i++)
@@ -463,6 +466,8 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
     );
 
     final professorPane = ListView(
+      shrinkWrap: !wide,
+      physics: wide ? null : const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
       children: [
         Text(
@@ -477,7 +482,7 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
           Text(
             pendingErrorPick
                 ? 'Marque o tipo de erro para ver a resolução.'
-                : 'Responda à esquerda para liberar a resolução.',
+                : wide ? 'Responda à esquerda para liberar a resolução.' : 'Responda acima para liberar a resolução.',
           )
         else ...[
           ResolutionDebrief(
@@ -732,19 +737,19 @@ class _QuestionDetailScreenState extends ConsumerState<QuestionDetailScreen> {
               ],
             )
           : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+              padding: const EdgeInsets.only(bottom: 24),
               children: [
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 760),
-                    child: SizedBox(height: 420, child: questionPane),
+                    child: questionPane,
                   ),
                 ),
                 const Divider(),
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 760),
-                    child: SizedBox(height: 520, child: professorPane),
+                    child: professorPane,
                   ),
                 ),
               ],

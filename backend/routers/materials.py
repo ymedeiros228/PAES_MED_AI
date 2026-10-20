@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from api_helpers import data_file_response
 from db import DATA_DIR
 from material_service import (
     delete_material,
@@ -26,6 +28,28 @@ router = APIRouter(prefix="/api/materials", tags=["materiais"])
 _PDF_DIR = DATA_DIR / "materiais"
 _IMG_DIR = _PDF_DIR / "imagens"
 _IMG_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+# No Vercel os PDFs e capas não vão dentro da função (passam do limite de 225 MB): saem pela
+# CDN em /data/materiais. O scripts/publicar_web.py grava data/arquivos_web.json com o
+# tamanho de cada um, e é dele que a listagem e as checagens de existência leem.
+_INDICE_WEB = DATA_DIR / "arquivos_web.json"
+_indice_cache: dict[str, int] | None = None
+
+
+def _arquivos(pasta: Path) -> dict[str, int]:
+    """Nome → tamanho (bytes) dos arquivos que estão direto em `pasta`."""
+    global _indice_cache
+    if os.getenv("VERCEL") and _INDICE_WEB.is_file():
+        if _indice_cache is None:
+            _indice_cache = json.loads(_INDICE_WEB.read_text(encoding="utf-8"))
+        prefixo = pasta.relative_to(DATA_DIR).as_posix() + "/"
+        return {
+            k[len(prefixo):]: v
+            for k, v in _indice_cache.items()
+            if k.startswith(prefixo) and "/" not in k[len(prefixo):]
+        }
+    if not pasta.is_dir():
+        return {}
+    return {f.name: f.stat().st_size for f in pasta.iterdir() if f.is_file()}
 _IMG_MEDIA = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -47,10 +71,12 @@ def _cover_for_stem(stem: str) -> str | None:
     from pdf_cover_map import PDF_TO_COVER
 
     prefix = PDF_TO_COVER.get(stem.upper())
-    if not prefix or not _IMG_DIR.exists():
+    if not prefix:
         return None
-    matches = sorted(p for p in _IMG_DIR.glob(f"{prefix}*") if p.suffix.lower() in _IMG_EXT)
-    return matches[0].name if matches else None
+    matches = sorted(
+        n for n in _arquivos(_IMG_DIR) if n.startswith(prefix) and Path(n).suffix.lower() in _IMG_EXT
+    )
+    return matches[0] if matches else None
 
 
 @router.get("/syllabus")
@@ -68,7 +94,8 @@ async def list_all_materials(subject: str | None = Query(None)) -> list[dict[str
 @router.get("/pdf-list")
 async def list_pdfs() -> list[dict[str, Any]]:
     """Lista os PDFs da pasta de materiais, com título/disciplina vindos do banco."""
-    if not _PDF_DIR.exists():
+    arquivos = _arquivos(_PDF_DIR)
+    if not arquivos:
         return []
     subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
                    "MT": "Matemática", "PT": "Português", "HIS": "História",
@@ -76,7 +103,7 @@ async def list_pdfs() -> list[dict[str, Any]]:
                    "ING": "Inglês", "ESP": "Espanhol"}
     meta = list_pdf_metadata()
     pdfs = []
-    for f in sorted(_PDF_DIR.glob("*.pdf")):
+    for f in sorted(Path(n) for n in arquivos if n.lower().endswith(".pdf")):
         name = f.stem
         parts = name.split("_", 1)
         subject_code = parts[0] if parts else ""
@@ -97,7 +124,7 @@ async def list_pdfs() -> list[dict[str, Any]]:
             "subject": subject,
             "topic": topic,
             "hasContent": has_content,
-            "size_kb": round(f.stat().st_size / 1024, 1),
+            "size_kb": round(arquivos[f.name] / 1024, 1),
             "url": f"/api/materials/pdf/{f.name}",
             "coverUrl": f"/api/materials/imagens/{cover}" if cover else None,
             "coverFilename": cover,
@@ -137,11 +164,11 @@ async def pdf_cover_image(filename: str):
         img_path.relative_to(_IMG_DIR.resolve())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Caminho inválido.") from exc
-    if not img_path.is_file():
+    if img_path.name not in _arquivos(_IMG_DIR):
         raise HTTPException(status_code=404, detail="Capa não encontrada.")
     suffix = img_path.suffix.lower()
-    return FileResponse(
-        str(img_path),
+    return data_file_response(
+        img_path,
         media_type=_IMG_MEDIA.get(suffix, "application/octet-stream"),
         filename=cover,
     )
@@ -155,10 +182,10 @@ async def download_pdf(filename: str):
     if not safe.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
     pdf_path = _PDF_DIR / safe
-    if not pdf_path.exists():
+    if pdf_path.name not in _arquivos(_PDF_DIR):
         raise HTTPException(status_code=404, detail="PDF não encontrado.")
-    return FileResponse(
-        str(pdf_path),
+    return data_file_response(
+        pdf_path,
         media_type="application/pdf",
         filename=safe,
     )
@@ -176,10 +203,10 @@ async def serve_cover_image(filename: str):
         img_path.relative_to(_IMG_DIR.resolve())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Caminho inválido.") from exc
-    if not img_path.is_file():
+    if img_path.name not in _arquivos(_IMG_DIR):
         raise HTTPException(status_code=404, detail="Imagem não encontrada.")
-    return FileResponse(
-        str(img_path),
+    return data_file_response(
+        img_path,
         media_type=_IMG_MEDIA.get(suffix, "application/octet-stream"),
         filename=safe,
     )
@@ -193,7 +220,7 @@ async def open_pdf(filename: str = Query(...)) -> dict[str, Any]:
     if not safe.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Arquivo deve ser PDF.")
     pdf_path = _PDF_DIR / safe
-    if not pdf_path.exists():
+    if pdf_path.name not in _arquivos(_PDF_DIR):
         raise HTTPException(status_code=404, detail="PDF não encontrado.")
     try:
         if os.name == "nt":

@@ -1,0 +1,13 @@
+# Dependências da função Python no Vercel (versão web). O app desktop usa backend/requirements.txt.
+# O Vercel não aceita "-r outro.txt": mantenha a lista abaixo igual à de backend/requirements.txt.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+openai>=1.68,<3
+python-dotenv>=1.0,<2
+pydantic>=2.10,<3
+httpx>=0.27,<1
+python-multipart>=0.0.9,<1
+aiosqlite>=0.20,<1
+pypdf>=5.0,<6
+psycopg[binary]>=3.2,<4
+psycopg-pool>=3.2,<4

@@ -1,0 +1,392 @@
+{
+  "paes-2025-01": {
+    "topico": "Literatura",
+    "subtopico": "escolas literárias",
+    "syllabus_id": "edital-5cd873a5a743d81b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-02": {
+    "topico": "Linguagem",
+    "subtopico": "variação linguística",
+    "syllabus_id": "edital-1d679b8fd28ab308",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-03": {
+    "topico": "Coesão e coerência",
+    "subtopico": "conectivos",
+    "syllabus_id": "edital-f005282f9876d3a6",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-04": {
+    "topico": "Literatura",
+    "subtopico": "escolas literárias",
+    "syllabus_id": "edital-5cd873a5a743d81b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-05": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-06": {
+    "topico": "Literatura",
+    "subtopico": "escolas literárias",
+    "syllabus_id": "edital-5cd873a5a743d81b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-07": {
+    "topico": "Gramática em uso",
+    "subtopico": "classes de palavras",
+    "syllabus_id": "edital-ad7a557fced0f0b4",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-08": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-09": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-10": {
+    "topico": "Literatura",
+    "subtopico": "autores",
+    "syllabus_id": "edital-63e80465c53d6344",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-11": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-12": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-13": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-14": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-15": {
+    "topico": "Literatura",
+    "subtopico": "diálogo entre texto",
+    "syllabus_id": "edital-6c8801a07bb61e60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2025-16-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2025-16-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2025-17-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2025-17-es": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Espanhol"
+  },
+  "paes-2025-18-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2025-18-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2025-19-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2025-19-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2025-20-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2025-20-es": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Espanhol"
+  },
+  "paes-2025-21": {
+    "topico": "Guerras",
+    "subtopico": null,
+    "syllabus_id": "edital-fd1407a260f3176b",
+    "materia": "História"
+  },
+  "paes-2025-22": {
+    "topico": "Brasil Colônia",
+    "subtopico": null,
+    "syllabus_id": "edital-5e00fa8d15dc691a",
+    "materia": "História"
+  },
+  "paes-2025-23": {
+    "topico": "Brasil Colônia",
+    "subtopico": null,
+    "syllabus_id": "edital-5e00fa8d15dc691a",
+    "materia": "História"
+  },
+  "paes-2025-24": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2025-25": {
+    "topico": "Movimentos sociais",
+    "subtopico": null,
+    "syllabus_id": "edital-afc0d423a2b504d1",
+    "materia": "História"
+  },
+  "paes-2025-26": {
+    "topico": "Urbanização",
+    "subtopico": null,
+    "syllabus_id": "edital-624586391e0d5a1e",
+    "materia": "Geografia"
+  },
+  "paes-2025-27": {
+    "topico": "Globalização",
+    "subtopico": null,
+    "syllabus_id": "edital-85ae1db2b4994a70",
+    "materia": "Geografia"
+  },
+  "paes-2025-28": {
+    "topico": "Geografia do Brasil",
+    "subtopico": null,
+    "syllabus_id": "edital-72f90a6345414666",
+    "materia": "Geografia"
+  },
+  "paes-2025-29": {
+    "topico": "Ambiente",
+    "subtopico": null,
+    "syllabus_id": "edital-60a60c369a3fb0f7",
+    "materia": "Geografia"
+  },
+  "paes-2025-30": {
+    "topico": "Maranhão",
+    "subtopico": null,
+    "syllabus_id": "edital-aa1d4643d796e300",
+    "materia": "Geografia"
+  },
+  "paes-2025-31": {
+    "topico": "Ética",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c615c86e1d9965",
+    "materia": "Filosofia"
+  },
+  "paes-2025-32": {
+    "topico": "Contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-e1a13d9ae05616d9",
+    "materia": "Filosofia"
+  },
+  "paes-2025-33": {
+    "topico": "Ética",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c615c86e1d9965",
+    "materia": "Filosofia"
+  },
+  "paes-2025-34": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2025-35": {
+    "topico": "Pensamento moderno",
+    "subtopico": null,
+    "syllabus_id": "edital-22354c465a3125f4",
+    "materia": "Filosofia"
+  },
+  "paes-2025-36": {
+    "topico": "Estado",
+    "subtopico": null,
+    "syllabus_id": "edital-23b00a94c39e7309",
+    "materia": "Sociologia"
+  },
+  "paes-2025-37": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2025-38": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia"
+  },
+  "paes-2025-39": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia"
+  },
+  "paes-2025-40": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2025-41": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2025-42": {
+    "topico": "Hidrostática",
+    "subtopico": null,
+    "syllabus_id": "edital-8f4b2a4dd7d97af8",
+    "materia": "Física"
+  },
+  "paes-2025-43": {
+    "topico": "Gravitação",
+    "subtopico": null,
+    "syllabus_id": "edital-4ea8310c6bb61340",
+    "materia": "Física"
+  },
+  "paes-2025-44": {
+    "topico": "Dinâmica",
+    "subtopico": null,
+    "syllabus_id": "edital-8175be2477ed8dfd",
+    "materia": "Física"
+  },
+  "paes-2025-45": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2025-46": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática"
+  },
+  "paes-2025-47": {
+    "topico": "Geometria plana",
+    "subtopico": "áreas",
+    "syllabus_id": "edital-032598b9ae4b1c89",
+    "materia": "Matemática"
+  },
+  "paes-2025-48": {
+    "topico": "Geometria espacial",
+    "subtopico": "volume",
+    "syllabus_id": "edital-9dfb411006a4ee91",
+    "materia": "Matemática"
+  },
+  "paes-2025-49": {
+    "topico": "Funções",
+    "subtopico": "exponencial",
+    "syllabus_id": "edital-a8457b1dbb9a8517",
+    "materia": "Matemática"
+  },
+  "paes-2025-50": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "eventos",
+    "syllabus_id": "edital-b05fa78489694ae4",
+    "materia": "Matemática"
+  },
+  "paes-2025-51": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2025-52": {
+    "topico": "Biotecnologia",
+    "subtopico": null,
+    "syllabus_id": "edital-70acc057515c3435",
+    "materia": "Biologia"
+  },
+  "paes-2025-53": {
+    "topico": "Sistemas",
+    "subtopico": null,
+    "syllabus_id": "edital-17f4343180a7b8f9",
+    "materia": "Biologia"
+  },
+  "paes-2025-54": {
+    "topico": "Ecologia",
+    "subtopico": null,
+    "syllabus_id": "edital-67f51efbff7f56e0",
+    "materia": "Biologia"
+  },
+  "paes-2025-55": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2025-56": {
+    "topico": "Estrutura atômica",
+    "subtopico": null,
+    "syllabus_id": "edital-4fdafc67a5417801",
+    "materia": "Química"
+  },
+  "paes-2025-57": {
+    "topico": "Termoquímica",
+    "subtopico": null,
+    "syllabus_id": "edital-60225e76699c87a2",
+    "materia": "Química"
+  },
+  "paes-2025-58": {
+    "topico": "Reações",
+    "subtopico": null,
+    "syllabus_id": "edital-4f613c0e0052a59e",
+    "materia": "Química"
+  },
+  "paes-2025-59": {
+    "topico": "Soluções",
+    "subtopico": null,
+    "syllabus_id": "edital-78f7e5b2d8a99910",
+    "materia": "Química"
+  },
+  "paes-2025-60": {
+    "topico": "Eletroquímica",
+    "subtopico": null,
+    "syllabus_id": "edital-c91ad29e7eeaf4d5",
+    "materia": "Química"
+  }
+}

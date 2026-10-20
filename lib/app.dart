@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/data/auth.dart';
 import 'core/data/theme_mode_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_shell.dart';
@@ -13,6 +14,7 @@ import 'core/widgets/startup_splash.dart';
 import 'features/adaptive/presentation/adaptive_training_screen.dart';
 import 'features/ai_tutor/presentation/ai_tutor_screen.dart';
 import 'features/approval/presentation/approval_screen.dart';
+import 'features/auth/presentation/login_screen.dart';
 import 'features/bank_profile/presentation/bank_profile_screen.dart';
 import 'features/dashboard/presentation/dashboard_screen.dart';
 import 'features/essay/presentation/essay_screen.dart';
@@ -61,8 +63,19 @@ void notifyOnboardingFinished() {
 
 final appRouter = GoRouter(
   initialLocation: '/dashboard',
-  refreshListenable: onboardingTick,
+  refreshListenable: Listenable.merge([onboardingTick, auth]),
   redirect: (context, state) async {
+    // Versão web: sem login, tudo leva à tela de entrada (guardando o destino em ?de=).
+    final naEntrada = state.matchedLocation == '/entrar';
+    if (auth.estado == EstadoLogin.saiu) {
+      if (naEntrada) return null;
+      final destino = state.uri.toString();
+      return destino == '/dashboard' ? '/entrar' : '/entrar?de=${Uri.encodeComponent(destino)}';
+    }
+    if (naEntrada) {
+      final de = state.uri.queryParameters['de'];
+      return de != null && de.startsWith('/') && !de.startsWith('/entrar') ? de : '/dashboard';
+    }
     final done = _onboardingDone ??= (await SharedPreferences.getInstance())
             .getBool('onboarding_done_v1') ??
         false;
@@ -72,6 +85,7 @@ final appRouter = GoRouter(
     return null;
   },
   routes: [
+    GoRoute(path: '/entrar', builder: (_, __) => const LoginScreen()),
     GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
@@ -118,7 +132,8 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/questoes/:id',
           pageBuilder: (_, state) => _fadePage(
-              QuestionDetailScreen(questionId: state.pathParameters['id']!)),
+              QuestionDetailScreen(
+                  key: ValueKey(state.pathParameters['id']), questionId: state.pathParameters['id']!)),
         ),
         GoRoute(
             path: '/simulados',
