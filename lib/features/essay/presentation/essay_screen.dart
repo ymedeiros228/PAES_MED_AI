@@ -488,8 +488,8 @@ class _EssayScreenState extends ConsumerState<EssayScreen> {
                     Expanded(
                       child: Text(
                         _draftRestored
-                            ? 'Rascunho restaurado · salvo automaticamente no seu PC'
-                            : 'Rascunho salvo automaticamente no seu PC',
+                            ? 'Rascunho recuperado · salvo sozinho enquanto você escreve'
+                            : 'Rascunho salvo sozinho enquanto você escreve',
                         style: TextStyle(fontSize: 13, color: cs.onSurface.f55),
                       ),
                     ),

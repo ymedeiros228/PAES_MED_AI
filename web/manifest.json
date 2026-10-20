@@ -1,15 +1,17 @@
 {
-    "name": "PAES MED AI Web",
-    "short_name": "PAES AI Web",
+    "name": "PAES MED AI",
+    "short_name": "PAES MED",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
-    "background_color": "#0d6e6e",
-    "theme_color": "#0d6e6e",
-    "description": "Assistente pessoal de estudos PAES/UEMA Medicina.",
-    "orientation": "portrait-primary",
+    "background_color": "#0B141E",
+    "theme_color": "#0B141E",
+    "description": "Plataforma de estudos para o PAES UEMA — Medicina.",
     "prefer_related_applications": false,
-    "categories": ["education", "productivity"],
+    "categories": [
+        "education",
+        "productivity"
+    ],
     "icons": [
         {
             "src": "icons/Icon-192.png",

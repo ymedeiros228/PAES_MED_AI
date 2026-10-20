@@ -123,10 +123,12 @@ class SessionTheoryPanel extends StatelessWidget {
         const SizedBox(height: 12),
         if (display.isEmpty)
           QuietEmpty(
-            message: 'Sem teoria local para o assunto de hoje. Gere o material do tópico na Biblioteca.',
+            message: 'Ainda não há teoria pronta para este assunto. Veja os materiais da matéria.',
             action: FilledButton.tonal(
-              onPressed: () => context.go('/biblioteca'),
-              child: const Text('Abrir Biblioteca'),
+              onPressed: () => context.go(
+                subject.isEmpty ? '/materiais' : '/materiais?subject=${Uri.encodeComponent(subject)}',
+              ),
+              child: const Text('Ver materiais'),
             ),
           )
         else

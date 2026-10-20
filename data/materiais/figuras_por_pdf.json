@@ -1,0 +1,712 @@
+{
+ "BI_BOTANICA.pdf": [
+  {
+   "caption": "Ciclo de vida das briófitas: gametófito e esporófito",
+   "file": "br_bot_briofitas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/briofitas.htm"
+  },
+  {
+   "caption": "Ciclo de vida das pteridófitas: esporos, soro e protalo",
+   "file": "br_bot_pteridofitas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/pteridofitas.htm"
+  },
+  {
+   "caption": "Ciclo de vida das gimnospermas: cones, pólen e sementes nuas",
+   "file": "br_bot_gimnospermas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/gimnospermas.htm"
+  },
+  {
+   "caption": "Ciclo de vida das angiospermas: flores, polinização, frutos e sementes",
+   "file": "br_bot_angiospermas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/angiospermas.htm"
+  },
+  {
+   "caption": "Sistemas de tecidos vegetais: revestimento, sustentação, condução e fundamental",
+   "file": "br_bot_tecidos.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecidos-vegetais.htm"
+  }
+ ],
+ "BI_CITOLOGIA_ANOMALIAS_CROMOSSOMICAS.pdf": [
+  {
+   "caption": "Cariótipo humano normal: 46 cromossomos (44 autossomos + XX ou XY)",
+   "file": "br_ano_cariotipo_normal.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/cariotipo.htm"
+  },
+  {
+   "caption": "Cariótipo da síndrome de Down: trissomia do cromossomo 21 (47,XX,+21)",
+   "file": "br_ano_cariotipo_down.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/aneuploidia.htm"
+  },
+  {
+   "caption": "Cariótipo da síndrome de Turner: monossomia do X (45,X)",
+   "file": "br_ano_turner_cariotipo.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/sindrome-de-turner.htm"
+  },
+  {
+   "caption": "Síndrome de Patau: trissomia do cromossomo 13",
+   "file": "br_ano_patau.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/sindrome-de-patau/"
+  },
+  {
+   "caption": "Alterações cromossômicas estruturais: deleção, duplicação, translocação e inversão",
+   "file": "br_ano_alteracoes1.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/alteracoes-cromossomicas/"
+  },
+  {
+   "caption": "Tipos de anomalias cromossômicas estruturais e suas consequências",
+   "file": "br_ano_alteracoes2.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/alteracoes-cromossomicas/"
+  }
+ ],
+ "BI_CITOLOGIA_CICLO_CELULAR.pdf": [
+  {
+   "caption": "Ciclo celular: intérfase (G1, S, G2) e mitose com pontos de checagem",
+   "file": "br_ciclo_celular_be.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/ciclo-celular.htm"
+  },
+  {
+   "caption": "Fases da mitose: prófase, metáfase, anáfase e telófase",
+   "file": "br_mitose_fases.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/mitose.htm"
+  },
+  {
+   "caption": "Citocinese em células animais (estrangulamento) e vegetais (placa celular)",
+   "file": "br_mitose_citocinese.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/mitose.htm"
+  },
+  {
+   "caption": "Etapas da meiose I e II: divisão reducional seguida de equacional",
+   "file": "br_meiose_etapas.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/meiose.htm"
+  },
+  {
+   "caption": "Crossing-over: troca de segmentos entre cromossomos homólogos na prófase I",
+   "file": "br_meiose_crossing.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/meiose.htm"
+  },
+  {
+   "caption": "Intérfase e mitose: visão geral do ciclo celular",
+   "file": "br_ciclo_interfase_mitose.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/ciclo-celular/"
+  }
+ ],
+ "BI_CITOLOGIA_CITOPLASMA.pdf": [
+  {
+   "caption": "Estrutura geral de uma célula eucarionte com suas organelas",
+   "file": "br_cito_celula_eucarionte.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/citoplasma.htm"
+  },
+  {
+   "caption": "Célula vegetal: parede celular, cloroplastos e vacúolo central",
+   "file": "br_cito_celula_vegetal.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/citoplasma.htm"
+  },
+  {
+   "caption": "Citoesqueleto: rede de filamentos que dá forma e sustentação à célula",
+   "file": "br_cito_citoesqueleto_be.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/citoesqueleto.htm"
+  },
+  {
+   "caption": "Microtúbulos: formados por tubulina, participam do fuso mitótico e do transporte",
+   "file": "br_cito_microtubulos.jpg",
+   "source": "InfoEscola",
+   "sourceUrl": "https://www.infoescola.com/citologia/citoesqueleto/"
+  },
+  {
+   "caption": "Anatomia de uma célula humana com detalhes do citoplasma",
+   "file": "br_cito_anatomia_celula.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/citoplasma/"
+  }
+ ],
+ "BI_CITOLOGIA_GAMETOGENESE.pdf": [
+  {
+   "caption": "Gametogênese: formação de espermatozoides e óvulos",
+   "file": "br_gam_gametogenese.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/gametogenese.htm"
+  },
+  {
+   "caption": "Fases da espermatogênese: proliferação, crescimento e maturação",
+   "file": "br_gam_esp_fases.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/espermatogenese/"
+  },
+  {
+   "caption": "Espermiogênese: diferenciação da espermatide em espermatozoide",
+   "file": "br_gam_espermiogenese.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/espermatogenese/"
+  },
+  {
+   "caption": "Fases da ovogênese: mitose fetal, crescimento e meiose com pausa",
+   "file": "br_gam_ovogenese_fases.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/gametogenese/"
+  },
+  {
+   "caption": "Comparação entre espermatogênese e ovogênese",
+   "file": "br_gam_esp_ovogenese.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/gametogenese.htm"
+  },
+  {
+   "caption": "Estrutura do espermatozoide: cabeça, peça intermediária e flagelo",
+   "file": "br_gam_estrutura_esp.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/espermatogenese.htm"
+  }
+ ],
+ "BI_CITOLOGIA_NUCLEO_CARIOTIPOS.pdf": [
+  {
+   "caption": "Estrutura do núcleo celular: envoltório, nucleoplasma e nucléolo",
+   "file": "br_nuc_nucleo_1.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/nucleo-celular/"
+  },
+  {
+   "caption": "Estrutura de um cromossomo: centromero, braços p e q, cromátides irmãs",
+   "file": "br_nuc_cromossomo_estrutura.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/cromossomos/"
+  },
+  {
+   "caption": "Tipos de cromossomos: metacêntrico, submetacêntrico e acrocêntrico",
+   "file": "br_nuc_tipos_cromossomo.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/cromossomos/"
+  },
+  {
+   "caption": "Cariótipo humano normal: 46 cromossomos organizados em pares",
+   "file": "br_nuc_cariotipo_humano.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/cromossomos/"
+  },
+  {
+   "caption": "Cariótipo humano com bandamento G para identificação dos cromossomos",
+   "file": "br_nuc_cariotipo_be.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/cariotipo.htm"
+  },
+  {
+   "caption": "Visão detalhada do núcleo e do envoltório nuclear com poros",
+   "file": "br_nuc_nucleo_3.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/nucleo-celular/"
+  }
+ ],
+ "BI_CITOLOGIA_ORGANELAS_CELULARES.pdf": [
+  {
+   "caption": "Visão geral das organelas celulares e suas funções",
+   "file": "br_org_organelas_1.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/organelas-celulares/"
+  },
+  {
+   "caption": "Estrutura da mitocôndria: membranas, cristas e matriz",
+   "file": "br_org_mitocondria_estrutura.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/mitocondrias.htm"
+  },
+  {
+   "caption": "Retículo endoplasmático: liso e rugoso com ribossomos",
+   "file": "br_org_reticulo.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/reticulo-endoplasmatico.htm"
+  },
+  {
+   "caption": "Complexo de Golgi: cisternas empilhadas com faces cis e trans",
+   "file": "br_org_golgi.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/complexo-golgi.htm"
+  },
+  {
+   "caption": "Ribossomo: subunidades que sintetizam proteínas",
+   "file": "br_org_ribossomo.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/ribossomos.htm"
+  },
+  {
+   "caption": "Esquema comparativo das organelas celulares",
+   "file": "br_org_organelas_2.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/organelas-celulares/"
+  }
+ ],
+ "BI_CLASSIFICACAO_SISTEMATICA.pdf": [
+  {
+   "caption": "Hierarquia taxonômica: das categorias mais amplas às mais específicas",
+   "file": "br_cls_taxonomia.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/classificacao-dos-seres-vivos.htm"
+  },
+  {
+   "caption": "Classificação dos seres vivos em cinco reinos",
+   "file": "br_cls_reinos.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/classificacao-dos-seres-vivos/"
+  },
+  {
+   "caption": "Árvore filogenética: relações evolutivas entre os seres vivos",
+   "file": "br_cls_arvore.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/filogenia.htm"
+  },
+  {
+   "caption": "Grupos de plantas: briófitas, pteridófitas, gimnospermas e angiospermas",
+   "file": "br_cls_grupos_plantas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/reino-plantae.htm"
+  },
+  {
+   "caption": "Classificação dos seres vivos: reino, filo, classe, ordem, família, gênero e espécie",
+   "file": "br_cls_exec20.jpg",
+   "source": "InfoEscola",
+   "sourceUrl": "https://www.infoescola.com/zoologia/vertebrados/"
+  }
+ ],
+ "BI_ECOLOGIA.pdf": [
+  {
+   "caption": "Cadeia alimentar: produtores, consumidores e decompositores",
+   "file": "br_eco_cadeia_exemplo.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/cadeia-alimentar/"
+  },
+  {
+   "caption": "Teia alimentar: cadeias ecológicas interconectadas",
+   "file": "br_eco_teia.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/teia-alimentar.htm"
+  },
+  {
+   "caption": "Ciclo do carbono: fotossíntese, respiração, combustão e sedimentação",
+   "file": "br_eco_carbono_etapas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/ciclo-carbono.htm"
+  },
+  {
+   "caption": "Ciclo do nitrogênio: fixação, nitrificação, assimilação e desnitrificação",
+   "file": "br_eco_nitrogenio_etapas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/ciclo-nitrogenio.htm"
+  },
+  {
+   "caption": "Ciclo da água: evaporação, condensação, precipitação e infiltração",
+   "file": "br_eco_agua_etapas.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/ciclo-agua.htm"
+  },
+  {
+   "caption": "Relações ecológicas: harmônicas e desarmônicas, intra e interespecíficas",
+   "file": "br_eco_relacoes.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/relacoes-ecologicas.htm"
+  },
+  {
+   "caption": "Efeito estufa: radiação solar retida pelos gases na atmosfera",
+   "file": "br_eco_efeito_estufa.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/ciclo-carbono.htm"
+  },
+  {
+   "caption": "Biomas brasileiros: Amazônia, Mata Atlântica, Cerrado, Caatinga, Pampa e Pantanal",
+   "file": "br_eco_biomas_mapa.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/biomas-brasileiros/"
+  }
+ ],
+ "BI_EVOLUCAO.pdf": [
+  {
+   "caption": "Darwinismo: seleção natural como mecanismo evolutivo",
+   "file": "br_evo_darwinismo.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/darwinismo/"
+  },
+  {
+   "caption": "Tentilhões de Galápagos: exemplo clássico de seleção natural",
+   "file": "br_evo_tentilhoes.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/selecao-natural.htm"
+  },
+  {
+   "caption": "Mecanismos da evolução: seleção natural, deriva e fluxo gênico",
+   "file": "br_evo_selecao.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/selecao-natural/"
+  },
+  {
+   "caption": "Seleção natural: variações hereditárias e adaptação ao ambiente",
+   "file": "br_evo_selecao2.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/selecao-natural.htm"
+  },
+  {
+   "caption": "Evolução humana: linhagem dos hominídeos e fósseis",
+   "file": "br_evo_hominideos.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/teoria-da-evolucao/"
+  }
+ ],
+ "BI_GENETICA.pdf": [
+  {
+   "caption": "Conceitos fundamentais de Genética: gene, DNA, cromossomos e hereditariedade",
+   "file": "br_gen_conceitos.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/genética.htm"
+  },
+  {
+   "caption": "Cruzamento de ervilhas: experimentos de Mendel com cor e textura",
+   "file": "br_gen_ervilha.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/leis-de-mendel/"
+  },
+  {
+   "caption": "Primeira Lei de Mendel: segregação dos alelos nos gametas",
+   "file": "br_gen_primeira_lei.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/leis-de-mendel/"
+  },
+  {
+   "caption": "DNA recombinante: inserção de genes em vetores bacterianos",
+   "file": "br_gen_dna_recombinante.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/engenharia-genetica/"
+  },
+  {
+   "caption": "Biotecnologia: aplicações da engenharia genética na medicina e agricultura",
+   "file": "br_gen_biotecnologia.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/engenharia-genetica/"
+  }
+ ],
+ "BI_HISTOLOGIA.pdf": [
+  {
+   "caption": "Classificação do tecido epitelial: número de camadas e forma das células",
+   "file": "br_hist_epitelial_classif.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecido-epitelial.htm"
+  },
+  {
+   "caption": "Tipos de glândulas: exócrinas (com ducto) e endócrinas (sem ducto)",
+   "file": "br_hist_glandulas.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecido-epitelial.htm"
+  },
+  {
+   "caption": "Tipos de tecido conjuntivo: frouxo, denso, adiposo, cartilaginoso e ósseo",
+   "file": "br_hist_conjuntivo_tipos.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecido-conjuntivo.htm"
+  },
+  {
+   "caption": "Tecido conjuntivo sanguíneo: hemácias, leucócitos e plaquetas",
+   "file": "br_hist_conjuntivo_sangue.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/tecido-conjuntivo/"
+  },
+  {
+   "caption": "Tipos de tecido muscular: esquelético, cardíaco e liso",
+   "file": "br_hist_muscular_tipos.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecido-muscular.htm"
+  },
+  {
+   "caption": "Sarcômero: unidade funcional do músculo estriado com actina e miosina",
+   "file": "br_hist_sarcomero.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/tecido-muscular.htm"
+  },
+  {
+   "caption": "Estrutura do neurônio: corpo celular, dendritos e axônio",
+   "file": "br_hist_neuronio.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/tecido-nervoso.htm"
+  },
+  {
+   "caption": "Neurônios e células da glia: astrócitos, oligodendrócitos e micróglia",
+   "file": "br_hist_neuronios_glias.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/tecido-nervoso/"
+  }
+ ],
+ "BI_INTRODUCAO_BIOLOGIA.pdf": [
+  {
+   "caption": "Método científico: observação, hipótese, experimento e conclusão",
+   "file": "br_intro_metodo.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/caracteristicas-dos-seres-vivos/"
+  },
+  {
+   "caption": "Seres vivos e seres não vivos: características da vida",
+   "file": "br_intro_seres.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/caracteristicas-dos-seres-vivos/"
+  },
+  {
+   "caption": "Teoria celular: as células são a unidade básica da vida",
+   "file": "br_intro_teoria.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/teoria-celular.htm"
+  },
+  {
+   "caption": "Árvore da vida: diversidade e relações evolutivas dos seres vivos",
+   "file": "br_cls_arvore.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/classificacao-dos-seres-vivos.htm"
+  },
+  {
+   "caption": "Nutrientes: macro e micronutrientes essenciais",
+   "file": "br_intro_nutrientes.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/endossimbiose/"
+  }
+ ],
+ "BI_METABOLISMO_CELULAR.pdf": [
+  {
+   "caption": "Respiração celular aeróbica: glicose + O2 → CO2 + H2O + ATP",
+   "file": "br_met_respiracao_be.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/respiracao-celular.htm"
+  },
+  {
+   "caption": "Glicólise: glicose é quebrada em dois piruvatos no hialoplasma",
+   "file": "br_met_glicolise_tm.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/respiracao-celular/"
+  },
+  {
+   "caption": "Ciclo de Krebs: oxidação do acetil-CoA na matriz mitocondrial",
+   "file": "br_met_krebs_be.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/respiracao-celular.htm"
+  },
+  {
+   "caption": "Fosforilação oxidativa: cadeia respiratória e ATP sintase",
+   "file": "br_met_fosforilacao.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/respiracao-celular/"
+  },
+  {
+   "caption": "Fermentação lática e alcoólica: processos anaeróbicos de obtenção de ATP",
+   "file": "br_met_fermentacao_me1.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/fermentacao.htm"
+  },
+  {
+   "caption": "Fotossíntese: conversão de energia luminosa em energia química",
+   "file": "br_met_fotossintese.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/fotossintese.htm"
+  },
+  {
+   "caption": "Ciclo de Calvin (fase escura): fixação do CO2 em glicose",
+   "file": "br_met_ciclo_calvin.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/fotossintese/"
+  },
+  {
+   "caption": "Cloroplasto: organela onde ocorre a fotossíntese",
+   "file": "br_met_cloroplasto.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/fotossintese.htm"
+  }
+ ],
+ "BI_MICROBIOLOGIA.pdf": [
+  {
+   "caption": "Estrutura do vírus: material genético, capsídeo e envelope",
+   "file": "br_mic_virus_estrutura.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/virus/"
+  },
+  {
+   "caption": "Classificação morfológica das bactérias: cocos, bacilos, vibriões e espirilos",
+   "file": "br_mic_bacterias_classif.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/bacterias.htm"
+  },
+  {
+   "caption": "Tipos de bactérias: classificação por forma e arranjo",
+   "file": "br_mic_tipos_bacterias.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/bacterias.htm"
+  },
+  {
+   "caption": "Representação de protozoários: ameba, paramecio, trypanosoma e plasmodium",
+   "file": "br_mic_protozoarios.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/protozoarios.htm"
+  },
+  {
+   "caption": "Algas: organismos fotossintetizantes de diferentes grupos",
+   "file": "br_mic_algas2.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/algas.htm"
+  }
+ ],
+ "BI_REPRODUCAO_EMBRIOLOGIA.pdf": [
+  {
+   "caption": "Reprodução assexuada: divisão binária em bactérias e protozoários",
+   "file": "br_rep_divisao_binaria.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/reproducao-assexuada.htm"
+  },
+  {
+   "caption": "Fecundação: fusão do espermatozoide com o óvulo formando o zigoto",
+   "file": "br_rep_fecundacao.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/reproducao-sexuada.htm"
+  },
+  {
+   "caption": "Sistema reprodutor masculino: anatomia e órgãos",
+   "file": "br_rep_sist_masc.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/sistema-reprodutor-masculino.htm"
+  },
+  {
+   "caption": "Sistema reprodutor feminino: ovários, trompas, útero e vagina",
+   "file": "br_rep_sist_fem.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/sistema-reprodutor-feminino.htm"
+  },
+  {
+   "caption": "Métodos contraceptivos: barreira, hormonais, DIU e cirúrgicos",
+   "file": "br_rep_contracep.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/metodos-contraceptivos.htm"
+  },
+  {
+   "caption": "Folhetos embrionários: ectoderme, mesoderme e endoderme e suas derivações",
+   "file": "br_rep_folhetos.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/folhetos-embrionarios/"
+  },
+  {
+   "caption": "Anexos embrionários: placenta, cordão umbilical, âmnio e corião",
+   "file": "br_rep_anexos_tm.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/anexos-embrionarios/"
+  },
+  {
+   "caption": "Placenta: órgão temporário de trocas entre mãe e feto",
+   "file": "br_rep_placenta.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/anexos-embrionarios.htm"
+  }
+ ],
+ "BI_SAUDE_DOENCAS.pdf": [
+  {
+   "caption": "Sistema imunológico: órgãos linfoides e linfócitos",
+   "file": "br_sau_orgaos.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/sistema-imunologico/"
+  },
+  {
+   "caption": "Anticorpo: molécula de defesa produzida pelas células B",
+   "file": "br_sau_anticorpo.jpg",
+   "source": "Mundo Educação",
+   "sourceUrl": "https://mundoeducacao.uol.com.br/biologia/imunidade.htm"
+  },
+  {
+   "caption": "Resposta imunológica primária e secundária: memória imunológica",
+   "file": "br_sau_resposta.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/sistema-imunologico/"
+  },
+  {
+   "caption": "Sistema imunológico: barreiras, inata e adaptativa",
+   "file": "br_sau_sistema2.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/sistema-imunologico/"
+  },
+  {
+   "caption": "Tabela comparativa: imunidade inata, passiva, ativa e artificial",
+   "file": "br_sau_tabela.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/sistema-imunologico/"
+  }
+ ],
+ "BI_ZOOLOGIA.pdf": [
+  {
+   "caption": "Hidra (Cnidário): simetria radial e cnidócitos",
+   "file": "br_zoo_hidra.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/reino-animalia.htm"
+  },
+  {
+   "caption": "Libélula (Artrópode): exoesqueleto e apêndices articulados",
+   "file": "br_zoo_libelula.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/reino-animalia.htm"
+  },
+  {
+   "caption": "Jibóia (Réptil): escamas, respiração pulmonar e ovos amnióticos",
+   "file": "br_zoo_jiboia.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/reino-animalia.htm"
+  },
+  {
+   "caption": "Aves: penas, bico e adaptações ao voo",
+   "file": "br_zoo_aves.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/cordados/"
+  },
+  {
+   "caption": "Tenia (Platelminto): verme achatado parasita intestinal",
+   "file": "br_zoo_tenia.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/biologia/reino-animalia.htm"
+  }
+ ],
+ "QU_PRINCIPIOS_ELEMENTARES.pdf": [
+  {
+   "caption": "Estados físicos da matéria: sólido, líquido e gasoso",
+   "file": "br_qui1_estados.jpg",
+   "source": "Brasil Escola",
+   "sourceUrl": "https://brasilescola.uol.com.br/quimica/estados-fisicos-materia.htm"
+  },
+  {
+   "caption": "Mudanças de estado físico: fusão, vaporização, sublimação",
+   "file": "br_qui1_mudancas.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/estados-fisicos-da-materia/"
+  },
+  {
+   "caption": "Substâncias simples e compostas: exemplos e fórmulas",
+   "file": "br_qui1_substancias.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/substancias-puras-e-misturas/"
+  },
+  {
+   "caption": "Separação de misturas homogêneas: métodos e processos",
+   "file": "br_qui1_separacao.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/separacao-de-misturas/"
+  },
+  {
+   "caption": "Destilação simples e fracionada: separação por ponto de ebulição",
+   "file": "br_qui1_destilacao.jpg",
+   "source": "Toda Matéria",
+   "sourceUrl": "https://www.todamateria.com.br/separacao-de-misturas/"
+  }
+ ]
+}

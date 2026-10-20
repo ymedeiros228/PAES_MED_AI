@@ -64,8 +64,14 @@ def is_cross_domain(subject: str | None, topic: str | None) -> bool:
 
 
 def is_official_source(source: str | None, generated: bool | int | None) -> bool:
-    """Questões importadas de prova oficial, nunca questões geradas."""
+    """Questões importadas de prova oficial, nunca questões geradas.
+
+    As que vieram do PDF sem gabarito (``pdf_ingest_sem_gabarito:<ano>``) ficam de
+    fora: a alternativa marcada foi chutada na importação, não é a da UEMA.
+    """
     value = (source or "").lower()
+    if value.startswith("pdf_ingest_sem_gabarito"):
+        return False
     return not bool(generated) and any(marker in value for marker in ("pdf", "oficial", "ingest"))
 
 
@@ -1046,14 +1052,31 @@ def iso_week_key(d: datetime | None = None) -> str:
     return f"{y}-W{w:02d}"
 
 
-def get_exam_date() -> str | None:
-    """Data da prova em settings (ISO yyyy-mm-dd) — opcional."""
+# Prova PAES 2027 (Edital 158/2026-GR/UEMA): domingo, 22/11/2026, das 13h30
+# às 18h30; os portões fecham às 13h.
+PAES_DATA_OFICIAL = "2026-11-22"
+
+
+def get_exam_date() -> str:
+    """Data da prova (ISO yyyy-mm-dd): a salva em settings ou, sem ela (ou se já
+    passou), a data oficial do edital."""
     raw = _settings_get("exam_date", None)
+    iso = ""
     if isinstance(raw, dict):
-        return (raw.get("date") or raw.get("examDate") or "").strip() or None
-    if isinstance(raw, str):
-        return raw.strip() or None
-    return None
+        iso = (raw.get("date") or raw.get("examDate") or "").strip()
+    elif isinstance(raw, str):
+        iso = raw.strip()
+    try:
+        if iso and datetime.fromisoformat(iso[:10]).date() >= time_today():
+            return iso[:10]
+    except ValueError:
+        pass
+    return PAES_DATA_OFICIAL
+
+
+def qtd(n: int, um: str, varios: str) -> str:
+    """'1 assunto' / '3 assuntos' — sem o "(s)" improvisado nas frases da tela."""
+    return f"{n} {um if n == 1 else varios}"
 
 
 def set_exam_date(exam_date: str | None) -> dict[str, Any]:
@@ -1105,7 +1128,8 @@ def build_exam_countdown(exam_date: str | None = None) -> dict[str, Any]:
     if days < 0:
         phase, intensity, label = "past", "normal", "Prova na conta — foque revisão leve"
     elif days <= 7:
-        phase, intensity, label = "final", "high", f"{days} dia(s) · reta final"
+        quando = "hoje" if days == 0 else ("1 dia" if days == 1 else f"{days} dias")
+        phase, intensity, label = "final", "high", f"{quando} · reta final"
     elif days <= 21:
         phase, intensity, label = "sprint", "high", f"{days} dias · sprint de consolidação"
     elif days <= 60:
@@ -1120,7 +1144,11 @@ def build_exam_countdown(exam_date: str | None = None) -> dict[str, Any]:
         "phase": phase,
         "label": label,
         "intensity": intensity,
-        "hint": "Contagem local a partir da data que você marcou — não é edital da UEMA.",
+        "hint": (
+            "Data do edital: domingo, 22/11/2026, das 13h30 às 18h30 (portões fecham às 13h)."
+            if exam.isoformat() == PAES_DATA_OFICIAL
+            else "Contagem a partir da data que você marcou em Ajustes."
+        ),
     }
 
 
@@ -1278,17 +1306,17 @@ def build_study_readiness(
     cd = countdown or {}
     phase = cd.get("phase") or "unset"
     if phase == "final" and score < 60:
-        tip = "Reta final: priorize lacunas e cartões para revisar, não volume novo."
+        tip = "Reta final: revise o que você errou e os flashcards; não comece assunto novo."
     elif phase == "sprint":
-        tip = "Reta final: feche o checklist do dia e um simulado curto na semana."
+        tip = "Reta final: cumpra as atividades do dia e faça um simulado curto na semana."
     elif gap_n > 0:
-        tip = f"Próximo passo: recuperar {gap_n} lacuna(s) na Fila."
+        tip = f"Próximo passo: revisar {qtd(gap_n, 'assunto que você errou', 'assuntos que você errou')}."
     elif due_cards > 0:
-        tip = f"Próximo passo: {due_cards} cartão(ões) para revisar."
+        tip = f"Próximo passo: revisar {qtd(due_cards, 'flashcard', 'flashcards')}."
     elif not week.get("met"):
-        tip = "Próximo passo: sessão Natureza para avançar a meta semanal."
+        tip = "Próximo passo: uma sessão de estudo para avançar a meta da semana."
     else:
-        tip = "Ritmo ok — consolide com simulado ou revisão leve."
+        tip = "Bom ritmo. Consolide com um simulado ou uma revisão leve."
     return {
         "ok": True,
         "score": score,
@@ -1331,11 +1359,11 @@ def build_week_progress(
     days_pct = min(100, round(100.0 * days_active / goal_days)) if goal_days else 0
     met = minutes >= goal_minutes or days_active >= goal_days
     if week_closed:
-        label = f"Semana encerrada: {minutes:.0f} min · {days_active} dia(s)"
+        label = f"Semana encerrada: {minutes:.0f} min · {qtd(days_active, 'dia', 'dias')}"
     elif met:
-        label = f"Semana ok: {minutes:.0f} min · {days_active} dia(s)"
+        label = f"Meta da semana cumprida: {minutes:.0f} min · {qtd(days_active, 'dia', 'dias')}"
     elif minutes < 60 and days_active == 0:
-        label = "Semana: ainda no zero — uma sessão desbloqueia o ritmo"
+        label = "Semana: ainda sem estudo registrado. Uma sessão já começa a contar."
     else:
         label = f"Semana: {minutes:.0f}/{goal_minutes} min · {days_active}/{goal_days} dias"
     next_step = "simulado" if met and due_cards == 0 and gap_n == 0 else "sessao"
@@ -1654,13 +1682,13 @@ def predict_topic(
     trend = "alta" if since >= 2 and freq >= 3 else ("estável" if freq >= 2 else "baixa")
     confidence = "alta" if freq >= 4 else ("média" if freq >= 2 else "baixa")
     reason_parts = [
-        f"Apareceu {freq} vez(es) nos anos {match['years']} da base local.",
-        f"Última na base: {match['lastYear']} ({since} ano(s) atrás).",
+        f"Caiu {qtd(int(freq), 'vez', 'vezes')} nas provas de {match['years']}.",
+        f"Última vez em {match['lastYear']} ({qtd(int(since), 'ano', 'anos')} atrás).",
     ]
     if match["avgGap"]:
-        reason_parts.append(f"Intervalo médio na base ≈ {match['avgGap']:.1f} ano(s).")
+        reason_parts.append(f"Costuma voltar a cada {match['avgGap']:.1f} anos, em média.")
     if basis != "oficial":
-        reason_parts.append("Base ainda em treino — não leia como incidência UEMA.")
+        reason_parts.append("Conta feita com poucas provas: use como pista, não como certeza.")
     return {
         "priorityScore": int(score),
         "probability": int(score),  # legado UI
@@ -1978,8 +2006,7 @@ def build_study_plan(days: int, exam_date: str | None = None) -> list[dict[str, 
                     "priorityScore": 0,
                     "frequency": 0,
                     "reason": (
-                        f"Erro recente no diagnóstico · {h['misses']} miss(es) recentes"
-                        + (f" · tipo dominante: {h['dominantErrorType']}" if h.get("dominantErrorType") else "")
+                        f"Erro recente: você errou {qtd(int(h['misses']), 'questão', 'questões')} deste assunto."
                     ),
                 }
             )
@@ -2004,17 +2031,16 @@ def build_study_plan(days: int, exam_date: str | None = None) -> list[dict[str, 
                 reason = item["reason"]
             else:
                 if n_off > 0 and years:
+                    anos = [str(y) for y in years[:6]]
+                    lista = anos[0] if len(anos) == 1 else ", ".join(anos[:-1]) + " e " + anos[-1]
                     reason = (
-                        f"Há {n_off} oficiais nos anos {', '.join(str(y) for y in years[:6])} "
-                        f"(contagem da base local — sem % inventado)."
+                        f"Caiu nas provas de {lista} "
+                        f"({qtd(n_off, 'questão', 'questões')} nas provas anteriores)."
                     )
                 elif n_off > 0:
-                    reason = f"Há {n_off} questão(ões) oficiais deste tópico na base local."
+                    reason = f"{qtd(n_off, 'questão', 'questões')} nas provas anteriores do PAES."
                 else:
-                    reason = (
-                        f"Prioridade local Medicina {item.get('stars', 3)}★ · base {basis.get('basis')} "
-                        f"(score {pscore}) — não é incidência UEMA."
-                    )
+                    reason = "Assunto do conteúdo do PAES que ainda não caiu nas provas que temos."
             conn.execute(
                 """
                 INSERT INTO study_plan (plan_days, day_index, subject, topic, reason, done)
@@ -2310,9 +2336,10 @@ def dashboard_stats() -> dict[str, Any]:
             "filaDue": "/fila",
         },
         "hint": (
-            f"Fecho da semana: {due_cards} cartão(ões) para revisar · {len(gaps_slim)} lacuna(s) quente(s)."
+            f"Fecho da semana: {qtd(due_cards, 'flashcard', 'flashcards')} para revisar · "
+            f"{qtd(len(gaps_slim), 'assunto errado', 'assuntos errados')} para retomar."
             if due_cards or gaps_slim
-            else "Fecho da semana: sem cartões pendentes nem lacunas quentes — faça um simulado curto ou sessão Natureza."
+            else "Fecho da semana: nada pendente. Faça um simulado curto ou uma sessão de estudo."
         ),
     }
 
@@ -2497,7 +2524,7 @@ def build_smart_insights() -> dict[str, Any]:
                 "topic": topic,
                 "accuracy": 0,
                 "attempts": misses,
-                "message": f"{misses} erro(s) recente(s) em {topic}",
+                "message": f"{qtd(int(misses), 'erro recente', 'erros recentes')} em {topic}",
                 "action": "revisar",
                 "actionPath": f"/sessao?examBoard=UEMA_PAES&subject={subj}&topic={topic}",
             })
@@ -2628,8 +2655,8 @@ def build_smart_insights() -> dict[str, Any]:
             "streak": streak,
             "message": (
                 f"{streak} dias seguidos!" if streak >= 3 else
-                "Estude hoje para iniciar seu streak!" if streak == 0 else
-                f"Streak de {streak} dia(s) — mantenha!"
+                "Estude hoje para começar uma sequência." if streak == 0 else
+                f"{qtd(streak, 'dia seguido', 'dias seguidos')}. Continue!"
             ),
         },
         "studyDays": study_days,
@@ -2690,37 +2717,40 @@ def build_daily_routine(
     phase = cd.get("phase") or "unset"
 
     if day_closed:
-        line = "Dia encerrado — amanhã a orientação volta aqui"
+        line = "Dia encerrado. Amanhã tem mais."
         primary = "closed"
         close_path = "/dashboard"
         close_label = "Ok"
     elif gap_n > 0:
-        line = f"Hoje: recuperar {gap_n} lacuna(s), depois sessão em {subject}"
+        line = (
+            f"Hoje: revisar {qtd(gap_n, 'assunto que você errou', 'assuntos que você errou')} "
+            f"e depois uma sessão de {subject}."
+        )
         primary = "gaps"
         close_path = "/fila"
         close_label = "Ir à fila"
     elif due_cards > 0:
         if intensity == "high":
-            line = f"Reta curta: {due_cards} cartão(ões) para revisar → sessão {subject}"
+            line = f"Reta final: revisar {qtd(due_cards, 'flashcard', 'flashcards')} e uma sessão de {subject}."
         else:
-            line = f"Hoje: {due_cards} cartão(ões) para revisar + sessão Natureza (~60 min)"
+            line = f"Hoje: revisar {qtd(due_cards, 'flashcard', 'flashcards')} e uma sessão de {subject}."
         primary = "cards"
         close_path = "/flashcards"
         close_label = "Revisar cartões"
     elif study_today:
-        line = f"Hoje: sessão · {subject} · {topic}"
+        line = f"Hoje: sessão de {subject} · {topic}."
         primary = "session"
         close_path = "/fila"
         close_label = "Ver fila"
     else:
-        line = "Hoje: sessão Natureza (~60 min)"
+        line = f"Hoje: uma sessão de {subject} · {topic}."
         primary = "session"
         close_path = "/fila"
         close_label = "Ver fila"
     if not day_closed and phase in ("final", "sprint") and primary == "session":
         days_left = cd.get("daysLeft")
         if days_left is not None and int(days_left) >= 0:
-            line = f"{days_left}d p/ prova · sessão {subject} · {topic}"
+            line = f"Reta final: sessão de {subject} · {topic}."
 
     backup_reminder = None
     try:
@@ -2736,7 +2766,7 @@ def build_daily_routine(
                     dt = datetime.fromisoformat(str(at).replace("Z", ""))
                     days = (time_now() - dt).days
                     if days >= 7:
-                        backup_reminder = f"Último backup há {days} dia(s) — vale renovar em Ajustes."
+                        backup_reminder = f"Último backup há {qtd(days, 'dia', 'dias')}. Vale renovar em Ajustes."
                 except (TypeError, ValueError):
                     pass
     except Exception:  # noqa: BLE001
@@ -2979,7 +3009,7 @@ def build_study_recommendations() -> dict[str, Any]:
                 "topic": topic,
                 "pdfFilename": mat.get("pdf_filename"),
                 "title": mat.get("material_title") or f"{topic} — {subj}",
-                "reason": f"{h.get('misses', 0)} erro(s) recente(s)",
+                "reason": qtd(int(h.get('misses', 0)), 'erro recente', 'erros recentes'),
                 "priority": 2,
                 "actionPath": _estudar_path(mat, subj, topic),
             })

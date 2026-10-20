@@ -16,6 +16,7 @@ from schemas import (
 )
 from services_core import (
     get_question,
+    is_cross_domain,
     list_questions,
 )
 from services_extra import (
@@ -38,6 +39,7 @@ def api_questions(
     similares: bool = False,
     approved: str | None = None,
     officialWithGab: bool = False,
+    incluirSemGabarito: bool = False,
     limit: int | None = 200,
     offset: int = 0,
 ) -> list[dict[str, Any]]:
@@ -62,7 +64,31 @@ def api_questions(
         approved_only=approved_only,
         limit=limit,
         offset=offset,
+        # Sem gabarito oficial a correção seria inventada: fora da lista do aluno.
+        answerable_only=not incluirSemGabarito,
     )
+
+
+@router.get("/api/questions/topics")
+def api_question_topics(subject: str | None = None) -> list[dict[str, Any]]:
+    """Assuntos que têm questões para treinar, com a quantidade (para listas de escolha)."""
+    sql = (
+        "SELECT subject, topic, COUNT(*) AS n FROM questions "
+        "WHERE COALESCE(topic, '') <> '' "
+        "AND LOWER(COALESCE(source,'')) NOT LIKE 'pdf_ingest_sem_gabarito%'"
+    )
+    params: list[Any] = []
+    if subject:
+        sql += " AND subject = ?"
+        params.append(subject)
+    sql += " GROUP BY subject, topic ORDER BY subject, n DESC, topic"
+    with db() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [
+        {"subject": r["subject"], "topic": r["topic"], "count": int(r["n"])}
+        for r in rows
+        if not is_cross_domain(r["subject"], r["topic"])
+    ]
 
 
 @router.get("/api/approval/pending")

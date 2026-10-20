@@ -98,7 +98,7 @@ async def list_pdfs() -> list[dict[str, Any]]:
     if not arquivos:
         return []
     subject_map = {"BI": "Biologia", "QU": "Química", "FI": "Física",
-                   "MT": "Matemática", "PT": "Português", "HIS": "História",
+                   "MT": "Matemática", "PT": "Língua Portuguesa e Literatura", "HIS": "História",
                    "GEO": "Geografia", "FIL": "Filosofia", "SOC": "Sociologia",
                    "ING": "Inglês", "ESP": "Espanhol"}
     meta = list_pdf_metadata()

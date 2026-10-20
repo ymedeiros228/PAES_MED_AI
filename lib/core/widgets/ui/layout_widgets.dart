@@ -250,6 +250,8 @@ class PageHeader extends StatelessWidget {
   });
 
   final String title;
+
+  /// Não é desenhado: o título fala sozinho (sem rótulo em cima dele).
   final String? eyebrow;
   final String? subtitle;
 
@@ -304,18 +306,6 @@ class PageHeader extends StatelessWidget {
     final heading = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (eyebrow != null && eyebrow!.isNotEmpty) ...[
-          Text(
-            eyebrow!.toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              color: cs.primary,
-              letterSpacing: 1.0,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: kGap6),
-        ],
         titleRow,
         if (subtitle != null && subtitle!.isNotEmpty) ...[
           const SizedBox(height: kGap8),
@@ -353,10 +343,7 @@ class PageHeader extends StatelessWidget {
             children: [
               Expanded(child: heading),
               const SizedBox(width: kGap16),
-              Padding(
-                padding: EdgeInsets.only(top: eyebrow != null ? 14 : 0),
-                child: actionWrap,
-              ),
+              actionWrap,
             ],
           );
         },

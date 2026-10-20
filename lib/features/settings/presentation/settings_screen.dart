@@ -11,12 +11,12 @@ import 'platform_io.dart' if (dart.library.html) 'platform_io_web.dart' show isW
 import 'package:go_router/go_router.dart';
 
 import '../../../core/data/api_client.dart';
+import '../../../core/data/auth.dart';
 import '../../../core/app_version.dart';
 import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/data/theme_mode_provider.dart';
-import '../../../core/widgets/app_nav_map.dart';
 import '../../../core/widgets/ui_kit.dart';
 import '../../library/presentation/ingest_review_screen.dart';
 
@@ -36,7 +36,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String? aiMsg;
   String? backupListError;
   String kind = 'prova';
-  late final TextEditingController examCtrl;
   List<dynamic> backups = [];
   late final TextEditingController geminiKeyCtrl;
   late final TextEditingController groqKeyCtrl;
@@ -48,20 +47,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    examCtrl = TextEditingController(text: ref.read(examDateProvider).date);
     geminiKeyCtrl = TextEditingController();
     groqKeyCtrl = TextEditingController();
     openRouterKeyCtrl = TextEditingController();
     openAiKeyCtrl = TextEditingController();
-    _health();
-    _loadAiConfig();
-    _backups();
-    _lastBackup();
+    // Na web as chaves de IA, o backup e as pastas ficam no servidor.
+    if (!kIsWeb) {
+      _health();
+      _loadAiConfig();
+      _backups();
+      _lastBackup();
+    }
   }
 
   @override
   void dispose() {
-    examCtrl.dispose();
     geminiKeyCtrl.dispose();
     groqKeyCtrl.dispose();
     openRouterKeyCtrl.dispose();
@@ -274,15 +274,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _pickExamDate(DateTime? atual) async {
+    final hoje = DateTime.now();
+    final inicio = DateTime(hoje.year, hoje.month, hoje.day);
+    final oficial = DateTime.parse(kDataProvaOficial);
+    var inicial = atual ?? oficial;
+    if (inicial.isBefore(inicio)) inicial = oficial.isBefore(inicio) ? inicio : oficial;
+    final escolhida = await showDatePicker(
+      context: context,
+      initialDate: inicial,
+      firstDate: inicio,
+      lastDate: DateTime(inicio.year + 2, 12, 31),
+      helpText: 'Data da prova',
+      cancelText: 'Cancelar',
+      confirmText: 'Salvar',
+    );
+    if (escolhida == null) return;
+    final iso = '${escolhida.year}-${escolhida.month.toString().padLeft(2, '0')}-'
+        '${escolhida.day.toString().padLeft(2, '0')}';
+    await ref.read(examDateProvider.notifier).setDate(iso);
+  }
+
+  Widget _examDatePanel(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final cd = ref.watch(examCountdownProvider);
+    final iso = ref.watch(examDateProvider).date;
+    final data = cd.date;
+    final dataLonga = data == null ? 'Sem data' : MaterialLocalizations.of(context).formatFullDate(data);
+    final contagem = cd.isToday
+        ? 'A prova é hoje.'
+        : cd.isUpcoming
+            ? (cd.daysLeft == 1 ? 'Falta 1 dia.' : 'Faltam ${cd.daysLeft} dias.')
+            : cd.isPast
+                ? 'Essa data já passou.'
+                : '';
+    final oficial = iso == kDataProvaOficial;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.event_rounded, color: cs.primary),
+          title: Text(dataLonga, style: const TextStyle(fontWeight: FontWeight.w600)),
+          subtitle: Text(
+            oficial
+                ? '$contagem Data do edital: das 13h30 às 18h30; os portões fecham às 13h.'
+                : '$contagem Data escolhida por você.',
+            style: TextStyle(fontSize: 13, height: 1.45, color: cs.onSurface.f72),
+          ),
+          trailing: OutlinedButton(
+            onPressed: () => _pickExamDate(data),
+            child: const Text('Alterar'),
+          ),
+        ),
+        if (!oficial)
+          TextButton.icon(
+            onPressed: () => ref.read(examDateProvider.notifier).setDate(kDataProvaOficial),
+            icon: const Icon(Icons.restart_alt_rounded, size: 18),
+            label: const Text('Voltar para a data oficial (22/11/2026)'),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final focus = ref.watch(focusModeProvider);
-    final examState = ref.watch(examDateProvider);
-    final exam = examState.date;
-    if (examCtrl.text != exam && exam.isNotEmpty && !examCtrl.selection.isValid) {
-      examCtrl.text = exam;
-    }
     final online = health?['status'] == 'ok';
+    final cs = Theme.of(context).colorScheme;
+    final sessao = auth.sessao;
 
     return LayoutBuilder(builder: (context, box) => ListView(
       padding: PageInsets.of(box.maxWidth),
@@ -290,72 +350,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PageHeader(
-                eyebrow: 'Conta',
+              const PageHeader(
                 title: 'Ajustes',
-                subtitle: 'Personalize sua experiência de estudo',
+                subtitle: 'Data da prova, aparência e conta.',
               ),
 
-              const AppNavMapPanel(),
-
-              SectionLabel('Estudos'),
+              SectionLabel('Prova'),
               SurfacePanel(
                 margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      secondary: Icon(Icons.center_focus_strong_rounded, color: Theme.of(context).colorScheme.primary),
-                      title: const Text('Modo foco'),
-                      subtitle: const Text('Esconde telas extras'),
-                      value: focus,
-                      onChanged: (v) {
-                        HapticFeedback.lightImpact();
-                        ref.read(focusModeProvider.notifier).setFocus(v);
-                      },
-                    ),
-                    const Divider(height: 20),
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Data da prova',
-                        hintText: 'AAAA-MM-DD',
-                        prefixIcon: Icon(Icons.event_rounded),
-                      ),
-                      controller: examCtrl,
-                      onSubmitted: (v) => ref.read(examDateProvider.notifier).setDate(v.trim()),
-                      onChanged: (v) {
-                        if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v.trim())) {
-                          ref.read(examDateProvider.notifier).setDate(v.trim());
-                        }
-                      },
-                    ),
-                    if (ref.watch(examCountdownProvider).daysLeft != null) ...[
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          () {
-                            final d = ref.watch(examCountdownProvider).daysLeft!;
-                            if (d < 0) return 'A prova dessa data já passou (há ${-d} dia(s)) — defina a próxima.';
-                            if (d == 0) return 'Prova: é hoje!';
-                            return 'Prova em $d dia(s)';
-                          }(),
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.5,
-                            color: Theme.of(context).colorScheme.onSurface.f72,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                child: _examDatePanel(context),
+              ),
+
+              SectionLabel('Estudo'),
+              SurfacePanel(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(Icons.center_focus_strong_rounded, color: cs.primary),
+                  title: const Text('Modo foco'),
+                  subtitle: const Text('Deixa só o essencial no menu: Início, sessão, materiais, flashcards e tutor.'),
+                  value: focus,
+                  onChanged: (v) {
+                    HapticFeedback.lightImpact();
+                    ref.read(focusModeProvider.notifier).setFocus(v);
+                  },
                 ),
               ),
 
               SectionLabel('Aparência'),
               _ThemeModePicker(mode: ref.watch(themeModeProvider)),
 
+              if (kIsWeb && sessao != null && sessao.exigeLogin) ...[
+                const SizedBox(height: 16),
+                SectionLabel('Conta'),
+                SurfacePanel(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.account_circle_outlined, color: cs.primary),
+                    title: Text('Você entrou como ${sessao.nomeExibido}'),
+                    subtitle: const Text(
+                      'Seu progresso fica salvo na sua conta e aparece em qualquer computador.',
+                    ),
+                    trailing: OutlinedButton.icon(
+                      onPressed: auth.sair,
+                      icon: const Icon(Icons.logout_rounded, size: 18),
+                      label: const Text('Sair'),
+                    ),
+                  ),
+                ),
+              ],
+
+              if (!kIsWeb) ...[
               const SizedBox(height: 16),
               SectionLabel('IA', hint: 'Cole sua chave e teste'),
               SurfacePanel(
@@ -672,6 +718,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
 
+              ],
+
               // Sobre — no final, discreto
               const SizedBox(height: 24),
               SectionLabel('Sobre'),
@@ -742,11 +790,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Plataforma de estudos para PAES UEMA Medicina.\n'
-                      '• Funciona sem internet — dados no seu computador\n'
-                      '• Usa apenas questões oficiais reais\n'
-                      '• Tutor IA com seu material de estudo',
-                      style: TextStyle(fontSize: 14, height: 1.5),
+                      kIsWeb
+                          ? 'Plataforma de estudos para o PAES UEMA — Medicina.\n'
+                              '• Questões das provas do PAES, de 2014 a 2026\n'
+                              '• Progresso salvo na sua conta\n'
+                              '• Tutor IA com o material de estudo'
+                          : 'Plataforma de estudos para o PAES UEMA — Medicina.\n'
+                              '• Funciona sem internet — dados neste computador\n'
+                              '• Questões das provas do PAES, de 2014 a 2026\n'
+                              '• Tutor IA com o material de estudo',
+                      style: const TextStyle(fontSize: 14, height: 1.5),
                     ),
                     const SizedBox(height: 12),
                     Builder(
@@ -773,7 +826,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   size: 16,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
-                                label: Text('Versão web · $displayIdentity'),
+                                label: const Text('Versão web'),
                                 visualDensity: VisualDensity.compact,
                               )
                             else
@@ -812,9 +865,9 @@ class _ThemeModePicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final options = <(ThemeMode, String, IconData)>[
-      (ThemeMode.system, 'Sistema', Icons.brightness_auto_rounded),
-      (ThemeMode.light, 'Claro', Icons.light_mode_rounded),
       (ThemeMode.dark, 'Escuro', Icons.dark_mode_rounded),
+      (ThemeMode.light, 'Claro', Icons.light_mode_rounded),
+      (ThemeMode.system, 'Do sistema', Icons.brightness_auto_rounded),
     ];
     return SurfacePanel(
       child: Column(
@@ -829,7 +882,7 @@ class _ThemeModePicker extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Escolha claro, escuro ou automático. Atalho: Ctrl+T',
+            'O escuro é o padrão. "Do sistema" segue o tema do computador ou do celular.',
             style: TextStyle(fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 12),

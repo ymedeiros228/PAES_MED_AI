@@ -247,6 +247,9 @@ def _pg_pool() -> Any:
                 def _configure(conn: Any) -> None:
                     # AVG/SUM/ROUND voltam como numeric → float, como no SQLite.
                     conn.adapters.register_loader("numeric", FloatLoader)
+                    # BEGIN READ WRITE em toda transação: no pooler de transação um
+                    # SET de sessão de outro cliente pode vazar para esta conexão.
+                    conn.read_only = False
 
                 _pool = ConnectionPool(
                     DATABASE_URL,
@@ -272,6 +275,7 @@ def connect() -> Any:
 
         raw = psycopg.connect(DATABASE_URL, prepare_threshold=None, connect_timeout=10)
         raw.adapters.register_loader("numeric", FloatLoader)
+        raw.read_only = False
         conn = PgConnection(raw)
         conn.close = raw.close  # type: ignore[method-assign]
         return conn

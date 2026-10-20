@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../questions/presentation/widgets/figura_aviso.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,6 @@ import '../../../core/data/api_error.dart';
 import '../../../core/data/providers.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/status_widgets.dart';
-import '../../../core/widgets/tour_overlay.dart';
 import '../../../core/widgets/training_basis_banner.dart';
 import '../../../core/ux_copy.dart';
 import '../../questions/domain/question.dart' show isSemGabarito;
@@ -92,19 +92,6 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
   void initState() {
     super.initState();
     _load();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        TourOverlay.maybeShow(
-          context,
-          key: 'tour_estudar_v1',
-          title: 'Estudar',
-          body: 'Aperte "Estudar agora" e o sistema escolhe tudo pra você: '
-              'tópico, questões e revisão. Quer escolher? Toque em '
-              '"Personalizar sessão" abaixo.',
-          icon: Icons.school_rounded,
-        );
-      }
-    });
   }
 
   String get _planPath {
@@ -1037,7 +1024,7 @@ class _GuidedSessionScreenState extends ConsumerState<GuidedSessionScreen> {
                   label: paused ? 'Continuar' : 'Pausar',
                   icon: paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                 ),
-                AppButton.tertiary(onPressed: _exportDay, label: 'Exportar pacote do dia'),
+                if (!kIsWeb) AppButton.tertiary(onPressed: _exportDay, label: 'Exportar pacote do dia'),
               ],
             ),
             const SizedBox(height: 12),

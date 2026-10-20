@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,6 +88,18 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(path: '/entrar', builder: (_, __) => const LoginScreen()),
     GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+    // Modo Foco: tela cheia, sem menu (uma questão por vez).
+    GoRoute(
+      path: '/foco',
+      builder: (context, state) {
+        final subject = state.uri.queryParameters['subject'];
+        final yearRaw = state.uri.queryParameters['year'];
+        return FocusScreen(
+          subject: subject,
+          year: yearRaw == null ? null : int.tryParse(yearRaw),
+        );
+      },
+    ),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
@@ -166,6 +179,7 @@ final appRouter = GoRouter(
             pageBuilder: (_, __) => _fadePage(const LibraryScreen())),
         GoRoute(
           path: '/biblioteca/revisao',
+          redirect: (_, __) => kIsWeb ? '/biblioteca' : null,
           pageBuilder: (context, state) {
             final extra = state.extra;
             if (extra is IngestReviewArgs) {
@@ -176,6 +190,7 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/biblioteca/suspeitas',
+          redirect: (_, __) => kIsWeb ? '/biblioteca' : null,
           pageBuilder: (_, __) => _fadePage(const CurationReviewScreen()),
         ),
         GoRoute(
@@ -190,6 +205,8 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/estudar',
+          redirect: (_, state) =>
+              (state.uri.queryParameters['pdf'] ?? '').trim().isEmpty ? '/materiais' : null,
           pageBuilder: (_, state) {
             final q = state.uri.queryParameters;
             return _fadePage(StudyReaderScreen(
@@ -205,6 +222,7 @@ final appRouter = GoRouter(
             pageBuilder: (_, __) => _fadePage(const EssayScreen())),
         GoRoute(
             path: '/aprovacao',
+            redirect: (_, __) => kIsWeb ? '/dashboard' : null,
             pageBuilder: (_, __) => _fadePage(const ApprovalScreen())),
         GoRoute(
             path: '/conquistas',
@@ -225,18 +243,8 @@ final appRouter = GoRouter(
             pageBuilder: (_, __) => _fadePage(const SettingsScreen())),
         GoRoute(
             path: '/atualizacoes',
+            redirect: (_, __) => kIsWeb ? '/configuracoes' : null,
             pageBuilder: (_, __) => _fadePage(const UpdatesScreen())),
-        GoRoute(
-          path: '/foco',
-          pageBuilder: (context, state) {
-            final subject = state.uri.queryParameters['subject'];
-            final yearRaw = state.uri.queryParameters['year'];
-            return _fadePage(FocusScreen(
-              subject: subject,
-              year: yearRaw == null ? null : int.tryParse(yearRaw),
-            ));
-          },
-        ),
       ],
     ),
   ],
@@ -261,7 +269,7 @@ final appRouter = GoRouter(
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Volte ao início e siga pelo menu. Se veio de um link antigo, abra Hoje.',
+                  'O link pode ser antigo. Volte ao Início e siga pelo menu.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -272,7 +280,7 @@ final appRouter = GoRouter(
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: () => GoRouter.of(ctx).go('/dashboard'),
-                  child: const Text('Ir para Hoje'),
+                  child: const Text('Ir para o Início'),
                 ),
               ],
             ),
@@ -323,6 +331,9 @@ class _PaesMedAiAppState extends ConsumerState<PaesMedAiApp> {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      locale: const Locale('pt', 'BR'),
+      supportedLocales: const [Locale('pt', 'BR')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: appRouter,
       builder: (context, child) {
         final brightness = Theme.of(context).brightness;

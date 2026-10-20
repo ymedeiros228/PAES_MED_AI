@@ -12,6 +12,32 @@ import '../../../core/ux_copy.dart';
 import '../../../core/widgets/resolution_debrief.dart';
 import '../../../core/widgets/ui_kit.dart';
 
+/// As 11 matérias da prova (valor = nome nas questões).
+const _materias = <(String, String)>[
+  ('Língua Portuguesa e Literatura', 'Português e Literatura'),
+  ('Inglês', 'Inglês'),
+  ('Espanhol', 'Espanhol'),
+  ('História', 'História'),
+  ('Geografia', 'Geografia'),
+  ('Filosofia', 'Filosofia'),
+  ('Sociologia', 'Sociologia'),
+  ('Matemática', 'Matemática'),
+  ('Física', 'Física'),
+  ('Química', 'Química'),
+  ('Biologia', 'Biologia'),
+];
+
+/// Assuntos com questões para treinar, do mais cobrado ao menos cobrado.
+final _assuntosProvider =
+    FutureProvider.autoDispose.family<List<(String, int)>, String>((ref, subject) async {
+  final raw = await apiClient.get('/api/questions/topics', {'subject': subject});
+  return [
+    for (final e in (raw as List? ?? const []))
+      if (e is Map && (e['topic']?.toString() ?? '').isNotEmpty)
+        (e['topic'].toString(), (e['count'] as num?)?.toInt() ?? 0),
+  ];
+});
+
 class AdaptiveTrainingScreen extends ConsumerStatefulWidget {
   const AdaptiveTrainingScreen({this.initialSubject, this.initialTopic, super.key});
 
@@ -62,9 +88,9 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
     super.initState();
     subject = (widget.initialSubject?.isNotEmpty == true) ? widget.initialSubject! : 'Biologia';
     topicCtrl = TextEditingController(
-      text: (widget.initialTopic?.isNotEmpty == true) ? widget.initialTopic! : 'Genética',
+      text: (widget.initialTopic?.isNotEmpty == true) ? widget.initialTopic! : '',
     );
-    if (widget.initialSubject != null || widget.initialTopic != null) {
+    if (widget.initialSubject?.isNotEmpty == true && widget.initialTopic?.isNotEmpty == true) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!autoStarted && mounted) {
           autoStarted = true;
@@ -81,6 +107,54 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
   }
 
   String get topic => topicCtrl.text.trim();
+
+  /// Lista para escolher o assunto (ninguém precisa adivinhar o nome).
+  /// Já vem marcado o assunto com mais questões da matéria.
+  Widget _assuntoPicker() {
+    final assuntos = ref.watch(_assuntosProvider(subject));
+    return assuntos.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 18),
+        child: LinearProgressIndicator(),
+      ),
+      error: (e, _) => QuietEmpty(
+        message: humanApiError(e, fallback: 'Não deu para carregar os assuntos.'),
+        action: TextButton(
+          onPressed: () => ref.invalidate(_assuntosProvider(subject)),
+          child: const Text('Tentar'),
+        ),
+      ),
+      data: (lista) {
+        if (lista.isEmpty) {
+          return const QuietEmpty(message: 'Ainda não há questões desta matéria para treinar.');
+        }
+        final nomes = [for (final (t, _) in lista) t];
+        if (!nomes.contains(topic)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !nomes.contains(topic)) setState(() => topicCtrl.text = nomes.first);
+          });
+        }
+        return DropdownMenu<String>(
+          key: ValueKey('assunto-$subject'),
+          controller: topicCtrl,
+          initialSelection: nomes.contains(topic) ? topic : nomes.first,
+          label: const Text('Assunto'),
+          expandedInsets: EdgeInsets.zero,
+          requestFocusOnTap: false,
+          menuHeight: 420,
+          onSelected: (_) => setState(() {}),
+          dropdownMenuEntries: [
+            for (final (t, n) in lista)
+              DropdownMenuEntry(
+                value: t,
+                label: t,
+                trailingIcon: Text(n == 1 ? '1 questão' : '$n questões'),
+              ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _start() async {
     setState(() {
@@ -349,24 +423,25 @@ class _AdaptiveTrainingScreenState extends ConsumerState<AdaptiveTrainingScreen>
                       children: [
                         DropdownMenu<String>(
                           initialSelection: subject,
-                          label: const Text('Disciplina'),
-                          onSelected: (v) => setState(() => subject = v ?? subject),
-                          dropdownMenuEntries: const [
-                            DropdownMenuEntry(value: 'Biologia', label: 'Biologia'),
-                            DropdownMenuEntry(value: 'Matemática', label: 'Matemática'),
-                            DropdownMenuEntry(value: 'Química', label: 'Química'),
-                            DropdownMenuEntry(value: 'Língua Portuguesa e Literatura', label: 'Português'),
-                            DropdownMenuEntry(value: 'Física', label: 'Física'),
+                          label: const Text('Matéria'),
+                          expandedInsets: EdgeInsets.zero,
+                          requestFocusOnTap: false,
+                          menuHeight: 420,
+                          onSelected: (v) {
+                            if (v == null || v == subject) return;
+                            // Troca de matéria: o assunto vem da lista nova.
+                            setState(() {
+                              subject = v;
+                              topicCtrl.text = '';
+                            });
+                          },
+                          dropdownMenuEntries: [
+                            for (final (valor, nome) in _materias)
+                              DropdownMenuEntry(value: valor, label: nome),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        TextField(
-                          controller: topicCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Assunto',
-                            hintText: 'Ex.: Genética',
-                          ),
-                        ),
+                        _assuntoPicker(),
                         const SizedBox(height: 16),
                         FilledButton.icon(
                           onPressed: loading || topic.isEmpty

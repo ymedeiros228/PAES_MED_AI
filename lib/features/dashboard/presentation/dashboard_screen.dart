@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +14,6 @@ import 'dashboard_update_banner.dart';
 import '../../../core/data/study_prefs_providers.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/tour_overlay.dart';
-import '../../../core/widgets/ui/score_ring.dart';
 import '../../../core/widgets/ui/subject_style.dart';
 import '../../../core/widgets/ui_kit.dart';
 
@@ -40,17 +39,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final exam = ref.read(examDateProvider).date;
       if (exam.isNotEmpty) {
         unawaited(ref.read(examDateProvider.notifier).retrySync());
-      }
-      if (mounted) {
-        TourOverlay.maybeShow(
-          context,
-          key: 'tour_dashboard_v1',
-          title: 'Bem-vindo ao Início',
-          body: 'Aqui você vê tudo: seu nível de XP, streak de estudo, '
-              'tópico do dia, flashcards para revisar e atalhos rápidos. '
-              'Aperte "Estudar" para começar.',
-          icon: Icons.home_rounded,
-        );
       }
     });
   }
@@ -193,7 +181,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: 'Início',
         child: ErrorState(
           message: humanApiError(e,
-              fallback: 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
+              fallback: kIsWeb
+                  ? 'Recarregue a página (F5).'
+                  : 'Reabra pelo ícone PAES MED AI na área de trabalho.'),
           onRetry: () => ref.read(refreshTickProvider.notifier).state++,
           secondary: AppButton.tertiary(
             label: 'Ir para a sessão',
@@ -233,83 +223,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         final gapItems = openGaps?['items'] as List? ?? const [];
         final gapN = openGaps?['openCount'] as int? ?? gapItems.length;
 
+        final dueCards = data['flashcardsDueCount'] as int? ?? 0;
+        final totalAnswered = data['totalAnswered'] as int? ?? 0;
+        final accuracyBySubject = (data['accuracyBySubject'] is Map)
+            ? Map<String, dynamic>.from(data['accuracyBySubject'] as Map)
+            : const <String, dynamic>{};
+        final passo = _nextStep(data) ?? _routineStep(routine);
+        // A frase do backend já cita a matéria/tópico: não repetir o título.
+        final linha = checkpoint != null
+            ? 'Você parou em ${_checkpointShort(checkpoint!)}.'
+            : (passo != null && coachLine.contains(passo))
+                ? 'Sessão guiada: teoria rápida, questões das provas anteriores e revisão.'
+                : coachLine;
+
         return CustomScrollView(
           slivers: [
-            // Hero compacto: gradient + countdown + CTA principal
+            // Herói: quanto falta para a prova e o próximo passo, uma vez só.
             SliverToBoxAdapter(
               child: ContentWidth(
                 vertical: const EdgeInsets.only(top: 24),
                 child: PageHero(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Contagem regressiva destacada
-                    if (examDays != null && examDays >= 0) ...[
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _CountdownHeadline(
+                        cd: examCd,
+                        daysFallback: examDays,
+                        oficial: ref.watch(examDateProvider).date == kDataProvaOficial,
+                      ),
+                      const SizedBox(height: 24),
                       Text(
-                        '$examDays',
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.0,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                      Text(
-                        'dias para a prova',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white.withOpacity(0.8),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ] else if (examCd.isPast) ...[
-                      Text(
-                        'A prova de ${examCd.dateLabel} já passou',
-                        style: AppFonts.display(fontSize: 26, fontWeight: FontWeight.w600, color: Colors.white),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: () => context.go('/configuracoes'),
-                        style: TextButton.styleFrom(foregroundColor: Colors.white, padding: EdgeInsets.zero),
-                        icon: const Icon(Icons.event_rounded, size: 18),
-                        label: const Text('Definir a data da próxima prova'),
-                      ),
-                    ] else ...[
-                      Text(
-                        'PAES MED AI',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Medicina · UEMA',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.f72,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    Text(
-                      'CONTINUE DE ONDE PAROU',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white.withOpacity(0.75),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (_nextStep(data) != null) ...[
-                      Text(
-                        _nextStep(data)!,
+                        checkpoint != null ? 'Sessão em andamento' : (passo ?? 'Pronto para estudar?'),
                         style: const TextStyle(
                           fontSize: 20,
                           color: Colors.white,
@@ -318,54 +262,46 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                    ],
-                    // Coach line — uma frase curta
-                    Text(
-                      coachLine,
-                      style: TextStyle(
-                        fontSize: 17,
-                        color: Colors.white,
-                        height: 1.3,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // CTA principal + ação secundária
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        TapScale(
-                          child: PulseButton(
-                            pulse: checkpoint != null,
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              context.go(sessionPath);
-                            },
-                            child: Text(
-                              checkpoint != null
-                                  ? 'Continuar · ${_checkpointShort(checkpoint!)}'
-                                  : 'Começar a estudar',
-                            ),
-                          ),
+                      Text(
+                        linha,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          color: Colors.white.withOpacity(0.86),
+                          height: 1.4,
                         ),
-                        if (checkpoint != null)
-                          OutlinedButton(
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              _discardCheckpoint();
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.f40),
+                      ),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          TapScale(
+                            child: PulseButton(
+                              pulse: checkpoint != null,
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                context.go(sessionPath);
+                              },
+                              child: Text(checkpoint != null ? 'Continuar sessão' : 'Começar a estudar'),
                             ),
-                            child: const Text('Recomeçar'),
                           ),
-                      ],
-                    ),
-                  ],
+                          if (checkpoint != null)
+                            OutlinedButton(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                _discardCheckpoint();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: BorderSide(color: Colors.white.f40),
+                              ),
+                              child: const Text('Recomeçar'),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
             SliverPadding(
@@ -445,38 +381,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
 
-                          // Notificacao de atualizacao disponivel
-                          const UpdateBanner(),
-                          const SizedBox(height: 20),
+                          // Atualização do app instalado (só no PC).
+                          if (!kIsWeb) const UpdateBanner(),
 
-                          // Conteudo com entrada suave (staggered fade-in)
                           StaggeredFadeIn(
                             children: [
-                              _GoalStreakStrip(
+                              _TodayStrip(
                                 minutesToday: (data['studyMinutesToday'] as num?)?.toInt() ??
                                     ((data['studyToday'] as Map?)?['minutes'] as num?)?.toInt() ??
                                     0,
                                 goal: ref.watch(dailyGoalProvider),
                                 streakDays: data['streakDays'] as int? ?? 0,
-                              ),
-                              const SizedBox(height: 24),
-                              _SubjectsGrid(
-                                accuracy: (data['accuracyBySubject'] is Map)
-                                    ? Map<String, dynamic>.from(data['accuracyBySubject'] as Map)
-                                    : const {},
-                              ),
-                              const SizedBox(height: 24),
-                              _DashboardStatsRow(
-                                cs: cs,
-                                streakDays: data['streakDays'] as int? ?? 0,
-                                studyToday: data['studyToday'] as Map?,
-                                flashcardsDue: data['flashcardsDueCount'] as int? ?? 0,
+                                dueCards: dueCards,
                                 accuracy: (data['accuracy'] as num?)?.toDouble() ?? 0,
-                                totalAnswered: data['totalAnswered'] as int? ?? 0,
-                                sessionPath: sessionPath,
+                                totalAnswered: totalAnswered,
                               ),
                               const SizedBox(height: 20),
-
                               _SimpleChecklist(
                                 cs: cs,
                                 sessionDone: checklist['session'] == true,
@@ -484,18 +404,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 revisionsDone: checklist['revisions'] == true,
                                 dayClosed: dayClosed,
                                 gapN: gapN,
+                                dueCards: dueCards,
                                 onSession: () => context.go(sessionPath),
                                 onCards: () => context.go('/flashcards?due=1'),
                                 onRevisions: () => context.go('/fila'),
                                 onCloseDay: dayClosed ? null : _closeDay,
-                                examDays: examCd.daysLeft,
-                                dailyGoal: ref.watch(dailyGoalProvider),
                               ),
-
-                              const SizedBox(height: 20),
-
-                              _QuickActions(cs: cs),
-
+                              if (accuracyBySubject.isNotEmpty) ...[
+                                const SizedBox(height: 28),
+                                _SubjectsGrid(accuracy: accuracyBySubject),
+                              ],
                               const SizedBox(height: 32),
                             ],
                           ),
@@ -523,99 +441,321 @@ String? _nextStep(Map<String, dynamic> data) {
   return '$subj · $topic';
 }
 
+/// Foco do coach do dia quando ainda não há `studyToday`.
+String? _routineStep(Map<String, dynamic> routine) {
+  final subj = routine['subject']?.toString() ?? '';
+  final topic = routine['topic']?.toString() ?? '';
+  if (subj.isEmpty || topic.isEmpty) return null;
+  return '$subj · $topic';
+}
+
 // ===========================================================================
-// Faixa meta do dia (anel) + sequência
+// Contagem regressiva do herói
 // ===========================================================================
 
-class _GoalStreakStrip extends StatelessWidget {
-  const _GoalStreakStrip({
-    required this.minutesToday,
-    required this.goal,
-    required this.streakDays,
+/// "33 dias para a prova" + a data por extenso (o único lugar do Início com isso).
+class _CountdownHeadline extends StatelessWidget {
+  const _CountdownHeadline({
+    required this.cd,
+    required this.daysFallback,
+    required this.oficial,
   });
-  final int minutesToday;
-  final int goal;
-  final int streakDays;
+  final ExamCountdown cd;
+  final int? daysFallback;
+  final bool oficial;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final pct = goal > 0 ? (minutesToday / goal * 100).clamp(0, 100).toDouble() : 0.0;
-    const flame = Color(0xFFF08A24);
-    return AppCard(
-      padding: const EdgeInsets.all(kGap20),
-      child: Wrap(
-        spacing: kGap24,
-        runSpacing: kGap16,
-        crossAxisAlignment: WrapCrossAlignment.center,
+    if (cd.isPast) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ScoreRing(percent: pct, size: 88),
-              const SizedBox(width: kGap16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Meta do dia', style: context.text.titleSmall),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$minutesToday de $goal min',
-                    style: context.text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ],
+          Text(
+            'A prova de ${cd.dateLabel} já passou',
+            style: AppFonts.display(fontSize: 26, fontWeight: FontWeight.w600, color: Colors.white),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: flame.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: const Icon(Icons.local_fire_department_rounded, color: flame, size: 32),
-              ),
-              const SizedBox(width: kGap12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('$streakDays ${streakDays == 1 ? 'dia' : 'dias'}',
-                      style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
-                  Text(
-                    streakDays > 0 ? 'de sequência' : 'estude hoje para começar',
-                    style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ],
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () => context.go('/configuracoes'),
+            style: TextButton.styleFrom(foregroundColor: Colors.white, padding: EdgeInsets.zero),
+            icon: const Icon(Icons.event_rounded, size: 18),
+            label: const Text('Definir a data da próxima prova'),
           ),
         ],
-      ),
+      );
+    }
+    final days = cd.hasDate ? cd.daysLeft : daysFallback;
+    if (days == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'PAES MED AI',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.5,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () => context.go('/configuracoes'),
+            style: TextButton.styleFrom(foregroundColor: Colors.white, padding: EdgeInsets.zero),
+            icon: const Icon(Icons.event_rounded, size: 18),
+            label: const Text('Marcar a data da prova'),
+          ),
+        ],
+      );
+    }
+    final data = cd.date;
+    var quando = data == null ? '' : MaterialLocalizations.of(context).formatFullDate(data);
+    if (quando.isNotEmpty) {
+      quando = quando[0].toUpperCase() + quando.substring(1);
+      if (oficial) quando += ' · das 13h30 às 18h30';
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: 12,
+          runSpacing: 4,
+          children: [
+            Text(
+              days == 0 ? 'Hoje' : '$days',
+              style: const TextStyle(
+                fontSize: 56,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1.0,
+                letterSpacing: -1.5,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                days == 0
+                    ? 'é o dia da prova'
+                    : days == 1
+                        ? 'dia para a prova'
+                        : 'dias para a prova',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (quando.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            quando,
+            style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.75)),
+          ),
+        ],
+      ],
     );
   }
 }
 
 // ===========================================================================
-// Suas disciplinas — grade colorida com % de domínio
+// Hoje: meta, sequência, flashcards e acerto numa faixa só
+// ===========================================================================
+
+class _TodayStrip extends StatelessWidget {
+  const _TodayStrip({
+    required this.minutesToday,
+    required this.goal,
+    required this.streakDays,
+    required this.dueCards,
+    required this.accuracy,
+    required this.totalAnswered,
+  });
+  final int minutesToday;
+  final int goal;
+  final int streakDays;
+  final int dueCards;
+  final double accuracy;
+  final int totalAnswered;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final meta = goal > 0 ? (minutesToday / goal).clamp(0.0, 1.0).toDouble() : 0.0;
+    final itens = <Widget>[
+      _TodayItem(
+        leading: SizedBox(
+          width: 40,
+          height: 40,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  value: meta,
+                  strokeWidth: 4,
+                  color: cs.primary,
+                  backgroundColor: cs.surfaceContainerHighest,
+                ),
+              ),
+              Icon(Icons.timer_outlined, size: 18, color: cs.primary),
+            ],
+          ),
+        ),
+        label: 'Meta do dia',
+        value: '$minutesToday de $goal min',
+      ),
+      _TodayItem(
+        icon: Icons.local_fire_department_rounded,
+        color: const Color(0xFFF08A24),
+        label: 'Sequência',
+        value: streakDays == 0
+            ? 'Comece hoje'
+            : streakDays == 1
+                ? '1 dia'
+                : '$streakDays dias',
+      ),
+      _TodayItem(
+        icon: Icons.style_rounded,
+        color: const Color(0xFF5B9BF0),
+        label: 'Flashcards para hoje',
+        value: dueCards == 0 ? 'Nenhum' : '$dueCards',
+        onTap: dueCards > 0 ? () => context.go('/flashcards?due=1') : null,
+      ),
+      _TodayItem(
+        icon: Icons.track_changes_rounded,
+        color: const Color(0xFF2E9E5B),
+        label: 'Acerto geral',
+        value: totalAnswered > 0 ? '${(accuracy * 100).round()}%' : '—',
+        hint: totalAnswered == 0
+            ? 'Responda questões para ver'
+            : totalAnswered == 1
+                ? '1 questão respondida'
+                : '$totalAnswered questões respondidas',
+      ),
+    ];
+    return AppCard(
+      padding: const EdgeInsets.all(kGap16),
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final cols = c.maxWidth >= 760 ? 4 : 2;
+          const gap = kGap16;
+          final w = ((c.maxWidth - gap * (cols - 1)) / cols).floorToDouble();
+          return Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: [for (final it in itens) SizedBox(width: w, child: it)],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TodayItem extends StatelessWidget {
+  const _TodayItem({
+    required this.label,
+    required this.value,
+    this.icon,
+    this.color,
+    this.leading,
+    this.hint,
+    this.onTap,
+  });
+  final String label;
+  final String value;
+  final IconData? icon;
+  final Color? color;
+  final Widget? leading;
+  final String? hint;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tom = color ?? cs.primary;
+    final conteudo = Row(
+      children: [
+        leading ??
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: tom.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: tom, size: 21),
+            ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: context.text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (hint != null)
+                Text(
+                  hint!,
+                  style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        ),
+        if (onTap != null) Icon(Icons.chevron_right_rounded, size: 20, color: cs.onSurfaceVariant),
+      ],
+    );
+    final semantica = Semantics(
+      label: '$label: $value${hint != null ? ', $hint' : ''}',
+      button: onTap != null,
+      excludeSemantics: true,
+      child: conteudo,
+    );
+    if (onTap == null) return semantica;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(padding: const EdgeInsets.all(2), child: semantica),
+    );
+  }
+}
+
+// ===========================================================================
+// Acerto por matéria (só aparece quando já há respostas)
 // ===========================================================================
 
 class _SubjectsGrid extends StatelessWidget {
   const _SubjectsGrid({required this.accuracy});
   final Map<String, dynamic> accuracy;
 
-  static const _defaults = ['Biologia', 'Química', 'Física', 'Matemática', 'Português', 'História'];
-
   @override
   Widget build(BuildContext context) {
-    final names = accuracy.isNotEmpty ? accuracy.keys.toList() : _defaults;
+    // Mais fraca primeiro: é onde vale treinar.
+    final names = accuracy.keys.toList()
+      ..sort((a, b) => (_frac(accuracy[a]) ?? 0).compareTo(_frac(accuracy[b]) ?? 0));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Suas disciplinas', icon: Icons.auto_stories_rounded),
+        const SectionHeader(title: 'Acerto por matéria', icon: Icons.auto_stories_rounded),
         const SizedBox(height: kGap12),
         LayoutBuilder(builder: (context, c) {
           final cols = (c.maxWidth / 220).floor().clamp(2, 4);
@@ -698,7 +838,7 @@ class _SubjectCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            mastery == null ? 'Ainda sem dados' : 'Domínio estimado',
+            'de acerto · toque para treinar',
             style: context.text.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           ),
         ],
@@ -708,169 +848,9 @@ class _SubjectCard extends StatelessWidget {
 }
 
 // ===========================================================================
-// Widgets do Hoje: ritmo + checklist
+// Atividades do dia
 // ===========================================================================
 
-/// Linha com XP/streak + tópico do dia + flashcards due (3 cards integrados)
-class _DashboardStatsRow extends StatelessWidget {
-  const _DashboardStatsRow({
-    required this.cs,
-    required this.streakDays,
-    required this.studyToday,
-    required this.flashcardsDue,
-    required this.accuracy,
-    required this.totalAnswered,
-    required this.sessionPath,
-  });
-  final ColorScheme cs;
-  final int streakDays;
-  final Map? studyToday;
-  final int flashcardsDue;
-  final double accuracy;
-  final int totalAnswered;
-  final String sessionPath;
-
-  @override
-  Widget build(BuildContext context) {
-    final study = studyToday != null ? Map<String, dynamic>.from(studyToday!) : null;
-    final subj = study?['subject']?.toString() ?? '';
-    final topic = study?['topic']?.toString() ?? '';
-    final hasTopic = subj.isNotEmpty && topic.isNotEmpty;
-    final accuracyLabel = totalAnswered > 0 ? '${(accuracy * 100).round()}%' : '—';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        StatGrid(
-          minTileWidth: 180,
-          children: [
-            StatTile(
-              label: 'Dias seguidos',
-              value: '$streakDays',
-              icon: Icons.local_fire_department_rounded,
-              tone: AppTone.warning,
-              hint: streakDays > 0 ? 'Continue assim!' : 'Estude hoje para começar',
-            ),
-            StatTile(
-              label: 'Flashcards para hoje',
-              value: '$flashcardsDue',
-              icon: Icons.style_rounded,
-              tone: AppTone.info,
-              onTap: flashcardsDue > 0 ? () => context.go('/flashcards?due=1') : null,
-            ),
-            StatTile(
-              label: 'Taxa de acerto',
-              value: accuracyLabel,
-              icon: Icons.track_changes_rounded,
-              tone: AppTone.success,
-              hint: totalAnswered > 0 ? '$totalAnswered questões respondidas' : 'Responda questões para ver',
-            ),
-          ],
-        ),
-        if (hasTopic) ...[
-          const SizedBox(height: 12),
-          // Tópico do dia — cartão de destaque com CTA de sessão
-          _PanelCard(
-            onTap: () => context.go(sessionPath),
-            color: cs.primaryContainer.f45,
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.today_rounded, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Seu próximo passo',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        '$subj · $topic',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.play_arrow_rounded, color: cs.primary),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// Cartão do design system com borda + sombra suave (igual ao SurfacePanel),
-/// porém com toque opcional e ripple corretamente recortado.
-class _PanelCard extends StatelessWidget {
-  const _PanelCard({
-    required this.child,
-    this.onTap,
-    this.color,
-  });
-  final Widget child;
-  final VoidCallback? onTap;
-  final EdgeInsets padding = const EdgeInsets.all(16);
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final deco = BoxDecoration(
-      color: color ?? (isDark ? cs.surface.f90 : cs.surface.f98),
-      borderRadius: BorderRadius.circular(kRadiusPanelSoft),
-      border: Border.all(color: cs.outlineVariant.f50),
-      boxShadow: isDark
-          ? null
-          : [
-              BoxShadow(
-                color: const Color(0xFF0A1628).f10,
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-    );
-    if (onTap == null) {
-      return Container(decoration: deco, padding: padding, child: child);
-    }
-    return TapScale(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(kRadiusPanelSoft),
-          child: Ink(
-            decoration: deco,
-            child: Padding(padding: padding, child: child),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Checklist simples do dia
 class _SimpleChecklist extends StatelessWidget {
   const _SimpleChecklist({
     required this.cs,
@@ -879,12 +859,11 @@ class _SimpleChecklist extends StatelessWidget {
     required this.revisionsDone,
     required this.dayClosed,
     required this.gapN,
+    required this.dueCards,
     required this.onSession,
     required this.onCards,
     required this.onRevisions,
     required this.onCloseDay,
-    required this.examDays,
-    required this.dailyGoal,
   });
   final ColorScheme cs;
   final bool sessionDone;
@@ -892,21 +871,22 @@ class _SimpleChecklist extends StatelessWidget {
   final bool revisionsDone;
   final bool dayClosed;
   final int gapN;
+  final int dueCards;
   final VoidCallback onSession;
   final VoidCallback onCards;
   final VoidCallback onRevisions;
   final VoidCallback? onCloseDay;
-  final int? examDays;
-  final int dailyGoal;
 
   @override
   Widget build(BuildContext context) {
     final feitos = [sessionDone, cardsDone, revisionsDone].where((b) => b).length;
     return AppCard(
       title: 'Atividades do dia',
-      subtitle: examDays != null && examDays! > 0
-          ? '$feitos de 3 feitas · faltam $examDays dias para a prova'
-          : '$feitos de 3 feitas',
+      subtitle: feitos == 3
+          ? 'Tudo feito hoje.'
+          : feitos == 1
+              ? '1 de 3 feita'
+              : '$feitos de 3 feitas',
       icon: Icons.checklist_rounded,
       trailing: SizedBox(
         width: 44,
@@ -936,21 +916,29 @@ class _SimpleChecklist extends StatelessWidget {
         children: [
           _CheckRow(
             done: sessionDone,
-            label: 'Sessão de estudo',
+            label: 'Uma sessão de estudo (15 min ou mais)',
             icon: Icons.play_circle_outline,
             onAction: onSession,
             cs: cs,
           ),
           _CheckRow(
             done: cardsDone,
-            label: 'Flashcards',
+            label: cardsDone
+                ? 'Flashcards em dia'
+                : dueCards == 1
+                    ? 'Revisar 1 flashcard'
+                    : 'Revisar $dueCards flashcards',
             icon: Icons.style_outlined,
             onAction: onCards,
             cs: cs,
           ),
           _CheckRow(
             done: revisionsDone,
-            label: gapN > 0 ? '$gapN tópicos para revisar' : 'Revisões em dia',
+            label: gapN == 0
+                ? 'Revisões em dia'
+                : gapN == 1
+                    ? 'Revisar 1 assunto que você errou'
+                    : 'Revisar $gapN assuntos que você errou',
             icon: Icons.replay_outlined,
             onAction: onRevisions,
             cs: cs,
@@ -966,14 +954,6 @@ class _SimpleChecklist extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: kGap8),
-          Text(
-            'Meta: $dailyGoal min por dia',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: cs.onSurfaceVariant),
-          ),
         ],
       ),
     );
@@ -1028,73 +1008,6 @@ class _CheckRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Atalhos rápidos para as atividades de estudo fora da barra lateral enxuta.
-class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.cs});
-  final ColorScheme cs;
-
-  static const _items = <(String, String, IconData, Color)>[
-    ('/materiais', 'Materiais', Icons.picture_as_pdf_rounded, Color(0xFF26A69A)),
-    ('/questoes', 'Questões', Icons.quiz_rounded, Color(0xFF42A5F5)),
-    ('/simulados', 'Simulados', Icons.bolt_rounded, Color(0xFFEF6C00)),
-    ('/redacao', 'Redação', Icons.edit_note_rounded, Color(0xFFEC407A)),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(title: 'Atalhos', icon: Icons.grid_view_rounded),
-        const SizedBox(height: 12),
-        LayoutBuilder(
-          builder: (context, c) {
-            final cols = c.maxWidth >= 560 ? 4 : 2;
-            const gap = 12.0;
-            final w = (c.maxWidth - gap * (cols - 1)) / cols;
-            return Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: [
-                for (final it in _items)
-                  SizedBox(
-                    width: w,
-                    child: AppCard(
-                      onTap: () => context.go(it.$1),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: it.$4.withOpacity(0.14),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(it.$3, color: it.$4, size: 22),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            it.$2,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ],
     );
   }
 }

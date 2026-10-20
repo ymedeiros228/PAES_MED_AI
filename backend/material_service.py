@@ -265,6 +265,24 @@ def delete_material(material_id: str) -> bool:
         return cursor.rowcount > 0
 
 
+# Os materiais foram gravados sem acento; o app usa o nome das questões
+# (assim "Treinar na sessão" a partir de um PDF acha as questões da matéria).
+_MATERIA_CANONICA = {
+    "Fisica": "Física",
+    "Historia": "História",
+    "Matematica": "Matemática",
+    "Quimica": "Química",
+    "Lingua Portuguesa": "Língua Portuguesa e Literatura",
+    "Lingua Inglesa": "Inglês",
+    "Lingua Espanhola": "Espanhol",
+}
+
+
+def nome_materia(subject: str | None) -> str:
+    s = (subject or "").strip()
+    return _MATERIA_CANONICA.get(s, s)
+
+
 def list_pdf_metadata() -> dict[str, dict[str, Any]]:
     """Mapa pdf_filename -> metadados do banco (título correto, disciplina, tópico)."""
     with db() as conn:
@@ -273,7 +291,7 @@ def list_pdf_metadata() -> dict[str, dict[str, Any]]:
             "length(content_json) AS content_len FROM materials "
             "WHERE pdf_filename IS NOT NULL AND pdf_filename != ''"
         ).fetchall()
-    return {r["pdf_filename"]: dict(r) for r in rows}
+    return {r["pdf_filename"]: {**dict(r), "subject": nome_materia(r["subject"])} for r in rows}
 
 
 def get_material_by_pdf(pdf_filename: str) -> dict[str, Any] | None:
@@ -287,6 +305,7 @@ def get_material_by_pdf(pdf_filename: str) -> dict[str, Any] | None:
         result = row_to_dict(row)
         if not result:
             return None
+        result["subject"] = nome_materia(result.get("subject"))
         try:
             result["content"] = json.loads(result.pop("content_json") or "{}")
         except (ValueError, TypeError):

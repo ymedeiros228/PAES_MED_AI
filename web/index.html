@@ -4,7 +4,9 @@
   <base href="$FLUTTER_BASE_HREF">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Assistente pessoal de estudos PAES/UEMA Medicina.">
+  <meta name="description" content="Plataforma de estudos para o PAES UEMA — Medicina.">
+  <!-- App de estudo com login: fora dos buscadores. -->
+  <meta name="robots" content="noindex, nofollow">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -13,13 +15,45 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
   <link rel="manifest" href="manifest.json">
   <title>PAES MED AI</title>
-  <meta name="theme-color" content="#0d6e6e">
+  <meta name="theme-color" content="#0B141E">
+  <style>
+    /* Tela de espera até o Flutter desenhar o 1º quadro (escuro é o padrão do app). */
+    html, body { margin: 0; height: 100%; background: #0B141E; color: #A9B7C4; }
+    html.claro, html.claro body { background: #F4F7F6; color: #4A5A66; }
+    #carregando {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      font: 500 14px/1.4 "Segoe UI", system-ui, sans-serif;
+    }
+    #carregando .anel {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2.5px solid rgba(61, 201, 168, 0.25); border-top-color: #3DC9A8;
+      animation: girar 0.9s linear infinite;
+    }
+    html.claro #carregando .anel { border-color: rgba(12, 122, 99, 0.2); border-top-color: #0C7A63; }
+    @keyframes girar { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #carregando .anel { animation-duration: 2.4s; } }
+  </style>
   <script>
+    // Mesmo tema que o app vai abrir (shared_preferences guarda em localStorage).
+    try {
+      if ((localStorage.getItem('flutter.theme_mode_v2') || '').indexOf('light') >= 0) {
+        document.documentElement.classList.add('claro');
+      }
+    } catch (e) {}
+    window.addEventListener('flutter-first-frame', function () {
+      var el = document.getElementById('carregando');
+      if (el) el.remove();
+    });
     var serviceWorkerVersion = {{flutter_service_worker_version}};
   </script>
   <script src="flutter.js" defer></script>
   <script src="flutter_bootstrap.js" defer></script>
 </head>
 <body>
+  <div id="carregando" role="status" aria-live="polite">
+    <div class="anel"></div>
+    <div>Abrindo o PAES MED AI…</div>
+  </div>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
@@ -16,16 +17,20 @@ String humanApiError(Object e, {String fallback = 'Não deu para carregar — te
       s.contains('connection reset') ||
       s.contains('timed out') ||
       s.contains('timeout')) {
-    return 'Sem conexão local. Reabra pelo ícone PAES MED AI.';
+    return kIsWeb
+        ? 'Sem conexão com o servidor. Confira a internet e tente de novo.'
+        : 'Sem conexão local. Reabra pelo ícone PAES MED AI.';
   }
   if (s.contains('404') || s.contains('not found')) {
-    return 'Não encontrado no acervo local.';
+    return 'Não encontrado.';
   }
   if (s.contains('400') || s.contains('invalid')) {
     return 'Pedido inválido. Ajuste e tente de novo.';
   }
   if (s.contains('500') || s.contains('internal')) {
-    return 'Falha no servidor local. Tente de novo em instantes.';
+    return kIsWeb
+        ? 'O servidor falhou. Tente de novo em instantes.'
+        : 'Falha no servidor local. Tente de novo em instantes.';
   }
   // Não expõe stack/exception eng
   if (s.contains('exception') || s.contains('error:') || s.contains('http')) {

@@ -65,7 +65,7 @@ def _make_isolated_data_dir() -> Path:
     if (mat / "BI_GENETICA.pdf").is_file():
         (tmp / "materiais" / "imagens").mkdir(parents=True, exist_ok=True)
         shutil.copy2(mat / "BI_GENETICA.pdf", tmp / "materiais" / "BI_GENETICA.pdf")
-        for img in (mat / "imagens").glob("bi_gene*"):
+        for img in [*(mat / "imagens").glob("bi_gene*"), *(mat / "imagens").glob("br_gen_conceitos*")]:
             shutil.copy2(img, tmp / "materiais" / "imagens" / img.name)
     return tmp
 

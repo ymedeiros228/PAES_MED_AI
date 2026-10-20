@@ -115,6 +115,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   Widget build(BuildContext context) {
     final lessons = ref.watch(lessonsProvider);
     final cs = Theme.of(context).colorScheme;
+    final semAulas = lessons.valueOrNull?.isEmpty ?? false;
 
     return CtrlEnterScope(
       enabled: !busy && transcriptCtrl.text.trim().length >= 80,
@@ -128,11 +129,79 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               PageHeader(
                 eyebrow: 'Conteúdo',
                 title: 'Aulas',
-                subtitle: 'Suas anotações e links de referência',
+                subtitle: 'Resumos das videoaulas que você já organizou.',
+              ),
+              SectionLabel('Suas aulas'),
+              lessons.when(
+                loading: () => const SkeletonList(count: 3, lines: 2),
+                error: (e, _) => QuietEmpty(
+                  message: humanApiError(e, fallback: 'Lista indisponível.'),
+                  action: TextButton(
+                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
+                    child: const Text('Tentar'),
+                  ),
+                ),
+                data: (items) {
+                  if (items.isEmpty) {
+                    return QuietEmpty(
+                      message: 'Nenhuma aula ainda. Crie a primeira logo abaixo.',
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final raw in items)
+                        Builder(
+                          builder: (_) {
+                            final item = Map<String, dynamic>.from(raw as Map);
+                            return ExpansionTile(
+                              tilePadding: EdgeInsets.zero,
+                              title: Text(item['title']?.toString() ?? 'Aula'),
+                              subtitle: Text('${item['subject']} · ${item['topic']}'),
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (item['summary'] != null) Text('${item['summary']}'),
+                                        if (item['incidenceNote'] != null)
+                                          Text(
+                                            '${item['incidenceNote']}',
+                                            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                          ),
+                                        const SizedBox(height: 8),
+                                        FilledButton.tonal(
+                                          onPressed: () => context.go(
+                                            '/adaptativo?subject=${Uri.encodeComponent('${item['subject']}')}'
+                                            '&topic=${Uri.encodeComponent('${item['topic']}')}',
+                                          ),
+                                          child: const Text('Estudar'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
               ),
               SurfacePanel(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
+                margin: const EdgeInsets.only(top: 8, bottom: 16),
+                child: ExpansionTile(
+                  key: ValueKey(semAulas),
+                  initiallyExpanded: semAulas,
+                  tilePadding: EdgeInsets.zero,
+                  leading: Icon(Icons.add_circle_outline_rounded, color: cs.primary),
+                  title: const Text('Criar uma aula', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Cole a legenda de uma videoaula ou envie o áudio: a IA organiza o resumo.'),
+                  childrenPadding: const EdgeInsets.only(bottom: 8),
+                  children: [Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextField(
@@ -205,6 +274,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     ],
                   ],
                 ),
+                  ],
+                ),
               ),
               if (lastLesson != null) ...[
                 SectionLabel('Última importação'),
@@ -238,70 +309,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                   ),
                 ),
               ],
-              SectionLabel('Suas aulas'),
-              lessons.when(
-                loading: () => const SkeletonList(count: 3, lines: 2),
-                error: (e, _) => QuietEmpty(
-                  message: humanApiError(e, fallback: 'Lista indisponível.'),
-                  action: TextButton(
-                    onPressed: () => ref.read(refreshTickProvider.notifier).state++,
-                    child: const Text('Tentar'),
-                  ),
-                ),
-                data: (items) {
-                  if (items.isEmpty) {
-                    return QuietEmpty(
-                      message: 'Nenhuma aula ainda — cole uma legenda acima.',
-                      action: TextButton(
-                        onPressed: () => transcriptFocus.requestFocus(),
-                        child: const Text('Cole acima'),
-                      ),
-                    );
-                  }
-                  return Column(
-                    children: [
-                      for (final raw in items)
-                        Builder(
-                          builder: (_) {
-                            final item = Map<String, dynamic>.from(raw as Map);
-                            return ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              title: Text(item['title']?.toString() ?? 'Aula'),
-                              subtitle: Text('${item['subject']} · ${item['topic']}'),
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        if (item['summary'] != null) Text('${item['summary']}'),
-                                        if (item['incidenceNote'] != null)
-                                          Text(
-                                            '${item['incidenceNote']}',
-                                            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
-                                          ),
-                                        const SizedBox(height: 8),
-                                        FilledButton.tonal(
-                                          onPressed: () => context.go(
-                                            '/adaptativo?subject=${Uri.encodeComponent('${item['subject']}')}'
-                                            '&topic=${Uri.encodeComponent('${item['topic']}')}',
-                                          ),
-                                          child: const Text('Estudar'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                    ],
-                  );
-                },
-              ),
             ],
           ),
       ],

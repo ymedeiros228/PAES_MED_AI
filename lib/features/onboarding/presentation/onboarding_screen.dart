@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
@@ -19,42 +16,30 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
-    with TickerProviderStateMixin {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
-  DateTime? _examDate;
+  // Já vem com a data do edital; o aluno só troca se a dele for outra.
+  DateTime? _examDate = _dataOficialSeVale();
   bool _saving = false;
 
-  late final AnimationController _bgCtrl;
-  late final Animation<double> _bgAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _bgCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 20),
-    );
-    if (WidgetsBinding.instance.runtimeType.toString() !=
-        'AutomatedTestWidgetsFlutterBinding') {
-      _bgCtrl.repeat();
-    }
-    _bgAnim = CurvedAnimation(parent: _bgCtrl, curve: Curves.linear);
+  static DateTime? _dataOficialSeVale() {
+    final oficial = DateTime.parse(kDataProvaOficial);
+    final hoje = DateUtils.dateOnly(DateTime.now());
+    return oficial.isBefore(hoje) ? null : oficial;
   }
 
   @override
   void dispose() {
-    _bgCtrl.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
+    final now = DateUtils.dateOnly(DateTime.now());
     final picked = await showDatePicker(
       context: context,
-      initialDate: now,
+      initialDate: _examDate ?? now,
       firstDate: now,
       lastDate: DateTime(now.year + 5),
       helpText: 'Quando é a sua prova?',
@@ -124,94 +109,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     return '${_examDate!.day} de ${months[_examDate!.month - 1]} de ${_examDate!.year}';
   }
 
+  // Conta em dias de calendário (igual ao backend e ao menu).
   int get _daysLeft {
     if (_examDate == null) return 0;
-    return _examDate!.difference(DateTime.now()).inDays;
+    return _examDate!.difference(DateUtils.dateOnly(DateTime.now())).inDays;
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _bgAnim,
-        builder: (context, _) {
-          final t = _bgAnim.value * 2 * math.pi;
-          final x1 = 0.5 + 0.3 * math.cos(t);
-          final y1 = 0.3 + 0.2 * math.sin(t);
-          final x2 = 0.5 + 0.3 * math.cos(t + math.pi);
-          final y2 = 0.7 + 0.2 * math.sin(t + math.pi);
-
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment(x1, y1),
-                end: Alignment(x2, y2),
-                colors: isDark
-                    ? [
-                        const Color(0xFF061224),
-                        const Color(0xFF0A3D35),
-                      ]
-                    : [
-                        const Color(0xFFE8F5F3),
-                        const Color(0xFFD4ECE6),
-                      ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Indicador de páginas (pontos)
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) {
+                  final active = i == _currentPage;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: active ? 28 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? AppTheme.teal
+                          : AppTheme.teal.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
               ),
             ),
-            child: SafeArea(
-              child: Column(
+            // Páginas
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
                 children: [
-                  // Indicador de páginas (pontos)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(3, (i) {
-                        final active = i == _currentPage;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: active ? 28 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: active
-                                ? AppTheme.teal
-                                : AppTheme.teal.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
-                      }),
-                    ),
+                  _WelcomePage(onNext: _nextPage),
+                  _DatePage(
+                    examDate: _examDate,
+                    dateLabel: _dateLabel,
+                    daysLeft: _daysLeft,
+                    onPickDate: _pickDate,
+                    onNext: _nextPage,
                   ),
-                  // Páginas
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: (i) => setState(() => _currentPage = i),
-                      children: [
-                        _WelcomePage(onNext: _nextPage),
-                        _DatePage(
-                          examDate: _examDate,
-                          dateLabel: _dateLabel,
-                          daysLeft: _daysLeft,
-                          onPickDate: _pickDate,
-                          onNext: _nextPage,
-                        ),
-                        _ReadyPage(
-                          daysLeft: _daysLeft,
-                          hasDate: _examDate != null,
-                          saving: _saving,
-                          onFinish: _finish,
-                        ),
-                      ],
-                    ),
+                  _ReadyPage(
+                    daysLeft: _daysLeft,
+                    hasDate: _examDate != null,
+                    saving: _saving,
+                    onFinish: _finish,
                   ),
                 ],
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -398,7 +354,7 @@ class _DatePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Opcional — você pode mudar depois em Ajustes',
+                      'A data do edital já vem marcada. Se a sua for outra, toque para trocar.',
                       style: TextStyle(
                         fontSize: 14,
                         color: cs.onSurface.withOpacity(0.55),
@@ -464,9 +420,13 @@ class _DatePage extends StatelessWidget {
                                   if (examDate != null) ...[
                                     const SizedBox(height: 3),
                                     Text(
-                                      daysLeft > 0
-                                          ? '$daysLeft dias restantes'
-                                          : 'Data no passado',
+                                      daysLeft > 1
+                                          ? 'Faltam $daysLeft dias'
+                                          : daysLeft == 1
+                                              ? 'Falta 1 dia'
+                                              : daysLeft == 0
+                                                  ? 'É hoje'
+                                                  : 'Data no passado',
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
@@ -586,7 +546,7 @@ class _ReadyPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (hasDate && daysLeft > 0) ...[
+                    if (hasDate && daysLeft > 1) ...[
                       Text(
                         '$daysLeft',
                         style: TextStyle(

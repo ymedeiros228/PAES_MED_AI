@@ -203,6 +203,33 @@ def _material_sections(material: dict[str, Any]) -> list[dict[str, Any]]:
     return sections
 
 
+def _lesson_text(summary: str | None) -> str:
+    """Resumo da aula em texto puro.
+
+    Parte das aulas antigas guardou a resposta inteira do gerador
+    ('{"summary": "...", "macetes": [...]}', às vezes com '{{ }}'): fica só o resumo.
+    """
+    text = (summary or "").strip()
+    if not text.startswith("{"):
+        return text
+    bruto = text
+    while bruto.startswith("{{") and bruto.endswith("}}"):
+        bruto = bruto[1:-1].strip()
+    try:
+        data = json.loads(bruto)
+        if isinstance(data, dict) and isinstance(data.get("summary"), str):
+            return data["summary"].strip()
+    except ValueError:
+        pass
+    achado = re.search(r'"summary"\s*:\s*"((?:[^"\\]|\\.)*)"', text)
+    if achado:
+        try:
+            return str(json.loads(f'"{achado.group(1)}"')).strip()
+        except ValueError:
+            return achado.group(1).strip()
+    return ""
+
+
 def _lesson_sections(subject: str, topic: str) -> list[dict[str, Any]]:
     with db() as conn:
         rows = conn.execute(
@@ -216,14 +243,12 @@ def _lesson_sections(subject: str, topic: str) -> list[dict[str, Any]]:
     seen: set[str] = set()
     sections: list[dict[str, Any]] = []
     for row in rows:
-        body = clean_markdown(row["summary"])
+        body = clean_markdown(_lesson_text(row["summary"]))
         key = re.sub(r"\s+", " ", body).lower()
         if not body or key in seen:  # aulas duplicadas (mesmo resumo) aparecem 1x
             continue
         seen.add(key)
-        sections.append(
-            {"title": row["title"] or f"Aula · {topic}", "body": body, "source": f"lesson:{row['id']}"}
-        )
+        sections.append({"title": "Resumo de aula", "body": body, "source": f"lesson:{row['id']}"})
     return sections
 
 
@@ -403,8 +428,8 @@ def theory_sections_for(
     material = find_topic_material(subject, topic)
     if material:
         sections.extend(_material_sections(material))
-    if subject and topic and len(sections) < limit:
-        sections.extend(_lesson_sections(subject, topic)[: max(0, limit - len(sections))])
+    if subject and topic and not sections:
+        sections.extend(_lesson_sections(subject, topic)[:limit])
     if not sections:
         lines = _edital_lines(subject, topic, limit=6)
         if lines:

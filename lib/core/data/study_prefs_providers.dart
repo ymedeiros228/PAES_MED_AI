@@ -68,41 +68,43 @@ class ExamDateState {
   }
 }
 
+/// Prova PAES 2027 (Edital 158/2026-GR/UEMA): domingo, 22/11/2026, das 13h30
+/// às 18h30; os portões fecham às 13h.
+const kDataProvaOficial = '2026-11-22';
+
 final examDateProvider = StateNotifierProvider<ExamDateNotifier, ExamDateState>((ref) {
   return ExamDateNotifier();
 });
 
 class ExamDateNotifier extends StateNotifier<ExamDateState> {
-  ExamDateNotifier() : super(const ExamDateState()) {
+  // Começa já com a data oficial: a contagem nunca aparece vazia enquanto carrega.
+  ExamDateNotifier() : super(const ExamDateState(date: kDataProvaOficial)) {
     _load();
   }
+
+  /// Data ISO válida e que ainda não passou.
+  static bool _vale(String iso) =>
+      RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(iso) && !ExamCountdown.fromIso(iso).isPast;
 
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
     final local = p.getString(StudyPrefs.examDateKey) ?? '';
-    if (local.isNotEmpty) {
+    if (_vale(local)) {
       state = ExamDateState(date: local);
       return;
     }
-    // Ciclo CH: hydrate do backend se prefs local vazia (local wins se já tem).
+    // Sem data salva (ou com uma que já passou): vale a do servidor e, sem ela,
+    // a data oficial do edital.
+    var data = kDataProvaOficial;
     try {
       final raw = await apiClient.get('/api/study/exam-date');
       final apiDate = (raw is Map ? raw['examDate'] : null)?.toString().trim() ?? '';
-      if (apiDate.isNotEmpty && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(apiDate)) {
-        await p.setString(StudyPrefs.examDateKey, apiDate);
-        state = ExamDateState(date: apiDate);
-        return;
-      }
-    } catch (e) {
-      state = ExamDateState(
-        hydrateNote: humanApiError(
-          e,
-          fallback: 'Data da prova não veio do servidor — defina em Ajustes.',
-        ),
-      );
-      return;
+      if (_vale(apiDate)) data = apiDate;
+    } catch (_) {
+      // Fora do ar: fica a oficial.
     }
-    state = const ExamDateState();
+    await p.setString(StudyPrefs.examDateKey, data);
+    state = ExamDateState(date: data);
   }
 
   Future<void> setDate(String iso) async {

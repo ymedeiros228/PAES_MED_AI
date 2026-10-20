@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,7 +42,8 @@ class TutorComposer extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (aiConfig != null && onProviderSelected != null)
+                  // Na web o servidor escolhe o modelo; o aluno só pergunta.
+                  if (!kIsWeb && aiConfig != null && onProviderSelected != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 8, bottom: 4),
                       child: TutorModelSelectorButton(
