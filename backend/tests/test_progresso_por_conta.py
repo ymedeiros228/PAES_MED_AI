@@ -93,6 +93,7 @@ def test_sessao_leva_o_esquema_da_conta_ate_a_rota(monkeypatch: pytest.MonkeyPat
     monkeypatch.setenv("PAES_SESSAO_SEGREDO", "segredo-de-teste")
     from main import _exige_sessao_na_web
 
+    monkeypatch.setattr(auth, "_esquemas_das_contas", lambda: {"yuri": "paes_yuri"})
     app = FastAPI()
     app.middleware("http")(_exige_sessao_na_web)
 
@@ -116,3 +117,40 @@ def test_token_antigo_sem_esquema_continua_valendo(monkeypatch: pytest.MonkeyPat
     monkeypatch.setenv("PAES_SESSAO_SEGREDO", "segredo-de-teste")
     dados = auth.le_token(auth.cria_token("jonas", "Jonas", "admin"))
     assert dados and dados["u"] == "jonas" and "e" not in dados
+
+
+def _app_quem(monkeypatch: pytest.MonkeyPatch, mapa: Any) -> TestClient:
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.setenv("PAES_SESSAO_SEGREDO", "segredo-de-teste")
+    from main import _exige_sessao_na_web
+
+    monkeypatch.setattr(auth, "_esquemas_das_contas", mapa)
+    app = FastAPI()
+    app.middleware("http")(_exige_sessao_na_web)
+
+    @app.get("/api/quem")
+    def quem() -> dict[str, Any]:
+        return {"esquema": db.esquema_atual()}
+
+    return TestClient(app)
+
+
+def test_cookie_antigo_de_conta_com_esquema_e_recusado(monkeypatch: pytest.MonkeyPatch) -> None:
+    # fail-closed: yuri com cookie sem "e" NUNCA cai no esquema do jonas
+    cliente = _app_quem(monkeypatch, lambda: {"yuri": "paes_yuri"})
+    velho = auth.cria_token("yuri", "Yuri", "admin")
+    trocado = auth.cria_token("yuri", "Yuri", "admin", "paes_outro")
+    assert cliente.get("/api/quem", cookies={auth.COOKIE: velho}).status_code == 401
+    assert cliente.get("/api/quem", cookies={auth.COOKIE: trocado}).status_code == 401
+    # conta sem esquema no banco não pode "pegar" um esquema pelo cookie
+    intruso = auth.cria_token("jonas", "Jonas", "admin", "paes_yuri")
+    assert cliente.get("/api/quem", cookies={auth.COOKIE: intruso}).status_code == 401
+
+
+def test_banco_fora_na_conferencia_vira_503(monkeypatch: pytest.MonkeyPatch) -> None:
+    def falha() -> dict[str, str]:
+        raise RuntimeError("banco fora")
+
+    cliente = _app_quem(monkeypatch, falha)
+    r = cliente.get("/api/quem", cookies={auth.COOKIE: auth.cria_token("jonas", "Jonas", "admin")})
+    assert r.status_code == 503

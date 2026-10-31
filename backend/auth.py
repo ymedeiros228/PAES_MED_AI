@@ -97,6 +97,36 @@ def le_token(token: str) -> dict[str, Any] | None:
     return dados if isinstance(dados, dict) and dados.get("exp", 0) > time.time() else None
 
 
+_ESQUEMAS_CACHE: dict[str, Any] = {"ate": 0.0, "mapa": None}
+_ESQUEMAS_TTL = 60.0
+
+
+def _esquemas_das_contas() -> dict[str, str]:
+    """usuario -> esquema, só das contas com progresso próprio (cache de 60s por instância)."""
+    agora = time.monotonic()
+    if _ESQUEMAS_CACHE["mapa"] is None or agora >= _ESQUEMAS_CACHE["ate"]:
+        with db() as conn:
+            linhas = conn.execute("SELECT usuario, esquema FROM usuarios WHERE esquema IS NOT NULL").fetchall()
+        _ESQUEMAS_CACHE["mapa"] = {r["usuario"]: r["esquema"] for r in linhas}
+        _ESQUEMAS_CACHE["ate"] = agora + _ESQUEMAS_TTL
+    return _ESQUEMAS_CACHE["mapa"]
+
+
+def esquema_da_sessao_confere(sessao: dict[str, Any]) -> bool:
+    """Fecha a porta (fail-closed): o esquema do cookie tem de ser o que o banco diz para a conta.
+
+    Cookie emitido antes de a conta ganhar esquema próprio (sem "e") cairia no esquema base,
+    que é o progresso de outra pessoa: aí a sessão é recusada e a pessoa entra de novo.
+    """
+    from db import esquema_valido
+
+    esperado = _esquemas_das_contas().get(sessao.get("u", ""))
+    recebido = sessao.get("e")
+    if esperado is None:
+        return recebido is None
+    return esquema_valido(esperado) and recebido == esperado
+
+
 def sessao_da_requisicao(request: Request) -> dict[str, Any] | None:
     return le_token(request.cookies.get(COOKIE, ""))
 
