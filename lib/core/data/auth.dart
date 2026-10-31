@@ -35,16 +35,33 @@ class AuthController extends ChangeNotifier {
 
   /// Pergunta ao backend se já há sessão (cookie). Chamado uma vez no main().
   Future<void> verificar() async {
-    try {
-      final dados = await apiClient.get('/api/auth/me');
-      sessao = Sessao.fromJson(Map<String, dynamic>.from(dados as Map));
-      estado = EstadoLogin.entrou;
-    } on ApiUnauthorizedException {
-      estado = EstadoLogin.saiu;
-    } catch (_) {
-      // Desktop: o backend local ainda está subindo, e local não exige login.
-      // Web: sem conexão; a tela de entrada mostra o erro ao tentar entrar.
-      estado = kIsWeb ? EstadoLogin.saiu : EstadoLogin.entrou;
+    // Só um 401 quer dizer "sem login". Erro de rede, servidor lento ou 5xx NÃO desloga:
+    // antes qualquer falha aqui mandava para a tela de entrada quem tinha sessão válida
+    // (foi o que aconteceu com o Jonas quando o banco caiu). Tenta de novo algumas vezes.
+    const esperas = [Duration(seconds: 2), Duration(seconds: 4), Duration(seconds: 8)];
+    for (var tentativa = 0; ; tentativa++) {
+      try {
+        final dados = await apiClient.get('/api/auth/me');
+        sessao = Sessao.fromJson(Map<String, dynamic>.from(dados as Map));
+        estado = EstadoLogin.entrou;
+        break;
+      } on ApiUnauthorizedException {
+        estado = EstadoLogin.saiu;
+        break;
+      } catch (_) {
+        if (!kIsWeb) {
+          // Desktop: o backend local ainda está subindo, e local não exige login.
+          estado = EstadoLogin.entrou;
+          break;
+        }
+        if (tentativa >= esperas.length) {
+          // Web e servidor ainda fora: a tela de entrada mostra o erro ao tentar entrar.
+          // O cookie da sessão continua guardado; ao voltar o servidor, recarregar entra direto.
+          estado = EstadoLogin.saiu;
+          break;
+        }
+        await Future<void>.delayed(esperas[tentativa]);
+      }
     }
     notifyListeners();
   }

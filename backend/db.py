@@ -15,6 +15,7 @@ import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
+from contextvars import ContextVar, Token
 from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
@@ -189,16 +190,64 @@ class PgCursor:
         return iter(self.fetchall())
 
 
+# --------------------------------------------------------------------------- progresso por conta
+#
+# Cada conta da versão web pode ter um esquema próprio só com as tabelas de PROGRESSO
+# (respostas, revisões, flashcards, plano, configurações...). O search_path fica
+# "<esquema da conta>, paes": essas tabelas são achadas primeiro no esquema da conta e o
+# conteúdo (questões, materiais, aulas, edital) continua vindo do esquema `paes`, compartilhado.
+# Conta sem esquema (ex.: jonas) usa o `paes` direto, como sempre foi.
+# Criar o esquema de uma conta: scripts/criar_usuario.py --esquema-proprio.
+
+ESQUEMA_BASE = "paes"
+# tabelas de progresso que ganham cópia no esquema da conta
+TABELAS_DE_PROGRESSO = (
+    "answers", "revisions", "study_plan", "essays", "flashcards",
+    "settings", "session_checkpoint", "study_gaps",
+)
+_ESQUEMA_VALIDO = re.compile(r"^paes_[a-z0-9_]{1,40}$")
+_esquema_da_conta: ContextVar[str | None] = ContextVar("paes_esquema_da_conta", default=None)
+
+
+def esquema_valido(nome: str | None) -> bool:
+    return bool(nome) and bool(_ESQUEMA_VALIDO.match(nome or ""))
+
+
+def usar_esquema_da_conta(nome: str | None) -> Token[str | None]:
+    """Chamado pelo middleware de sessão (main.py) a cada pedido. None = esquema base."""
+    return _esquema_da_conta.set(nome if esquema_valido(nome) else None)
+
+
+def solta_esquema_da_conta(marca: Token[str | None]) -> None:
+    _esquema_da_conta.reset(marca)
+
+
+def esquema_atual() -> str | None:
+    return _esquema_da_conta.get()
+
+
 class PgConnection:
     """Conexão Postgres com a interface que o app usa do sqlite3.Connection."""
 
-    def __init__(self, raw: Any) -> None:
+    def __init__(self, raw: Any, esquema: str | None = None) -> None:
         self._raw = raw
+        self._esquema = esquema if esquema_valido(esquema) else None
+        self._falta_search_path = self._esquema is not None
+
+    def _garante_search_path(self) -> None:
+        # set_config(..., true) vale só até o fim da transação: seguro no pooler de transação
+        # do Supabase (não vaza para outro cliente). Depois de commit/rollback, aplica de novo.
+        if self._falta_search_path:
+            self._raw.execute(
+                "SELECT set_config('search_path', %s, true)", [f"{self._esquema}, {ESQUEMA_BASE}"]
+            )
+            self._falta_search_path = False
 
     def execute(self, sql: str, params: Sequence[Any] | None = None) -> PgCursor:
         translated, returning = _pg_sql(sql)
         if translated is None:
             return PgCursor()
+        self._garante_search_path()
         cur = self._raw.cursor(row_factory=_pg_row_factory)
         # Sempre uma lista (mesmo vazia): com None o psycopg não converteria %% de volta em %.
         cur.execute(translated, [_pg_param(p) for p in params] if params else [])
@@ -212,6 +261,7 @@ class PgConnection:
         translated, _ = _pg_sql(sql)
         if translated is None:
             return PgCursor()
+        self._garante_search_path()
         cur = self._raw.cursor()
         cur.executemany(translated.replace(" RETURNING id", ""), [[_pg_param(p) for p in ps] for ps in seq])
         return PgCursor(cur)
@@ -223,9 +273,11 @@ class PgConnection:
 
     def commit(self) -> None:
         self._raw.commit()
+        self._falta_search_path = self._esquema is not None
 
     def rollback(self) -> None:
         self._raw.rollback()
+        self._falta_search_path = self._esquema is not None
 
     def close(self) -> None:
         pass  # quem devolve a conexão ao pool é db()
@@ -233,6 +285,8 @@ class PgConnection:
 
 _pool: Any = None
 _pool_lock = threading.Lock()
+# segundos esperando uma conexão livre do pool antes de desistir (PoolTimeout)
+_ESPERA_CONEXAO = float(os.getenv("PAES_PG_ESPERA", "8"))
 
 
 def _pg_pool() -> Any:
@@ -256,7 +310,7 @@ def _pg_pool() -> Any:
                     min_size=0,
                     max_size=int(os.getenv("PAES_PG_POOL", "4")),
                     # prepare_threshold=None: obrigatório no pooler de transação do Supabase.
-                    kwargs={"prepare_threshold": None, "connect_timeout": 10},
+                    kwargs={"prepare_threshold": None, "connect_timeout": 5},
                     configure=_configure,
                     check=ConnectionPool.check_connection,
                     open=True,
@@ -286,8 +340,11 @@ def connect() -> Any:
 def db() -> Iterator[Any]:
     """Conexão com fechamento garantido: `with db() as conn:`."""
     if USE_PG:
-        with _pg_pool().connection() as raw:
-            conn = PgConnection(raw)
+        # Espera curta por uma conexão: com o banco fora do ar (ex.: projeto pausado no
+        # Supabase) o padrão de 30s deixava o app "carregando" sem resposta. PoolTimeout
+        # vira 503 com mensagem clara no main.py.
+        with _pg_pool().connection(timeout=_ESPERA_CONEXAO) as raw:
+            conn = PgConnection(raw, esquema_atual())
             yield conn
             # Como no sqlite3: o que não teve commit() explícito é descartado.
             raw.rollback()

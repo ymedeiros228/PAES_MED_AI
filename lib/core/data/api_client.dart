@@ -19,6 +19,11 @@ class ApiUnauthorizedException extends ApiException {
   const ApiUnauthorizedException(super.message);
 }
 
+/// 5xx: o servidor (ou o banco atrás dele) falhou. Não é falta de login: a sessão continua.
+class ApiServidorForaException extends ApiException {
+  const ApiServidorForaException(super.message);
+}
+
 class ApiTimeoutException implements Exception {
   const ApiTimeoutException(this.message);
   final String message;
@@ -166,7 +171,27 @@ class ApiClient {
 
   dynamic _decode(http.Response response) {
     final raw = response.body.trim().isEmpty ? '{}' : utf8.decode(response.bodyBytes);
-    final decoded = jsonDecode(raw);
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      // Corpo que não é JSON (ex.: "Internal Server Error" do Vercel): antes isso virava
+      // "Sem conexão com o servidor", que confundia. Agora diz que o servidor falhou.
+      if (response.statusCode >= 200 && response.statusCode < 300) return raw;
+      if (response.statusCode == 401) {
+        aoPerderSessao?.call();
+        throw const ApiUnauthorizedException('Faça login para continuar.');
+      }
+      throw ApiServidorForaException(
+        'O servidor está com problema agora (erro ${response.statusCode}). Tente de novo em alguns minutos.',
+      );
+    }
+    if (response.statusCode >= 500) {
+      final detail = decoded is Map ? decoded['detail']?.toString() : null;
+      throw ApiServidorForaException(
+        detail ?? 'O servidor está com problema agora (erro ${response.statusCode}). Tente de novo em alguns minutos.',
+      );
+    }
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return decoded;
     }

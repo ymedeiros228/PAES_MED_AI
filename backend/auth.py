@@ -75,9 +75,12 @@ def _assina(corpo: str) -> str:
     return _b64(hmac.new(_segredo(), corpo.encode(), hashlib.sha256).digest())
 
 
-def cria_token(usuario: str, nome: str, papel: str) -> str:
+def cria_token(usuario: str, nome: str, papel: str, esquema: str | None = None) -> str:
+    dados: dict[str, Any] = {"u": usuario, "n": nome, "p": papel, "exp": int(time.time()) + DURACAO_SEGUNDOS}
+    if esquema:
+        dados["e"] = esquema  # esquema do progresso da conta (db.py); sem "e" = esquema base
     corpo = _b64(json.dumps(
-        {"u": usuario, "n": nome, "p": papel, "exp": int(time.time()) + DURACAO_SEGUNDOS},
+        dados,
         ensure_ascii=False, separators=(",", ":"),
     ).encode())
     return f"{corpo}.{_assina(corpo)}"
@@ -122,7 +125,8 @@ def login(payload: LoginRequest, response: Response) -> dict[str, Any]:
     agora = _agora()
     with db() as conn:
         conta = conn.execute(
-            "SELECT usuario, nome, senha_hash, papel, bloqueado_ate FROM usuarios WHERE usuario = ?",
+            # SELECT *: a coluna esquema só existe depois de scripts/criar_usuario.py --esquema-proprio
+            "SELECT * FROM usuarios WHERE usuario = ?",
             (usuario,),
         ).fetchone()
         if not conta:
@@ -162,7 +166,10 @@ def login(payload: LoginRequest, response: Response) -> dict[str, Any]:
         conn.commit()
     response.set_cookie(
         COOKIE,
-        cria_token(conta["usuario"], conta["nome"], conta["papel"]),
+        cria_token(
+            conta["usuario"], conta["nome"], conta["papel"],
+            conta["esquema"] if "esquema" in conta.keys() else None,
+        ),
         max_age=DURACAO_SEGUNDOS,
         httponly=True,
         secure=True,

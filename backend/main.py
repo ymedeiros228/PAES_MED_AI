@@ -24,7 +24,7 @@ from fastapi.staticfiles import StaticFiles
 import auth
 from auth import exige_login, sessao_da_requisicao
 from config import EXTRA_ORIGINS, LOCAL_ORIGIN_REGEX
-from db import DATA_DIR, init_db
+from db import DATA_DIR, USE_PG, init_db, solta_esquema_da_conta, usar_esquema_da_conta
 from routers import (
     ai,
     essays,
@@ -220,14 +220,35 @@ async def _bloqueia_manutencao_na_web(request: Request, call_next: Any) -> Any:
 async def _exige_sessao_na_web(request: Request, call_next: Any) -> Any:
     # segunda barreira (a primeira é o middleware.js na borda): API só com login
     caminho = request.url.path
+    sessao = sessao_da_requisicao(request) if exige_login() else None
     if (
         exige_login()
         and caminho.startswith("/api/")
         and not caminho.startswith("/api/auth/")
-        and not sessao_da_requisicao(request)
+        and not sessao
     ):
         return JSONResponse({"detail": "Faça login para continuar."}, status_code=401)
-    return await call_next(request)
+    # progresso separado por conta: aponta o banco para o esquema da conta logada (db.py)
+    marca = usar_esquema_da_conta((sessao or {}).get("e"))
+    try:
+        return await call_next(request)
+    finally:
+        solta_esquema_da_conta(marca)
+
+
+if USE_PG:
+    import psycopg
+
+    @app.exception_handler(psycopg.OperationalError)
+    async def _banco_fora_do_ar(_request: Request, exc: Exception) -> JSONResponse:
+        # psycopg_pool.PoolTimeout herda de OperationalError: banco pausado, fora do ar
+        # ou sem conexão livre. Responde rápido e claro em vez de um 500 genérico.
+        logging.getLogger("paes.db").error("Banco indisponível: %s", str(exc)[:300])
+        return JSONResponse(
+            {"detail": "O banco de dados está fora do ar agora. Tente de novo em alguns minutos."},
+            status_code=503,
+            headers={"Retry-After": "60", "Cache-Control": "no-store"},
+        )
 
 
 app.include_router(auth.router)

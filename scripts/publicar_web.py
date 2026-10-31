@@ -33,6 +33,19 @@ def rodar(cmd: list[str]) -> None:
     subprocess.run([exe, *cmd[1:]], cwd=RAIZ, check=True)
 
 
+def _apaga_pasta(pasta: Path) -> None:
+    """rmtree que aguenta o Windows: pastas copiadas podem vir marcadas como somente leitura,
+    e aí o rmdir dá "Acesso negado" (WinError 5). Tira a marca e tenta de novo."""
+    import os
+    import stat
+
+    def _tira_somente_leitura(func, caminho, _exc):  # type: ignore[no-untyped-def]
+        os.chmod(caminho, stat.S_IWRITE)
+        func(caminho)
+
+    shutil.rmtree(pasta, onexc=_tira_somente_leitura)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sem-build", action="store_true")
@@ -50,7 +63,7 @@ def main() -> int:
 
     public = RAIZ / "public"
     if public.exists():
-        shutil.rmtree(public)
+        _apaga_pasta(public)
     shutil.copytree(web, public)
     for pasta in PASTAS_DADOS:
         origem = RAIZ / "data" / pasta
