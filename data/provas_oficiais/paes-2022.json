@@ -28,7 +28,9 @@
       "codigo": "t03",
       "conteudo": "O fragmento a seguir é um dos diálogos entre os dois estrangeiros que protagonizam Canaã.\n\n— Parece que já vi este quadro em algum lugar — disse Milkau, cismando, — Mas não, este ar, este conjunto suave, este torpor instantâneo, e que se percebe vai passar daqui a pouco, é seguramente a primeira vez que conheço.\n— E por quanto tempo aqui ficaremos? — disse o outro num bocejo de desalento; e o seu olhar pairava preguiçosamente sobre a paisagem.\n— Não meço o tempo — respondeu Milkau —, porque não sei até quando viverei, e agora espero que este seja o quadro definitivo da minha existência. Sou um imigrado, e tenho a alma do repouso; este será o meu último movimento na terra...\n— Mas nada o agita? Nada o impelirá para fora daqui, fora desta paz dolorosa, que é uma sepultura para nós?...\n— Aqui fico. E se aqui está a paz, é a paz que procuro exatamente...Eu me conservarei na humildade; em torno de mim desejarei uma harmonia infinita.",
       "tabelas": [],
-      "creditos": [],
+      "creditos": [
+        "ARANHA, G. (1868-1931). Canaã. 3 ed. São Paulo: Martins Claret, 2013."
+      ],
       "figuras": [],
       "pagina": 4
     },
@@ -285,10 +287,10 @@
       "anulada": false,
       "figuras": [],
       "tabelas": [],
-      "creditos": [
-        "ARANHA, G. (1868-1931). Canaã. 3 ed. São Paulo: Martins Claret, 2013."
-      ],
-      "pagina_pdf": 4
+      "creditos": [],
+      "pagina_pdf": 4,
+      "revisao_manual": "Yuri/Claude 01/11/2026: crédito do texto de apoio estava preso nesta questão; passado para o texto",
+      "conferida_visualmente": true
     },
     {
       "id": "paes-2022-07",

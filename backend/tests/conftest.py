@@ -72,3 +72,18 @@ def _make_isolated_data_dir() -> Path:
 
 # Sem o .env de dados do usuário: o diretório temporário não tem .env.
 os.environ["PAES_DATA_DIR"] = str(_make_isolated_data_dir())
+
+# Trava o DATA_DIR do backend na cópia temporária JÁ AGORA. O db.py lê PAES_DATA_DIR só no
+# primeiro import; test_ai_config.py remove a variável nos seus testes e, se o primeiro import de
+# db acontecesse lá dentro (ex.: monkeypatch de "services_core.*"), a suíte passava a gravar no
+# data/paes_med_ai.db real (flashcards, embeddings, ingest_jobs). Visto em 01/11/2026: o
+# backend/smoke_test.py (script, casa com *_test.py) era coletado antes e importava o main.
+import sys  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import db as _db  # noqa: E402, F401
+
+assert os.path.samefile(_db.DATA_DIR, os.environ["PAES_DATA_DIR"]), (
+    "o backend foi importado antes do conftest (ex.: arquivo *_test.py fora de backend/tests); "
+    "os testes gravariam no data/ real"
+)

@@ -53,5 +53,15 @@
     ],
     "conferida": true,
     "nota": "Hífen de étnico-raciais perdido na quebra de linha (Claude, 19/10/2026)."
+  },
+  "paes-2022-06": {
+    "creditos": [],
+    "nota": "Yuri/Claude 01/11/2026: crédito do texto de apoio estava preso nesta questão; passado para o texto",
+    "conferida": true
+  },
+  "texto:t03": {
+    "creditos": [
+      "ARANHA, G. (1868-1931). Canaã. 3 ed. São Paulo: Martins Claret, 2013."
+    ]
   }
 }

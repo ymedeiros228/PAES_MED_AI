@@ -1,0 +1,398 @@
+{
+  "paes-2016-01": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-02": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-03": {
+    "topico": "Interpretação de texto",
+    "subtopico": "argumentos",
+    "syllabus_id": "edital-7e4ebda0748904df",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-04": {
+    "topico": "Literatura",
+    "subtopico": "obras",
+    "syllabus_id": "edital-892f19a77d19732b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-05": {
+    "topico": "Gramática em uso",
+    "subtopico": "pontuação",
+    "syllabus_id": "edital-b9f9610d1128ec19",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-06": {
+    "topico": "Interpretação de texto",
+    "subtopico": "implícitos",
+    "syllabus_id": "edital-1cf92e88428e8dfe",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-07": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-08": {
+    "topico": "Literatura",
+    "subtopico": "contexto",
+    "syllabus_id": "edital-9112f077c2ab2d60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-09": {
+    "topico": "Literatura",
+    "subtopico": "diálogo entre texto",
+    "syllabus_id": "edital-6c8801a07bb61e60",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-10": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-11": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-12": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-13": {
+    "topico": "Literatura",
+    "subtopico": "autores",
+    "syllabus_id": "edital-63e80465c53d6344",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-14": {
+    "topico": "Linguagem",
+    "subtopico": "variação linguística",
+    "syllabus_id": "edital-1d679b8fd28ab308",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-15": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2016-16-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2016-16-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2016-17-en": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Inglês"
+  },
+  "paes-2016-17-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "implícitos",
+    "syllabus_id": "edital-1cf92e88428e8dfe",
+    "materia": "Espanhol"
+  },
+  "paes-2016-18-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2016-18-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2016-19-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2016-19-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2016-20-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2016-20-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "finalidade",
+    "syllabus_id": "edital-f7b96387295c0ec8",
+    "materia": "Espanhol"
+  },
+  "paes-2016-21": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2016-22": {
+    "topico": "Mundo contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-598ecabe7d128b00",
+    "materia": "História"
+  },
+  "paes-2016-23": {
+    "topico": "Brasil Colônia",
+    "subtopico": null,
+    "syllabus_id": "edital-5e00fa8d15dc691a",
+    "materia": "História"
+  },
+  "paes-2016-24": {
+    "topico": "Mundo contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-598ecabe7d128b00",
+    "materia": "História"
+  },
+  "paes-2016-25": {
+    "topico": "População",
+    "subtopico": null,
+    "syllabus_id": "edital-ce000900b701ed4e",
+    "materia": "Geografia"
+  },
+  "paes-2016-26": {
+    "topico": "Geografia do Brasil",
+    "subtopico": null,
+    "syllabus_id": "edital-72f90a6345414666",
+    "materia": "Geografia"
+  },
+  "paes-2016-27": {
+    "topico": "Ambiente",
+    "subtopico": null,
+    "syllabus_id": "edital-60a60c369a3fb0f7",
+    "materia": "Geografia"
+  },
+  "paes-2016-28": {
+    "topico": "Globalização",
+    "subtopico": null,
+    "syllabus_id": "edital-85ae1db2b4994a70",
+    "materia": "Geografia"
+  },
+  "paes-2016-29": {
+    "topico": "Maranhão",
+    "subtopico": null,
+    "syllabus_id": "edital-aa1d4643d796e300",
+    "materia": "Geografia"
+  },
+  "paes-2016-30": {
+    "topico": "Urbanização",
+    "subtopico": null,
+    "syllabus_id": "edital-624586391e0d5a1e",
+    "materia": "Geografia"
+  },
+  "paes-2016-31": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2016-32": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2016-33": {
+    "topico": "Ética",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c615c86e1d9965",
+    "materia": "Filosofia"
+  },
+  "paes-2016-34": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2016-35": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2016-36": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia"
+  },
+  "paes-2016-37": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia"
+  },
+  "paes-2016-38": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia"
+  },
+  "paes-2016-39": {
+    "topico": "Direitos",
+    "subtopico": null,
+    "syllabus_id": "edital-e9ff30793a83db2e",
+    "materia": "Sociologia"
+  },
+  "paes-2016-40": {
+    "topico": "Estado",
+    "subtopico": null,
+    "syllabus_id": "edital-23b00a94c39e7309",
+    "materia": "Sociologia"
+  },
+  "paes-2016-41": {
+    "topico": "Álgebra",
+    "subtopico": "sistemas",
+    "syllabus_id": "edital-d05af77c1ede05e6",
+    "materia": "Matemática"
+  },
+  "paes-2016-42": {
+    "topico": "Álgebra",
+    "subtopico": "progressões",
+    "syllabus_id": "edital-e74513890f1852ee",
+    "materia": "Matemática"
+  },
+  "paes-2016-43": {
+    "topico": "Geometria plana",
+    "subtopico": "áreas",
+    "syllabus_id": "edital-032598b9ae4b1c89",
+    "materia": "Matemática"
+  },
+  "paes-2016-44": {
+    "topico": "Probabilidade e estatística",
+    "subtopico": "tabelas",
+    "syllabus_id": "edital-e8d5193c3d9e3a38",
+    "materia": "Matemática"
+  },
+  "paes-2016-45": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-46": {
+    "topico": "Dinâmica",
+    "subtopico": null,
+    "syllabus_id": "edital-8175be2477ed8dfd",
+    "materia": "Física"
+  },
+  "paes-2016-47": {
+    "topico": "Hidrostática",
+    "subtopico": null,
+    "syllabus_id": "edital-8f4b2a4dd7d97af8",
+    "materia": "Física"
+  },
+  "paes-2016-48": {
+    "topico": "Termologia",
+    "subtopico": null,
+    "syllabus_id": "edital-bb770fda60704dd2",
+    "materia": "Física"
+  },
+  "paes-2016-49": {
+    "topico": "Gravitação",
+    "subtopico": null,
+    "syllabus_id": "edital-4ea8310c6bb61340",
+    "materia": "Física"
+  },
+  "paes-2016-50": {
+    "topico": "Eletrodinâmica",
+    "subtopico": null,
+    "syllabus_id": "edital-e7c8881dd9af0c8f",
+    "materia": "Física"
+  },
+  "paes-2016-51": {
+    "topico": "Ecologia",
+    "subtopico": null,
+    "syllabus_id": "edital-67f51efbff7f56e0",
+    "materia": "Biologia"
+  },
+  "paes-2016-52": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2016-53": {
+    "topico": "Parasitoses",
+    "subtopico": null,
+    "syllabus_id": "edital-815a30329c84a2ae",
+    "materia": "Biologia"
+  },
+  "paes-2016-54": {
+    "topico": "Metabolismo",
+    "subtopico": null,
+    "syllabus_id": "edital-29b8f83ebf6f3d8f",
+    "materia": "Biologia"
+  },
+  "paes-2016-55": {
+    "topico": "Eletroquímica",
+    "subtopico": null,
+    "syllabus_id": "edital-c91ad29e7eeaf4d5",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-56": {
+    "topico": "Estrutura atômica",
+    "subtopico": null,
+    "syllabus_id": "edital-4fdafc67a5417801",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-57": {
+    "topico": "Estequiometria",
+    "subtopico": null,
+    "syllabus_id": "edital-97701475d8ec7e94",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-58": {
+    "topico": "Termoquímica",
+    "subtopico": null,
+    "syllabus_id": "edital-60225e76699c87a2",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-59": {
+    "topico": "Aplicações cotidianas",
+    "subtopico": null,
+    "syllabus_id": "edital-464f52c1e1003506",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2016-60": {
+    "topico": "Membranas",
+    "subtopico": null,
+    "syllabus_id": "edital-1e734bd6076e095e",
+    "materia": "Biologia"
+  }
+}

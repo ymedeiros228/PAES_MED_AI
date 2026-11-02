@@ -1,0 +1,73 @@
+{
+  "paes-2016-13": {
+    "alternativas": [
+      "“[...] – Loucura! – gritou o patrão / Não vês o que te dou eu? / – Mentira! – disse o operário / Não podes dar-me o que é meu. [...]” (Vinícius de Moraes)",
+      "“[...] Essa negrinha Fulô / ficou logo pra mucama, / para vigiar a Sinhá / pra engomar pro Sinhô! [...]” (Jorge de Lima)",
+      "“[...] Me lembro de todos os pregões: / Ovos frescos e baratos / Dez ovos por uma pataca / Foi há muito tempo... [...]” (Manuel Bandeira)",
+      "“_ Qué apanhá sordado? / _ O quê? / _ Qué apanhá? / _ Pernas e cabeças na calçada.” (Oswald de Andrade)",
+      "“[...] Ali a gente brincava de brincar com palavras / tipo assim: Hoje eu vi uma formiga ajoelhada na pedra! / A Mãe que ouvira a brincadeira falou: / Já vem você com suas visões! / Porque formiga nem tem joelhos ajoelháveis [...]” (Manoel de Barros)"
+    ],
+    "nota": "Yuri/Claude 01/11/2026: alternativa E (Manoel de Barros) cortada na virada de coluna; completada pela pág. 6",
+    "conferida": true
+  },
+  "paes-2016-14": {
+    "texto_base": null,
+    "nota": "Yuri/Claude 01/11/2026: o 'texto de apoio' era o resto da alternativa E da Q13",
+    "conferida": true
+  },
+  "paes-2016-15": {
+    "texto_base": null,
+    "nota": "Yuri/Claude 01/11/2026: o 'texto de apoio' era o resto da alternativa E da Q13",
+    "conferida": true
+  },
+  "paes-2016-23": {
+    "enunciado": "Estimativa do número de africanos desembarcados em cada região (em milhares de indivíduos)\n\n[[FIGURA 1]]\n\nO número de africanos desembarcados no Brasil devido ao tráfico negreiro, conforme tabela, foi o maior, ao se compararem os dados da América Britânica e os Estados Unidos. Uma das explicações para essa diferença é que",
+    "nota": "Yuri/Claude 01/11/2026: a tabela já vem como imagem fiel; tirada a cópia em texto sem cabeçalho (pág. 11)",
+    "conferida": true
+  },
+  "paes-2016-26": {
+    "enunciado": "De acordo com o estudo da Organização para Cooperação e Desenvolvimento Econômico (OCDE), a produção agrícola brasileira apresentava, em 2011, índices de desenvolvimento acima da média mundial. Projeções mostram que, até 2022, a produção de grãos aumentará 22%, a de carne de frango, que se baseia na produção agrícola, poderá crescer 4,2% e deve liderar o ranking. O trigo, o milho, as carnes bovina e suína também aparecem nos resultados preliminares como produtos que vão puxar esse crescimento.\n\nO aumento da produção agrícola brasileira ocorreu pela incorporação de novas áreas e tecnologias. Os dois fatores que contribuíram para que a Região Centro-Oeste se transformasse em grande produtora de grãos são o tipo de clima e de plantio, respectivamente, indicados em",
+    "alternativas": [
+      "Clima: Tropical litorâneo — Plantio: Arroz",
+      "Clima: Semiárido — Plantio: Milho",
+      "Clima: Tropical de altitude — Plantio: Cana-de-açúcar",
+      "Clima: Equatorial — Plantio: Café",
+      "Clima: Tropical — Plantio: Soja"
+    ],
+    "nota": "Yuri/Claude 01/11/2026: alternativas eram uma tabela Clima × Tipo de plantio (pág. 12)",
+    "conferida": true
+  },
+  "paes-2016-27": {
+    "texto_base": null,
+    "alternativas": [
+      "Desertificação: Caatinga, Semiárido, Nordeste, pecuária e agricultura. Arenização: Pampa, Subtropical, Sul, pecuária e agricultura.",
+      "Desertificação: Cerrado, Tropical Continental, Centro-Oeste, pecuária. Arenização: Caatinga, Semiárido, Nordeste, pecuária e agricultura.",
+      "Desertificação: Mata Atlântica, Tropical de altitude, Sudeste, lavoura de café. Arenização: Cerrado, Tropical Continental, Centro-Oeste, pecuária.",
+      "Desertificação: Pampa, Subtropical, Sul, pecuária e agricultura. Arenização: Amazônia, Equatorial úmido, Norte, pecuária.",
+      "Desertificação: Amazônia, Equatorial úmido, Norte, pecuária. Arenização: Mata Atlântica, Tropical de altitude, Sudeste, lavoura de café."
+    ],
+    "nota": "Yuri/Claude 01/11/2026: alternativas eram fotos com legendas; legendas transcritas da pág. 13 (a figura com as fotos fica no enunciado). O 'texto de apoio' era a tabela da Q26",
+    "conferida": true
+  },
+  "paes-2016-37": {
+    "enunciado": "A Sociologia como ciência foi criada no século XIX em um contexto marcado por “mudanças sociais” que demandavam explicações para a intervenção nos problemas detectados.\n\nO tipo de sociedade que propiciou o surgimento da sociologia e a indicação de suas características são, respectivamente,",
+    "alternativas": [
+      "Capitalista — Inchaço populacional na zona urbana, crescimento da criminalidade, aparecimento do proletariado e crise das instituições sociais.",
+      "Escravocrata — Aumento da urbanização, desindustrialização, aumento da taxa de emprego, aparecimento da burguesia e enfraquecimento dos laços sociais.",
+      "Socialista — Aumento da migração para a zona rural, valorização do salário dos trabalhadores, redução do desemprego e fortalecimento da igreja enquanto instituição social.",
+      "Comunista — Crescimento da população urbana e rural, redução da pobreza, aparecimento do proletariado, fortalecimento da família enquanto instituição social.",
+      "Feudal — Estabilidade econômica, valorização da mulher no mercado de trabalho, fortalecimento do casamento como instituição social."
+    ],
+    "nota": "Yuri/Claude 01/11/2026: alternativas em tabela Tipo de sociedade × Características (pág. 16)",
+    "conferida": true
+  },
+  "paes-2016-42": {
+    "enunciado": "As equipes A e B de uma gincana escolar devem recolher livros na vizinhança para montar uma biblioteca comunitária. O juiz da competição começou a fazer anotações das quantidades de livros trazidos a cada rodada pelas duas equipes e verificou um padrão de crescimento, conforme a tabela 1. A cada rodada, o juiz também avalia o total de livros colocados nas estantes de cada equipe, como mostrado na tabela 2, a seguir.\n\nTabela 1 — Arrecadação\n\n[[TABELA 1]]\n\nTabela 2 — Total na estante\n\n[[TABELA 2]]\n\nO número de rodadas necessárias para que as duas equipes disponham da mesma quantidade total de livros nas estantes é",
+    "tabelas": [
+      "| Rodada | Equipe A | Equipe B |\n| --- | --- | --- |\n| 1 | 06 | 16 |\n| 2 | 10 | 18 |\n| 3 | 14 | 20 |\n| 4 | | |\n| ⋮ | ⋮ | ⋮ |",
+      "| Rodada | Equipe A | Equipe B |\n| --- | --- | --- |\n| 1 | 06 | 16 |\n| 2 | 16 | 34 |\n| 3 | 30 | 54 |\n| 4 | | |\n| ⋮ | ⋮ | ⋮ |"
+    ],
+    "nota": "Yuri/Claude 01/11/2026: as duas tabelas saíram como texto corrido; refeitas pela pág. 18 (conta: 2n² + 4n = n² + 15n, n = 11)",
+    "conferida": true
+  }
+}

@@ -1,0 +1,1753 @@
+{
+  "prova": {
+    "id": "paes-2016",
+    "ano": 2016
+  },
+  "textos_base": [
+    {
+      "codigo": "t01",
+      "conteudo": "Vidas Secas, de Graciliano Ramos, obra da segunda fase do Modernismo brasileiro, conta a saga de uma família de retirantes, marcada por uma ostensiva exclusão social.\n\nLeia o fragmento extraído do referido romance, para responder às questões 04 e 05.\n\nTexto III\n[...]\nOlhou em torno, com receio de que, fora os meninos,\nalguém tivesse percebido a frase imprudente. Corrigiu-a, murmurando:\n\n- Você é um bicho, Fabiano.\nIsto para ele era motivo de orgulho. Sim senhor, um bicho capaz de vencer dificuldades.\n\nChegara naquela situação medonha – e ali estava, forte,\naté gordo, fumando o seu cigarro de palha.\n\n- Um bicho, Fabiano.\n[...]\nEra. Apossara-se da casa porque não tinha onde cair morto, passara uns dias mastigando raiz de imbu e sementes de mucunã. Viera a trovoada. E, com ela, o fazendeiro, que o expulsara. Fabiano fizera-se desentendido e oferecera seus préstimos, resmungando, coçando os cotovelos, sorrindo aflito. O jeito que tinha era ficar. E o patrão aceitara-o, entregara-lhe as marcas de ferro.\n\nAgora Fabiano era vaqueiro, e ninguém o tiraria dali. Aparecera como um bicho, mas criara raízes, estava plantado. Olhou as quipás, os mandacarus e os xiquexiques. Era mais forte que tudo isso, era como as catingueiras e as baraúnas. Ele, a sinhá Vitória, os dois filhos e a cachorra Baleia estavam agarrados à terra.\n\n[...]\nEntristeceu. Considerar-se plantado em terra alheia!\n[...]",
+      "tabelas": [],
+      "creditos": [
+        "RAMOS, Graciliano. Vidas Secas. 127 ed. Rio de Janeiro: Record, 2015."
+      ],
+      "figuras": [],
+      "pagina": 4
+    },
+    {
+      "codigo": "t02",
+      "conteudo": "Leia o Texto IV para responder às questões 06 e 07.\n\nTexto IV\n\nCadeia\nEstava tão cansado, tão machucado, que ia quase adormecendo no meio daquela desgraça. Havia ali um bêbedo tresvariando em voz alta [...] Discutiam, queixava-se da lenha molhada. Fabiano cochilava, a cabeça pesada inclinava-se para o peito e levantava-se. [...] Acordou sobressaltado. Pois não estava misturando as pessoas, desatinando? Talvez fosse efeito da cachaça. Não era: tinha bebido um copo. [...]\nOuviu o falatório do bêbedo e caiu numa indecisão dolorosa. Ele também dizia palavras sem sentido, conversava à toa. Mas irou-se com a comparação, deu marradas na parede. Era bruto, sim senhor, nunca havia aprendido, não sabia explicar-se. Estava preso por isso? Como era? Então mete-se um homem na cadeia porque ele não sabe falar direito? Que mal fazia a brutalidade dele? Vivia trabalhando como um escravo.\n[...]",
+      "tabelas": [],
+      "creditos": [
+        "RAMOS, Graciliano. Vidas Secas. (Adaptado) 127 ed. Rio de Janeiro:\nRecord, 2015."
+      ],
+      "figuras": [],
+      "pagina": 4
+    },
+    {
+      "codigo": "t03",
+      "conteudo": "Para responder às questões 09, 10 e 11, leia os poemas de\nCarlos Drummond de Andrade e de Olavo Bilac.\n\nTexto V\nProcura da Poesia\n[...]\nPenetra surdamente no reino das palavras.\nLá estão os poemas que esperam ser escritos.\nEstão paralisados, mas não há desespero,\nhá calma e frescura na superfície intata.\nEi-los sós e mudos, em estado de dicionário.\nConvive com teus poemas, antes de escrevê-los.\n[...]\nNão forces o poema a desprender-se do limbo.\nNão colhas no chão o poema que se perdeu.\nNão adules o poema. Aceita-o\nComo ele aceitará sua forma definitiva e concentrada\nno espaço.\nChega mais perto e contempla as palavras.\nCada uma\ntem mil faces secretas sob a face neutra\ne te pergunta, sem interesse pela resposta,\npobre ou terrível, que lhe deres:\nTrouxeste a chave?\nRepara:\nermas de melodia e conceito,\nelas se refugiaram na noite, as palavras.\nAinda úmidas e impregnadas de sono,\nrolam num rio difícil e se transformam em desprezo.\n\nTexto VI\n\nProfissão de fé\n[...]\nInvejo o ourives\nQuando escrevo:\nImito o amor\nCom que ele, em ouro, o alto-relevo\nFaz de uma flor.\nImito-o. E, pois, nem de Carrara\nA pedra firo:\nO alvo cristal, a pedra rara,\nO ônix prefiro.\nPor isso, corre, por servir-me,\nSobre o papel\nA pena, como em prata firme\nCorre o cinzel.\n[...]\nTorce , aprimora, alteia, lima\nA frase; e, enfim,\nno verso de ouro engasta a rima\ncomo um rubim.\nQuero que a estrofe cristalina,\nDobrada ao jeito\nDo ourives, saia da oficina\nSem um defeito.\n[...]\nPorque o escrever – tanta perícia,\nTanta requer,\nQue oficio tal... nem há notícia\nDe outro qualquer.",
+      "tabelas": [],
+      "creditos": [
+        "ANDRADE, Carlos Drummond de. A Rosa do Povo. 1 ed. São Paulo:\nCompanhia das Letras, 2012.",
+        "BILAC, Olavo. Poesia. Rio de Janeiro: Agir, 2005."
+      ],
+      "figuras": [],
+      "pagina": 5
+    },
+    {
+      "codigo": "t05",
+      "conteudo": "[[FIGURA 1]]",
+      "tabelas": [],
+      "creditos": [],
+      "figuras": [
+        {
+          "caminho": "figuras/2016/t05_fig1.webp"
+        }
+      ],
+      "pagina": 8
+    }
+  ],
+  "questoes": [
+    {
+      "id": "paes-2016-01",
+      "numero": 1,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "O Auto da Barca do Inferno é uma das três peças que\ncompõem a Trilogia das Barcas do teatro vicentino. Gil Vicente é autor do período literário português, conhecido como\nHumanismo.\n\nTexto I\n\nANJO: Que mandais?\nFIDALGO: Que me digais,\npois parti tão sem aviso,\nse a barca do paraíso\né esta em que navegais.\nANJO: Esta é; que lhe buscais?\nFIDALGO: Que me deixeis embarcar;\nsou fidalgo de solar,\né bem que me recolhais.\n[...]\nANJO: Pra vossa fantasia\nmui pequena é esta barca.\nFIDALGO: Pra senhor de tal marca\nnão há aqui mais cortesia?\n[...]\n\nOs diálogos entre o anjo e o fidalgo põem em discussão não só os valores de um mundo medieval, mas também do\nmundo contemporâneo. A atualidade dessa discussão\ndecorre de que o homem de hoje, ainda, assume falsos\nposicionamentos semelhantes ao de uma das personagens\nda cena. Essa atualidade é apresentada, por meio de",
+      "alternativas": [
+        "limitações retóricas.",
+        "alianças subversivas.",
+        "falhas na comunicação.",
+        "atos de falas impositivas.",
+        "comportamentos antidemocráticos."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "VICENTE, Gil. Auto da Barca do Inferno. São Paulo: FTD, 1997."
+      ],
+      "pagina_pdf": 3
+    },
+    {
+      "id": "paes-2016-02",
+      "numero": 2,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "O Texto II mostra um diálogo entre o Diabo e a segunda personagem, o Onzeneiro, quando chega à Barca do Inferno.\n\nLeia-o para responder à questão proposta.\n\nTexto II\nONZENEIRO: Para onde caminhais?\nDIABO: Oh! Que má-hora venhais,\nonzeneiro meu parente!\n[...]\nDIABO: Ora mui muito me espanto\nnão vos livrar o dinheiro.\nONZENEIRO: Nem tão só para o barqueiro\nnão me deixaram nem tanto.\n[...]\nE para onde é a viagem?\nDIABO: Para onde tu hás-de ir;\nestamos para partir,\nnão cures de mais linguagem.\n[...]\nVICENTE, Gil. Auto da Barca do Inferno. São Paulo: FTD, 1997.\nO Diabo ouve o pretexto do Onzeneiro, mas não se deixa\nlevar pelos artifícios da eloquência do passageiro. Essa atitude do Diabo pode ser comprovada no verso",
+      "alternativas": [
+        "“não cures de mais linguagem.”",
+        "“Oh! Que má-hora venhais,”",
+        "“onzeneiro meu parente!”",
+        "“não vos livrar o dinheiro.”",
+        "“Para onde tu hás-de ir;”"
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 3
+    },
+    {
+      "id": "paes-2016-03",
+      "numero": 3,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "Leia o texto publicado em revista de grande circulação para responder à questão 03.\n“Professores, acordem!\nCaros professores: vocês se meteram em uma enrascada. Há décadas, as lideranças de vocês vêm construindo um discurso de vitimização. A imagem que vocês vendem não é de profissionais competentes, mas a de coitadinhos, estropiados e maltratados. E vocês venceram: a população brasileira está do seu lado, comprou essa imagem (nada seduz mais a alma brasileira do que um coitado, afinal).”\n\nPara sustentar a argumentação são utilizados variados\nrecursos. A seleção léxico-semântica utilizada pelo autor para sustentar a argumentação marca o emprego de uma imagem\ncrítica, com um tom",
+      "alternativas": [
+        "ambíguo.",
+        "mediador.",
+        "complacente.",
+        "elucidativo.",
+        "mordaz."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "IOSCHPE, G. Revista Veja. 2014."
+      ],
+      "pagina_pdf": 3
+    },
+    {
+      "id": "paes-2016-04",
+      "numero": 4,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t01",
+      "enunciado": "Com marcas temporais adequadas, o narrador usa o recurso do flashback para",
+      "alternativas": [
+        "fazer digressões do narrador, fora do contexto das personagens.",
+        "fazer valer momentos memoráveis da vida de uma das personagens.",
+        "focar o cenário onde se passa a história narrada.",
+        "dar maior dinamismo à fala das personagens.",
+        "evitar recorrências na tessitura narrativa."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 4
+    },
+    {
+      "id": "paes-2016-05",
+      "numero": 5,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t01",
+      "enunciado": "A pontuação sintático-estilística, no fragmento, compõe a autoexpressividade da personagem, com o emprego da\nvírgula no vocativo, no seguinte trecho:",
+      "alternativas": [
+        "“Sim senhor, um bicho capaz de vencer dificuldades.”",
+        "“E, com ela, o fazendeiro, que o expulsara.”",
+        "“Você é um bicho, Fabiano.”",
+        "“Olhou as quipás, os mandacarus e os xiquexiques.”",
+        "“Agora Fabiano era vaqueiro, e ninguém o tiraria dali.”"
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 4
+    },
+    {
+      "id": "paes-2016-06",
+      "numero": 6,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t02",
+      "enunciado": "A leitura do segundo parágrafo permite depreender a imagem que Fabiano tem de si mesmo e a sua reação ao domínio a\nque se submete, por meio do discurso indireto livre. Esse discurso é efetivado pela",
+      "alternativas": [
+        "reprodução dos estados mentais, dos gestos ou dos pensamentos da própria personagem.",
+        "narração, por nexo de subordinação sintática, com verbos de ação adequados.",
+        "interlocução evidenciada entre duas personagens, com pontuação pertinente.",
+        "voz de um narrador intruso, que faz reflexões ou comentários.",
+        "primeira pessoa, com o recurso do narrador-personagem."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 4
+    },
+    {
+      "id": "paes-2016-07",
+      "numero": 7,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t02",
+      "enunciado": "Atentando para o emprego dos tempos verbais, quanto à\nprodução de sentidos no texto literário, o presente do indicativo em “Então mete-se um homem na cadeia porque ele não sabe falar direito?” sugere que as ações expressas estão\ncaracterizadas como",
+      "alternativas": [
+        "desejos e hipóteses com projeção para um tempo virtual do querer do falante.",
+        "fatos de um universo imaginário ou de um mundo de faz- de-conta.",
+        "ocorrências habituais repetidas anteriores ao enunciado no momento.",
+        "acontecimentos pontuais de um tempo lembrado, mas já terminado.",
+        "confirmação da identidade existencial da personagem no mundo real."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 4
+    },
+    {
+      "id": "paes-2016-08",
+      "numero": 8,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "No livro Vidas Secas, tanto as dificuldades de interlocução de Fabiano como o silêncio que lhe é característico, relacionam-se à condição subalterna que a personagem vivencia em seu meio social. Essa relação é evidenciada no seguinte fragmento:",
+      "alternativas": [
+        "“Às vezes dizia uma coisa sem intenção de ofender, entendiam outra, e lá vinham questões. Perigoso entrar na bodega. O único vivente que o compreendia era a mulher. Nem precisava falar: bastavam gestos.”",
+        "“Fabiano também não sabia falar. Às vezes largava nomes arrevesados, por embromação. Via perfeitamente que tudo era besteira. Não podia arrumar o que tinha no interior. Se pudesse... Ah! Se pudesse, atacaria os soldados amarelos que espancam as criaturas inofensivas.”",
+        "“Conteve-se, notou que os meninos estavam perto, com certeza iam admirar-se ouvindo-o falar só. E, pensando bem, ele não era homem: era apenas um cabra ocupado em guardar coisas dos outros.”",
+        "“Vivia longe dos homens, só se dava bem com os animais. Os seus pés duros quebravam espinhos e não sentiam a quentura da terra. Montado, confundia-se com o cavalo, grudava-se a ele. E falava uma linguagem cantada, monossilábica e gutural, que o companheiro entendia.”",
+        "“Era como se Fabiano tivesse esfolado um animal. A barba ruiva e emaranhada estava invisível, os olhos azulados e imóveis fixavam-se nos tições, fala dura e rouca entrecortavase de silêncios.”"
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 5
+    },
+    {
+      "id": "paes-2016-09",
+      "numero": 9,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t03",
+      "enunciado": "Comparando os Textos V e VI sobre aspectos temáticos e\norganização enunciativa, observa-se que",
+      "alternativas": [
+        "discutem a ideia de que o ato de escrever poemas dispensa as tensões instauradas entre a busca da palavra e a relação do sujeito com o mundo.",
+        "inter-relacionam-se pelo diálogo sobre o cultivo de um pensamento temático que minimize o trabalho da palavra em si.",
+        "convergem para a temática do dilema da inquietação metafísica do eu lírico para interpretar a si e à sua época.",
+        "coincidem quanto ao emprego da metalinguagem para sugerir anseios e labutas inerentes ao fazer poético.",
+        "assemelham-se pelo desejo de expressão livre a valorização temática do cotidiano."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 5
+    },
+    {
+      "id": "paes-2016-10",
+      "numero": 10,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t03",
+      "enunciado": "Nos dois textos, algumas marcas linguísticas autorizam a inferência de que a palavra é vetor de poder. As palavras e/ou expressões, de um mesmo campo semântico, que exemplificam esse vetor são",
+      "alternativas": [
+        "“úmidas”, “impregnadas de sono”, “forma definitiva”.",
+        "“mil faces secretas”, “reino”, “verso de ouro”.",
+        "“pobre ou terrível”, “cinzel”, “paralisados”.",
+        "“calma”, “melodia”, “alto-relevo”.",
+        "“mudos”, “oficina”, “alvo cristal”."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 6
+    },
+    {
+      "id": "paes-2016-11",
+      "numero": 11,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": "t03",
+      "enunciado": "A Rosa do Povo, de Drummond, foi publicada em 1945, ao final da Segunda Guerra Mundial, e traz alguns poemas que enfocam anseios e questionamentos advindos desse momento histórico. Levando em conta o verso “Trouxeste a chave?”, pode-se inferir uma voz",
+      "alternativas": [
+        "orgulhosa, que indicia um falante seguro no processo de seleção vocabular poética.",
+        "crítica, que se refere à escassez vocabular dos dicionários quanto às palavras que atendem à linguagem poética.",
+        "introspectiva, que sinaliza para o leitor a tensão do enigma, resistência x disponibilidade, da palavra ao discurso poético.",
+        "convincente, que exige a necessidade de inventar palavras novas para atualizar a linguagem poética.",
+        "doutrinária, que ensina o leitor a aprisionar as palavras para a criação de uma linguagem poética."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 6
+    },
+    {
+      "id": "paes-2016-12",
+      "numero": 12,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "Analise a tirinha para responder à questão 12.\n\n[[FIGURA 1]]\n\nOs ditados populares permanecem no tempo e significam, na maioria das vezes, exemplos morais, filosóficos, sem deixar de carregarem consigo certa carga de humor e de ironia, sendo, por isso, comumente utilizados na linguagem cotidiana.\nO ditado popular que sintetiza o que é exposto na tirinha é",
+      "alternativas": [
+        "“Promessas não pagam dívidas”.",
+        "“Após a tempestade vem a bonança”.",
+        "“Se correr o bicho pega, se ficar o bicho come”.",
+        "“Quem nunca comeu mel quando come se lambuza”.",
+        "“Não há mal que perdure, não há dor que não se cure’”."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q12_fig3.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "VERÍSSIMO, L. F. As cobras: antologia definitiva. Rio de Janeiro:\nObjetiva, 2010."
+      ],
+      "pagina_pdf": 6
+    },
+    {
+      "id": "paes-2016-13",
+      "numero": 13,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "Leia o texto a seguir e analise a linguagem utilizada por Guimarães Rosa, escritor da terceira fase do Modernismo brasileiro.\n“A gente via Brejeirinha: primeiro, os cabelos, compridos, lisos, louro-cobre; e, no meio deles, coisicas diminutas: a carinha não-comprida, o perfilzinho agudo, um narizinho que-carícia. Aos tantos, não parava, andorinhava, espiava agora – o xixixi e o empapar-se da paisagem – as pestanas til-til. Porém, dissese-dizia ela, pouco se vê, pelos entrefios: - “Tanto chove, que me gela!” Aí, esticou-se para cima, dando com os pés em diversos objetos. – “Ui, ui-te!””\n\nA recriação da própria linguagem e de neologismos, no texto de Guimarães Rosa, também está presente em outros autores, conforme exemplificam os versos:",
+      "alternativas": [
+        "“[...] – Loucura! – gritou o patrão / Não vês o que te dou eu? / – Mentira! – disse o operário / Não podes dar-me o que é meu. [...]” (Vinícius de Moraes)",
+        "“[...] Essa negrinha Fulô / ficou logo pra mucama, / para vigiar a Sinhá / pra engomar pro Sinhô! [...]” (Jorge de Lima)",
+        "“[...] Me lembro de todos os pregões: / Ovos frescos e baratos / Dez ovos por uma pataca / Foi há muito tempo... [...]” (Manuel Bandeira)",
+        "“_ Qué apanhá sordado? / _ O quê? / _ Qué apanhá? / _ Pernas e cabeças na calçada.” (Oswald de Andrade)",
+        "“[...] Ali a gente brincava de brincar com palavras / tipo assim: Hoje eu vi uma formiga ajoelhada na pedra! / A Mãe que ouvira a brincadeira falou: / Já vem você com suas visões! / Porque formiga nem tem joelhos ajoelháveis [...]” (Manoel de Barros)"
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "ROSA, Guimarães. Primeiras estórias. Rio de Janeiro: Nova Fronteira,\n1967."
+      ],
+      "pagina_pdf": 6,
+      "revisao_manual": "Yuri/Claude 01/11/2026: alternativa E (Manoel de Barros) cortada na virada de coluna; completada pela pág. 6",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-14",
+      "numero": 14,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "Cada língua é um conjunto heterogêneo de falares, cujas variações ocorrem em todos os níveis. “Saudosa maloca” é um exemplo de variação. Adoniran Barbosa, autor da letra da música “Saudosa maloca”, é conhecido por criar composições inspiradas nas suas próprias vivências. Leia o fragmento seguinte:\n\nSaudosa maloca\n“[...]\nMas um dia\nNóis nem pode se alembrá\nVeio os homes com as ferramenta\nE o dono mandô derrubá\nPeguemo todas nossas coisa\nE fumo pro meio da rua\nApreciá a demolição\nQue tristeza que nóis sentia\nCada tauba que caía\nDoía no coração\nMatogrosso quis gritá\nMas em cima eu falei\nOs homes tá cá razão\nNóis arranja outro lugá\nSó se conformemo\nQuando o Joca falou\nDeus dá o frio conforme o cobertô.\n[...]”\n\nO verso que exemplifica variação no nível morfossintático e no fonológico é",
+      "alternativas": [
+        "“Cada tauba que caía”.",
+        "“Matogrosso quis gritá”.",
+        "“E o dono mandô derrubá”.",
+        "“Nóis nem pode se alembrá”.",
+        "“Deus dá o frio conforme o cobertô”."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "www.vagalume.com.br"
+      ],
+      "pagina_pdf": 7,
+      "revisao_manual": "Yuri/Claude 01/11/2026: o 'texto de apoio' era o resto da alternativa E da Q13",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-15",
+      "numero": 15,
+      "lingua": null,
+      "area": "linguagens",
+      "disciplina": "portugues",
+      "texto_base": null,
+      "enunciado": "A linguagem da propaganda enfrenta o desafio de prender a atenção do destinatário e, por isso, dentre outros recursos, valese de meios estilísticos.\n\n[[FIGURA 1]]\n\nRevista Veja.\n\nPara convencer o receptor, observa-se a combinação entre as figuras",
+      "alternativas": [
+        "sinestesia e sinédoque, trazendo percepções de diferentes sentidos na parte/todo de uma expressão adverbial.",
+        "onomatopeia e hipérbole, explorando uma reprodução natural com intensificação na expressão interjetiva.",
+        "polissíndeto e paralelismo, favorecendo a fluidez da estrutura sintática de uma locução substantiva.",
+        "ironia e prosopopeia, chamando atenção pelo fingir do não dizer na expressão adjetiva.",
+        "eufemismo e disfemismo, agregando ideias de impacto a uma expressão verbal."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q15_fig4.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 7,
+      "revisao_manual": "Yuri/Claude 01/11/2026: o 'texto de apoio' era o resto da alternativa E da Q13",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-16-en",
+      "numero": 16,
+      "lingua": "en",
+      "area": "linguagens",
+      "disciplina": "ingles",
+      "texto_base": null,
+      "enunciado": "[[FIGURA 1]]\n\n[[FIGURA 2]]\n\nMuitos verbos em inglês consistem em duas partes: um verbo\n“base” (tais como bring, take, go, come) acompanhados de uma preposição ou de uma partícula adverbial (tais como up, down, out, in, off). No segundo quadro da tirinha, foi retirada a palavra que acompanha o verbo GO. A preposição que completa o\nsentido do verbo na fala do personagem é",
+      "alternativas": [
+        "in.",
+        "on.",
+        "off.",
+        "out.",
+        "down."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q16-en_fig5.webp"
+        },
+        {
+          "caminho": "figuras/2016/q16-en_fig6.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "http://garfield.dale.ro/garfield-1996-december-30.html"
+      ],
+      "pagina_pdf": 7
+    },
+    {
+      "id": "paes-2016-17-en",
+      "numero": 17,
+      "lingua": "en",
+      "area": "linguagens",
+      "disciplina": "ingles",
+      "texto_base": null,
+      "enunciado": "[[FIGURA 1]]\n\n[[FIGURA 2]]\n\nA figura do Uncle Sam sempre está relacionada à convocação de soldados americanos para a guerra. As duas figuras acima estão fazendo essa convocação, porém de maneiras\ndiferentes. Considerando que os dois cartazes indicam uma ordem, a expressão utilizada em um desses cartazes que torna a ordem mais educada é",
+      "alternativas": [
+        "“Speak English”.",
+        "“Want you”.",
+        "“Please”.",
+        "“Speak”.",
+        "“Want”."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q17-en_fig7.webp"
+        },
+        {
+          "caminho": "figuras/2016/q17-en_fig8.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "file:///J:/English%20as%20an%20International%20Language%20-%20Level%20A%20-\n%20Teacher%20Len.html"
+      ],
+      "pagina_pdf": 7
+    },
+    {
+      "id": "paes-2016-18-en",
+      "numero": 18,
+      "lingua": "en",
+      "area": "linguagens",
+      "disciplina": "ingles",
+      "texto_base": "t05",
+      "enunciado": "The universal language, English is indeed the most prevalent language in the world. Looking at its largest number of speakers, it is acknowledged as the primary language, internationally. English has become the chief language today, for the global trade, social media networks and websites, science and research centers, educational institutions and for maximum number of immigrants and travelers all over the world. In today’s modern era of higher learning and overweening ambitions, when everyone is shooting for a booming and fruitful career, the English language has occupied a more significant position among all the languages of the world. This is due to the fact that it is the globally accepted language and extremely useful for a professional in dealing with the international clients. English language is rapidly spreading worldwide for several crucial purposes and there are multiple reasons why one must learn English.\nA expressão que denota o sentido de liderança da Língua Inglesa globalizada é",
+      "alternativas": [
+        "“global trade”.",
+        "“chief language”.",
+        "“all over the world”.",
+        "“globally accepted language”.",
+        "“rapidly spreading worldwide ”."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 8
+    },
+    {
+      "id": "paes-2016-19-en",
+      "numero": 19,
+      "lingua": "en",
+      "area": "linguagens",
+      "disciplina": "ingles",
+      "texto_base": null,
+      "enunciado": "[[FIGURA 1]]\n\nAbout one hundred years ago many educated people learned and spoke French when they met people from other countries. Today most people speak English when they meet foreigners. It has become the new international language. There are more people who speak English as a second language than people who speak English as a first language. Why is this? There are many reasons why English has become so popular. One of them is that English has become the language of business. Another important reason is that popular American culture (like movies, music, and McDonald's) has quickly spread throughout the world. It has brought its language with it.\n\nAccording to the text, it is correct to say that",
+      "alternativas": [
+        "today English is more popular than ever.",
+        "English is mostly spoken by native people.",
+        "nowadays people speak more French than English.",
+        "people speak English for the American Culture only.",
+        "the main reason to learn English is to meet another people."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q19-en_fig9.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "file:///j:/top%2010%20reasons%20why%20learning%20english%20is%20mus t%20_%20lists%20trivia.html",
+        "file:///J:/English%20as%20an%20International%20Language%20-\n%20Level%20A %20-%20Teacher%20Len.html"
+      ],
+      "pagina_pdf": 8
+    },
+    {
+      "id": "paes-2016-20-en",
+      "numero": 20,
+      "lingua": "en",
+      "area": "linguagens",
+      "disciplina": "ingles",
+      "texto_base": null,
+      "enunciado": "What is a friend?\n\n[[FIGURA 1]]\n\nA friend is someone who brings out the best in you;\nGood friends are always happy to help when you run into a problem;\nA friend is someone who cheers you up when you’re feeling bad;\nTrue friends don’t drift apart even after many years of\nseparation;\nA real friend will always stand up for you when others\nare putting you down;\nNever be afraid to open up and ask a friend for advice. A true friend will never turn you down;\nMake new friends but hang on to the old ones;\nGood friends are hard to come by, harder to leave, and\nimpossible to do without.\n\nÉ extremamente comum em inglês combinações de verbos\ncom partículas adverbiais ou preposicionais. Essas\ncombinações são geralmente chamadas de verbos frasais\n(phrasal verbs), preposicionados ou de duas palavras. No texto, encontram-se vários exemplos de verbos frasais\nnegritados. A correlação correta entre o verbo e seu sentido está contemplada em",
+      "alternativas": [
+        "Bring out - Claudio takes the car everyday to work.",
+        "Put... down - Always put things back into place.",
+        "Open up - Don’t open the door to strangers.",
+        "Hang on to - He goes fast to get his prize.",
+        "Cheer... up - She always makes me happy."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q20-en_fig10.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "file:///j:/top%2010%20reasons%20why%20learning%20english"
+      ],
+      "pagina_pdf": 8
+    },
+    {
+      "id": "paes-2016-16-es",
+      "numero": 16,
+      "lingua": "es",
+      "area": "linguagens",
+      "disciplina": "espanhol",
+      "texto_base": null,
+      "enunciado": "SPANSGLISH Y CIBERSPANGLISH\n\nEl spansglish es un castellano salpicado de palabras inglesas- literales o adaptadas a la fonética y grafías del español- que se ha impuesto en aquellos lugares donde el inglés es la lengua nacional y hay un alto porcentaje de población de origen hispano. El resultado es un mestizaje o cóctel linguístco que sirve para la comunicación. ¿Sirve realmente? Parece que sí, al menos, en centros urbanos como Nueva York, con un 25% de población hispana y numerosos diarios, semanarios, emisoras de radio y canales de televisión en castellano.\n\nSegún el texto hay una mezcla del lenguaje española con la lengua inglesa, resultando en un fenómeno linguístico. Ese fenómeno ocurre porque la(s)",
+      "alternativas": [
+        "lengua inglesa y la española por seren usadas igualmente en América del Norte son fuertes.",
+        "dos lenguas poseen igual valor cultural en América del Norte por se originaren del latín.",
+        "lengua española tiene autonomía cuando se establece en la comunidad estadunidense.",
+        "lengua es herencia cultural de un pueblo, muy fuerte, por lo tanto se manifiesta.",
+        "lengua española se sobresale porque es más fuerte que la lengua inglesa."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "LOBATO, Jesús Sanches et all. Español sin frontera 2. SGEL.S.A. Madrid,\n1998."
+      ],
+      "pagina_pdf": 9
+    },
+    {
+      "id": "paes-2016-17-es",
+      "numero": 17,
+      "lingua": "es",
+      "area": "linguagens",
+      "disciplina": "espanhol",
+      "texto_base": null,
+      "enunciado": "[[FIGURA 1]]\n\n[[FIGURA 2]]\n\nMafalda lee en el periódico la frase de hoy “más conozco a los hombres más quiero a mi perro”. Esta afirmación\nsignifica que el",
+      "alternativas": [
+        "perro es cariñoso como el hombre.",
+        "perro es más confiable que los hombres.",
+        "hombre es fiel, por eso merece atención.",
+        "perro se aburre con facilidad con el hombre.",
+        "hombre quiere la confianza del otro hombre."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q17-es_fig11.webp"
+        },
+        {
+          "caminho": "figuras/2016/q17-es_fig12.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "QUINO. Mafalda. Barcelona: Editorial Lumen, 1987."
+      ],
+      "pagina_pdf": 9
+    },
+    {
+      "id": "paes-2016-18-es",
+      "numero": 18,
+      "lingua": "es",
+      "area": "linguagens",
+      "disciplina": "espanhol",
+      "texto_base": null,
+      "enunciado": "Para Mafalda hay una contradicción en el periodico y por eso ella habla ¡Falta la opinión del perro! La idea contenida en la expresión en destaque es que el (la):",
+      "alternativas": [
+        "perro debe soportar todo lo que el hombre desea por este ser racional.",
+        "opinión del hombre es suficiente para el perro porque son amigos.",
+        "hombre cree que el perro debe obediencia a él, pues es su dueño.",
+        "perro no es tan amigo del hombre, ya que se aburre con él.",
+        "perro pensaría distinto del hombre, si pudiera da su opinión."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 9
+    },
+    {
+      "id": "paes-2016-19-es",
+      "numero": 19,
+      "lingua": "es",
+      "area": "linguagens",
+      "disciplina": "espanhol",
+      "texto_base": null,
+      "enunciado": "El Jilguero Tímido\nHabía una vez un Jilguero que no quería cantar. Todas las demás aves se preguntaban por qué no quería cantar, y él siempre les respondía: \"Jamás cantaré para ser objeto de burla.\"\nUn día, un Perico se le acercó al Jilguero para decirle: \"¿Por qué tienes miedo? Canta, que nadie se reirá de ti.\" Sin embargo, el Jilguero no quiso cantar, ni tampoco le respondió nada al Perico. Luego, llego una Cotorra y también se le acercó al Jilguero y le dijo: \"Te escuché una vez mientras cantabas en el bosque. ¡Tus cantos son hermosos! ¿Por qué no quieres cantar ahora?”\n\nEntre otros mecanismos de conexión, la lengua se sirve de las conjunciones para ligar las ideas pertinentes en el texto. Así, sin embargo tiene la función de ligar y establecer una idea contradictoria en relación al que fue dicho anteriormente por\nPerico al Jilguero. La idea es de",
+      "alternativas": [
+        "seguridad.",
+        "aceptación.",
+        "resistencia.",
+        "satisfacción.",
+        "probabilidad."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "http://www.fabulascortas.net"
+      ],
+      "pagina_pdf": 9
+    },
+    {
+      "id": "paes-2016-20-es",
+      "numero": 20,
+      "lingua": "es",
+      "area": "linguagens",
+      "disciplina": "espanhol",
+      "texto_base": null,
+      "enunciado": "A mí me gustan las hamburguesas\n(Los pirata)\nA mí me gustan las hamburguesas\nCon papas fritas, con mayonesa\nCon mucho queso y mucho jamón\nEl que inventó la hamburguesa es un campeón\n(REFRÁN)\n(...)\nNo tanta fruta, menos verdura\nLa remolacha me parece una tortura\nA ver si paran con el pescado\nNo se dan cuenta que me tienen cansado\nA mí me gustan las hamburguesas\n(...)\n\nLa canción, del grupo Los Pirata, hace una crítica a la\nalimentación de las personas que rechazan los alimentos\nsaludables. De esta forma, el yo poético en el título y en el refrán de la canción habla en la primera persona del singular\nA mí me gustan las hamburguesas, con la intención de",
+      "alternativas": [
+        "convencimiento.",
+        "entretenimiento.",
+        "aburrimiento.",
+        "explicación.",
+        "superación."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "http://letras.com/los-pirata/520603/"
+      ],
+      "pagina_pdf": 10
+    },
+    {
+      "id": "paes-2016-21",
+      "numero": 21,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "historia",
+      "texto_base": null,
+      "enunciado": "Situação Econômica da França na Década de 1780\n\n[[FIGURA 1]]\n\nA imagem se refere à situação das receitas e das despesas do\nEstado francês na década de 1780. Pode-se analisar pelos dados que",
+      "alternativas": [
+        "a maior arrecadação do Estado era proveniente dos impostos diretos, pagos, em sua grande maioria, pelos representantes da Igreja Católica francesa, uma das mais poderosas da Europa.",
+        "o elevado déficit público do Estado francês foi um elemento central para o contexto histórico de profunda crise econômica que favoreceu a eclosão da Revolução Francesa em 1789.",
+        "a crise econômica relacionava-se diretamente às questões internas, já que, no cenário internacional, os negócios contribuíram de forma significativa para as receitas do Estado francês.",
+        "os gastos com o pagamento da dívida representavam uma pequena parcela das despesas estatais, o que indicava a possibilidade de recuperação rápida da economia francesa.",
+        "a opulência da nobreza francesa era a responsável pela fração mais elevada dos gastos do Estado, seu principal financiador."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q21_fig13.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "BERNET, Anne. Sem nenhum tostão em caixa. In História Viva, 2004."
+      ],
+      "pagina_pdf": 10
+    },
+    {
+      "id": "paes-2016-22",
+      "numero": 22,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "historia",
+      "texto_base": null,
+      "enunciado": "Marcha da Família com Deus pela Liberdade, São Paulo,\n19 de março de 1964.\n\n[[FIGURA 1]]\n\nManifestação no Rio de Janeiro, 15 de março de 2015.\n\n[[FIGURA 2]]\n\nAs imagens acima retratam dois momentos singulares da História Política do Brasil: a conjuntura pré-golpe de 1964, momento em que se deu a destituição de João Goulart, e as recentes manifestações contra o atual governo brasileiro. Em comum aos dois processos, destaca-se o apoio à tomada de poder pelos militares.\nIdentifica-se o seguinte argumento comum às duas manifestações a favor da intervenção militar:",
+      "alternativas": [
+        "Defesa dos preceitos fundamentais da democracia liberal burguesa, como a liberdade de expressão.",
+        "Crítica às políticas públicas, vistas como incapazes de controlar a inflação e promover o desenvolvimento do país.",
+        "Defesa do catolicismo e da “família tradicional” como sustentáculos dos valores cristãos da sociedade brasileira.",
+        "Incapacidade do Governo Goulart e do Governo Dilma de atender às demandas dos movimentos sociais e das minorias.",
+        "Oposição diante da dependência da economia brasileira frente ao capital estrangeiro manifesta na defesa incondicional do nacionalismo econômico."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q22_fig14.webp"
+        },
+        {
+          "caminho": "figuras/2016/q22_fig15.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 11
+    },
+    {
+      "id": "paes-2016-23",
+      "numero": 23,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "historia",
+      "texto_base": null,
+      "enunciado": "Estimativa do número de africanos desembarcados em cada região (em milhares de indivíduos)\n\n[[FIGURA 1]]\n\nO número de africanos desembarcados no Brasil devido ao tráfico negreiro, conforme tabela, foi o maior, ao se compararem os dados da América Britânica e os Estados Unidos. Uma das explicações para essa diferença é que",
+      "alternativas": [
+        "no Brasil, o tráfico negreiro foi facilitado pela proximidade com o litoral africano; nos Estados Unidos, a distância em relação à costa africana encareceu a mercadoria escrava.",
+        "nos Estados Unidos, o tráfico sempre foi ilegal, dificultando, assim, o comércio transatlântico de escravos; no Brasil, o tráfico estendeu-se legalmente até às vésperas da abolição da escravidão.",
+        "no Brasil, prevaleceu o projeto de abastecimento da mão de obra escrava por meio do tráfico negreiro; nos Estados Unidos, predominaram as fazendas onde ocorria a reprodução escrava.",
+        "nos Estados Unidos, predominou o trabalho livre, realizado em pequenas propriedades, sendo a mão de obra escrava utilizada somente nas lavouras de algodão da região norte; no Brasil, a mão de obra escrava foi predominante nas mais diversas regiões.",
+        "no Brasil, o elevado crescimento da economia agro- exportadora possibilitou capital disponível para a compra de escravos; nos Estados Unidos, as constantes crises da lavoura algodoeira inviabilizavam a compra em larga escala da mão de obra escrava."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q23_fig16.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "ALENCASTRO, Luís Felipe de. O tráfico dos viventes. Formação do Brasil no Atlântico Sul. São Paulo: Cia das Letras, 2000. Adaptado."
+      ],
+      "pagina_pdf": 11,
+      "revisao_manual": "Yuri/Claude 01/11/2026: a tabela já vem como imagem fiel; tirada a cópia em texto sem cabeçalho (pág. 11)",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-24",
+      "numero": 24,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "historia",
+      "texto_base": null,
+      "enunciado": "Jihadista convoca muçulmanos para destruir Esfinge e\n\nPirâmides do Egito\n\n[[FIGURA 1]]\n\nUm líder jihadista egípcio convocou a população muçulmana para destruir a Esfinge e as Pirâmides de Gizé, informa o site árabe Al Arabiya. Murgan Salem al-Gohary, que afirma ter ligações com o Talibã, pediu que os egípcios repetissem o que foi feito no Afeganistão, quando estátuas de Buda foram removidas após a chegada dos fundamentalistas ao poder.\n\n“A destruição da memória, da História, do passado é algo terrível para uma sociedade”.\n\nA destruição de patrimônios históricos da Humanidade, como as estátuas de Buda no Afeganistão, e a ameaça à Esfinge de Gizé e às Pirâmides não se restringem aos conflitos políticoreligiosos que assolam o Oriente Médio há séculos, mas fazem parte de um processo maior de reconfiguração da Memória e da História da sociedade.\nO processo acima descrito está diretamente relacionado ao (à)",
+      "alternativas": [
+        "uso da Memória e da História como campo de disputa e de construção de identidades coletivas.",
+        "tentativa de uso da Memória e da História como estratégias para reforçar identidades coletivas passadas.",
+        "destruição dos bens culturais construídos ao longo da dominação imperialista sobre a região do Oriente Médio.",
+        "ataque aos Patrimônios Culturais como forma de destruição de símbolos ocidentais que representam o domínio estrangeiro.",
+        "projeto de diluição das fronteiras culturais por meio da tentativa de imposição de uma única memória coletiva aos demais povos do Oriente Médio."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q24_fig17.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "Data: sábado, 7 de março de 2015 / Horário: 14:41",
+        "http://www.netcina.com.br.",
+        "Jacques Le Goff, Revista Veja."
+      ],
+      "pagina_pdf": 12
+    },
+    {
+      "id": "paes-2016-25",
+      "numero": 25,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "Analise a charge:\n\n[[FIGURA 1]]\n\nhttp://formulageo.blogspot.com.br.\n\nA charge ilustra os movimentos e os fluxos migratórios. Por serem dinâmicos, assumem especificidades em diferentes etapas e contextos históricos, podendo ser mais permanentes ou transitórios, devido a fatores como guerras, regimes ditatoriais, crises econômicas, desastres ambientais e outros.\n\nEm relação aos fluxos migratórios atuais, os principais polos de atração de imigrantes oriundos, de um lado, da África e do Oriente Médio, de outro, da América Central são, respectivamente, os países da",
+      "alternativas": [
+        "União Soviética e da América Latina.",
+        "América Latina e do Norte da Europa.",
+        "Europa Ocidental e da África Subsaariana.",
+        "União Europeia e da América anglo-saxônica.",
+        "Oceania e os países produtores de petróleo da América Latina."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q25_fig18.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 12
+    },
+    {
+      "id": "paes-2016-26",
+      "numero": 26,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "De acordo com o estudo da Organização para Cooperação e Desenvolvimento Econômico (OCDE), a produção agrícola brasileira apresentava, em 2011, índices de desenvolvimento acima da média mundial. Projeções mostram que, até 2022, a produção de grãos aumentará 22%, a de carne de frango, que se baseia na produção agrícola, poderá crescer 4,2% e deve liderar o ranking. O trigo, o milho, as carnes bovina e suína também aparecem nos resultados preliminares como produtos que vão puxar esse crescimento.\n\nO aumento da produção agrícola brasileira ocorreu pela incorporação de novas áreas e tecnologias. Os dois fatores que contribuíram para que a Região Centro-Oeste se transformasse em grande produtora de grãos são o tipo de clima e de plantio, respectivamente, indicados em",
+      "alternativas": [
+        "Clima: Tropical litorâneo — Plantio: Arroz",
+        "Clima: Semiárido — Plantio: Milho",
+        "Clima: Tropical de altitude — Plantio: Cana-de-açúcar",
+        "Clima: Equatorial — Plantio: Café",
+        "Clima: Tropical — Plantio: Soja"
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "http://www.cidademarketing.com.br/. Adaptado."
+      ],
+      "pagina_pdf": 12,
+      "revisao_manual": "Yuri/Claude 01/11/2026: alternativas eram uma tabela Clima × Tipo de plantio (pág. 12)",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-27",
+      "numero": 27,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "A degradação dos solos por diferentes fatores antrópicos tem provocado dois processos distintos, porém ambos têm deixado a base de sustentação dos biomas, os solos, sem condições suficientes à vegetação. Esses processos situam-se em biomas diferentes, distantes 2.200 quilômetros no sentido Norte-Sul.\n\nOs processos de desertificação e de arenização ocorrem em determinados biomas, climas, regiões, devido a fatores antropogênicos que concorrem para sua ocorrência. Esses processos podem ser expressos, respectivamente, por\n\n[[FIGURA 1]]",
+      "alternativas": [
+        "Desertificação: Caatinga, Semiárido, Nordeste, pecuária e agricultura. Arenização: Pampa, Subtropical, Sul, pecuária e agricultura.",
+        "Desertificação: Cerrado, Tropical Continental, Centro-Oeste, pecuária. Arenização: Caatinga, Semiárido, Nordeste, pecuária e agricultura.",
+        "Desertificação: Mata Atlântica, Tropical de altitude, Sudeste, lavoura de café. Arenização: Cerrado, Tropical Continental, Centro-Oeste, pecuária.",
+        "Desertificação: Pampa, Subtropical, Sul, pecuária e agricultura. Arenização: Amazônia, Equatorial úmido, Norte, pecuária.",
+        "Desertificação: Amazônia, Equatorial úmido, Norte, pecuária. Arenização: Mata Atlântica, Tropical de altitude, Sudeste, lavoura de café."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q27_fig19.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "Amazônia - http://www.greenpeace.org/brasil/pt/O-que-fazemos/Amazonia/; Caatinga - <http://blogs.diariodonordeste.com.br/gestaoambiental/tag/associacaocaatinga/>; Cerrado - <http://pt.slideshare.net/davicante/o-cerrado>; Mata Atlântica - <http://www.ra-bugio.org.br/neutralizacaodecarbono.php>. Pampa –\nMMA.. Campos Sulinos, conservação e uso sustentável da biodiversidade. Brasília: MMA, 2009."
+      ],
+      "pagina_pdf": 13,
+      "revisao_manual": "Yuri/Claude 01/11/2026: alternativas eram fotos com legendas; legendas transcritas da pág. 13 (a figura com as fotos fica no enunciado). O 'texto de apoio' era a tabela da Q26",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-28",
+      "numero": 28,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "Analise o texto verbal e a imagem que o acompanha.\n\n[[FIGURA 1]]\n\nO fator fundamental para que a economia globalizada pudesse existir é a grande novidade da nova ordem mundial (...) Podemos assistir aos acontecimentos e acompanhá-los de qualquer parte da Terra no exato momento em que estão ocorrendo, seja uma corrida de fórmula 1, um jogo da copa do mundo ou conflitos no Oriente Médio. É possível comprar produtos fabricados em vários países, em luxuosos shoppings ou mesmo na barraquinha do ambulante da esquina.\n\nOs fatores relacionados ao fenômeno da Globalização são os seguintes:",
+      "alternativas": [
+        "equilíbrio fiscal e desestímulo ao consumo nos países centrais, custo de mão de obra adequada à competição internacional nos mercados emergentes.",
+        "novas tecnologias, implantação da modernização do campo e crescimento da indústria artesanal.",
+        "revolução industrial, revolução técnico-científica e expansão das empresas transnacionais.",
+        "consolidação dos blocos econômicos, intensificação das relações comerciais e nacionalização da mão-de-obra.",
+        "regionalização do espaço mundial em blocos, esvaziamento econômico do setor de serviços e facilidades de deslocamentos de informações."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q28_fig20.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "RIGOLIN, Tércio Barbosa; ALMEIDA, Lúcia Marina Alves. Fronteiras da Globalização:\nGeografia Geral e do Brasil. 1ª Ed. São Paulo: Editora Ática.",
+        "www.google.com.br."
+      ],
+      "pagina_pdf": 13
+    },
+    {
+      "id": "paes-2016-29",
+      "numero": 29,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "Leia o mapa apresentado sobre as frentes de ocupação e de expansão da região Sul do Estado do Maranhão.\n\n[[FIGURA 1]]\n\nO território que, na atualidade, constitui o Estado do Maranhão apresenta meios e modos de ocupação distintos ao longo do seu processo histórico, resultando em diferentes características socioeconômicas e identidades regionais.\n\nÉ possível identificar que as transformações ocorridas nas bases socioeconômicas dessa área do Maranhão, nos séculos XIX e XX, ocorreram, respectivamente, pela",
+      "alternativas": [
+        "pecuária intensiva, advinda do leste de criadores nordestinos e pela agricultura moderna de fazendeiros do centro-oeste do país.",
+        "agricultura de subsistência, advinda do leste de migrantes da seca e pela pecuária moderna de fazendeiros do sul do país.",
+        "pecuária, advinda do leste de criadores nordestinos e pela agricultura moderna de fazendeiros do centro-sul do país.",
+        "agricultura, advinda do leste de fazendeiros nordestinos e pela atividade pastoril de pecuaristas do norte do estado.",
+        "agricultura de subsistência, advinda do leste de migrantes da seca e pela agricultura familiar vinda do sul do país."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q29_fig21.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "ROCHA, Rosimary Gomes. O processo de ocupação do sul do\nMaranhão: dinamismo econômico e des(re)ordenamento territorial.\nInterEspaço. v.1, n.1. Grajaú, p. 05-23."
+      ],
+      "pagina_pdf": 14
+    },
+    {
+      "id": "paes-2016-30",
+      "numero": 30,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "geografia",
+      "texto_base": null,
+      "enunciado": "Leia a reportagem publicada acerca de problemas ocorridos em Salvador-BA.\n\n[[FIGURA 1]]\n\nChuva em Salvador causa vários deslizamentos e deixa 14 mortos\n\nAs equipes de resgate já trabalham há mais de 18 horas na Comunidade do Barro Branco, na periferia de Salvador. Eles procuram sobreviventes em um desabamento de uma encosta sobre seis casas durante a madrugada.\n\nA terra deslizou enquanto as famílias dormiam. Nem os vizinhos nem o Corpo de Bombeiros sabem dizer quantas pessoas ainda podem estar soterradas. [...] No bairro do Bom Juá (foto), que fica na periferia, a terra deslizou e cinco pessoas morreram. O temporal durou mais de dez horas e transformou Salvador em um caos. Parte da capital baiana ficou alagada e com trânsito travado. Muitas casas ficaram inundadas e as famílias perderam tudo. Em toda a cidade, foram mapeadas mais de 600 áreas de risco e 55 encostas ameaçam deslizar.\n\nhttp://g1.globo.com/jornal-da-globo.\n\nAs consequências das chuvas torrenciais na capital da Bahia expressam uma sobreposição da evolução histórica da cidade e da segregação do espaço. O fator que explica a catástrofe nas áreas periféricas dessa cidade é",
+      "alternativas": [
+        "a atração da cidade de Salvador, graças a sua dinâmica econômica, que trouxe numeroso contingente de população, que ocupou edificações dos programas sociais do governo federal, construídos em locais de menor valor.",
+        "o processo histórico de crescimento desordenado do espaço urbano de Salvador, primeira capital brasileira, que ocupou áreas de menor valor imobiliário, cujo contexto favorece ocorrências de deslizamentos e de enchentes.",
+        "o papel histórico exercido por Salvador que possibilitou o avanço de infraestruturas necessárias à reprodução do capital moderno que, por questões econômicas e políticas, incentivou a ocupação de áreas aptas à urbanização.",
+        "o papel polarizador da capital Salvador que, desde sua fundação, atraiu contingentes populacionais de todas as regiões do país, que ocuparam as encostas da Serra do Mar, pouco aptas à construção civil.",
+        "a polarização exercida por Salvador na rede de cidades do Nordeste, o que permitiu a atração do capital moderno e a migração da zona da mata piauiense e cearense, cujos moradores, expulsos pelas prolongadas estiagens, ocuparam áreas pouco aptas à construção civil."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q30_fig22.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 14
+    },
+    {
+      "id": "paes-2016-31",
+      "numero": 31,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "filosofia",
+      "texto_base": null,
+      "enunciado": "Nunca o Brasil recolheu tanto imposto. Creio que a corrupção nunca foi tão alta. Alguma relação? Claro que sim! Os impostos financiam a corrupção. Esmagamos o nosso corpo, retorcemos a nossa estrutura para financiar a mordomia de poucos sortudos.\n\nIsso sempre existiu em toda parte do mundo. No Brasil, então, é condição essencial para o convívio entre os agentes sociais. Entretanto, somos obrigados a conviver com um elemento muito particular nosso: o respeito às autoridades.\n\nAlém de pagar imposto, o brasileiro sabe respeitar alguém que usa terno. Além do terno, tem a farda, a beca e o avental. O brasileiro sabe respeitar. Aí está o seu erro: a adulação às autoridades. Dizem que a autoridade só é autoridade para servir ao coletivo. Não existe autoridade sem função de serviçal.\n\nCom relação ao significado do respeito às autoridades,\nconforme o texto afirma, identificamos que a formação do povo brasileiro foi-se construindo por meio de práticas silenciosas com base no respeito. Decorre dessas práticas a intenção de formar cidadãos, caracterizando-os como",
+      "alternativas": [
+        "críticos.",
+        "atentos.",
+        "atuantes.",
+        "submissos.",
+        "politizados."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "http: congressoemfoco. uol.com.br/ autor/ rodolfo."
+      ],
+      "pagina_pdf": 15
+    },
+    {
+      "id": "paes-2016-32",
+      "numero": 32,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "filosofia",
+      "texto_base": null,
+      "enunciado": "(...) A terra não é de um dono só.\nA roça também não é de um dono só.\nNinguém come as coisas da roça sozinho.\nAs coisas da roça a gente sempre divide com os parentes.\nDivide com quem está precisando.\nA caça também não é de um dono só.\nQuando alguém mata um bicho para comer,\nele não come sozinho. Ele sempre divide.\nQuando mata o peixe, divide,\nQuando faz bebida, divide,\nSempre divide. (...)\n\nO poema canta a aceitação de uma visão de alguém que\nadquiriu hábitos e formação para dividir bens e produtos com seus semelhantes. É alguém que recebeu uma educação que\no identifica com os outros. Dessa forma, pode-se considerar que é pelo hábito e pela educação que um povo constrói",
+      "alternativas": [
+        "cultura.",
+        "biótipo.",
+        "mania.",
+        "culpa.",
+        "etnia."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "CIMI, História dos povos indígenas, Petrópolis, RJ: Vozes, 1987."
+      ],
+      "pagina_pdf": 15
+    },
+    {
+      "id": "paes-2016-33",
+      "numero": 33,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "filosofia",
+      "texto_base": null,
+      "enunciado": "(...) Uma opinião diversa da minha, um modo de se comportar oposto ao meu, obriga-me a refletir. Eu me questiono, o que enriquece minha maneira de ver, de pensar e de agir. Enfim, o outro me faz progredir e ajuda-me na construção de minha personalidade. Não se trata de aceitar, sem refletir, os modismos ou de ser um catavento girando aos quatro ventos. Trata-se, somente, de se abrir ao mundo exterior, de ficar atento aos outros; ou seja, de estar pronto a compreender, reagir, construir. O racismo somente será vencido quando nós soubermos dizer ao outro um “muito obrigado”, tanto maior quanto maiores forem as diferenças entre nós.\n\nOs seres humanos se percebem na relação social com o outro e esse outro, dentro de um possível, nos leva a refletir sobre o nosso modo de ser, de pensar e de agir. Na relação do eu – outro constrói-se",
+      "alternativas": [
+        "idiolatricidade.",
+        "identidade.",
+        "igualdade.",
+        "idealidade.",
+        "idealismo."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "JACQUARD, Albert. Todos semelhantes, todos diferentes. São Paulo:\nAugustos, 1993."
+      ],
+      "pagina_pdf": 15
+    },
+    {
+      "id": "paes-2016-34",
+      "numero": 34,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "filosofia",
+      "texto_base": null,
+      "enunciado": "Asa Branca\nQuando oiei a terra ardendo\nQual fogueira de São João\nEu perguntei a Deus do céu, ai\nPor que tamanha judiação.\nQue braseiro, que fornaia\nNem um pé de prantação\nPor farta d’água perdi meu gado\nMorreu de sede meu alazão. (...)\n\nOs versos de Asa Branca mostram a realidade típica da região nordeste do Brasil, qual seja: a seca. Desse modo, a arte poética, a ciência e a filosofia, apesar de suas diferenças, possuem um veículo comum para expressar a visão de mundo.\nEsse veículo é conhecido como",
+      "alternativas": [
+        "poesia.",
+        "diálogo.",
+        "aforismo.",
+        "romance.",
+        "linguagem."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "GONZAGA, Luiz e TEIXEIRA, Humberto. RCA, 1997."
+      ],
+      "pagina_pdf": 15
+    },
+    {
+      "id": "paes-2016-35",
+      "numero": 35,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "filosofia",
+      "texto_base": null,
+      "enunciado": "A incivilidade gourmet\n(...) Em entrevista à Folha de S. Paulo, o sociólogo espanhol Manuel Castells chegou a tempo de enfiar o dedo nas escancaradas escaras da sociedade brasileira. (...) A imagem mítica do brasileiro simpático só existe no samba. Na relação entre pessoas, sempre foi violento. A sociedade brasileira não é simpática, é uma sociedade que se mata”.\nContinua a matéria, “para os leitores de Sergio Buarque de Holanda, o sociólogo espanhol apenas redescobre as raízes da sociedade brasileira plantadas nos terraços da escravidão, entre a casa-grande e suas senzalas. (...) Sob a capa do afeto, o cordialismo esconde as crueldades da discriminação e da desigualdade.”\nA matéria retratada aponta como ilusória a ideia de que o brasileiro teria como característica a cordialidade, sendo, ao contrário, preconceituoso e agressivo. As frases expressivas da arrogância discriminativa presente no cotidiano da sociedade brasileira estão indicadas em",
+      "alternativas": [
+        "”Você não pode discutir comigo porque não fez faculdade.” “Quem poderia resolver essa situação?”",
+        "“E você, quem é mesmo?” “Um momento enquanto verifico o seu processo.”",
+        "“A culpa é da Princesa Isabel.” “Este é o número do seu protocolo, agora é só esperar”.",
+        "”Eu sou o doutor Fulano de Tal.” “O senhor será o próximo a ser atendido.”",
+        "”O senhor sabe com quem está falando?” “Coloque-se no seu lugar.”"
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "BELLUZZO, Luiz Gonzaga. A incivilidade gourmet. Carta Capital, Ano XXI,\nNº 854."
+      ],
+      "pagina_pdf": 16
+    },
+    {
+      "id": "paes-2016-36",
+      "numero": 36,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "sociologia",
+      "texto_base": null,
+      "enunciado": "Um dos fenômenos sociais de destaque nos estudos sociológicos são as instituições sociais.\nConceituadas como “toda forma ou estrutura social estabelecida, constituída, sedimentada na sociedade e com caráter normativo – ou seja, ela define regras e exerce formas de controle social”. Por isso, mudanças nas instituições sociais geralmente envolvem disputas entre conservadores e progressistas.\nA situação que tem gerado disputa ideológica na sociedade brasileira tanto no discurso de senso comum como nas instâncias de poder, em virtude do processo de mudança na formatação da instituição social denominada de família, é",
+      "alternativas": [
+        "a comemoração ao divórcio.",
+        "o casamento religioso entre viúvos.",
+        "a união estável para os casais idosos.",
+        "a adoção de crianças por casais do mesmo sexo.",
+        "a perda da guarda dos filhos por abandono de incapaz."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "OLIVEIRA, Pérsio Santos de. Introdução à Sociologia. São Paulo: Ática,\n2008."
+      ],
+      "pagina_pdf": 16
+    },
+    {
+      "id": "paes-2016-37",
+      "numero": 37,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "sociologia",
+      "texto_base": null,
+      "enunciado": "A Sociologia como ciência foi criada no século XIX em um contexto marcado por “mudanças sociais” que demandavam explicações para a intervenção nos problemas detectados.\n\nO tipo de sociedade que propiciou o surgimento da sociologia e a indicação de suas características são, respectivamente,",
+      "alternativas": [
+        "Capitalista — Inchaço populacional na zona urbana, crescimento da criminalidade, aparecimento do proletariado e crise das instituições sociais.",
+        "Escravocrata — Aumento da urbanização, desindustrialização, aumento da taxa de emprego, aparecimento da burguesia e enfraquecimento dos laços sociais.",
+        "Socialista — Aumento da migração para a zona rural, valorização do salário dos trabalhadores, redução do desemprego e fortalecimento da igreja enquanto instituição social.",
+        "Comunista — Crescimento da população urbana e rural, redução da pobreza, aparecimento do proletariado, fortalecimento da família enquanto instituição social.",
+        "Feudal — Estabilidade econômica, valorização da mulher no mercado de trabalho, fortalecimento do casamento como instituição social."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 16,
+      "revisao_manual": "Yuri/Claude 01/11/2026: alternativas em tabela Tipo de sociedade × Características (pág. 16)",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-38",
+      "numero": 38,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "sociologia",
+      "texto_base": null,
+      "enunciado": "A Sociologia, tradicionalmente, é a ciência que estuda a sociedade. Expressão abstrata, visto que não há uma definição precisa. Mas, a literatura indica que toda sociedade deriva de grupos sociais, compreendidos como “um agregado de seres humanos no qual (1) existem relações específicas entre\nindivíduos que o compreendem e (2) cada indivíduo tem\nconsciência do próprio grupo e de seus símbolos”. É\nnecessário, portanto, que haja interação e identidade entre os membros do grupo.\nUm exemplo de grupo social é (são)",
+      "alternativas": [
+        "multidão em um domingo na praia.",
+        "pessoas em uma fila de cinema.",
+        "alunos em uma sala de aula.",
+        "jovens em festival de música.",
+        "indivíduos lendo jornal."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "OUTHWAITE, William; BOTTOMORE, Tom (editores). Dicionário do pensamento social do século XX. Rio de Janeiro: Jorge Zahar, 1996.\nGIDDENS, Anthony. Sociologia. Porto Alegre: Artmed, 2005.\nOLIVEIRA, Pérsio Santos de. Introdução à Sociologia. São Paulo: Ática,\n2008."
+      ],
+      "pagina_pdf": 16
+    },
+    {
+      "id": "paes-2016-39",
+      "numero": 39,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "sociologia",
+      "texto_base": null,
+      "enunciado": "Hoje, tudo que chamam de “reformas” constitui de fato um conjunto de recuos sucessivos em matéria de direitos sociais, de proteção aos assalariados, com privilégios para os\npoderosos e prerrogativas ampliadas para o grande patronato.\nIsso provoca no povo uma rejeição de qualquer ideia de\n“reforma”, pois ele pressente que em nome dessa palavra\nmágica vão lhe pedir novos sacrifícios.\nO texto retrata a visão de uma corrente político-ideológica, que tende a exercer o controle sobre a sociedade, denominada de",
+      "alternativas": [
+        "Comunismo.",
+        "Democracia.",
+        "Neoliberalismo.",
+        "Aristocracia.",
+        "Socialismo."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "DION, Jack. A esquerda esqueceu do povo (entrevista). In: Carta Capital.\nAno XXI. Nº 850."
+      ],
+      "pagina_pdf": 17
+    },
+    {
+      "id": "paes-2016-40",
+      "numero": 40,
+      "lingua": null,
+      "area": "humanas",
+      "disciplina": "sociologia",
+      "texto_base": null,
+      "enunciado": "Até meados de 1970, mais de dois terços de todas as sociedades do mundo poderiam ser consideradas autoritárias. Atualmente menos de um terço das sociedades é de natureza autoritária. A democracia não está mais concentrada nos países ocidentais, ela agora é defendida, ao menos em princípio, em muitas regiões do mundo.\n\nUm exemplo de situação vivenciada em países democráticos é",
+      "alternativas": [
+        "a disseminação das expressões artísticas, literárias e musicais, para que a população se adéque às estratificações sociais.",
+        "a possibilidade de consulta popular, em forma de plebiscito, para que o povo expresse suas opiniões a respeito de uma questão específica.",
+        "a redução de oportunidades, para que o cidadão possa intervir em aspectos da vida pública, junto com o Governo.",
+        "a concentração de riquezas nas mãos do Estado, para que o governo possa aumentar as igualdades sociais.",
+        "o grande número de partidos políticos, para que os políticos usem, de forma ilimitada, o poder."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "GIDDENS, Anthony. Sociologia. 4.ed. Porto Alegre: Artmed, 2005."
+      ],
+      "pagina_pdf": 17
+    },
+    {
+      "id": "paes-2016-41",
+      "numero": 41,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "matematica",
+      "texto_base": null,
+      "enunciado": "Para responder à questão 41, leia o texto e analise a planta baixa do apartamento descrito abaixo.\nUm casal que acabou de receber seu apartamento planeja fazer pequenas modificações no piso. Após analisar a planta baixa, decidiu usar, apenas, dois tipos de azulejo. No primeiro orçamento, sala, varanda, quartos e circulação foram cotados com o azulejo tipo 01; cozinha, área de serviço e banheiros, com o azulejo tipo 02. No segundo orçamento, o azulejo tipo 01 seria usado para sala, circulação, cozinha e área de serviço; o azulejo tipo 02 aplicado somente aos banheiros. Os dois orçamentos tiveram valores totais de R$ 1354,00 e R$ 780,00, respectivamente.\n\n[[FIGURA 1]]\n\nAnalisando os dados, os valores do metro quadrado, em reais, dos dois tipos de azulejo incluídos nos dois orçamentos são, respectivamente, de",
+      "alternativas": [
+        "R$ 21,00 e R$ 27,00.",
+        "R$ 25,84 e R$ 39,53.",
+        "R$ 30,00 e R$ 25,00.",
+        "R$ 32,00 e R$ 18,00.",
+        "R$ 36,17 e R$ 6,75."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q41_fig23.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "www.habitissimo.com.br/orcamento. Adaptado."
+      ],
+      "pagina_pdf": 18
+    },
+    {
+      "id": "paes-2016-42",
+      "numero": 42,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "matematica",
+      "texto_base": null,
+      "enunciado": "As equipes A e B de uma gincana escolar devem recolher livros na vizinhança para montar uma biblioteca comunitária. O juiz da competição começou a fazer anotações das quantidades de livros trazidos a cada rodada pelas duas equipes e verificou um padrão de crescimento, conforme a tabela 1. A cada rodada, o juiz também avalia o total de livros colocados nas estantes de cada equipe, como mostrado na tabela 2, a seguir.\n\nTabela 1 — Arrecadação\n\n[[TABELA 1]]\n\nTabela 2 — Total na estante\n\n[[TABELA 2]]\n\nO número de rodadas necessárias para que as duas equipes disponham da mesma quantidade total de livros nas estantes é",
+      "alternativas": [
+        "05.",
+        "06.",
+        "09.",
+        "10.",
+        "11."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [
+        "| Rodada | Equipe A | Equipe B |\n| --- | --- | --- |\n| 1 | 06 | 16 |\n| 2 | 10 | 18 |\n| 3 | 14 | 20 |\n| 4 | | |\n| ⋮ | ⋮ | ⋮ |",
+        "| Rodada | Equipe A | Equipe B |\n| --- | --- | --- |\n| 1 | 06 | 16 |\n| 2 | 16 | 34 |\n| 3 | 30 | 54 |\n| 4 | | |\n| ⋮ | ⋮ | ⋮ |"
+      ],
+      "creditos": [],
+      "pagina_pdf": 18,
+      "revisao_manual": "Yuri/Claude 01/11/2026: as duas tabelas saíram como texto corrido; refeitas pela pág. 18 (conta: 2n² + 4n = n² + 15n, n = 11)",
+      "conferida_visualmente": true
+    },
+    {
+      "id": "paes-2016-43",
+      "numero": 43,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "matematica",
+      "texto_base": null,
+      "enunciado": "Um marceneiro tem como seu principal produto bancos de madeira, os quais são envernizados, antes da sua montagem, para melhor acabamento. Tais bancos são compostos pelo assento circular e quatro pernas de seção quadrada. O assento tem raio de 30cm e espessura de 5cm, enquanto as pernas têm 3cm de lado e 40cm de altura. Sabe-se que o verniz utilizado pelo marceneiro tem rendimento de 8m², por litro, e é vendido, apenas, em latas de um litro.\nPara envernizar toda a sua produção mensal, 40 (quarenta) bancos, a quantidade de latas de verniz a ser adquirida é de\n\nConsidere 1m²= 10000cm² e π = 3,14",
+      "alternativas": [
+        "3.",
+        "4.",
+        "5.",
+        "6.",
+        "7."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 18
+    },
+    {
+      "id": "paes-2016-44",
+      "numero": 44,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "matematica",
+      "texto_base": null,
+      "enunciado": "Com a crescente preocupação de oferecer acesso a serviços de saúde à população, uma empresa comercializa, por meio de seus corretores, planos de saúde com cobertura diferenciada, conforme tabela de preços apresentada abaixo.\n\n[[FIGURA 1]]\n\nUm corretor está tentando fechar negócio com um casal de idades entre 34 e 38 anos que tem três dependentes na faixa etária de zero a dezoito.\nO desconto percentual que o corretor deverá oferecer sobre o custo do Plano Nacional, para que este se iguale ao\nequivalente Regional, é de",
+      "alternativas": [
+        "19,07%.",
+        "21,47%.",
+        "22,72%.",
+        "28,96%.",
+        "33,66%."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q44_fig24.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "Tabela de preços adaptada de www.igmsaude.com.br"
+      ],
+      "pagina_pdf": 18
+    },
+    {
+      "id": "paes-2016-45",
+      "numero": 45,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "matematica",
+      "texto_base": null,
+      "enunciado": "Para os jogos olímpicos que serão realizados no Brasil, em\n2016, espera-se bater o recorde na prova de nado borboleta em piscina de 50m, alcançada no campeonato brasileiro, de\n2012, no Rio de Janeiro. Naquela oportunidade, a prova foi realizada em 22,76 segundos, quando César Cielo\ndesenvolveu uma velocidade de, aproximadamente, 2,00m/s.\n\nA velocidade empreendida pelo atleta na prova corresponde, em km/h, a",
+      "alternativas": [
+        "1,64.",
+        "7,20.",
+        "8,00.",
+        "11,38.",
+        "25,00."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "HTTP://tribunadonorte.com.br."
+      ],
+      "pagina_pdf": 19
+    },
+    {
+      "id": "paes-2016-46",
+      "numero": 46,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "fisica",
+      "texto_base": null,
+      "enunciado": "CTB – Lei n° 9.503 de 23 de Setembro de 1997\n\nInstitui o Código de Trânsito Brasileiro\n\n• Art.65. É obrigatório o uso do cinto de segurança para condutor e passageiros em todas as vias do território\nnacional, salvo em situações regulamentadas pelo\nCONTRAN.\n\nO uso do cinto de segurança, obrigatório por lei, remete-nos a uma das explicações da Lei da Inércia, que corresponde à",
+      "alternativas": [
+        "1ª Lei de Ohm.",
+        "2ª Lei de Ohm.",
+        "1ª Lei de Newton.",
+        "2ª Lei de Newton.",
+        "3ª Lei de Newton."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "http://www.jusbrasil.com.br."
+      ],
+      "pagina_pdf": 19
+    },
+    {
+      "id": "paes-2016-47",
+      "numero": 47,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "fisica",
+      "texto_base": null,
+      "enunciado": "Em uma feira cultural escolar, foi apresentada a figura a seguir, que representa um elevador hidráulico usado em postos de lavagem de carros. Seu funcionamento se baseia no princípio de Pascal.\n\n[[FIGURA 1]]\n\nGASPAR, Alberto. Física “série Brasil”. Ensino médio.\nOs alunos expositores tiveram de explicar aos visitantes o funcionamento físico do elevador hidráulico. Considerando que\nF₁ e F₂ são forças e A₁ e A₂ são áreas, a expressão\nmatemática que embasou a explicação dos expositores é",
+      "alternativas": [
+        "F₁=(A₁.F₂)/A₂",
+        "F₁=(A₂.F₂)/A₁",
+        "F₁=(A₁. A₂)/ F₂",
+        "F₁=A₁/( A₂. F₂)",
+        "F₁=A₂/( A₁. F₂)"
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q47_fig25.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 19
+    },
+    {
+      "id": "paes-2016-48",
+      "numero": 48,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "fisica",
+      "texto_base": null,
+      "enunciado": "Os espaços públicos fazem uso de muitos aparelhos de ar\ncondicionado, com vistas ao uso racional da energia-água.\nSabendo-se que uma academia utiliza, na sua refrigeração, 10 aparelhos de ar condicionado, o proprietário deseja\nreaproveitar a água proveniente das unidades condensadoras para o consumo da água nos seus banheiros.\nCada aparelho utilizado na academia condensa um volume de\n20 litros, por dia, com consumo, em média, de 120.000 litros de água por mês (adote mês de 30 dias).\nO percentual de economia de água obtido com o\nreaproveitamento da água condensada ao final do mês e a\nquantidade de aparelhos de ar condicionado que garantiriam uma economia de, pelo menos, 3%, são, respectivamente,",
+      "alternativas": [
+        "4% e 6 aparelhos.",
+        "6% e 5 aparelhos.",
+        "6% e 4 aparelhos.",
+        "4% e 5 aparelhos.",
+        "5% e 6 aparelhos."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 19
+    },
+    {
+      "id": "paes-2016-49",
+      "numero": 49,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "fisica",
+      "texto_base": null,
+      "enunciado": "Os eclipses solar e lunar são fenômenos astronômicos que ocorrem sob determinadas condições naturais. A época de ocorrência, a duração e as circunstâncias desses eclipses dependem da geometria variável do sistema Terra-Lua-Sol.\n\nAs fases da Lua em que ocorrem os eclipses solar e lunar, respectivamente, são",
+      "alternativas": [
+        "nova e cheia.",
+        "minguante e nova.",
+        "minguante e crescente.",
+        "cheia e crescente.",
+        "nova e minguante."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 20
+    },
+    {
+      "id": "paes-2016-50",
+      "numero": 50,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "fisica",
+      "texto_base": null,
+      "enunciado": "Uma das aplicações dos capacitores é no circuito eletrônico de um flash de máquina fotográfica. O capacitor acumula carga elétrica por um determinado tempo (alguns segundos) e, quando o botão para tirar a foto é acionado, toda carga acumulada é “despejada” sobre a lâmpada do flash, daí o seu brilho intenso, porém de curta duração.\n\nSe nesse circuito houver um capacitor de dados nominais 315V e 100µF, corresponderá a uma carga, em coulomb, máxima,\nacumulada de",
+      "alternativas": [
+        "3,1500.",
+        "0,3175.",
+        "0,3150.",
+        "0,0315.",
+        "3,1750."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 20
+    },
+    {
+      "id": "paes-2016-51",
+      "numero": 51,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "biologia",
+      "texto_base": null,
+      "enunciado": "Leia o texto a seguir, para responder à questão 51.\nBiologia é uma ciência que estuda os seres vivos e explica os fenômenos ligados à vida e à sua origem. É de extrema\nimportância para entender o funcionamento do nosso\necossistema, que, por sua vez, se torna essencial para a sobrevivência humana. A importância do conhecimento\nbiológico pode ser percebida desde a base do que compõe o planeta Terra. Hoje, a Biologia está presente no nosso dia a dia e possui uma influência direta em tudo que está relacionado aos seres vivos, desde os mecanismos que regulam as\natividades vitais até as relações que estabelecem entre si e com o ambiente em que vivem. Estudar Biologia consiste em adquirir conhecimentos de como o mundo se organiza, desde os níveis mais simples até os mais complexos. E assim, prever e mensurar os fenômenos que podem melhorar a existência na\nTerra, e, consequentemente, garantir a manutenção dos\nsistemas biológicos de forma sustentável.\n\nO texto faz referência à hierarquia de complexidade da organização biológica, cuja sequência correta é a seguinte:",
+      "alternativas": [
+        "célula - tecido - órgão - sistema - organismo - população - comunidade - ecossistema - biosfera.",
+        "célula - órgão - tecido - organismo - sistema - comunidade - população - biosfera - ecossistema.",
+        "tecido - célula - órgão - organismo - sistema - população - comunidade – ecossistema - biosfera.",
+        "tecido - célula - órgão - organismo - sistema - comunidade - população - biosfera - ecossistema.",
+        "célula - tecido - órgão - organismo - sistema - comunidade - população - biosfera - ecossistema."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "PANIAGO,\nG.L.\nDescubra\na\nimportância\nda\nBiologia.\nhttps://www.portaleducacao.com.br."
+      ],
+      "pagina_pdf": 20
+    },
+    {
+      "id": "paes-2016-52",
+      "numero": 52,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "biologia",
+      "texto_base": null,
+      "enunciado": "Para responder à questão 52, analise o esquema que mostra uma população de gafanhoto submetida a determinado\ninseticida por um período prolongado.\n\n[[FIGURA 1]]\n\nQuanto ao processo de seleção, é possível afirmar, após o uso do inseticida, que",
+      "alternativas": [
+        "a seleção natural favorece os indivíduos com fenótipos extremos (representados pela cor clara) em relação aos indivíduos com fenótipos intermediários.",
+        "a seleção natural favorece os indivíduos com fenótipos extremos (representados pela cor clara) da variação normal (representados pela cor escura) da população.",
+        "a seleção natural age de forma aleatória, favorecendo os insetos sensíveis (representados pela cor clara) e os resistentes (representados pela cor escura) ao acaso.",
+        "a seleção natural elimina os indivíduos muito diferentes da média (representados pela cor escura), com características extremas, o que favorece os indivíduos com fenótipos intermediários.",
+        "a seleção natural favorece os insetos resistentes (representados pela cor escura), visto que eles sobrevivem e podem reproduzir; os insetos sensíveis (representados pela cor clara) têm sua população diminuída."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q52_fig26.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "LINHARES, Sérgio e GEWANDSZNAJDER, Fernando. Biologia Hoje, v.3.\n2011."
+      ],
+      "pagina_pdf": 20
+    },
+    {
+      "id": "paes-2016-53",
+      "numero": 53,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "biologia",
+      "texto_base": null,
+      "enunciado": "Os padrões e a frequência com que as infecções parasitárias, tais como malária e esquistossomose ocorrem em determinadas localidades dependem de interações complexas entre hospedeiros, parasitas e ambiente. A ação do homem dominando e alterando a natureza pode se constituir em fator de progresso e de melhoria da qualidade de vida, porém, também pode introduzir ou espalhar infecções parasitárias, minimizando ou até inviabilizando os efeitos benéficos sobre o bem-estar da população.\nSegundo o texto, as alterações ambientais provocadas pela atividade humana influenciam a incidência de infecções, pois",
+      "alternativas": [
+        "populações que vivem em ambientes com grande complexidade e com grande diversidade biológica apresentam menores taxas de infecção e menor gama de espécies parasitas.",
+        "variações de temperatura e de precipitação pluviométrica são fatores decisivos na distribuição e na consequente transmissão da malária.",
+        "alterações decorrentes da urbanização facilitam a transmissão da malária, ao determinar o aumento de sítios naturais que funcionam como criadouros de anofelinos.",
+        "alterações ambientais e movimentos migratórios não podem ser associados ao espraiamento da esquistossomose mansônica.",
+        "modificações efetuadas na distribuição natural de recursos hídricos como canalização de rios, construção de diques ou represas podem diminuir a transmissão da esquistossomose."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "CHIEFF, P.P. Alterações ambientais e infecções parasitárias. Arq. Med.\nv.47, n.1. março de 2002. Adaptado."
+      ],
+      "pagina_pdf": 21
+    },
+    {
+      "id": "paes-2016-54",
+      "numero": 54,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "biologia",
+      "texto_base": null,
+      "enunciado": "Leia o texto a seguir para analisar as assertivas e responder à questão 54.\n\nA fotossíntese é um processo físico-químico, em nível celular, realizado pelos seres vivos clorofilados, que utilizam dióxido de carbono e água para obter glicose através da energia da luz solar. A fotossíntese inicia a maior parte das cadeias alimentares na Terra. Sem ela, os animais e muitos outros seres heterotróficos seriam incapazes de sobreviver porque a base da sua alimentação estará sempre nas substâncias orgânicas proporcionadas pelas plantas verdes. Ao nos alimentarmos, parte das substâncias orgânicas produzidas na fotossíntese entram na nossa constituição celular, enquanto outras (os nutrientes energéticos) fornecem a energia necessária às nossas funções vitais, como o crescimento e a reprodução. Além do mais, ela fornece oxigênio para a respiração dos organismos aeróbicos.\nA fotossíntese é o principal processo de transformação de energia na Biosfera, essencial para a manutenção da vida na Terra, porém, muitos fatores do ambiente podem afetar as taxas de fotossíntese, limitando-as em diferentes regiões da Terra.\n\nAnalise as assertivas a seguir.\n\nI. A concentração de dióxido de carbono é geralmente o fator limitante da fotossíntese para as plantas terrestres, em geral, devido a sua baixa concentração na atmosfera, que é em torno de 0,04%.\nII. Para a maioria das plantas, a temperatura ótima para os processos fotossintéticos está entre 30 e 38 °C. Acima dos 45°C, a velocidade da reação decresce, pois cessa a atividade enzimática.\nIII. A água é fundamental como fonte de hidrogênio para a produção da matéria orgânica. Em regiões secas, as\nplantas têm a água como um grande fator limitante.\nIV. A disponibilidade de água e as temperaturas podem afetar a fotossíntese e modificar a morfologia foliar.\nSão corretas as assertivas",
+      "alternativas": [
+        "I, II e III, apenas.",
+        "II e III, apenas.",
+        "I, II, III e IV.",
+        "I e III, apenas.",
+        "II e IV, apenas."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [],
+      "pagina_pdf": 21
+    },
+    {
+      "id": "paes-2016-55",
+      "numero": 55,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "quimica",
+      "texto_base": null,
+      "enunciado": "Leia a notícia que trata do transporte e da expansão do\nmanganês.\nA VLI, empresa especializada em operações logísticas, além de incentivar por meio do projeto “Trilhos Culturais – Jovens multiplicadores” a difusão de diversos conhecimentos em\ncomunidades que ficam às margens das linhas férreas\nbrasileiras, a promoção e a participação social em ações educativas, incluiu em suas atividades o transporte de\nmanganês, pelo corredor Centro Norte. Este metal apresenta vários estados de oxidação em diferentes espécies, como por exemplo, MnCO₃, MnF₃, K₃MnO₄ e MnO₄⁻².\nO manganês é transportado da cidade paraense, Marabá, até o porto do Itaqui, passando pela estrada de ferro Carajás, e segue em navios para outras cidades do litoral brasileiro, como também, para a Europa, Ásia e Estados Unidos.\n\nOs números de oxidação do manganês nas espécies\nrelacionadas, no texto, respectivamente, são",
+      "alternativas": [
+        "+2, +3, +5 e +6.",
+        "+2, +5, +3 e +6.",
+        "+2, +6, +3 e +5.",
+        "+2, +3, +6 e +5.",
+        "+2, +5, +6 e +3."
+      ],
+      "gabarito": "A",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "Jornal o Estado do Maranhão."
+      ],
+      "pagina_pdf": 21
+    },
+    {
+      "id": "paes-2016-56",
+      "numero": 56,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "quimica",
+      "texto_base": null,
+      "enunciado": "Leia a notícia abaixo divulgada em jornal maranhense.\n“Furto de fiação elétrica, telefônica, de internet e de TV causa prejuízos em São Luís”. São cabos de cobre e de alumínio, levados por bandidos que furtam não apenas as redes de telefonia, mas principalmente a rede elétrica. Esses materiais são visados por criminosos por causa do alto valor de venda no mercado.\n\nPode-se afirmar em relação às propriedades dos metais citados que",
+      "alternativas": [
+        "ambos possuem alta eletronegatividade.",
+        "o cobre forma cátion e o alumínio forma ânion.",
+        "ambos têm dificuldade de doar seus elétrons mais externos.",
+        "ambos possuem alta eletropositividade.",
+        "o cobre forma ânion e o alumínio forma cátion."
+      ],
+      "gabarito": "D",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "Jornal o Estado do Maranhão. Adaptado."
+      ],
+      "pagina_pdf": 22
+    },
+    {
+      "id": "paes-2016-57",
+      "numero": 57,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "quimica",
+      "texto_base": null,
+      "enunciado": "A indústria sucroalcooleira, considerada uma das principais responsáveis pela movimentação interna da economia, gerando bilhões de dólares, mantém os cortadores de cana de açúcar no país, em condição subumana e com vida útil equiparada à dos escravos.\nCerca de 97% do que o Maranhão colherá em cana de açúcar, na atual safra 2015/2016, será destinado à produção de etanol (C₂H₅OH) anidro e hidratado. O etanol anidro é misturado à gasolina com um dos objetivos de aumentar sua octanagem, pois um dos principais constituintes da gasolina é o octano (C₈H₁₈), combustível automotivo, que, por meio da sua combustão, libera energia, permitindo que o carro entre em movimento.\n\nSuponha que determinada gasolina seja composta de hidrocarbonetos com fórmula (C₈H₁₈). Nessas condições, as equações químicas que representam as reações de combustão completas do etanol e do octano, devidamente balanceadas, permitem afirmar que a combustão de",
+      "alternativas": [
+        "2 mols de octano liberam 8 vezes mais mols de água que a de 1 mol de etanol.",
+        "2 mols de octano liberam 8 vezes mais gás carbônico que a de 1 mol de etanol.",
+        "2 mols de octano devem reagir com 3 mols de oxigênio a mais que 1 mol de etanol.",
+        "1mol de etanol deve reagir com 2 mols de oxigênio a mais que 1 mol de octano.",
+        "1mol de etanol libera 2 mols de água a mais que 1 mol de octano."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "Jornal o Estado do Maranhão. Adaptado."
+      ],
+      "pagina_pdf": 22
+    },
+    {
+      "id": "paes-2016-58",
+      "numero": 58,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "quimica",
+      "texto_base": null,
+      "enunciado": "Leia a seguinte manchete recentemente veiculada em\nemissora de televisão nacional.\n“Combustível é uma substância que em contato com outra\nprovoca uma reação química, produzindo energia que é\nliberada na forma de calor”.\n\nNão é simples definir energia, mas é fácil perceber sua\nexistência. Nesse contexto, pode-se inferir que energia é a",
+      "alternativas": [
+        "grandeza que se manifesta apenas na forma de luz.",
+        "grandeza que se manifesta apenas na forma de calor.",
+        "grandeza que avalia a capacidade de um sistema realizar trabalho.",
+        "matéria que tem massa e ocupa lugar em dado espaço do sistema.",
+        "forma do calor fluir espontaneamente entre corpos com mesma temperatura."
+      ],
+      "gabarito": "C",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "PETROBRAS. Peça publicitária veiculada na TV Globo."
+      ],
+      "pagina_pdf": 22
+    },
+    {
+      "id": "paes-2016-59",
+      "numero": 59,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "quimica",
+      "texto_base": null,
+      "enunciado": "As atividades econômicas praticadas na região da Amazônia, tais como o garimpo, a extração de madeiras e os grandes projetos que demandam a exploração ambiental, são causas de impactos ambientais e de agravos à saúde, como desmatamento das barrancas dos cursos d’água, com o assoreamento dos rios, o descontrole das cheias e a escassez de caça e de pesca, e, no caso específico do garimpo, o mercúrio jogado nas águas pode ser posteriormente ingerido pelas pessoas, causando como efeito mais deletério as anomalias de formação de fetos humanos.\n\nEm relação às causas e às consequências do desmatamento é correto afirmar, com base no texto, que",
+      "alternativas": [
+        "a contaminação humana pelo mercúrio ocorre diretamente por ingestão do peixe contaminado.",
+        "o desmatamento das barrancas contribui para o acúmulo de CO₂no ar atmosférico.",
+        "o mercúrio é ingerido na forma oxidada.",
+        "o assoreamento do leito dos rios não compromete o curso natural da água.",
+        "a diminuição da quantidade de pescado pode ocorrer pela maior disponibilidade de oxigênio na água."
+      ],
+      "gabarito": "B",
+      "anulada": false,
+      "figuras": [],
+      "tabelas": [],
+      "creditos": [
+        "LIMA, Deborah e POZZOBON, Jorge. Estudos avançados, 19, 54, 2005."
+      ],
+      "pagina_pdf": 22
+    },
+    {
+      "id": "paes-2016-60",
+      "numero": 60,
+      "lingua": null,
+      "area": "natureza",
+      "disciplina": "biologia",
+      "texto_base": null,
+      "enunciado": "Os peixes ósseos marinhos evoluíram ao que tudo indica de ancestrais de água doce, que possuem a tonicidade de seus líquidos internos bem maior que a tonicidade da água doce. Por isso, eles estão continuamente ganhando água do meio e perdendo sais, conforme o esquema abaixo.\n\n[[FIGURA 1]]\n\nPode(m)-se identificar o(s) seguinte(s) tipo(s) de transporte(s) no esquema, apontados pelas setas 1 e 2:",
+      "alternativas": [
+        "liberação de bomba de Na+ e Cl- pelo peixe.",
+        "liberação de íons carbonatos pelo peixe.",
+        "transporte ativo e osmose.",
+        "difusão e transporte ativo.",
+        "osmose e difusão."
+      ],
+      "gabarito": "E",
+      "anulada": false,
+      "figuras": [
+        {
+          "caminho": "figuras/2016/q60_fig27.webp"
+        }
+      ],
+      "tabelas": [],
+      "creditos": [
+        "www.sobiologia.com.br. Adaptado."
+      ],
+      "pagina_pdf": 23
+    }
+  ],
+  "gabarito_bruto": {
+    "01": "D",
+    "16-en": "D",
+    "16-es": "D",
+    "21": "B",
+    "41": "D",
+    "02": "A",
+    "17-en": "C",
+    "17-es": "B",
+    "22": "B",
+    "42": "E",
+    "03": "E",
+    "18-en": "B",
+    "18-es": "E",
+    "23": "C",
+    "43": "C",
+    "04": "B",
+    "19-en": "A",
+    "19-es": "C",
+    "24": "A",
+    "44": "C",
+    "05": "C",
+    "20-en": "E",
+    "20-es": "A",
+    "25": "D",
+    "45": "B",
+    "06": "A",
+    "46": "C",
+    "26": "E",
+    "07": "E",
+    "47": "A",
+    "27": "A",
+    "08": "B",
+    "48": "E",
+    "28": "C",
+    "09": "D",
+    "49": "A",
+    "29": "C",
+    "10": "B",
+    "50": "D",
+    "30": "B",
+    "11": "C",
+    "51": "A",
+    "31": "D",
+    "12": "C",
+    "52": "E",
+    "32": "A",
+    "13": "E",
+    "53": "B",
+    "33": "B",
+    "14": "D",
+    "54": "C",
+    "34": "E",
+    "15": "B",
+    "55": "A",
+    "35": "E",
+    "56": "D",
+    "36": "D",
+    "57": "B",
+    "37": "A",
+    "58": "C",
+    "38": "C",
+    "59": "B",
+    "39": "C",
+    "60": "E",
+    "40": "B"
+  }
+}

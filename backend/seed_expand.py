@@ -572,7 +572,7 @@ def build_extra_questions() -> list[dict[str, Any]]:
         (
             "sim-outra-mendel-01",
             "bio-2017-01",
-            "Enunciado no estilo ENEM/vestibular genérico (NÃO é PAES-UEMA): um casal heterozigoto para um gene autossômico clássico espera a probabilidade de um filho com fenótipo recessivo. A resposta correta é a mesma da segregação Aa×Aa, mas a banca de origem não é a UEMA.",
+            "Um casal em que os dois são heterozigotos (Aa) para um gene autossômico com dominância completa quer saber a chance de ter um filho com o fenótipo recessivo. Essa probabilidade é de",
             ["0%", "25%", "50%", "75%", "100%"],
             1,
             "Biologia",
@@ -587,7 +587,7 @@ def build_extra_questions() -> list[dict[str, Any]]:
         (
             "sim-outra-ohm-01",
             "fis-ohm-treino",
-            "Questão no formato de outra banca estadual (rótulo OUTRA): resistor ôhmico sob tensão constante. Se a tensão dobra e a resistência permanece a mesma, o que ocorre com a corrente elétrica?",
+            "Um resistor ôhmico está ligado a uma fonte de tensão. Se a tensão aplicada dobra e a resistência permanece a mesma, o que ocorre com a corrente elétrica?",
             ["Permanece igual", "Dobra", "Cai pela metade", "Quadruplica", "Zera"],
             1,
             "Física",

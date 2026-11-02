@@ -38,7 +38,9 @@
       "codigo": "t04",
       "conteudo": "As charges utilizam os recursos do desenho e do humor para fazer algum tipo de crítica às situações do cotidiano. Analise a charge a seguir para responder à questão 10.\n\n[[FIGURA 1]]",
       "tabelas": [],
-      "creditos": [],
+      "creditos": [
+        "http://www.onumulheres.org.br"
+      ],
       "figuras": [
         {
           "caminho": "figuras/2024/t04_fig1.webp"
@@ -352,10 +354,10 @@
       "anulada": false,
       "figuras": [],
       "tabelas": [],
-      "creditos": [
-        "http://www.onumulheres.org.br"
-      ],
-      "pagina_pdf": 7
+      "creditos": [],
+      "pagina_pdf": 7,
+      "revisao_manual": "Yuri/Claude 01/11/2026: crédito do texto de apoio estava preso nesta questão; passado para o texto",
+      "conferida_visualmente": true
     },
     {
       "id": "paes-2024-11",

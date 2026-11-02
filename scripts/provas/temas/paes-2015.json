@@ -1,0 +1,560 @@
+{
+  "paes-2015-01": {
+    "topico": "Impactos ambientais",
+    "subtopico": null,
+    "syllabus_id": "edital-011cd9a625cf7279",
+    "materia": "Biologia"
+  },
+  "paes-2015-02": {
+    "topico": "Fisiologia humana",
+    "subtopico": null,
+    "syllabus_id": "edital-2c0df48c01e6a848",
+    "materia": "Biologia"
+  },
+  "paes-2015-03": {
+    "topico": "Metabolismo",
+    "subtopico": null,
+    "syllabus_id": "edital-29b8f83ebf6f3d8f",
+    "materia": "Biologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-04": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2015-05": {
+    "topico": "Fisiologia humana",
+    "subtopico": null,
+    "syllabus_id": "edital-2c0df48c01e6a848",
+    "materia": "Biologia"
+  },
+  "paes-2015-06": {
+    "topico": "Evolução",
+    "subtopico": null,
+    "syllabus_id": "edital-4b63c7bb9e0b64ee",
+    "materia": "Biologia"
+  },
+  "paes-2015-07": {
+    "topico": "Metabolismo",
+    "subtopico": null,
+    "syllabus_id": "edital-29b8f83ebf6f3d8f",
+    "materia": "Biologia"
+  },
+  "paes-2015-08": {
+    "topico": "Histologia",
+    "subtopico": null,
+    "syllabus_id": "edital-d54db1d8b3a54f9a",
+    "materia": "Biologia"
+  },
+  "paes-2015-09": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2015-10": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2015-11": {
+    "topico": "Pensamento moderno",
+    "subtopico": null,
+    "syllabus_id": "edital-22354c465a3125f4",
+    "materia": "Filosofia"
+  },
+  "paes-2015-12": {
+    "topico": "Política",
+    "subtopico": null,
+    "syllabus_id": "edital-b0bdc859240d4e84",
+    "materia": "Filosofia"
+  },
+  "paes-2015-13": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2015-14": {
+    "topico": "Pensamento moderno",
+    "subtopico": null,
+    "syllabus_id": "edital-22354c465a3125f4",
+    "materia": "Filosofia"
+  },
+  "paes-2015-15": {
+    "topico": "Contemporâneo",
+    "subtopico": null,
+    "syllabus_id": "edital-e1a13d9ae05616d9",
+    "materia": "Filosofia"
+  },
+  "paes-2015-16": {
+    "topico": "Conhecimento",
+    "subtopico": null,
+    "syllabus_id": "edital-d86aac6490a500d8",
+    "materia": "Filosofia"
+  },
+  "paes-2015-17": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2015-18": {
+    "topico": "Ondas",
+    "subtopico": null,
+    "syllabus_id": "edital-a87ce4e1c2fbb06c",
+    "materia": "Física"
+  },
+  "paes-2015-19": {
+    "topico": "Termologia",
+    "subtopico": null,
+    "syllabus_id": "edital-bb770fda60704dd2",
+    "materia": "Física"
+  },
+  "paes-2015-20": {
+    "topico": "Termologia",
+    "subtopico": null,
+    "syllabus_id": "edital-bb770fda60704dd2",
+    "materia": "Física"
+  },
+  "paes-2015-21": {
+    "topico": "Óptica",
+    "subtopico": null,
+    "syllabus_id": "edital-3aaa80a1217da0d0",
+    "materia": "Física"
+  },
+  "paes-2015-22": {
+    "topico": "Cinemática",
+    "subtopico": null,
+    "syllabus_id": "edital-28fb98c88355aa20",
+    "materia": "Física"
+  },
+  "paes-2015-23": {
+    "topico": "Potência",
+    "subtopico": null,
+    "syllabus_id": "edital-4d53639fee46a9e2",
+    "materia": "Física"
+  },
+  "paes-2015-24": {
+    "topico": "Magnetismo",
+    "subtopico": null,
+    "syllabus_id": "edital-0a7de0c5c78360b2",
+    "materia": "Física"
+  },
+  "paes-2015-25": {
+    "topico": "Globalização",
+    "subtopico": null,
+    "syllabus_id": "edital-85ae1db2b4994a70",
+    "materia": "Geografia"
+  },
+  "paes-2015-26": {
+    "topico": "Ambiente",
+    "subtopico": null,
+    "syllabus_id": "edital-60a60c369a3fb0f7",
+    "materia": "Geografia"
+  },
+  "paes-2015-27": {
+    "topico": "Geografia do Brasil",
+    "subtopico": null,
+    "syllabus_id": "edital-72f90a6345414666",
+    "materia": "Geografia"
+  },
+  "paes-2015-28": {
+    "topico": "Maranhão",
+    "subtopico": null,
+    "syllabus_id": "edital-aa1d4643d796e300",
+    "materia": "Geografia"
+  },
+  "paes-2015-29": {
+    "topico": "Ambiente",
+    "subtopico": null,
+    "syllabus_id": "edital-60a60c369a3fb0f7",
+    "materia": "Geografia"
+  },
+  "paes-2015-30": {
+    "topico": "Geografia do Brasil",
+    "subtopico": null,
+    "syllabus_id": "edital-72f90a6345414666",
+    "materia": "Geografia"
+  },
+  "paes-2015-31": {
+    "topico": "População",
+    "subtopico": null,
+    "syllabus_id": "edital-ce000900b701ed4e",
+    "materia": "Geografia"
+  },
+  "paes-2015-32": {
+    "topico": "Globalização",
+    "subtopico": null,
+    "syllabus_id": "edital-85ae1db2b4994a70",
+    "materia": "Geografia"
+  },
+  "paes-2015-33": {
+    "topico": "Guerras",
+    "subtopico": null,
+    "syllabus_id": "edital-fd1407a260f3176b",
+    "materia": "História"
+  },
+  "paes-2015-34": {
+    "topico": "República",
+    "subtopico": null,
+    "syllabus_id": "edital-b9243f45dceb5a9c",
+    "materia": "História"
+  },
+  "paes-2015-35": {
+    "topico": "Guerras",
+    "subtopico": null,
+    "syllabus_id": "edital-fd1407a260f3176b",
+    "materia": "História"
+  },
+  "paes-2015-36": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2015-37": {
+    "topico": "Guerras",
+    "subtopico": null,
+    "syllabus_id": "edital-fd1407a260f3176b",
+    "materia": "História"
+  },
+  "paes-2015-38": {
+    "topico": "História geral",
+    "subtopico": null,
+    "syllabus_id": "edital-8e5b02326ddbcd56",
+    "materia": "História"
+  },
+  "paes-2015-39": {
+    "topico": "Revoluções",
+    "subtopico": null,
+    "syllabus_id": "edital-f8f64a9b639fbc9b",
+    "materia": "História"
+  },
+  "paes-2015-40": {
+    "topico": "Movimentos sociais",
+    "subtopico": null,
+    "syllabus_id": "edital-afc0d423a2b504d1",
+    "materia": "História"
+  },
+  "paes-2015-41-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "gênero",
+    "syllabus_id": "edital-f933c20985cae4dd",
+    "materia": "Inglês",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-41-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Espanhol"
+  },
+  "paes-2015-42-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-42-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "argumentos",
+    "syllabus_id": "edital-7e4ebda0748904df",
+    "materia": "Espanhol"
+  },
+  "paes-2015-43-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-43-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2015-44-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "finalidade",
+    "syllabus_id": "edital-f7b96387295c0ec8",
+    "materia": "Inglês",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-44-es": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Espanhol"
+  },
+  "paes-2015-45-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-45-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "finalidade",
+    "syllabus_id": "edital-f7b96387295c0ec8",
+    "materia": "Espanhol"
+  },
+  "paes-2015-46-en": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Inglês"
+  },
+  "paes-2015-46-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Espanhol"
+  },
+  "paes-2015-47-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2015-47-es": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Espanhol"
+  },
+  "paes-2015-48-en": {
+    "topico": "Linguagem",
+    "subtopico": "denotação",
+    "syllabus_id": "edital-6c359173b5f82ac6",
+    "materia": "Inglês"
+  },
+  "paes-2015-48-es": {
+    "topico": "Interpretação de texto",
+    "subtopico": "tese",
+    "syllabus_id": "edital-abe2d60f10d1eafc",
+    "materia": "Espanhol"
+  },
+  "paes-2015-49": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-50": {
+    "topico": "Coesão e coerência",
+    "subtopico": "conectivos",
+    "syllabus_id": "edital-f005282f9876d3a6",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-51": {
+    "topico": "Literatura",
+    "subtopico": "escolas literárias",
+    "syllabus_id": "edital-5cd873a5a743d81b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-52": {
+    "topico": "Gramática em uso",
+    "subtopico": "classes de palavras",
+    "syllabus_id": "edital-ad7a557fced0f0b4",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-53": {
+    "topico": "Interpretação de texto",
+    "subtopico": "inferência",
+    "syllabus_id": "edital-dc338e899586ce95",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-54": {
+    "topico": "Linguagem",
+    "subtopico": "conotação",
+    "syllabus_id": "edital-2ea5fe7ed2a70d71",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-55": {
+    "topico": "Literatura",
+    "subtopico": "escolas literárias",
+    "syllabus_id": "edital-5cd873a5a743d81b",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-56": {
+    "topico": "Linguagem",
+    "subtopico": "funções",
+    "syllabus_id": "edital-97d68c4fd3bf9416",
+    "materia": "Língua Portuguesa e Literatura"
+  },
+  "paes-2015-57": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-58": {
+    "topico": "Geometria analítica",
+    "subtopico": "circunferência",
+    "syllabus_id": "edital-8ee39f390a4fe7e0",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-59": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-60": {
+    "topico": "Álgebra",
+    "subtopico": "inequações",
+    "syllabus_id": "edital-5718815ae586cbb1",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-61": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-62": {
+    "topico": "Geometria plana",
+    "subtopico": "áreas",
+    "syllabus_id": "edital-032598b9ae4b1c89",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-63": {
+    "topico": "Álgebra",
+    "subtopico": "equações",
+    "syllabus_id": "edital-ca5abf739fecf073",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-64": {
+    "topico": "Geometria plana",
+    "subtopico": "polígonos",
+    "syllabus_id": "edital-fa5f7be16c982436",
+    "materia": "Matemática",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-65": {
+    "topico": "Orgânica",
+    "subtopico": null,
+    "syllabus_id": "edital-755c1a72e6b9f776",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-66": {
+    "topico": "Funções inorgânicas",
+    "subtopico": null,
+    "syllabus_id": "edital-c88961fa45cf60ee",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-67": {
+    "topico": "Funções",
+    "subtopico": null,
+    "syllabus_id": "edital-c0ebccef4d6d462f",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-68": {
+    "topico": "Funções inorgânicas",
+    "subtopico": null,
+    "syllabus_id": "edital-c88961fa45cf60ee",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-69": {
+    "topico": "Funções",
+    "subtopico": null,
+    "syllabus_id": "edital-c0ebccef4d6d462f",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-70": {
+    "topico": "Aplicações cotidianas",
+    "subtopico": null,
+    "syllabus_id": "edital-464f52c1e1003506",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-71": {
+    "topico": "Orgânica",
+    "subtopico": null,
+    "syllabus_id": "edital-755c1a72e6b9f776",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-72": {
+    "topico": "Soluções",
+    "subtopico": null,
+    "syllabus_id": "edital-78f7e5b2d8a99910",
+    "materia": "Química",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-73": {
+    "topico": "Estado",
+    "subtopico": null,
+    "syllabus_id": "edital-23b00a94c39e7309",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-74": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-75": {
+    "topico": "Direitos",
+    "subtopico": null,
+    "syllabus_id": "edital-e9ff30793a83db2e",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-76": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-77": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-78": {
+    "topico": "Cultura",
+    "subtopico": null,
+    "syllabus_id": "edital-cebb6a4f6e49c994",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-79": {
+    "topico": "Estado",
+    "subtopico": null,
+    "syllabus_id": "edital-23b00a94c39e7309",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  },
+  "paes-2015-80": {
+    "topico": "Desigualdade",
+    "subtopico": null,
+    "syllabus_id": "edital-d101b62431350991",
+    "materia": "Sociologia",
+    "origem": "manual 01/11/2026"
+  }
+}
